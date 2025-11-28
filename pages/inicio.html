@@ -1,76 +1,75 @@
-<h1 class="titulo-ingreso">INGRESO MASIVO DE MERCANCÍA</h1>
+<h2 style="color: #b33131; margin-bottom: 20px;">Bienvenido al Panel de Control</h2>
 
-<div class="panel-captura">
-    
-    <div class="campo-grupo campo-nombre">
-        <label class="label-input">Nombre del Producto</label>
-        <input type="text" id="inputNombre" class="input-form" placeholder="Ej: Leche Entera">
-    </div>
+<div class="grid-acciones">
+    <a class="accion" href="#" data-page="Recepcion">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-truck-ramp-box"></i>
+      </div>
+      <h3>Recepción</h3>
+      <p>Registrar entradas de mercancía</p>
+    </a>
 
-    <div class="campo-grupo campo-categoria">
-        <label class="label-input">Categoría</label>
-        <select id="selectCategoria" class="input-form">
-            <option value="">Cargando...</option>
-        </select>
-    </div>
+    <a class="accion" href="#" data-page="Distribucion">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-dolly"></i>
+      </div>
+      <h3>Distribución</h3>
+      <p>Salidas a almacenes o áreas</p>
+    </a>
 
-    <div class="campo-grupo campo-precio">
-        <label class="label-input">Precio (€)</label>
-        <input type="number" id="inputPrecio" class="input-form" placeholder="0.00" step="0.01">
-    </div>
+    <a class="accion" href="#" data-page="Inventario">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-boxes-stacked"></i>
+      </div>
+      <h3>Inventario</h3>
+      <p>Consultar stock y buscar artículos</p>
+    </a>
 
-    <div class="campo-grupo campo-stock">
-        <label class="label-input">Stock</label>
-        <input type="number" id="inputStock" class="input-form" placeholder="0">
-    </div>
-    
-    <div class="campo-grupo campo-stock">
-        <label class="label-input">Mínimo</label>
-        <input type="number" id="inputStockMin" class="input-form" placeholder="5">
-    </div>
+    <a class="accion" href="#" data-page="Bajas">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+      </div>
+      <h3>Bajas</h3>
+      <p>Roturas, caducados y ajustes</p>
+    </a>
 
-    <div class="campo-grupo campo-proveedor">
-        <label class="label-input">Proveedor</label>
-        <select id="selectProveedor" class="input-form">
-            <option value="">Cargando...</option>
-        </select>
-    </div>
+    <a class="accion" href="#" data-page="Proveedores">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-address-book"></i>
+      </div>
+      <h3>Proveedores</h3>
+      <p>Altas, contacto y listas</p>
+    </a>
 
-    <button id="btnAgregarLista" class="btn-accion btn-agregar">
-        <i class="fa-solid fa-plus"></i> Agregar
-    </button>
+    <a class="accion" href="#" data-page="Pedidos">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-file-invoice-dollar"></i>
+      </div>
+      <h3>Pedidos</h3>
+      <p>Crear, revisar y recibir</p>
+    </a>
+
+    <a class="accion" href="#" data-page="Informes">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-chart-pie"></i>
+      </div>
+      <h3>Informes</h3>
+      <p>Consumo, costes y trazabilidad</p>
+    </a>
+
+    <a class="accion" href="#" data-page="Usuarios">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-users"></i>
+      </div>
+      <h3>Usuarios</h3>
+      <p>Permisos y cuentas</p>
+    </a>
+
+    <a class="accion" href="#" data-page="Configuracion">
+      <div style="font-size: 30px; color: #b33131; margin-bottom: 10px;">
+        <i class="fa-solid fa-gear"></i>
+      </div>
+      <h3>Configuración</h3>
+      <p>Unidades, impuestos, centro</p>
+    </a>
 </div>
-
-<div class="seccion-tabla">
-    <h3 class="titulo-lista">
-        <i class="fa-solid fa-list-check"></i> Lista de Previsualización 
-        <span id="contadorLista" class="badge-contador">0 productos</span>
-    </h3>
-    
-    <table id="tablaTemporal" class="tabla-temporal">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Categoría</th>
-                <th>Precio</th>
-                <th>Stock</th>
-                <th>Proveedor</th>
-                <th style="text-align: center;">Acción</th>
-            </tr>
-        </thead>
-        <tbody id="tbodyTemporal">
-            <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">La lista está vacía.</td></tr>
-        </tbody>
-    </table>
-</div>
-
-<div class="acciones-finales">
-    <button id="btnLimpiarLista" class="btn-accion btn-limpiar oculto">
-        <i class="fa-solid fa-trash"></i> Descartar Todo
-    </button>
-    <button id="btnGuardarTodo" class="btn-accion btn-guardar oculto">
-        <i class="fa-solid fa-cloud-arrow-up"></i> CONFIRMAR E IMPORTAR
-    </button>
-</div>
-
-<p id="mensajeEstado" class="mensaje-estado"></p>
