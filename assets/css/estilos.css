@@ -1,121 +1,138 @@
-h1 {
-    text-align: center;
-    color: rgb(179, 49, 49);
-    margin-bottom: 30px;
-    font-weight: 600;
-}
+/* --- BARRA DE CONTROLES MEJORADA --- */
 
 .controless {
-    margin-bottom: 2rem;
+    background-color: #ffffff;
+    padding: 20px 25px;
+    border-radius: 16px; /* Bordes más redondeados */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04); /* Sombra suave y moderna */
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
+    gap: 15px; /* Espacio entre elementos */
     align-items: center;
+    margin-bottom: 30px;
+    border: 1px solid rgba(0,0,0,0.03);
 }
 
-/* Inputs y Selects */
-input[type="text"], 
-select {
-    padding: 10px 15px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+/* Estilo para los Inputs y Selects */
+.controless input[type="text"], 
+.controless select {
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    color: #4a5568;
+    background-color: #f8fafc;
     outline: none;
-    font-size: 14px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    transition: all 0.3s ease;
+    min-width: 160px; /* Ancho mínimo para legibilidad */
+    flex-grow: 1; /* Ocupan espacio disponible si es necesario */
+}
+
+.controless input[type="text"]:focus, 
+.controless select:focus {
+    border-color: #b33131;
     background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
 
-input[type="text"]:focus, 
-select:focus {
-    border-color: rgb(179, 49, 49);
-    box-shadow: 0 0 0 3px rgba(179, 49, 49, 0.1);
-}
+/* --- BOTONES PERSONALIZADOS --- */
 
-/* Botones */
-button {
-    padding: 10px 20px;
+/* Estilo base para todos los botones de controles */
+.controless button {
+    padding: 12px 20px;
     border: none;
-    border-radius: 8px;
-    background-color: rgb(179, 49, 49);
-    color: white;
-    font-weight: 500;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13.5px;
     cursor: pointer;
-    transition: background 0.3s, transform 0.1s;
-    font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espacio para iconos si los añades */
 }
 
-button:hover {
-    background-color: #8f2323;
+.controless button:active {
+    transform: scale(0.96);
 }
 
-button:active {
-    transform: scale(0.98);
+/* 1. Botón BUSCAR (Corporativo) */
+#btnBuscar {
+    background-color: #b33131;
+    color: white;
+}
+#btnBuscar:hover {
+    background-color: #9c2b2b;
+    box-shadow: 0 4px 12px rgba(179, 49, 49, 0.3);
 }
 
-/* Tabla Mejorada */
-table {
-    width: 100%;
-    border-collapse: separate; /* Necesario para bordes redondeados */
-    border-spacing: 0;
-    background: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 40px;
+/* 2. Botón COMPROBAR STOCK (Estilo Alerta/Warning) */
+#btnStock {
+    background-color: #fff5f5;
+    color: #c53030;
+    border: 1px solid #fed7d7;
+}
+#btnStock:hover {
+    background-color: #fed7d7;
+    color: #9b2c2c;
 }
 
-th,
-td {
-    padding: 16px 24px; /* Más espacio para que no se vea pegado */
-    text-align: left;
-    border-bottom: 1px solid #f0f0f0;
+/* 3. Botón LIMPIAR / MOSTRAR TODOS (Estilo Neutro/Secundario) */
+#btnMostrarTodos {
+    background-color: #edf2f7;
+    color: #4a5568;
+}
+#btnMostrarTodos:hover {
+    background-color: #e2e8f0;
+    color: #2d3748;
 }
 
-th {
-    background: #b33131;
+/* 4. Botón INGRESAR PRODUCTO (Estilo Éxito/Destacado) */
+#btnIngresar {
+    background-color: #2f855a; /* Verde elegante */
+    color: white;
+    margin-left: auto; /* TRUCO: Empuja este botón al final a la derecha */
+    box-shadow: 0 4px 6px rgba(47, 133, 90, 0.2);
+}
+
+#btnIngresar:hover {
+    background-color: #276749;
+    box-shadow: 0 6px 15px rgba(47, 133, 90, 0.35);
+    transform: translateY(-2px);
+}
+
+/* --- RESPONSIVE --- */
+/* En móviles, que todo ocupe el ancho completo y quite el margen automático */
+@media (max-width: 768px) {
+    .controless {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .controless input, 
+    .controless select, 
+    .controless button {
+        width: 100%;
+        margin-left: 0 !important; /* Resetea el truco del margen */
+    }
+}
+
+
+#btnIngresar {
+    text-decoration: none; /* Quita el subrayado */
+    display: inline-flex;  /* Para que acepte padding y centrado */
+    align-items: center;
+    justify-content: center;
+    /* Los colores y padding ya los hereda si tenías selectores previos, 
+       pero por seguridad: */
+    background-color: #2f855a;
     color: white;
     font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    border: none;
+    box-shadow: 0 4px 6px rgba(47, 133, 90, 0.2);
 }
 
-/* Filas */
-tbody tr {
-    transition: background-color 0.2s;
-}
-
-tbody tr:hover {
-    background-color: #fff5f5; /* Color suave al pasar el ratón */
-}
-
-/* Última fila sin borde inferior */
-tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* Alertas de stock */
-tr.alerta {
-    background: #fff0f0;
-    color: #c53030;
-}
-
-tr.alerta td {
-    border-bottom: 1px solid #fed7d7;
-}
-
-tr.alerta:hover {
-    background-color: #ffe4e4;
-}
-
-/* Pie de tabla */
-tfoot td {
-    font-weight: 600;
-    background: #f9fafb;
-    color: #374151;
-    text-align: right;
-    padding: 20px;
-    border-top: 2px solid #e5e7eb;
+#btnIngresar:hover {
+    background-color: #276749;
+    transform: translateY(-2px);
 }

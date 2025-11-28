@@ -1,23 +1,78 @@
+<link rel="stylesheet" href="assets/css/ingreso.css">
 
-    <div class="header">
-        <img src="../assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png" alt="Virgen de la Candelaria" class="logo">
-    </div>
-    <div class="container">
-        <form class="formulario" id="formulario-productos">
-            <input type="text" id="user-box1" name="Nombre" placeholder="Nombre" class="user" required>
-            <input type="text" id="user-box2" name="Categoria" placeholder="Categoria" class="user" required>
-            <input type="text" id="user-box3" name="Precio" placeholder="Precio" class="user" required>
-            <input type="text" id="user-box4" name="Stock" placeholder="Stock" class="user" required>
-            <input type="text" id="user-box5" name="StockMinimo" placeholder="Stock Minimo" class="user" required>
-            <input type="text" id="user-box6" name="Proveedor" placeholder="Proveedor" class="user" required>
-            <input type="text" id="user-box7" name="Isla" placeholder="Isla" class="user" required>
+<h1 class="titulo-ingreso">INGRESO MASIVO DE MERCANCÍA</h1>
 
-
-            <input type="submit" value="Ingresar Producto" class="user entrar">
-        </form>
-
-    </div>
-
+<div class="panel-captura">
     
-    <footer>© 2025 Pablo Hdez . Todos los derechos reservados.</footer>
+    <div class="campo-grupo campo-nombre">
+        <label class="label-input">Nombre del Producto</label>
+        <input type="text" id="inputNombre" class="input-form" placeholder="Ej: Leche Entera">
+    </div>
 
+    <div class="campo-grupo campo-categoria">
+        <label class="label-input">Categoría</label>
+        <select id="selectCategoria" class="input-form">
+            <option value="">Cargando...</option>
+        </select>
+    </div>
+
+    <div class="campo-grupo campo-precio">
+        <label class="label-input">Precio (€)</label>
+        <input type="number" id="inputPrecio" class="input-form" placeholder="0.00" step="0.01">
+    </div>
+
+    <div class="campo-grupo campo-stock">
+        <label class="label-input">Stock</label>
+        <input type="number" id="inputStock" class="input-form" placeholder="0">
+    </div>
+    
+    <div class="campo-grupo campo-stock">
+        <label class="label-input">Mínimo</label>
+        <input type="number" id="inputStockMin" class="input-form" placeholder="5">
+    </div>
+
+    <div class="campo-grupo campo-proveedor">
+        <label class="label-input">Proveedor</label>
+        <select id="selectProveedor" class="input-form">
+            <option value="">Cargando...</option>
+        </select>
+    </div>
+
+    <button id="btnAgregarLista" class="btn-accion btn-agregar">
+        <i class="fa-solid fa-plus"></i> Agregar
+    </button>
+</div>
+
+<div class="seccion-tabla">
+    <h3 class="titulo-lista">
+        <i class="fa-solid fa-list-check"></i> Lista de Previsualización 
+        <span id="contadorLista" class="badge-contador">0 productos</span>
+    </h3>
+    
+    <table id="tablaTemporal" class="tabla-temporal">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Precio</th>
+                <th>Stock</th>
+                <th>Proveedor</th>
+                <th style="text-align: center;">Acción</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyTemporal">
+            <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">La lista está vacía.</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="acciones-finales">
+    <button id="btnLimpiarLista" class="btn-accion btn-limpiar oculto">
+        <i class="fa-solid fa-trash"></i> Descartar Todo
+    </button>
+    <button id="btnGuardarTodo" class="btn-accion btn-guardar oculto">
+        <i class="fa-solid fa-cloud-arrow-up"></i> CONFIRMAR E IMPORTAR
+    </button>
+</div>
+
+<p id="mensajeEstado" class="mensaje-estado"></p>

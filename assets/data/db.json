@@ -119,6 +119,46 @@
       "email": "nml@gmail.com",
       "telefono": "852741963",
       "rol": "usuario"
+    },
+    {
+      "id": "c4b0",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "fgh",
+      "apellidos": "asd",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "54455445",
+      "rol": "usuario"
+    },
+    {
+      "id": "ca2b",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "manzana",
+      "apellidos": "nml",
+      "email": "asq@gmail.com",
+      "telefono": "54455445",
+      "rol": "usuario"
+    },
+    {
+      "id": "d3ca",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "manzana",
+      "apellidos": "nml",
+      "email": "asq@gmail.com",
+      "telefono": "54455445",
+      "rol": "usuario"
+    },
+    {
+      "id": "6977",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "manzana",
+      "apellidos": "asd",
+      "email": "ase@gmail.com",
+      "telefono": "54455445",
+      "rol": "usuario"
     }
   ],
   "proveedores": [

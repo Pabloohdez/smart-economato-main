@@ -5,11 +5,11 @@
   <button id="btnBuscar">Buscar</button>
 
   <select id="categoriaSelect">
-    <option value="">Cargando categorías...</option>
+    <option value="">Cargando...</option>
   </select>
   
   <select id="proveedorSelect">
-    <option value="">Cargando proveedores...</option>
+    <option value="">Cargando...</option>
   </select>
  
   <select id="ordenSelect">
@@ -19,7 +19,10 @@
  
   <button id="btnStock">Stock Bajo</button>
   <button id="btnMostrarTodos">Limpiar Filtros</button>
-  <button id="btnIngresar">Ingresar Producto</button>
+
+  <a href="#" data-page="ingresarProductos" id="btnIngresar" style="text-decoration: none; display: inline-flex; justify-content: center; align-items: center;">
+      Ingresar Producto
+  </a>
 </div>
 
 <table id="tablaProductos">
@@ -34,8 +37,7 @@
       <th>Proveedor</th>
     </tr>
   </thead>
-  <tbody>
-    </tbody>
+  <tbody></tbody>
   <tfoot>
     <tr><td colspan="7" id="resumen"></td></tr>
   </tfoot>

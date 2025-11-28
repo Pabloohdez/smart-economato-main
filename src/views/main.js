@@ -2,115 +2,126 @@ import { cargarDatos, inicializarEventos } from "../controllers/almacen.js";
 import { renderizarTabla } from "../utils/funciones.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // --- 0. CONTROL DE SESIÓN Y USUARIO ---
-  const userStr = localStorage.getItem('usuarioActivo');
   
-  // Si no hay usuario guardado, lo mandamos al login por seguridad
+  // --- 0. CONTROL DE SESIÓN ---
+  const userStr = localStorage.getItem('usuarioActivo');
   if (!userStr) {
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; 
     return;
   }
 
-  const usuario = JSON.parse(userStr);
-
-  // Actualizamos el "Hola, Admin" y el Avatar
-  const saludoSpan = document.querySelector('.user-info span');
-  const avatarDiv = document.querySelector('.user-avatar');
-
-  // Usamos el nombre real o el usuario si no tiene nombre
-  const nombreMostrar = usuario.nombre || usuario.usuario || "Usuario";
-  
-  if (saludoSpan) {
-    saludoSpan.textContent = `Hola, ${nombreMostrar}`;
+  // Cargar info del usuario
+  try {
+    const usuario = JSON.parse(userStr);
+    const saludoSpan = document.querySelector('.user-info span');
+    const avatarDiv = document.querySelector('.user-avatar');
+    const nombreMostrar = usuario.nombre || usuario.usuario || "Usuario";
+    
+    if (saludoSpan) saludoSpan.textContent = `Hola, ${nombreMostrar}`;
+    if (avatarDiv) avatarDiv.textContent = nombreMostrar.charAt(0).toUpperCase();
+  } catch (e) {
+    console.error("Error leyendo usuario:", e);
   }
-  
-  if (avatarDiv) {
-    // Tomamos la inicial del nombre y la ponemos en mayúscula
-    const inicial = nombreMostrar.charAt(0).toUpperCase();
-    avatarDiv.textContent = inicial;
-  }
-  // --- FIN CONTROL USUARIO ---
-
 
   const content = document.getElementById("content");
   const sidebar = document.querySelector(".menu");
 
-  // --- 1. DELEGACIÓN DE EVENTOS ---
+  // --- 1. LÓGICA DE NAVEGACIÓN (Router) ---
   document.addEventListener("click", async (e) => {
-    // Buscamos el elemento <a> más cercano al click
+    // Detectamos click en cualquier enlace con data-page
     const targetLink = e.target.closest("a[data-page]");
-
-    // Si no es un link de navegación, ignoramos
     if (!targetLink) return;
 
     e.preventDefault();
 
-    // Obtenemos el nombre de la página (convertimos a minúscula para el nombre del archivo)
-    const rawPageName = targetLink.dataset.page;
-    const page = rawPageName.toLowerCase();
+    const pageName = targetLink.dataset.page; // Ej: "Inicio", "Inventario", "ingresarProductos"
+    const pageKey = pageName.toLowerCase();   // Ej: "inicio", "inventario", "ingresarproductos"
 
-    // --- GESTIÓN VISUAL (Clase 'activo') ---
-    // Quitamos 'activo' de todos los links del menú
+    // 1.1 Gestión visual del menú (solo si el link está en la barra lateral)
     const menuLinks = document.querySelectorAll(".menu a[data-page]");
     menuLinks.forEach((l) => l.classList.remove("activo"));
-
-    // Buscamos el link correspondiente en el menú para marcarlo
-    const activeMenuLink = Array.from(menuLinks).find(
-      link => link.dataset.page.toLowerCase() === page
-    );
     
-    if (activeMenuLink) {
-      activeMenuLink.classList.add("activo");
-    }
+    // Si el link clickeado pertenece al menú, lo activamos
+    // Si no (ej: botón dentro de inventario), buscamos si tiene "padre" en el menú
+    const activeMenuLink = Array.from(menuLinks).find(
+      link => link.dataset.page.toLowerCase() === pageKey
+    );
+    if (activeMenuLink) activeMenuLink.classList.add("activo");
 
-    // --- CARGA DE CONTENIDO ---
+    // 1.2 Mapeo de Nombres de Archivo (Para corregir mayúsculas/minúsculas)
+    let fileName = pageName; 
+    
+    // AJUSTES MANUALES:
+    if (pageKey === "inicio") fileName = "inicio";         // inicio.html (minúscula)
+    if (pageKey === "inventario") fileName = "Inventario"; // Inventario.html (Mayúscula)
+    // ingresarProductos funciona directo porque coincide data-page="ingresarProductos" con el archivo
+
+    // 1.3 Carga de contenido
     try {
-      let response = await fetch(`pages/${page}.html`);
-
-      if (!response.ok) throw new Error(`No se pudo cargar pages/${page}.html`);
+      const response = await fetch(`pages/${fileName}.html`);
+      if (!response.ok) throw new Error(`Error cargando pages/${fileName}.html`);
       const html = await response.text();
 
       content.innerHTML = html;
 
-      // Lógica específica para la página de inventario
-      if (page === "inventario") {
-        renderizarTabla(page);
-        cargarDatos();
-        inicializarEventos();
+      // 1.4 Lógica por página
+      switch (pageKey) {
+        case "inventario":
+          renderizarTabla([]); // Limpia visualmente antes de cargar
+          await cargarDatos();
+          inicializarEventos();
+          break;
+
+        case "ingresarproductos": 
+          // Carga dinámica (Lazy Load) para evitar errores si el archivo falla
+          import("../controllers/ingresoController.js")
+            .then(module => {
+                if (module.initIngreso) module.initIngreso();
+            })
+            .catch(err => console.error("Error cargando controlador de ingreso:", err));
+          break;
+          
+        default:
+          break;
       }
 
-      // En móviles, cerramos el menú al hacer click
-      if (sidebar && sidebar.classList.contains("open")) {
-        sidebar.classList.remove("open");
-      }
+      // Cerrar menú en móvil
+      if (sidebar && sidebar.classList.contains("open")) sidebar.classList.remove("open");
 
     } catch (error) {
       console.error(error);
       content.innerHTML = `
         <div style="text-align: center; padding: 40px; color: #721c24;">
-            <h3>Error 404</h3>
-            <p>No pudimos cargar la sección <b>${page}</b>.</p>
-            <small>${error.message}</small>
+            <h3>Error al cargar</h3>
+            <p>No pudimos encontrar el archivo <b>pages/${fileName}.html</b></p>
         </div>`;
     }
   });
 
-  // --- 2. LOGOUT (Cerrar Sesión) ---
+  // --- 2. LOGOUT ---
   const btnSalir = document.querySelector('.logout-btn');
   if (btnSalir) {
-      btnSalir.addEventListener('click', (e) => {
+      btnSalir.addEventListener('click', () => {
           localStorage.removeItem('usuarioActivo');
-          // El href del enlace hará la redirección a index.html
+          window.location.href = 'index.html';
       });
   }
 
-  // --- 3. AUTO-ARRANQUE (Cargar Inicio por defecto) ---
-  const links = document.querySelectorAll("a[data-page]");
-  const linkInicio = Array.from(links).find(
-    link => link.dataset.page.toLowerCase() === "inicio"
-  );
+  // --- 3. ARRANQUE AUTOMÁTICO (Dashboard) ---
+  console.log("Iniciando aplicación...");
+  
+  // Buscamos ESPECÍFICAMENTE el enlace del menú que lleva a Inicio
+  // Usamos '.menu' para asegurar que no clickamos un botón perdido
+  const inicioLink = document.querySelector('.menu a[data-page="Inicio"]') || 
+                     document.querySelector('.menu a[data-page="inicio"]');
 
-  if (linkInicio) {
-    linkInicio.click();
+  if (inicioLink) {
+    inicioLink.click();
+  } else {
+    // Si falla, carga manual de emergencia
+    console.warn("No se encontró el link 'Inicio' en el menú. Cargando manual.");
+    fetch('pages/inicio.html')
+      .then(res => res.text())
+      .then(html => content.innerHTML = html);
   }
 });

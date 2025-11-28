@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("Script de creación de usuario cargado correctamente."); // VERIFICACIÓN EN CONSOLA
+    console.log("Script de creación de usuario cargado correctamente.");
 
     const formulario = document.getElementById("formu");
     const mensaje = document.getElementById("mensaje");
@@ -27,14 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                // 2. Comprobamos si el usuario ya existe (GET al puerto 4000)
-                const checkRes = await fetch(`http://localhost:4000/usuarios?usuario=${nuevoUsuario.usuario}`);
-                
-                if (!checkRes.ok) throw new Error("No se pudo conectar con el servidor en el puerto 4000");
+
                 
 
 
-                // 3. Creamos el nuevo usuario (POST al puerto 4000)
                 const response = await fetch("http://localhost:4000/usuarios", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -45,10 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     mostrarMensaje("¡Usuario creado! Redirigiendo...", "green");
                     console.log("Usuario creado. Redirigiendo en 1.5s...");
                     
-                    setTimeout(() => {
-                        // Redirigir a index.html (subiendo un nivel desde /pages)
+                   
                         window.location.href = "../index.html";
-                    }, 1500);
+                    
                 } else {
                     throw new Error("Error al guardar el usuario");
                 }
