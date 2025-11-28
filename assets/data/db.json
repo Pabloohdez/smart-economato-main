@@ -1,0 +1,1603 @@
+{
+  "usuarios": [
+    {
+      "id": "1",
+      "username": "tcasest",
+      "password": "secret",
+      "role": "admin",
+      "nombre": "Tanausú",
+      "apellidos": "Castrillo Estévez",
+      "email": "tcasest@gobiernodecanarias.org",
+      "telefono": "+34 91 123 45 67"
+    },
+    {
+      "id": "c8d2",
+      "username": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "role": "user",
+      "nombre": "Pablo",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "628796348"
+    },
+    {
+      "id": "c9ac",
+      "username": "tcaset",
+      "password": "1234",
+      "role": "user",
+      "nombre": "manzana",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554"
+    },
+    {
+      "id": "f247",
+      "username": "tcaset",
+      "password": "1234",
+      "role": "user",
+      "nombre": "manzana",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554"
+    },
+    {
+      "id": "82fb",
+      "username": "tcaset",
+      "password": "1234",
+      "role": "user",
+      "nombre": "manzana",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554"
+    },
+    {
+      "id": "5ae3",
+      "username": "tcaset",
+      "password": "1234",
+      "role": "user",
+      "nombre": "manzana",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554"
+    },
+    {
+      "id": "682e",
+      "username": "Pablohdez_",
+      "password": "qwe",
+      "role": "user",
+      "nombre": "qwe",
+      "apellidos": "qwe",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "54455445"
+    },
+    {
+      "id": "d100",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "manzana",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554",
+      "rol": "usuario"
+    },
+    {
+      "id": "9334",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304..",
+      "nombre": "qwe",
+      "apellidos": "asd",
+      "email": "ase@gmail.com",
+      "telefono": "54455445",
+      "rol": "usuario"
+    },
+    {
+      "id": "1bde",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "qwe",
+      "apellidos": "asd",
+      "email": "ase@gmail.com",
+      "telefono": "45544554",
+      "rol": "usuario"
+    },
+    {
+      "id": "c040",
+      "usuario": "Pablohdez_",
+      "password": "Aryypau199304.",
+      "nombre": "Pablo",
+      "apellidos": "Hernandez Guillermo",
+      "email": "pablohdez.545@gmail.com",
+      "telefono": "45544554",
+      "rol": "usuario"
+    },
+    {
+      "id": "7427",
+      "usuario": "nml",
+      "password": "nml",
+      "nombre": "nml",
+      "apellidos": "nml",
+      "email": "nml@gmail.com",
+      "telefono": "852741963",
+      "rol": "usuario"
+    }
+  ],
+  "proveedores": [
+    {
+      "id": "1",
+      "nombre": "Distribuciones Alimentarias Mediterráneo",
+      "contacto": "Carlos Mendoza",
+      "telefono": "+34 91 123 45 67",
+      "email": "ventas@mediterraneo-alimentos.es",
+      "direccion": "Polígono Industrial Sur, 45, Madrid"
+    },
+    {
+      "id": "2",
+      "nombre": "Frutas y Verduras Frescas SL",
+      "contacto": "María López",
+      "telefono": "+34 93 234 56 78",
+      "email": "pedidos@frutasfrescas.es",
+      "direccion": "Mercabarna, Nave 23, Barcelona"
+    },
+    {
+      "id": "3",
+      "nombre": "Carnicerías Selectas del Norte",
+      "contacto": "Roberto García",
+      "telefono": "+34 94 345 67 89",
+      "email": "info@carniciaselectas.es",
+      "direccion": "Polígono Industrial Norte, 8, Bilbao"
+    },
+    {
+      "id": "4",
+      "nombre": "Pescados y Mariscos Atlántico",
+      "contacto": "Ana Martínez",
+      "telefono": "+34 98 456 78 90",
+      "email": "comercial@pescadosatlantico.es",
+      "direccion": "Puerto Pesquero, 23, Vigo"
+    },
+    {
+      "id": "5",
+      "nombre": "Lácteos Valle Natural",
+      "contacto": "Pedro Sánchez",
+      "telefono": "+34 95 567 89 01",
+      "email": "cliente@vallenatural.es",
+      "direccion": "Carretera Nacional IV, km 12, Sevilla"
+    },
+    {
+      "id": "6",
+      "nombre": "Distribuidora de Aceites Oro Verde",
+      "contacto": "Isabel Ramírez",
+      "telefono": "+34 96 678 90 12",
+      "email": "ventas@oroverde.es",
+      "direccion": "Ctra. Jaén, 34, Córdoba"
+    },
+    {
+      "id": "7",
+      "nombre": "Especias y Condimentos del Mundo",
+      "contacto": "Ahmed Al-Farsi",
+      "telefono": "+34 97 789 01 23",
+      "email": "info@especiasdelmundo.es",
+      "direccion": "Calle Especias, 12, Valencia"
+    },
+    {
+      "id": "8",
+      "nombre": "Bebidas y Vinos Peninsulares",
+      "contacto": "Laura Fernández",
+      "telefono": "+34 98 890 12 34",
+      "email": "comercial@vinospeninsulares.es",
+      "direccion": "Bodegas Rioja, 56, Logroño"
+    }
+  ],
+  "categorias": [
+    {
+      "id": "1",
+      "nombre": "Frutas Frescas",
+      "descripcion": "Frutas de temporada y tropicales"
+    },
+    {
+      "id": "2",
+      "nombre": "Verduras y Hortalizas",
+      "descripcion": "Verduras frescas y de temporada"
+    },
+    {
+      "id": "3",
+      "nombre": "Carnes Rojas",
+      "descripcion": "Cortes selectos de carne de vacuno, cerdo y cordero"
+    },
+    {
+      "id": "4",
+      "nombre": "Aves y Caza",
+      "descripcion": "Pollo, pavo, codorniz y carnes de caza"
+    },
+    {
+      "id": "5",
+      "nombre": "Pescados Frescos",
+      "descripcion": "Pescado fresco de mar y río"
+    },
+    {
+      "id": "6",
+      "nombre": "Mariscos y Crustáceos",
+      "descripcion": "Mariscos frescos y congelados"
+    },
+    {
+      "id": "7",
+      "nombre": "Lácteos",
+      "descripcion": "Leche, yogures y natas"
+    },
+    {
+      "id": "8",
+      "nombre": "Quesos",
+      "descripcion": "Quesos nacionales e internacionales"
+    },
+    {
+      "id": "9",
+      "nombre": "Huevos",
+      "descripcion": "Huevos de gallina campera y ecológicos"
+    },
+    {
+      "id": "10",
+      "nombre": "Panadería",
+      "descripcion": "Pan fresco y productos de panadería"
+    },
+    {
+      "id": "11",
+      "nombre": "Aceites y Vinagres",
+      "descripcion": "Aceites de oliva y vinagres selectos"
+    },
+    {
+      "id": "12",
+      "nombre": "Especias y Condimentos",
+      "descripcion": "Especias, hierbas y condimentos"
+    },
+    {
+      "id": "13",
+      "nombre": "Bebidas",
+      "descripcion": "Vinos, aguas y refrescos"
+    }
+  ],
+  "productos": [
+    {
+      "id": "1",
+      "nombre": "Tomate Raf",
+      "precio": 4.2,
+      "precioUnitario": "kg",
+      "stock": 85,
+      "stockMinimo": 30,
+      "categoriaId": 1,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Huerta Natural",
+      "codigoBarras": "8410001000015",
+      "fechaCaducidad": "2024-03-20",
+      "alergenos": [],
+      "descripcion": "Tomate Raf de la Vega de Almería",
+      "imagen": "tomate-raf.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 1,
+        "nombre": "Frutas Frescas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "2",
+      "nombre": "Lechuga Iceberg",
+      "precio": 1.15,
+      "precioUnitario": "unidad",
+      "stock": 120,
+      "stockMinimo": 40,
+      "categoriaId": 2,
+      "proveedorId": 2,
+      "unidadMedida": "unidad",
+      "marca": "Verde Fresco",
+      "codigoBarras": "8410001000022",
+      "fechaCaducidad": "2024-03-15",
+      "alergenos": [],
+      "descripcion": "Lechuga iceberg extra fresca",
+      "imagen": "lechuga-iceberg.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 2,
+        "nombre": "Verduras y Hortalizas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "3",
+      "nombre": "Solomillo de Ternera",
+      "precio": 24.9,
+      "precioUnitario": "kg",
+      "stock": 35,
+      "stockMinimo": 12,
+      "categoriaId": 3,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Carnes Premium",
+      "codigoBarras": "8410001000039",
+      "fechaCaducidad": "2024-03-12",
+      "alergenos": [],
+      "descripcion": "Solomillo de ternera gallega",
+      "imagen": "solomillo-ternera.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 3,
+        "nombre": "Carnes Rojas"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "4",
+      "nombre": "Pechuga de Pollo",
+      "precio": 7.85,
+      "precioUnitario": "kg",
+      "stock": 65,
+      "stockMinimo": 25,
+      "categoriaId": 4,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Avícola Selecta",
+      "codigoBarras": "8410001000046",
+      "fechaCaducidad": "2024-03-14",
+      "alergenos": [],
+      "descripcion": "Pechuga de pollo sin piel",
+      "imagen": "pechuga-pollo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 4,
+        "nombre": "Aves y Caza"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "5",
+      "nombre": "Salmón Fresco",
+      "precio": 18.5,
+      "precioUnitario": "kg",
+      "stock": 28,
+      "stockMinimo": 10,
+      "categoriaId": 5,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Atlántico Fresco",
+      "codigoBarras": "8410001000053",
+      "fechaCaducidad": "2024-03-11",
+      "alergenos": [
+        "Pescado"
+      ],
+      "descripcion": "Salmón del Atlántico noruego",
+      "imagen": "salmon-fresco.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 5,
+        "nombre": "Pescados Frescos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "6",
+      "nombre": "Gambas Blancas",
+      "precio": 26.4,
+      "precioUnitario": "kg",
+      "stock": 18,
+      "stockMinimo": 8,
+      "categoriaId": 6,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Mariscos Selectos",
+      "codigoBarras": "8410001000060",
+      "fechaCaducidad": "2024-03-10",
+      "alergenos": [
+        "Crustáceos"
+      ],
+      "descripcion": "Gambas blancas de Huelva",
+      "imagen": "gambas-blancas.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 6,
+        "nombre": "Mariscos y Crustáceos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "7",
+      "nombre": "Leche Entera",
+      "precio": 0.95,
+      "precioUnitario": "litro",
+      "stock": 150,
+      "stockMinimo": 50,
+      "categoriaId": 7,
+      "proveedorId": 5,
+      "unidadMedida": "litro",
+      "marca": "Lácteos Naturales",
+      "codigoBarras": "8410001000077",
+      "fechaCaducidad": "2024-03-25",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Leche entera pasteurizada",
+      "imagen": "leche-entera.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 7,
+        "nombre": "Lácteos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "8",
+      "nombre": "Queso Manchego",
+      "precio": 16.8,
+      "precioUnitario": "kg",
+      "stock": 42,
+      "stockMinimo": 15,
+      "categoriaId": 8,
+      "proveedorId": 5,
+      "unidadMedida": "kg",
+      "marca": "Quesos Tradicionales",
+      "codigoBarras": "8410001000084",
+      "fechaCaducidad": "2024-04-20",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Queso manchego curado DOP",
+      "imagen": "queso-manchego.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 8,
+        "nombre": "Quesos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "9",
+      "nombre": "Huevos Camperos",
+      "precio": 2.95,
+      "precioUnitario": "docena",
+      "stock": 80,
+      "stockMinimo": 30,
+      "categoriaId": 9,
+      "proveedorId": 5,
+      "unidadMedida": "docena",
+      "marca": "Granja Natural",
+      "codigoBarras": "8410001000091",
+      "fechaCaducidad": "2024-03-28",
+      "alergenos": [
+        "Huevos"
+      ],
+      "descripcion": "Huevos camperos tamaño L",
+      "imagen": "huevos-camperos.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 9,
+        "nombre": "Huevos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "10",
+      "nombre": "Pan de Barra",
+      "precio": 1.1,
+      "precioUnitario": "unidad",
+      "stock": 95,
+      "stockMinimo": 35,
+      "categoriaId": 10,
+      "proveedorId": 1,
+      "unidadMedida": "unidad",
+      "marca": "Panadería Artesana",
+      "codigoBarras": "8410001000107",
+      "fechaCaducidad": "2024-03-08",
+      "alergenos": [
+        "Gluten"
+      ],
+      "descripcion": "Pan de barra tradicional",
+      "imagen": "pan-barra.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 10,
+        "nombre": "Panadería"
+      },
+      "proveedor": {
+        "id": 1,
+        "nombre": "Distribuciones Alimentarias Mediterráneo"
+      }
+    },
+    {
+      "id": "11",
+      "nombre": "Aceite de Oliva Virgen Extra",
+      "precio": 8.9,
+      "precioUnitario": "litro",
+      "stock": 60,
+      "stockMinimo": 20,
+      "categoriaId": 11,
+      "proveedorId": 6,
+      "unidadMedida": "litro",
+      "marca": "Oro del Mediterráneo",
+      "codigoBarras": "8410001000114",
+      "fechaCaducidad": "2025-12-15",
+      "alergenos": [],
+      "descripcion": "Aceite de oliva virgen extra arbequina",
+      "imagen": "aceite-oliva.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 11,
+        "nombre": "Aceites y Vinagres"
+      },
+      "proveedor": {
+        "id": 6,
+        "nombre": "Distribuidora de Aceites Oro Verde"
+      }
+    },
+    {
+      "id": "12",
+      "nombre": "Vinagre de Jerez",
+      "precio": 6.4,
+      "precioUnitario": "litro",
+      "stock": 35,
+      "stockMinimo": 12,
+      "categoriaId": 11,
+      "proveedorId": 6,
+      "unidadMedida": "litro",
+      "marca": "Bodegas Tradicionales",
+      "codigoBarras": "8410001000121",
+      "fechaCaducidad": "2026-06-30",
+      "alergenos": [
+        "Sulfitos"
+      ],
+      "descripcion": "Vinagre de Jerez reserva",
+      "imagen": "vinagre-jerez.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 11,
+        "nombre": "Aceites y Vinagres"
+      },
+      "proveedor": {
+        "id": 6,
+        "nombre": "Distribuidora de Aceites Oro Verde"
+      }
+    },
+    {
+      "id": "13",
+      "nombre": "Pimentón de la Vera",
+      "precio": 4.95,
+      "precioUnitario": "100g",
+      "stock": 45,
+      "stockMinimo": 15,
+      "categoriaId": 12,
+      "proveedorId": 7,
+      "unidadMedida": "100g",
+      "marca": "Especias Selectas",
+      "codigoBarras": "8410001000138",
+      "fechaCaducidad": "2025-08-20",
+      "alergenos": [],
+      "descripcion": "Pimentón de la Vera dulce DOP",
+      "imagen": "pimenton-vera.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 12,
+        "nombre": "Especias y Condimentos"
+      },
+      "proveedor": {
+        "id": 7,
+        "nombre": "Especias y Condimentos del Mundo"
+      }
+    },
+    {
+      "id": "14",
+      "nombre": "Azafrán en hebras",
+      "precio": 13.2,
+      "precioUnitario": "1g",
+      "stock": 25,
+      "stockMinimo": 8,
+      "categoriaId": 12,
+      "proveedorId": 7,
+      "unidadMedida": "1g",
+      "marca": "Azafrán Manchego",
+      "codigoBarras": "8410001000145",
+      "fechaCaducidad": "2025-10-15",
+      "alergenos": [],
+      "descripcion": "Azafrán en hebras calidad superior",
+      "imagen": "azafran-hebras.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 12,
+        "nombre": "Especias y Condimentos"
+      },
+      "proveedor": {
+        "id": 7,
+        "nombre": "Especias y Condimentos del Mundo"
+      }
+    },
+    {
+      "id": "15",
+      "nombre": "Vino Tinto Reserva",
+      "precio": 14.8,
+      "precioUnitario": "botella",
+      "stock": 48,
+      "stockMinimo": 18,
+      "categoriaId": 13,
+      "proveedorId": 8,
+      "unidadMedida": "botella",
+      "marca": "Bodegas Riojanas",
+      "codigoBarras": "8410001000152",
+      "fechaCaducidad": "2027-12-31",
+      "alergenos": [
+        "Sulfitos"
+      ],
+      "descripcion": "Vino tinto reserva Rioja DOCa",
+      "imagen": "vino-tinto.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 13,
+        "nombre": "Bebidas"
+      },
+      "proveedor": {
+        "id": 8,
+        "nombre": "Bebidas y Vinos Peninsulares"
+      }
+    },
+    {
+      "id": "16",
+      "nombre": "Agua Mineral",
+      "precio": 0.65,
+      "precioUnitario": "botella",
+      "stock": 200,
+      "stockMinimo": 80,
+      "categoriaId": 13,
+      "proveedorId": 8,
+      "unidadMedida": "botella",
+      "marca": "Fuente Pura",
+      "codigoBarras": "8410001000169",
+      "fechaCaducidad": "2025-05-20",
+      "alergenos": [],
+      "descripcion": "Agua mineral natural 1.5L",
+      "imagen": "agua-mineral.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 13,
+        "nombre": "Bebidas"
+      },
+      "proveedor": {
+        "id": 8,
+        "nombre": "Bebidas y Vinos Peninsulares"
+      }
+    },
+    {
+      "id": "17",
+      "nombre": "Plátanos de Canarias",
+      "precio": 1.95,
+      "precioUnitario": "kg",
+      "stock": 75,
+      "stockMinimo": 25,
+      "categoriaId": 1,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Plátano Canario",
+      "codigoBarras": "8410001000176",
+      "fechaCaducidad": "2024-03-18",
+      "alergenos": [],
+      "descripcion": "Plátanos de Canarias IGP",
+      "imagen": "platanos-canarias.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 1,
+        "nombre": "Frutas Frescas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "18",
+      "nombre": "Naranjas Valencia",
+      "precio": 1.45,
+      "precioUnitario": "kg",
+      "stock": 110,
+      "stockMinimo": 40,
+      "categoriaId": 1,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Cítricos del Mediterráneo",
+      "codigoBarras": "8410001000183",
+      "fechaCaducidad": "2024-03-22",
+      "alergenos": [],
+      "descripcion": "Naranjas de mesa Valencia late",
+      "imagen": "naranjas-valencia.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 1,
+        "nombre": "Frutas Frescas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "19",
+      "nombre": "Zanahorias",
+      "precio": 0.85,
+      "precioUnitario": "kg",
+      "stock": 90,
+      "stockMinimo": 30,
+      "categoriaId": 2,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Huerta Natural",
+      "codigoBarras": "8410001000190",
+      "fechaCaducidad": "2024-03-17",
+      "alergenos": [],
+      "descripcion": "Zanahorias frescas lavadas",
+      "imagen": "zanahorias.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 2,
+        "nombre": "Verduras y Hortalizas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "20",
+      "nombre": "Cebollas",
+      "precio": 0.75,
+      "precioUnitario": "kg",
+      "stock": 130,
+      "stockMinimo": 45,
+      "categoriaId": 2,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Verde Fresco",
+      "codigoBarras": "8410001000206",
+      "fechaCaducidad": "2024-04-05",
+      "alergenos": [],
+      "descripcion": "Cebollas amarillas españolas",
+      "imagen": "cebollas.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 2,
+        "nombre": "Verduras y Hortalizas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "21",
+      "nombre": "Lomo de Cerdo",
+      "precio": 11.9,
+      "precioUnitario": "kg",
+      "stock": 38,
+      "stockMinimo": 15,
+      "categoriaId": 3,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Cárnicas Premium",
+      "codigoBarras": "8410001000213",
+      "fechaCaducidad": "2024-03-13",
+      "alergenos": [],
+      "descripcion": "Lomo de cerdo ibérico",
+      "imagen": "lomo-cerdo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 3,
+        "nombre": "Carnes Rojas"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "22",
+      "nombre": "Chuletas de Cordero",
+      "precio": 16.75,
+      "precioUnitario": "kg",
+      "stock": 22,
+      "stockMinimo": 8,
+      "categoriaId": 3,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Carnes Selectas",
+      "codigoBarras": "8410001000220",
+      "fechaCaducidad": "2024-03-11",
+      "alergenos": [],
+      "descripcion": "Chuletas de cordero lechal",
+      "imagen": "chuletas-cordero.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 3,
+        "nombre": "Carnes Rojas"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "23",
+      "nombre": "Muslos de Pollo",
+      "precio": 5.45,
+      "precioUnitario": "kg",
+      "stock": 55,
+      "stockMinimo": 20,
+      "categoriaId": 4,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Avícola Selecta",
+      "codigoBarras": "8410001000237",
+      "fechaCaducidad": "2024-03-15",
+      "alergenos": [],
+      "descripcion": "Muslos de pollo con piel",
+      "imagen": "muslos-pollo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 4,
+        "nombre": "Aves y Caza"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "24",
+      "nombre": "Pavo Pechuga",
+      "precio": 9.2,
+      "precioUnitario": "kg",
+      "stock": 32,
+      "stockMinimo": 12,
+      "categoriaId": 4,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Avícola Premium",
+      "codigoBarras": "8410001000244",
+      "fechaCaducidad": "2024-03-14",
+      "alergenos": [],
+      "descripcion": "Pechuga de pavo fresca",
+      "imagen": "pechuga-pavo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 4,
+        "nombre": "Aves y Caza"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "25",
+      "nombre": "Merluza Fresca",
+      "precio": 12.8,
+      "precioUnitario": "kg",
+      "stock": 26,
+      "stockMinimo": 10,
+      "categoriaId": 5,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Pescados Frescos",
+      "codigoBarras": "8410001000251",
+      "fechaCaducidad": "2024-03-10",
+      "alergenos": [
+        "Pescado"
+      ],
+      "descripcion": "Merluza del Cantábrico",
+      "imagen": "merluza-fresca.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 5,
+        "nombre": "Pescados Frescos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "26",
+      "nombre": "Lubina Fresca",
+      "precio": 15.9,
+      "precioUnitario": "kg",
+      "stock": 7,
+      "stockMinimo": 8,
+      "categoriaId": 5,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Pescados Mediterráneos",
+      "codigoBarras": "8410001000268",
+      "fechaCaducidad": "2024-03-09",
+      "alergenos": [
+        "Pescado"
+      ],
+      "descripcion": "Lubina de acuicultura",
+      "imagen": "lubina-fresca.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 5,
+        "nombre": "Pescados Frescos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "27",
+      "nombre": "Mejillones",
+      "precio": 8.5,
+      "precioUnitario": "kg",
+      "stock": 11,
+      "stockMinimo": 12,
+      "categoriaId": 6,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Mariscos Gallegos",
+      "codigoBarras": "8410001000275",
+      "fechaCaducidad": "2024-03-12",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "descripcion": "Mejillones de roca gallegos",
+      "imagen": "mejillones.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 6,
+        "nombre": "Mariscos y Crustáceos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "28",
+      "nombre": "Almejas Finas",
+      "precio": 18.75,
+      "precioUnitario": "kg",
+      "stock": 15,
+      "stockMinimo": 6,
+      "categoriaId": 6,
+      "proveedorId": 4,
+      "unidadMedida": "kg",
+      "marca": "Mariscos Selectos",
+      "codigoBarras": "8410001000282",
+      "fechaCaducidad": "2024-03-08",
+      "alergenos": [
+        "Moluscos"
+      ],
+      "descripcion": "Almejas finas de Huelva",
+      "imagen": "almejas-finas.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 6,
+        "nombre": "Mariscos y Crustáceos"
+      },
+      "proveedor": {
+        "id": 4,
+        "nombre": "Pescados y Mariscos Atlántico"
+      }
+    },
+    {
+      "id": "29",
+      "nombre": "Yogur Natural",
+      "precio": 0.45,
+      "precioUnitario": "unidad",
+      "stock": 180,
+      "stockMinimo": 60,
+      "categoriaId": 7,
+      "proveedorId": 5,
+      "unidadMedida": "unidad",
+      "marca": "Lácteos Naturales",
+      "codigoBarras": "8410001000299",
+      "fechaCaducidad": "2024-03-22",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Yogur natural sin azúcar",
+      "imagen": "yogur-natural.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 7,
+        "nombre": "Lácteos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "30",
+      "nombre": "Mantequilla",
+      "precio": 2.85,
+      "precioUnitario": "250g",
+      "stock": 65,
+      "stockMinimo": 20,
+      "categoriaId": 7,
+      "proveedorId": 5,
+      "unidadMedida": "250g",
+      "marca": "Lácteos Puros",
+      "codigoBarras": "8410001000305",
+      "fechaCaducidad": "2024-04-10",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Mantequilla con sal",
+      "imagen": "mantequilla.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 7,
+        "nombre": "Lácteos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "31",
+      "nombre": "Queso Brie",
+      "precio": 12.4,
+      "precioUnitario": "kg",
+      "stock": 28,
+      "stockMinimo": 10,
+      "categoriaId": 8,
+      "proveedorId": 5,
+      "unidadMedida": "kg",
+      "marca": "Quesos Europeos",
+      "codigoBarras": "8410001000312",
+      "fechaCaducidad": "2024-04-05",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Queso brie francés",
+      "imagen": "queso-brie.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 8,
+        "nombre": "Quesos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "32",
+      "nombre": "Queso Cabrales",
+      "precio": 19.8,
+      "precioUnitario": "kg",
+      "stock": 18,
+      "stockMinimo": 6,
+      "categoriaId": 8,
+      "proveedorId": 5,
+      "unidadMedida": "kg",
+      "marca": "Quesos Tradicionales",
+      "codigoBarras": "8410001000329",
+      "fechaCaducidad": "2024-04-15",
+      "alergenos": [
+        "Lácteos"
+      ],
+      "descripcion": "Queso cabrales asturiano DOP",
+      "imagen": "queso-cabrales.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 8,
+        "nombre": "Quesos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "33",
+      "nombre": "Huevos Ecológicos",
+      "precio": 3.45,
+      "precioUnitario": "docena",
+      "stock": 45,
+      "stockMinimo": 15,
+      "categoriaId": 9,
+      "proveedorId": 5,
+      "unidadMedida": "docena",
+      "marca": "Granja Ecológica",
+      "codigoBarras": "8410001000336",
+      "fechaCaducidad": "2024-03-30",
+      "alergenos": [
+        "Huevos"
+      ],
+      "descripcion": "Huevos ecológicos camperos",
+      "imagen": "huevos-ecologicos.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 9,
+        "nombre": "Huevos"
+      },
+      "proveedor": {
+        "id": 5,
+        "nombre": "Lácteos Valle Natural"
+      }
+    },
+    {
+      "id": "34",
+      "nombre": "Pan Integral",
+      "precio": 1.35,
+      "precioUnitario": "unidad",
+      "stock": 70,
+      "stockMinimo": 25,
+      "categoriaId": 10,
+      "proveedorId": 1,
+      "unidadMedida": "unidad",
+      "marca": "Panadería Salud",
+      "codigoBarras": "8410001000343",
+      "fechaCaducidad": "2024-03-09",
+      "alergenos": [
+        "Gluten"
+      ],
+      "descripcion": "Pan integral de centeno",
+      "imagen": "pan-integral.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 10,
+        "nombre": "Panadería"
+      },
+      "proveedor": {
+        "id": 1,
+        "nombre": "Distribuciones Alimentarias Mediterráneo"
+      }
+    },
+    {
+      "id": "35",
+      "nombre": "Baguette",
+      "precio": 0.95,
+      "precioUnitario": "unidad",
+      "stock": 85,
+      "stockMinimo": 30,
+      "categoriaId": 10,
+      "proveedorId": 1,
+      "unidadMedida": "unidad",
+      "marca": "Panadería Francesa",
+      "codigoBarras": "8410001000350",
+      "fechaCaducidad": "2024-03-08",
+      "alergenos": [
+        "Gluten"
+      ],
+      "descripcion": "Baguette tradicional francesa",
+      "imagen": "baguette.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 10,
+        "nombre": "Panadería"
+      },
+      "proveedor": {
+        "id": 1,
+        "nombre": "Distribuciones Alimentarias Mediterráneo"
+      }
+    },
+    {
+      "id": "36",
+      "nombre": "Aceite de Oliva Virgen",
+      "precio": 6.75,
+      "precioUnitario": "litro",
+      "stock": 55,
+      "stockMinimo": 18,
+      "categoriaId": 11,
+      "proveedorId": 6,
+      "unidadMedida": "litro",
+      "marca": "Aceites del Sur",
+      "codigoBarras": "8410001000367",
+      "fechaCaducidad": "2025-10-20",
+      "alergenos": [],
+      "descripcion": "Aceite de oliva virgen andaluz",
+      "imagen": "aceite-virgen.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 11,
+        "nombre": "Aceites y Vinagres"
+      },
+      "proveedor": {
+        "id": 6,
+        "nombre": "Distribuidora de Aceites Oro Verde"
+      }
+    },
+    {
+      "id": "37",
+      "nombre": "Vinagre de Módena",
+      "precio": 5.2,
+      "precioUnitario": "500ml",
+      "stock": 40,
+      "stockMinimo": 12,
+      "categoriaId": 11,
+      "proveedorId": 6,
+      "unidadMedida": "500ml",
+      "marca": "Vinagres Italianos",
+      "codigoBarras": "8410001000374",
+      "fechaCaducidad": "2026-03-15",
+      "alergenos": [
+        "Sulfitos"
+      ],
+      "descripcion": "Vinagre balsámico de Módena IGP",
+      "imagen": "vinagre-modena.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 11,
+        "nombre": "Aceites y Vinagres"
+      },
+      "proveedor": {
+        "id": 6,
+        "nombre": "Distribuidora de Aceites Oro Verde"
+      }
+    },
+    {
+      "id": "38",
+      "nombre": "Orégano",
+      "precio": 2.15,
+      "precioUnitario": "50g",
+      "stock": 60,
+      "stockMinimo": 20,
+      "categoriaId": 12,
+      "proveedorId": 7,
+      "unidadMedida": "50g",
+      "marca": "Especias Mediterráneas",
+      "codigoBarras": "8410001000381",
+      "fechaCaducidad": "2025-07-30",
+      "alergenos": [],
+      "descripcion": "Orégano seco molido",
+      "imagen": "oregano.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 12,
+        "nombre": "Especias y Condimentos"
+      },
+      "proveedor": {
+        "id": 7,
+        "nombre": "Especias y Condimentos del Mundo"
+      }
+    },
+    {
+      "id": "39",
+      "nombre": "Pimienta Negra",
+      "precio": 3.45,
+      "precioUnitario": "50g",
+      "stock": 50,
+      "stockMinimo": 15,
+      "categoriaId": 12,
+      "proveedorId": 7,
+      "unidadMedida": "50g",
+      "marca": "Especias del Mundo",
+      "codigoBarras": "8410001000398",
+      "fechaCaducidad": "2025-09-20",
+      "alergenos": [],
+      "descripcion": "Pimienta negra en grano",
+      "imagen": "pimienta-negra.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 12,
+        "nombre": "Especias y Condimentos"
+      },
+      "proveedor": {
+        "id": 7,
+        "nombre": "Especias y Condimentos del Mundo"
+      }
+    },
+    {
+      "id": "40",
+      "nombre": "Vino Blanco",
+      "precio": 8.9,
+      "precioUnitario": "botella",
+      "stock": 52,
+      "stockMinimo": 18,
+      "categoriaId": 13,
+      "proveedorId": 8,
+      "unidadMedida": "botella",
+      "marca": "Bodegas Rueda",
+      "codigoBarras": "8410001000404",
+      "fechaCaducidad": "2026-08-15",
+      "alergenos": [
+        "Sulfitos"
+      ],
+      "descripcion": "Vino blanco verdejo DOP Rueda",
+      "imagen": "vino-blanco.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 13,
+        "nombre": "Bebidas"
+      },
+      "proveedor": {
+        "id": 8,
+        "nombre": "Bebidas y Vinos Peninsulares"
+      }
+    },
+    {
+      "id": "41",
+      "nombre": "Cerveza Rubia",
+      "precio": 1.2,
+      "precioUnitario": "botella",
+      "stock": 160,
+      "stockMinimo": 50,
+      "categoriaId": 13,
+      "proveedorId": 8,
+      "unidadMedida": "botella",
+      "marca": "Cervezas Artesanas",
+      "codigoBarras": "8410001000411",
+      "fechaCaducidad": "2024-09-30",
+      "alergenos": [
+        "Gluten"
+      ],
+      "descripcion": "Cerveza rubia artesanal",
+      "imagen": "cerveza-rubia.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 13,
+        "nombre": "Bebidas"
+      },
+      "proveedor": {
+        "id": 8,
+        "nombre": "Bebidas y Vinos Peninsulares"
+      }
+    },
+    {
+      "id": "42",
+      "nombre": "Refresco de Cola",
+      "precio": 0.85,
+      "precioUnitario": "lata",
+      "stock": 220,
+      "stockMinimo": 80,
+      "categoriaId": 13,
+      "proveedorId": 8,
+      "unidadMedida": "lata",
+      "marca": "Refrescos Nacionales",
+      "codigoBarras": "8410001000428",
+      "fechaCaducidad": "2024-12-15",
+      "alergenos": [],
+      "descripcion": "Refresco de cola 33cl",
+      "imagen": "refresco-cola.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 13,
+        "nombre": "Bebidas"
+      },
+      "proveedor": {
+        "id": 8,
+        "nombre": "Bebidas y Vinos Peninsulares"
+      }
+    },
+    {
+      "id": "43",
+      "nombre": "Manzanas Golden",
+      "precio": 1.75,
+      "precioUnitario": "kg",
+      "stock": 95,
+      "stockMinimo": 30,
+      "categoriaId": 1,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Frutas del Valle",
+      "codigoBarras": "8410001000435",
+      "fechaCaducidad": "2024-03-25",
+      "alergenos": [],
+      "descripcion": "Manzanas golden delicious",
+      "imagen": "manzanas-golden.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 1,
+        "nombre": "Frutas Frescas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "44",
+      "nombre": "Peras Conferencia",
+      "precio": 2.1,
+      "precioUnitario": "kg",
+      "stock": 70,
+      "stockMinimo": 25,
+      "categoriaId": 1,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Frutas Selectas",
+      "codigoBarras": "8410001000442",
+      "fechaCaducidad": "2024-03-22",
+      "alergenos": [],
+      "descripcion": "Peras conferencia extra",
+      "imagen": "peras-conferencia.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 1,
+        "nombre": "Frutas Frescas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "45",
+      "nombre": "Pimientos Rojos",
+      "precio": 2.45,
+      "precioUnitario": "kg",
+      "stock": 65,
+      "stockMinimo": 20,
+      "categoriaId": 2,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Huerta Natural",
+      "codigoBarras": "8410001000459",
+      "fechaCaducidad": "2024-03-19",
+      "alergenos": [],
+      "descripcion": "Pimientos rojos asar",
+      "imagen": "pimientos-rojos.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 2,
+        "nombre": "Verduras y Hortalizas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "46",
+      "nombre": "Patatas",
+      "precio": 0.65,
+      "precioUnitario": "kg",
+      "stock": 180,
+      "stockMinimo": 60,
+      "categoriaId": 2,
+      "proveedorId": 2,
+      "unidadMedida": "kg",
+      "marca": "Tubérculos Frescos",
+      "codigoBarras": "8410001000466",
+      "fechaCaducidad": "2024-04-10",
+      "alergenos": [],
+      "descripcion": "Patatas gallegas extra",
+      "imagen": "patatas.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 2,
+        "nombre": "Verduras y Hortalizas"
+      },
+      "proveedor": {
+        "id": 2,
+        "nombre": "Frutas y Verduras Frescas SL"
+      }
+    },
+    {
+      "id": "47",
+      "nombre": "Filetes de Ternera",
+      "precio": 19.5,
+      "precioUnitario": "kg",
+      "stock": 30,
+      "stockMinimo": 10,
+      "categoriaId": 3,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Carnes Premium",
+      "codigoBarras": "8410001000473",
+      "fechaCaducidad": "2024-03-13",
+      "alergenos": [],
+      "descripcion": "Filetes de ternera añojo",
+      "imagen": "filetes-ternera.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 3,
+        "nombre": "Carnes Rojas"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "48",
+      "nombre": "Costillas de Cerdo",
+      "precio": 8.95,
+      "precioUnitario": "kg",
+      "stock": 42,
+      "stockMinimo": 15,
+      "categoriaId": 3,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Cárnicas Selectas",
+      "codigoBarras": "8410001000480",
+      "fechaCaducidad": "2024-03-14",
+      "alergenos": [],
+      "descripcion": "Costillas de cerdo ibérico",
+      "imagen": "costillas-cerdo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 3,
+        "nombre": "Carnes Rojas"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "49",
+      "nombre": "Alitas de Pollo",
+      "precio": 4.25,
+      "precioUnitario": "kg",
+      "stock": 58,
+      "stockMinimo": 20,
+      "categoriaId": 4,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Avícola Express",
+      "codigoBarras": "8410001000497",
+      "fechaCaducidad": "2024-03-16",
+      "alergenos": [],
+      "descripcion": "Alitas de pollo para barbacoa",
+      "imagen": "alitas-pollo.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 4,
+        "nombre": "Aves y Caza"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    },
+    {
+      "id": "50",
+      "nombre": "Codornices",
+      "precio": 14.2,
+      "precioUnitario": "kg",
+      "stock": 16,
+      "stockMinimo": 6,
+      "categoriaId": 4,
+      "proveedorId": 3,
+      "unidadMedida": "kg",
+      "marca": "Aves de Caza",
+      "codigoBarras": "8410001000503",
+      "fechaCaducidad": "2024-03-12",
+      "alergenos": [],
+      "descripcion": "Codornices limpias listas para cocinar",
+      "imagen": "codornices.jpg",
+      "activo": true,
+      "categoria": {
+        "id": 4,
+        "nombre": "Aves y Caza"
+      },
+      "proveedor": {
+        "id": 3,
+        "nombre": "Carnicerías Selectas del Norte"
+      }
+    }
+  ]
+}

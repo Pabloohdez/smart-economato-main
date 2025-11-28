@@ -1,0 +1,121 @@
+h1 {
+    text-align: center;
+    color: rgb(179, 49, 49);
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.controless {
+    margin-bottom: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Inputs y Selects */
+input[type="text"], 
+select {
+    padding: 10px 15px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    outline: none;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    background-color: #fff;
+}
+
+input[type="text"]:focus, 
+select:focus {
+    border-color: rgb(179, 49, 49);
+    box-shadow: 0 0 0 3px rgba(179, 49, 49, 0.1);
+}
+
+/* Botones */
+button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: rgb(179, 49, 49);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #8f2323;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* Tabla Mejorada */
+table {
+    width: 100%;
+    border-collapse: separate; /* Necesario para bordes redondeados */
+    border-spacing: 0;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+
+th,
+td {
+    padding: 16px 24px; /* Más espacio para que no se vea pegado */
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+th {
+    background: #b33131;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: none;
+}
+
+/* Filas */
+tbody tr {
+    transition: background-color 0.2s;
+}
+
+tbody tr:hover {
+    background-color: #fff5f5; /* Color suave al pasar el ratón */
+}
+
+/* Última fila sin borde inferior */
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Alertas de stock */
+tr.alerta {
+    background: #fff0f0;
+    color: #c53030;
+}
+
+tr.alerta td {
+    border-bottom: 1px solid #fed7d7;
+}
+
+tr.alerta:hover {
+    background-color: #ffe4e4;
+}
+
+/* Pie de tabla */
+tfoot td {
+    font-weight: 600;
+    background: #f9fafb;
+    color: #374151;
+    text-align: right;
+    padding: 20px;
+    border-top: 2px solid #e5e7eb;
+}

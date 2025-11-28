@@ -1,0 +1,5 @@
+{
+"scripts": {
+  "server": "json-server --watch assets/data/db.json --port 4000"
+}
+}

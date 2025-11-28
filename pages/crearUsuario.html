@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro | Smart Economato</title>
+    <link rel="stylesheet" href="../assets/css/login.css">
+</head>
+<body>
+    <div class="header">
+        <img src="../assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png" alt="Virgen de la Candelaria" class="logo">
+        <a href="../index.html" style="font-size: 24px; color: #b33131; text-decoration: none;">&#8592;</a>
+    </div>
+
+    <div class="container">
+        <h2 class="form-title">Crear Cuenta</h2>
+        <form class="formulario" id="formu">
+            <input type="text" id="user-box1" name="Usuario" placeholder="Nombre de usuario" class="user" required>
+            <input type="password" id="user-box2" name="Contraseña" placeholder="Contraseña" class="user" required>
+            
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <input type="text" id="user-box3" name="Nombre" placeholder="Nombre" class="user" required>
+                <input type="text" id="user-box4" name="Apellidos" placeholder="Apellidos" class="user" required>
+            </div>
+
+            <input type="email" id="user-box5" name="email" placeholder="Correo electrónico" class="user" required>
+            <input type="tel" id="user-box6" name="Nº Teléfono" placeholder="Teléfono" class="user" required>
+
+            <input type="submit" value="Registrarse" class="user entrar">
+        </form>
+
+        <p id="mensaje" class="resp" style="min-height: 20px; margin-top: 10px;"></p>
+        
+        <a href="../index.html">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+    
+    <footer>© 2025 Pablo Hdez. Todos los derechos reservados.</footer>
+
+    <script src="../src/utils/crearUsuario.js"></script>
+
+</body>
+</html>

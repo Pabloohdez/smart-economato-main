@@ -1,0 +1,42 @@
+<h1>INVENTARIO</h1>
+
+<div class="controless">
+  <input type="text" id="busqueda" placeholder="Buscar producto..." />
+  <button id="btnBuscar">Buscar</button>
+
+  <select id="categoriaSelect">
+    <option value="">Cargando categorías...</option>
+  </select>
+  
+  <select id="proveedorSelect">
+    <option value="">Cargando proveedores...</option>
+  </select>
+ 
+  <select id="ordenSelect">
+    <option value="asc">Precio ascendente</option>
+    <option value="desc">Precio descendente</option>
+  </select>
+ 
+  <button id="btnStock">Stock Bajo</button>
+  <button id="btnMostrarTodos">Limpiar Filtros</button>
+  <button id="btnIngresar">Ingresar Producto</button>
+</div>
+
+<table id="tablaProductos">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Categoría</th>
+      <th>Precio (€)</th>
+      <th>Stock</th>
+      <th>Stock Mín.</th>
+      <th>Proveedor</th>
+    </tr>
+  </thead>
+  <tbody>
+    </tbody>
+  <tfoot>
+    <tr><td colspan="7" id="resumen"></td></tr>
+  </tfoot>
+</table>

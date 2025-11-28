@@ -1,0 +1,227 @@
+/* --- CONFIGURACIÓN GENERAL --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary-color: #b33131;       /* Rojo corporativo */
+    --primary-light: #fff0f0;       /* Fondo rojo muy suave para hovers */
+    --text-dark: #2d3748;
+    --text-muted: #718096;
+    --bg-body: #f7fafc;             /* Gris muy claro para el fondo general */
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --sidebar-width: 260px;
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-dark);
+    display: flex;
+    height: 100vh;
+    overflow: hidden; /* Evita doble scroll */
+}
+
+/* --- BARRA LATERAL (SIDEBAR) --- */
+.menu {
+    width: var(--sidebar-width);
+    background: var(--glass-bg);
+    border-right: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    transition: transform 0.3s ease;
+    z-index: 100;
+    box-shadow: var(--shadow-soft);
+}
+
+.menu-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-menu {
+    max-width: 140px;
+    height: auto;
+}
+
+/* Enlaces del menú */
+.menu nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.menu a {
+    text-decoration: none;
+    color: var(--text-muted);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+}
+
+/* Iconos (usaremos FontAwesome en el HTML) */
+.menu a i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+/* Estados Hover y Activo */
+.menu a:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+    transform: translateX(4px);
+}
+
+.menu a.activo {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(179, 49, 49, 0.3);
+}
+
+/* Botón de Salir (abajo) */
+.logout-btn {
+    margin-top: auto;
+    color: #e53e3e !important;
+    border: 1px solid rgba(229, 62, 62, 0.2);
+}
+
+.logout-btn:hover {
+    background-color: #fff5f5 !important;
+}
+
+/* --- ÁREA DE CONTENIDO PRINCIPAL --- */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Header superior (Top Bar) */
+.top-bar {
+    height: 70px;
+    background: rgba(255,255,255,0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 30px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.top-bar h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Contenedor dinámico (donde carga inicio.html) */
+#content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    background: radial-gradient(circle at top right, #fff0f0 0%, transparent 40%);
+}
+
+/* --- ESTILOS PARA LAS TARJETAS (INICIO.HTML) --- */
+/* Esto arregla el diseño de inicio.html para que sea llamativo */
+.grid-acciones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+    padding-bottom: 40px;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.accion {
+    background: white;
+    padding: 25px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-dark);
+    box-shadow: var(--shadow-card);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0,0,0,0.02);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
+.accion:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: var(--primary-light);
+}
+
+.accion h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    font-size: 18px;
+}
+
+.accion p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Animación de entrada */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .menu {
+        position: absolute;
+        height: 100%;
+        transform: translateX(-100%);
+        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+    }
+    .menu.open {
+        transform: translateX(0);
+    }
+    .top-bar {
+        padding: 0 15px;
+    }
+}

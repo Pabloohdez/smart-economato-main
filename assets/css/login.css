@@ -1,0 +1,207 @@
+/* Importamos la fuente Poppins de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+    --primary-color: #b33131;
+    --primary-dark: #8a2be2; /* Un toque moderno o usar un rojo más oscuro #801f1f */
+    --primary-hover: #8f2323;
+    --bg-gradient: linear-gradient(135deg, #fff0f0 0%, #ffdada 100%);
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.6);
+    --shadow: 0 8px 32px 0 rgba(179, 49, 49, 0.15);
+    --text-color: #333;
+    --text-light: #666;
+}
+
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    overflow-x: hidden;
+}
+
+/* Fondo decorativo (círculos difuminados detrás) */
+body::before {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(#ffc2c2, transparent 70%);
+    top: -100px;
+    left: -100px;
+    z-index: -1;
+    opacity: 0.6;
+}
+
+body::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(#ffc2c2, transparent 70%);
+    bottom: -50px;
+    right: -50px;
+    z-index: -1;
+    opacity: 0.6;
+}
+
+/* Header */
+.header {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    width: calc(100% - 80px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+}
+
+.logo {
+    width: 160px; /* Un poco más discreto */
+    height: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+/* Contenedor principal con efecto Glassmorphism */
+.container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    width: 100%;
+    max-width: 380px; /* Un poco más ancho */
+    position: relative;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Título opcional dentro del form */
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+/* Campos de texto modernizados */
+.user {
+    width: 100%;
+    box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid transparent;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.user::placeholder {
+    color: #aaa;
+}
+
+.user:focus {
+    background-color: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
+    outline: none;
+}
+
+/* Botón Entrar */
+.entrar {
+    margin-top: 10px;
+    background: var(--primary-color);
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
+}
+
+.entrar:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
+}
+
+.entrar:active {
+    transform: translateY(0);
+}
+
+/* Enlaces y textos pequeños */
+p, a {
+    font-size: 13px;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: color 0.3s;
+    margin-top: 15px;
+    display: inline-block;
+}
+
+p:hover, a:hover {
+    color: var(--primary-color);
+}
+
+.resp {
+    margin-top: 10px;
+    min-height: 20px; /* Evita saltos si está vacío */
+    font-size: 14px;
+}
+
+/* Footer */
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 15px 0;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    color: #777;
+    font-size: 12px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .container {
+        width: 85%;
+        padding: 30px 20px;
+    }
+    .header {
+        top: 10px;
+        left: 20px;
+    }
+}
