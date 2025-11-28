@@ -41,10 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuLinks = document.querySelectorAll(".menu a[data-page]");
     menuLinks.forEach((l) => l.classList.remove("activo"));
     
-    // Si el link clickeado pertenece al menú, lo activamos
-    // Si no (ej: botón dentro de inventario), buscamos si tiene "padre" en el menú
+    // ✅ AJUSTE: Si viene de "ingresarProductos", activamos "Inventario" en el menú
+    let pageKeyForMenu = pageKey;
+    if (pageKey === "ingresarproductos") {
+      pageKeyForMenu = "inventario";
+    }
+    
     const activeMenuLink = Array.from(menuLinks).find(
-      link => link.dataset.page.toLowerCase() === pageKey
+      link => link.dataset.page.toLowerCase() === pageKeyForMenu
     );
     if (activeMenuLink) activeMenuLink.classList.add("activo");
 
@@ -52,9 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let fileName = pageName; 
     
     // AJUSTES MANUALES:
-    if (pageKey === "inicio") fileName = "inicio";         // inicio.html (minúscula)
-    if (pageKey === "inventario") fileName = "Inventario"; // Inventario.html (Mayúscula)
-    // ingresarProductos funciona directo porque coincide data-page="ingresarProductos" con el archivo
+    if (pageKey === "inicio") fileName = "inicio";         
+    if (pageKey === "inventario") fileName = "Inventario"; 
+    if (pageKey === "ingresarproductos") fileName = "ingresarProductos"; // ✅ Añadido
 
     // 1.3 Carga de contenido
     try {
@@ -111,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Iniciando aplicación...");
   
   // Buscamos ESPECÍFICAMENTE el enlace del menú que lleva a Inicio
-  // Usamos '.menu' para asegurar que no clickamos un botón perdido
   const inicioLink = document.querySelector('.menu a[data-page="Inicio"]') || 
                      document.querySelector('.menu a[data-page="inicio"]');
 

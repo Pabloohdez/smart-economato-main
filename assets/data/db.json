@@ -1638,6 +1638,24 @@
         "id": 3,
         "nombre": "Carnicerías Selectas del Norte"
       }
+    },
+    {
+      "id": "4cb6",
+      "nombre": "qw",
+      "precio": 1,
+      "precioUnitario": "unidad",
+      "stock": 1,
+      "stockMinimo": 2,
+      "categoriaId": "2",
+      "proveedorId": "1",
+      "unidadMedida": "unidad",
+      "marca": "Sin marca",
+      "codigoBarras": "8410001805098",
+      "fechaCaducidad": "2024-12-31",
+      "alergenos": [],
+      "descripcion": "",
+      "imagen": "producto-generico.jpg",
+      "activo": true
     }
   ]
 }
