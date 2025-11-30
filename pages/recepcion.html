@@ -1,0 +1,154 @@
+<link rel="stylesheet" href="assets/css/recepcion.css">
+
+<div class="header-recepcion">
+    <div>
+        <h1 class="titulo-recepcion">
+            <i class="fa-solid fa-truck-ramp-box"></i> RECEPCIÓN DE MERCANCÍA
+        </h1>
+        <p class="subtitulo">Registra las entregas de proveedores y actualiza el inventario</p>
+    </div>
+    <div class="info-fecha">
+        <i class="fa-solid fa-calendar"></i>
+        <span id="fechaActual"></span>
+    </div>
+</div>
+
+<!-- Panel de Búsqueda de Producto -->
+<div class="panel-busqueda">
+    <h3 class="titulo-seccion">
+        <i class="fa-solid fa-magnifying-glass"></i> Buscar Producto
+    </h3>
+    
+    <div class="controles-busqueda">
+        <div class="campo-busqueda">
+            <input 
+                type="text" 
+                id="inputBusquedaProducto" 
+                class="input-busqueda" 
+                placeholder="Escribe el nombre del producto o escanea código de barras..."
+            >
+            <button id="btnBuscarProducto" class="btn-buscar-producto">
+                <i class="fa-solid fa-search"></i> Buscar
+            </button>
+        </div>
+        
+        <div class="filtros-rapidos">
+            <select id="selectProveedorFiltro" class="select-filtro">
+                <option value="">Todos los proveedores</option>
+            </select>
+            <select id="selectCategoriaFiltro" class="select-filtro">
+                <option value="">Todas las categorías</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Resultados de búsqueda -->
+    <div id="resultadosBusqueda" class="resultados-busqueda oculto"></div>
+</div>
+
+<!-- Panel de Recepción Activa -->
+<div class="panel-recepcion">
+    <div class="header-panel-recepcion">
+        <h3 class="titulo-seccion">
+            <i class="fa-solid fa-clipboard-check"></i> Recepción Actual
+        </h3>
+        <div class="info-proveedor" id="infoProveedor">
+            <span class="label-proveedor">Proveedor:</span>
+            <span id="nombreProveedorActual" class="nombre-proveedor">Sin seleccionar</span>
+        </div>
+    </div>
+
+    <!-- Tabla de productos recepcionados -->
+    <div class="tabla-wrapper">
+        <table id="tablaRecepcion" class="tabla-recepcion">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Proveedor</th>
+                    <th>Stock Actual</th>
+                    <th>Cantidad Recibida</th>
+                    <th>Nuevo Stock</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyRecepcion">
+                <tr class="fila-vacia">
+                    <td colspan="8">
+                        <div class="mensaje-vacio">
+                            <i class="fa-solid fa-inbox"></i>
+                            <p>No hay productos en la recepción actual</p>
+                            <small>Busca y selecciona productos para comenzar</small>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot id="tfootRecepcion" class="oculto">
+                <tr class="fila-total">
+                    <td colspan="6"><strong>TOTAL DE LA RECEPCIÓN</strong></td>
+                    <td id="totalRecepcion" class="total-valor">0.00 €</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Panel de Observaciones y Acciones -->
+<div class="panel-acciones">
+    <div class="campo-observaciones">
+        <label class="label-observaciones">
+            <i class="fa-solid fa-note-sticky"></i> Observaciones / Notas
+        </label>
+        <textarea 
+            id="textareaObservaciones" 
+            class="textarea-observaciones" 
+            placeholder="Añade notas sobre esta recepción (opcional)..."
+            rows="3"
+        ></textarea>
+    </div>
+
+    <div class="botones-finales">
+        <button id="btnCancelarRecepcion" class="btn-accion btn-cancelar oculto">
+            <i class="fa-solid fa-xmark"></i> Cancelar Recepción
+        </button>
+        <button id="btnGuardarRecepcion" class="btn-accion btn-guardar-recepcion oculto">
+            <i class="fa-solid fa-check-circle"></i> CONFIRMAR RECEPCIÓN
+        </button>
+    </div>
+</div>
+
+<!-- Mensaje de estado -->
+<div id="mensajeEstadoRecepcion" class="mensaje-estado"></div>
+
+<!-- Modal para cantidad rápida -->
+<div id="modalCantidad" class="modal-overlay oculto">
+    <div class="modal-contenido">
+        <h3>
+            <i class="fa-solid fa-box-open"></i> 
+            Cantidad Recibida
+        </h3>
+        <p id="modalNombreProducto" class="modal-producto-nombre"></p>
+        
+        <div class="modal-input-group">
+            <label>Cantidad:</label>
+            <input 
+                type="number" 
+                id="modalInputCantidad" 
+                class="modal-input-cantidad" 
+                min="1" 
+                value="1"
+            >
+        </div>
+        
+        <div class="modal-botones">
+            <button id="btnModalCancelar" class="btn-modal btn-modal-cancelar">
+                Cancelar
+            </button>
+            <button id="btnModalConfirmar" class="btn-modal btn-modal-confirmar">
+                Añadir
+            </button>
+        </div>
+    </div>
+</div>

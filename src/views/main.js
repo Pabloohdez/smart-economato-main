@@ -34,14 +34,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     e.preventDefault();
 
-    const pageName = targetLink.dataset.page; // Ej: "Inicio", "Inventario", "ingresarProductos"
-    const pageKey = pageName.toLowerCase();   // Ej: "inicio", "inventario", "ingresarproductos"
+    const pageName = targetLink.dataset.page;
+    const pageKey = pageName.toLowerCase();
 
-    // 1.1 Gestión visual del menú (solo si el link está en la barra lateral)
+    // 1.1 Gestión visual del menú
     const menuLinks = document.querySelectorAll(".menu a[data-page]");
     menuLinks.forEach((l) => l.classList.remove("activo"));
     
-    // ✅ AJUSTE: Si viene de "ingresarProductos", activamos "Inventario" en el menú
+    // Ajuste para páginas relacionadas
     let pageKeyForMenu = pageKey;
     if (pageKey === "ingresarproductos") {
       pageKeyForMenu = "inventario";
@@ -52,13 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
     );
     if (activeMenuLink) activeMenuLink.classList.add("activo");
 
-    // 1.2 Mapeo de Nombres de Archivo (Para corregir mayúsculas/minúsculas)
+    // 1.2 Mapeo de Nombres de Archivo
     let fileName = pageName; 
     
-    // AJUSTES MANUALES:
-    if (pageKey === "inicio") fileName = "inicio";         
-    if (pageKey === "inventario") fileName = "Inventario"; 
-    if (pageKey === "ingresarproductos") fileName = "ingresarProductos"; // ✅ Añadido
+    if (pageKey === "inicio") fileName = "inicio";
+    if (pageKey === "inventario") fileName = "Inventario";
+    if (pageKey === "ingresarproductos") fileName = "ingresarProductos";
+    if (pageKey === "recepcion") fileName = "Recepcion";
+    if (pageKey === "bajas") fileName = "Bajas";
+    if (pageKey === "configuracion") fileName = "Configuracion";
 
     // 1.3 Carga de contenido
     try {
@@ -71,18 +73,41 @@ document.addEventListener("DOMContentLoaded", () => {
       // 1.4 Lógica por página
       switch (pageKey) {
         case "inventario":
-          renderizarTabla([]); // Limpia visualmente antes de cargar
+          renderizarTabla([]);
           await cargarDatos();
           inicializarEventos();
           break;
 
         case "ingresarproductos": 
-          // Carga dinámica (Lazy Load) para evitar errores si el archivo falla
           import("../controllers/ingresoController.js")
             .then(module => {
                 if (module.initIngreso) module.initIngreso();
             })
             .catch(err => console.error("Error cargando controlador de ingreso:", err));
+          break;
+
+        case "recepcion":
+          import("../controllers/recepcionController.js")
+            .then(module => {
+                if (module.initRecepcion) module.initRecepcion();
+            })
+            .catch(err => console.error("Error cargando controlador de recepción:", err));
+          break;
+
+        case "bajas":
+          import("../controllers/bajasController.js")
+            .then(module => {
+                if (module.initBajas) module.initBajas();
+            })
+            .catch(err => console.error("Error cargando controlador de bajas:", err));
+          break;
+
+        case "configuracion":
+          import("../controllers/configuracionController.js")
+            .then(module => {
+                if (module.initConfiguracion) module.initConfiguracion();
+            })
+            .catch(err => console.error("Error cargando controlador de configuración:", err));
           break;
           
         default:
@@ -114,14 +139,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- 3. ARRANQUE AUTOMÁTICO (Dashboard) ---
   console.log("Iniciando aplicación...");
   
-  // Buscamos ESPECÍFICAMENTE el enlace del menú que lleva a Inicio
   const inicioLink = document.querySelector('.menu a[data-page="Inicio"]') || 
                      document.querySelector('.menu a[data-page="inicio"]');
 
   if (inicioLink) {
     inicioLink.click();
   } else {
-    // Si falla, carga manual de emergencia
     console.warn("No se encontró el link 'Inicio' en el menú. Cargando manual.");
     fetch('pages/inicio.html')
       .then(res => res.text())

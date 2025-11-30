@@ -44,4 +44,30 @@ export async function crearProducto(producto) {
     }
 }
 
+export async function actualizarProducto(id, producto) {
+    try {
+        console.log(`📤 Actualizando producto ${id}:`, producto);
+        
+        const response = await fetch(`${API_URL}/productos/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(producto)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+        
+        const resultado = await response.json();
+        console.log("✅ Producto actualizado:", resultado);
+        return resultado;
+    } catch (error) {
+        console.error("❌ API Error:", error);
+        throw error;
+    }
+}
+
 export { getProductos, getCategorias, getProveedores };

@@ -1,0 +1,233 @@
+<link rel="stylesheet" href="assets/css/bajas.css">
+
+<div class="header-bajas">
+    <div>
+        <h1 class="titulo-bajas">
+            <i class="fa-solid fa-circle-exclamation"></i> GESTIÓN DE BAJAS
+        </h1>
+        <p class="subtitulo">Registra roturas, caducados, mermas y ajustes de inventario</p>
+    </div>
+    <div class="info-fecha">
+        <i class="fa-solid fa-calendar"></i>
+        <span id="fechaActualBajas"></span>
+    </div>
+</div>
+
+<!-- Estadísticas Rápidas -->
+<div class="stats-container">
+    <div class="stat-card stat-roturas">
+        <div class="stat-icon">
+            <i class="fa-solid fa-hammer"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Roturas del Mes</span>
+            <span class="stat-valor" id="statRoturas">0</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-caducados">
+        <div class="stat-icon">
+            <i class="fa-solid fa-clock"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Productos Caducados</span>
+            <span class="stat-valor" id="statCaducados">0</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-mermas">
+        <div class="stat-icon">
+            <i class="fa-solid fa-scale-unbalanced"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Mermas Registradas</span>
+            <span class="stat-valor" id="statMermas">0</span>
+        </div>
+    </div>
+    
+    <div class="stat-card stat-valor-perdido">
+        <div class="stat-icon">
+            <i class="fa-solid fa-euro-sign"></i>
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">Valor Perdido Total</span>
+            <span class="stat-valor" id="statValorPerdido">0.00 €</span>
+        </div>
+    </div>
+</div>
+
+<!-- Panel de Búsqueda y Registro -->
+<div class="panel-registro-baja">
+    <h3 class="titulo-seccion">
+        <i class="fa-solid fa-clipboard-list"></i> Registrar Nueva Baja
+    </h3>
+    
+    <div class="controles-registro">
+        <!-- Búsqueda de producto -->
+        <div class="campo-busqueda-baja">
+            <input 
+                type="text" 
+                id="inputBusquedaBaja" 
+                class="input-busqueda-baja" 
+                placeholder="Buscar producto por nombre o código de barras..."
+            >
+            <button id="btnBuscarBaja" class="btn-buscar-baja">
+                <i class="fa-solid fa-search"></i> Buscar
+            </button>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="filtros-baja">
+            <select id="selectCategoriaBaja" class="select-filtro-baja">
+                <option value="">Todas las categorías</option>
+            </select>
+            
+            <button id="btnProductosCaducados" class="btn-filtro-especial">
+                <i class="fa-solid fa-clock"></i> Ver Productos Próximos a Caducar
+            </button>
+        </div>
+    </div>
+
+    <!-- Resultados de búsqueda -->
+    <div id="resultadosBusquedaBaja" class="resultados-busqueda-baja oculto"></div>
+</div>
+
+<!-- Panel de Baja Activa -->
+<div class="panel-baja-activa">
+    <h3 class="titulo-seccion">
+        <i class="fa-solid fa-file-lines"></i> Registro de Baja Actual
+    </h3>
+
+    <!-- Tabla de productos dados de baja -->
+    <div class="tabla-wrapper">
+        <table id="tablaBajas" class="tabla-bajas">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Tipo de Baja</th>
+                    <th>Stock Actual</th>
+                    <th>Cantidad Baja</th>
+                    <th>Stock Final</th>
+                    <th>Precio Unit.</th>
+                    <th>Valor Perdido</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyBajas">
+                <tr class="fila-vacia">
+                    <td colspan="8">
+                        <div class="mensaje-vacio">
+                            <i class="fa-solid fa-inbox"></i>
+                            <p>No hay productos registrados en esta baja</p>
+                            <small>Busca y selecciona productos para comenzar</small>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tfoot id="tfootBajas" class="oculto">
+                <tr class="fila-total-baja">
+                    <td colspan="6"><strong>VALOR TOTAL DE BAJAS</strong></td>
+                    <td id="totalValorBajas" class="total-valor-baja">0.00 €</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<!-- Panel de Motivo y Acciones -->
+<div class="panel-acciones-baja">
+    <div class="campo-motivo">
+        <label class="label-motivo">
+            <i class="fa-solid fa-message"></i> Motivo / Descripción Detallada
+        </label>
+        <textarea 
+            id="textareaMotivoBaja" 
+            class="textarea-motivo" 
+            placeholder="Describe el motivo de las bajas (opcional pero recomendado)..."
+            rows="3"
+        ></textarea>
+    </div>
+
+    <div class="botones-finales-baja">
+        <button id="btnCancelarBaja" class="btn-accion-baja btn-cancelar-baja oculto">
+            <i class="fa-solid fa-xmark"></i> Cancelar Registro
+        </button>
+        <button id="btnConfirmarBaja" class="btn-accion-baja btn-confirmar-baja oculto">
+            <i class="fa-solid fa-triangle-exclamation"></i> CONFIRMAR BAJAS
+        </button>
+    </div>
+</div>
+
+<!-- Mensaje de estado -->
+<div id="mensajeEstadoBajas" class="mensaje-estado-bajas"></div>
+
+<!-- Historial de Bajas -->
+<div class="panel-historial">
+    <div class="header-historial">
+        <h3 class="titulo-seccion">
+            <i class="fa-solid fa-clock-rotate-left"></i> Historial de Bajas
+        </h3>
+        <div class="filtros-historial">
+            <select id="selectFiltroTipoBaja" class="select-filtro-historial">
+                <option value="">Todos los tipos</option>
+                <option value="Rotura">Roturas</option>
+                <option value="Caducado">Caducados</option>
+                <option value="Merma">Mermas</option>
+                <option value="Ajuste">Ajustes</option>
+                <option value="Otro">Otros</option>
+            </select>
+        </div>
+    </div>
+    
+    <div id="contenedorHistorial" class="contenedor-historial">
+        <p style="text-align: center; color: #a0aec0; padding: 20px;">
+            El historial de bajas aparecerá aquí (funcionalidad pendiente de implementar con backend completo)
+        </p>
+    </div>
+</div>
+
+<!-- Modal para detalles de baja -->
+<div id="modalDetalleBaja" class="modal-overlay oculto">
+    <div class="modal-contenido-baja">
+        <h3>
+            <i class="fa-solid fa-circle-minus"></i> 
+            Detalles de la Baja
+        </h3>
+        <p id="modalNombreProductoBaja" class="modal-producto-nombre-baja"></p>
+        
+        <div class="modal-campos-baja">
+            <div class="modal-campo">
+                <label>Tipo de Baja:</label>
+                <select id="modalSelectTipoBaja" class="modal-select-tipo">
+                    <option value="Rotura">Rotura</option>
+                    <option value="Caducado">Caducado</option>
+                    <option value="Merma">Merma</option>
+                    <option value="Ajuste">Ajuste de Inventario</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            
+            <div class="modal-campo">
+                <label>Cantidad:</label>
+                <input 
+                    type="number" 
+                    id="modalInputCantidadBaja" 
+                    class="modal-input-cantidad-baja" 
+                    min="1" 
+                    value="1"
+                >
+                <small id="modalStockDisponible" class="stock-disponible-info"></small>
+            </div>
+        </div>
+        
+        <div class="modal-botones-baja">
+            <button id="btnModalCancelarBaja" class="btn-modal-baja btn-modal-cancelar-baja">
+                Cancelar
+            </button>
+            <button id="btnModalConfirmarBaja" class="btn-modal-baja btn-modal-confirmar-baja">
+                Registrar Baja
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,276 @@
+<link rel="stylesheet" href="assets/css/configuracion.css">
+
+<div class="header-configuracion">
+    <h1 class="titulo-configuracion">
+        <i class="fa-solid fa-gear"></i> CONFIGURACIÓN DE PERFIL
+    </h1>
+    <p class="subtitulo">Gestiona tu información personal y configuración de alergias</p>
+</div>
+
+<!-- Tabs de Navegación -->
+<div class="tabs-navegacion">
+    <button class="tab-btn activo" data-tab="perfil">
+        <i class="fa-solid fa-user"></i> Perfil
+    </button>
+    <button class="tab-btn" data-tab="alergias">
+        <i class="fa-solid fa-triangle-exclamation"></i> Alergias
+    </button>
+    <button class="tab-btn" data-tab="notificaciones">
+        <i class="fa-solid fa-bell"></i> Notificaciones
+    </button>
+</div>
+
+<!-- Tab 1: Perfil de Usuario -->
+<div id="tab-perfil" class="tab-content activo">
+    <div class="panel-perfil">
+        <h3 class="titulo-seccion">
+            <i class="fa-solid fa-id-card"></i> Información Personal
+        </h3>
+        
+        <div class="form-perfil">
+            <div class="campo-perfil">
+                <label>Nombre Completo</label>
+                <input type="text" id="inputNombrePerfil" class="input-perfil" readonly>
+            </div>
+            
+            <div class="campo-perfil">
+                <label>Usuario</label>
+                <input type="text" id="inputUsuarioPerfil" class="input-perfil" readonly>
+            </div>
+            
+            <div class="campos-grupo">
+                <div class="campo-perfil">
+                    <label>Email</label>
+                    <input type="email" id="inputEmailPerfil" class="input-perfil">
+                </div>
+                
+                <div class="campo-perfil">
+                    <label>Teléfono</label>
+                    <input type="tel" id="inputTelefonoPerfil" class="input-perfil">
+                </div>
+            </div>
+            
+            <div class="campo-perfil">
+                <label>Rol</label>
+                <input type="text" id="inputRolPerfil" class="input-perfil" readonly>
+            </div>
+            
+            <button id="btnGuardarPerfil" class="btn-guardar-perfil">
+                <i class="fa-solid fa-save"></i> Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tab 2: Gestión de Alergias -->
+<div id="tab-alergias" class="tab-content">
+    
+    <!-- Alerta de Seguridad -->
+    <div class="alerta-seguridad">
+        <i class="fa-solid fa-shield-halved"></i>
+        <div>
+            <strong>Información Importante</strong>
+            <p>Configura tus alergias para recibir alertas automáticas. Esta información es crítica para tu seguridad.</p>
+        </div>
+    </div>
+    
+    <div class="panel-alergias">
+        <h3 class="titulo-seccion">
+            <i class="fa-solid fa-triangle-exclamation"></i> Mis Alergias Registradas
+        </h3>
+        
+        <!-- Grid de Alérgenos Comunes -->
+        <div class="grid-alergenos">
+            <div class="card-alergeno" data-alergeno="Lácteos">
+                <input type="checkbox" id="check-lacteos" class="checkbox-alergeno">
+                <label for="check-lacteos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #e3f2fd; color: #1976d2;">
+                        <i class="fa-solid fa-cow"></i>
+                    </div>
+                    <span class="nombre-alergeno">Lácteos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Gluten">
+                <input type="checkbox" id="check-gluten" class="checkbox-alergeno">
+                <label for="check-gluten" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #fff8e1; color: #f57c00;">
+                        <i class="fa-solid fa-wheat-awn"></i>
+                    </div>
+                    <span class="nombre-alergeno">Gluten</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Huevos">
+                <input type="checkbox" id="check-huevos" class="checkbox-alergeno">
+                <label for="check-huevos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #fffde7; color: #f9a825;">
+                        <i class="fa-solid fa-egg"></i>
+                    </div>
+                    <span class="nombre-alergeno">Huevos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Pescado">
+                <input type="checkbox" id="check-pescado" class="checkbox-alergeno">
+                <label for="check-pescado" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #e1f5fe; color: #0277bd;">
+                        <i class="fa-solid fa-fish"></i>
+                    </div>
+                    <span class="nombre-alergeno">Pescado</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Crustáceos">
+                <input type="checkbox" id="check-crustaceos" class="checkbox-alergeno">
+                <label for="check-crustaceos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #fce4ec; color: #c2185b;">
+                        <i class="fa-solid fa-shrimp"></i>
+                    </div>
+                    <span class="nombre-alergeno">Crustáceos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Moluscos">
+                <input type="checkbox" id="check-moluscos" class="checkbox-alergeno">
+                <label for="check-moluscos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #f3e5f5; color: #7b1fa2;">
+                        <i class="fa-solid fa-circle"></i>
+                    </div>
+                    <span class="nombre-alergeno">Moluscos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Frutos secos">
+                <input type="checkbox" id="check-frutos" class="checkbox-alergeno">
+                <label for="check-frutos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #efebe9; color: #5d4037;">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <span class="nombre-alergeno">Frutos Secos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Soja">
+                <input type="checkbox" id="check-soja" class="checkbox-alergeno">
+                <label for="check-soja" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #f1f8e9; color: #558b2f;">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <span class="nombre-alergeno">Soja</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Sulfitos">
+                <input type="checkbox" id="check-sulfitos" class="checkbox-alergeno">
+                <label for="check-sulfitos" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #f3e5f5; color: #8e24aa;">
+                        <i class="fa-solid fa-wine-bottle"></i>
+                    </div>
+                    <span class="nombre-alergeno">Sulfitos</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Apio">
+                <input type="checkbox" id="check-apio" class="checkbox-alergeno">
+                <label for="check-apio" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #e8f5e9; color: #2e7d32;">
+                        <i class="fa-solid fa-carrot"></i>
+                    </div>
+                    <span class="nombre-alergeno">Apio</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Mostaza">
+                <input type="checkbox" id="check-mostaza" class="checkbox-alergeno">
+                <label for="check-mostaza" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #fff9c4; color: #f9a825;">
+                        <i class="fa-solid fa-pepper-hot"></i>
+                    </div>
+                    <span class="nombre-alergeno">Mostaza</span>
+                </label>
+            </div>
+            
+            <div class="card-alergeno" data-alergeno="Sésamo">
+                <input type="checkbox" id="check-sesamo" class="checkbox-alergeno">
+                <label for="check-sesamo" class="label-alergeno">
+                    <div class="icono-alergeno" style="background: #ffe0b2; color: #e65100;">
+                        <i class="fa-solid fa-circle-dot"></i>
+                    </div>
+                    <span class="nombre-alergeno">Sésamo</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="resumen-alergias">
+            <h4><i class="fa-solid fa-list-check"></i> Resumen de Alergias Seleccionadas</h4>
+            <div id="listaAlergiasSeleccionadas" class="lista-seleccionadas">
+                <p class="texto-vacio">No has seleccionado ninguna alergia</p>
+            </div>
+        </div>
+        
+        <button id="btnGuardarAlergias" class="btn-guardar-alergias">
+            <i class="fa-solid fa-shield-heart"></i> Guardar Configuración de Alergias
+        </button>
+    </div>
+</div>
+
+<!-- Tab 3: Notificaciones -->
+<div id="tab-notificaciones" class="tab-content">
+    <div class="panel-notificaciones">
+        <h3 class="titulo-seccion">
+            <i class="fa-solid fa-bell"></i> Preferencias de Alertas
+        </h3>
+        
+        <div class="opciones-notificaciones">
+            <div class="opcion-notif">
+                <div class="info-opcion">
+                    <i class="fa-solid fa-triangle-exclamation" style="color: #c53030;"></i>
+                    <div>
+                        <strong>Alertas de Productos con Alérgenos</strong>
+                        <p>Recibir advertencias al buscar productos con tus alérgenos</p>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="switchAlertasProductos" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="opcion-notif">
+                <div class="info-opcion">
+                    <i class="fa-solid fa-dolly" style="color: #2f855a;"></i>
+                    <div>
+                        <strong>Bloqueo en Distribución</strong>
+                        <p>Impedir distribución de productos incompatibles con tus alergias</p>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="switchBloqueoDistribucion" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            
+            <div class="opcion-notif">
+                <div class="info-opcion">
+                    <i class="fa-solid fa-inbox" style="color: #3182ce;"></i>
+                    <div>
+                        <strong>Alertas de Nuevos Productos</strong>
+                        <p>Notificar cuando se añadan productos con tus alérgenos</p>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="switchNuevosProductos">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <button id="btnGuardarNotificaciones" class="btn-guardar-notificaciones">
+            <i class="fa-solid fa-save"></i> Guardar Preferencias
+        </button>
+    </div>
+</div>
+
+<!-- Mensaje de estado -->
+<div id="mensajeEstadoConfig" class="mensaje-estado-config"></div>
