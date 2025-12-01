@@ -1656,6 +1656,24 @@
       "descripcion": "",
       "imagen": "producto-generico.jpg",
       "activo": true
+    },
+    {
+      "id": "6fe9",
+      "nombre": "gamba",
+      "precio": 3,
+      "precioUnitario": "unidad",
+      "stock": 45,
+      "stockMinimo": 40,
+      "categoriaId": "6",
+      "proveedorId": "4",
+      "unidadMedida": "unidad",
+      "marca": "Sin marca",
+      "codigoBarras": "8410001957936",
+      "fechaCaducidad": "2024-12-31",
+      "alergenos": [],
+      "descripcion": "",
+      "imagen": "producto-generico.jpg",
+      "activo": true
     }
   ]
 }

@@ -1,44 +1,99 @@
-<h1>INVENTARIO</h1>
+<link rel="stylesheet" href="assets/css/estilos.css">
+<link rel="stylesheet" href="assets/css/inventario.css">
 
-<div class="controless">
-  <input type="text" id="busqueda" placeholder="Buscar producto..." />
-  <button id="btnBuscar">Buscar</button>
-
-  <select id="categoriaSelect">
-    <option value="">Cargando...</option>
-  </select>
-  
-  <select id="proveedorSelect">
-    <option value="">Cargando...</option>
-  </select>
- 
-  <select id="ordenSelect">
-    <option value="asc">Precio ascendente</option>
-    <option value="desc">Precio descendente</option>
-  </select>
- 
-  <button id="btnStock">Stock Bajo</button>
-  <button id="btnMostrarTodos">Limpiar Filtros</button>
-
-  <a href="#" data-page="ingresarProductos" id="btnIngresar" style="text-decoration: none; display: inline-flex; justify-content: center; align-items: center;">
-      Ingresar Producto
-  </a>
+<div class="header-inventario">
+    <div>
+        <h1 class="titulo-inventario">
+            <i class="fa-solid fa-boxes-stacked"></i> INVENTARIO
+        </h1>
+        <p class="subtitulo">Gestiona y consulta el stock de productos</p>
+    </div>
+    <a href="#" data-page="ingresarProductos" id="btnIngresar" class="btn-ingresar-header">
+        <i class="fa-solid fa-plus"></i> Ingresar Producto
+    </a>
 </div>
 
-<table id="tablaProductos">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Nombre</th>
-      <th>Categoría</th>
-      <th>Precio (€)</th>
-      <th>Stock</th>
-      <th>Stock Mín.</th>
-      <th>Proveedor</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-  <tfoot>
-    <tr><td colspan="7" id="resumen"></td></tr>
-  </tfoot>
-</table>
+<!-- Barra de Controles Mejorada -->
+<div class="panel-controles">
+    <div class="controles-busqueda">
+        <div class="campo-busqueda-inventario">
+            <i class="fa-solid fa-search icono-busqueda"></i>
+            <input 
+                type="text" 
+                id="busqueda" 
+                class="input-busqueda-inventario" 
+                placeholder="Buscar producto por nombre o código..."
+            >
+            <button id="btnBuscar" class="btn-buscar-inventario">
+                <i class="fa-solid fa-search"></i> Buscar
+            </button>
+        </div>
+    </div>
+    
+    <div class="controles-filtros">
+        <div class="grupo-filtro">
+            <label class="label-filtro">
+                <i class="fa-solid fa-tag"></i> Categoría
+            </label>
+            <select id="categoriaSelect" class="select-filtro-inventario">
+                <option value="">Cargando...</option>
+            </select>
+        </div>
+        
+        <div class="grupo-filtro">
+            <label class="label-filtro">
+                <i class="fa-solid fa-truck"></i> Proveedor
+            </label>
+            <select id="proveedorSelect" class="select-filtro-inventario">
+                <option value="">Cargando...</option>
+            </select>
+        </div>
+        
+        <div class="grupo-filtro">
+            <label class="label-filtro">
+                <i class="fa-solid fa-arrow-down-up-across-line"></i> Ordenar
+            </label>
+            <select id="ordenSelect" class="select-filtro-inventario">
+                <option value="asc">Precio: Menor a Mayor</option>
+                <option value="desc">Precio: Mayor a Menor</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="controles-acciones">
+        <button id="btnStock" class="btn-accion-inventario btn-stock">
+            <i class="fa-solid fa-triangle-exclamation"></i> Stock Bajo
+        </button>
+        <button id="btnProximoCaducar" class="btn-accion-inventario btn-caducar">
+            <i class="fa-solid fa-clock"></i> Próximo a Caducar
+        </button>
+        <button id="btnMostrarTodos" class="btn-accion-inventario btn-limpiar">
+            <i class="fa-solid fa-filter-circle-xmark"></i> Limpiar Filtros
+        </button>
+    </div>
+</div>
+
+<!-- Tabla de Productos -->
+<div class="panel-tabla">
+    <div class="tabla-wrapper">
+        <table id="tablaProductos" class="tabla-inventario">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th class="col-nombre">Nombre</th>
+                    <th class="col-categoria">Categoría</th>
+                    <th class="col-precio">Precio (€)</th>
+                    <th class="col-stock">Stock</th>
+                    <th class="col-stock-min">Stock Mín.</th>
+                    <th class="col-caducidad">Caducidad</th>
+                    <th class="col-alergenos">Alérgenos</th>
+                    <th class="col-proveedor">Proveedor</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    
+    <!-- Resumen al pie -->
+    <div id="resumenInventario" class="resumen-inventario"></div>
+</div>
