@@ -109,7 +109,7 @@ export async function cargarDatos() {
             gridInstance = new window.gridjs.Grid({
                 columns: columnasGrid,
                 data: vista, // Grid.js leerá 'nombreCategoria' y 'nombreProveedor' de aquí
-                pagination: { limit: 10, summary: true },
+                pagination: { limit: 20, summary: true },
                 search: false,
                 sort: false,
                 language: { 
