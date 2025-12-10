@@ -159,6 +159,16 @@
       "email": "ase@gmail.com",
       "telefono": "54455445",
       "rol": "usuario"
+    },
+    {
+      "id": "b1a8",
+      "usuario": "LOLO",
+      "password": "1234",
+      "nombre": "LOL",
+      "apellidos": "Hernandez Guillermo",
+      "email": "asq@gmail.com",
+      "telefono": "45544554",
+      "rol": "usuario"
     }
   ],
   "proveedores": [

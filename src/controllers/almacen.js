@@ -1,107 +1,202 @@
 import {
-  filtrarPorCategoria,
-  filtrarPorProveedor,
-  buscarProducto,
-  ordenarPorPrecio,
-  comprobarStockMinimo,
-  renderizarTabla,
-  renderizarCategorias,
-  renderizarProveedores
+    filtrarPorCategoria,
+    filtrarPorProveedor,
+    buscarProducto,
+    ordenarPorPrecio,
+    comprobarStockMinimo,
+    renderizarCategorias,
+    renderizarProveedores
 } from '../utils/funciones.js';
 
 import { getProductos, getCategorias, getProveedores } from '../services/apiService.js';
 
-// Datos cargados desde la API
 let productos = [];
-export let categorias = [];
-export let proveedores = [];
-
-// Vista actual (lo que se ve en pantalla)
+let categorias = [];
+let proveedores = [];
 let vista = [];
+let gridInstance = null;
+
+// Configuración de columnas
+const columnasGrid = [
+    { id: 'id', name: 'ID', width: '50px' },
+    { id: 'nombre', name: 'Nombre' },
+    { 
+        id: 'nombreCategoria', // Usamos el nombre procesado
+        name: 'Categoría' 
+    },
+    { 
+        id: 'precio', 
+        name: 'Precio',
+        formatter: (cell) => window.gridjs.html(`<span style="color: #2f855a; font-weight: bold;">${Number(cell).toFixed(2)} €</span>`)
+    },
+    { 
+        id: 'stock', 
+        name: 'Stock',
+        width: '100px',
+        formatter: (cell, row) => {
+            const stock = Number(cell);
+            // row.cells[5] es la columna stockMin (índice 5)
+            const stockMin = Number(row.cells[5].data); 
+            
+            if (stock <= stockMin) {
+                return window.gridjs.html(`<span class="badge-stock-bajo">${stock}</span>`);
+            }
+            return window.gridjs.html(`<span class="badge-stock-ok">${stock}</span>`);
+        }
+    },
+    { id: 'stockMinimo', name: 'Min', hidden: true }, // OJO: Tu JSON usa 'stockMinimo', no 'stockMin'
+    { 
+        id: 'fechaCaducidad', // Tu JSON usa 'fechaCaducidad'
+        name: 'Caducidad',
+        formatter: (cell) => {
+            if (!cell) return 'Sin fecha';
+            return window.gridjs.html(`<span class="fecha-badge">${cell}</span>`);
+        }
+    },
+    { 
+        id: 'nombreProveedor', // Usamos el nombre procesado
+        name: 'Proveedor' 
+    }
+];
+
+// ESTA FUNCIÓN ES LA CLAVE: Normaliza los datos para arreglar la inconsistencia de IDs
+function normalizarProductos(listaProductos) {
+    return listaProductos.map(prod => {
+        // 1. Averiguar el ID de categoría (puede venir en categoriaId o dentro de un objeto categoria)
+        // Usamos '==' para que "1" sea igual a 1
+        const catId = prod.categoriaId || (prod.categoria ? prod.categoria.id : null);
+        const provId = prod.proveedorId || (prod.proveedor ? prod.proveedor.id : null);
+
+        // 2. Buscar en los arrays maestros
+        const catObj = categorias.find(c => c.id == catId);
+        const provObj = proveedores.find(p => p.id == provId);
+
+        // 3. Devolver un objeto enriquecido
+        return {
+            ...prod, // Mantiene datos originales
+            // AÑADIMOS los objetos que faltan para que funcionen tus filtros de funciones.js
+            categoria: catObj || { nombre: 'Desconocido' },
+            proveedor: provObj || { nombre: 'Desconocido' },
+            // AÑADIMOS los nombres planos para Grid.js
+            nombreCategoria: catObj ? catObj.nombre : 'Desconocido',
+            nombreProveedor: provObj ? provObj.nombre : 'Desconocido'
+        };
+    });
+}
 
 export async function cargarDatos() {
-  try {
-    productos   = await getProductos();   
-    categorias  = await getCategorias();
-    proveedores = await getProveedores();
+    try {
+        // 1. Cargar todo
+        productos = await getProductos();   
+        categorias = await getCategorias();
+        proveedores = await getProveedores();
 
-    renderizarCategorias(categorias);
-    renderizarProveedores(proveedores);
-    
-    // Al inicio ordenamos por precio ascendente y mostramos todo
-    vista = ordenarPorPrecio(productos, 'asc');  
-    renderizarTabla(vista);
-  } catch (error) {
-    console.error("Error cargando datos iniciales:", error);
-  }
+        // 2. Normalizar (Esto arregla tus datos mezclados)
+        // Sobreescribimos la variable 'productos' con la versión arreglada
+        productos = normalizarProductos(productos);
+
+        renderizarCategorias(categorias);
+        renderizarProveedores(proveedores);
+        
+        // 3. Crear vista inicial ordenada
+        vista = ordenarPorPrecio(productos, 'asc');
+
+        // 4. Iniciar Grid
+        const contenedor = document.getElementById('grid-inventario');
+        if (contenedor && window.gridjs) {
+            contenedor.innerHTML = '';
+            
+            gridInstance = new window.gridjs.Grid({
+                columns: columnasGrid,
+                data: vista, // Grid.js leerá 'nombreCategoria' y 'nombreProveedor' de aquí
+                pagination: { limit: 10, summary: true },
+                search: false,
+                sort: false,
+                language: { 
+                    'pagination': { 
+                        'previous': 'Anterior', 
+                        'next': 'Siguiente', 
+                        'showing': 'Mostrando', 
+                        'results': () => 'resultados' 
+                    } 
+                },
+                style: { 
+                    table: { 'width': '100%' },
+                    th: { 'background-color': '#b33131', 'color': 'white' }
+                }
+            }).render(contenedor);
+        }
+
+    } catch (error) {
+        console.error("Error cargando datos:", error);
+    }
 }
 
-// --- LÓGICA CENTRAL DE FILTRADO ---
-// Esta función lee el estado de TODOS los inputs y aplica los filtros en orden.
+function actualizarGrid() {
+    if (gridInstance) {
+        gridInstance.updateConfig({
+            data: vista
+        }).forceRender();
+    }
+}
+
+// Lógica de filtrado (ahora funcionará porque 'productos' tiene los objetos corregidos inside)
 function aplicarFiltrosGlobales() {
-  const texto = document.querySelector('#busqueda').value;
-  const categoria = document.querySelector('#categoriaSelect').value;
-  const proveedor = document.querySelector('#proveedorSelect').value;
-  const orden = document.querySelector('#ordenSelect').value;
+    const texto = document.querySelector('#busqueda')?.value || '';
+    const catNombre = document.querySelector('#categoriaSelect')?.value || '';
+    const provNombre = document.querySelector('#proveedorSelect')?.value || '';
+    const orden = document.querySelector('#ordenSelect')?.value || 'asc';
 
-  // 1. Empezamos con la lista completa original
-  let resultado = [...productos];
+    // 1. Empezamos con los productos normalizados
+    let resultado = [...productos];
 
-  // 2. Filtros
-  resultado = buscarProducto(resultado, texto);
-  resultado = filtrarPorCategoria(resultado, categoria);
-  resultado = filtrarPorProveedor(resultado, proveedor);
+    // 2. Filtramos (Tus funciones en 'funciones.js' buscan p.categoria.nombre, ¡ahora ya existe!)
+    resultado = buscarProducto(resultado, texto);
+    resultado = filtrarPorCategoria(resultado, catNombre);
+    resultado = filtrarPorProveedor(resultado, provNombre);
+    
+    // 3. Ordenamos
+    resultado = ordenarPorPrecio(resultado, orden);
 
-  // 3. Ordenamiento
-  resultado = ordenarPorPrecio(resultado, orden);
-
-  // 4. Actualizamos vista y renderizamos
-  vista = resultado;
-  renderizarTabla(vista);
-}
-
-// Handlers de eventos
-function handleInputs() {
-  aplicarFiltrosGlobales();
+    // 4. Actualizamos
+    vista = resultado;
+    actualizarGrid();
 }
 
 function handleStock() {
-  // Filtramos solo los productos con stock bajo (sobre la vista actual o global)
-  // Aquí optamos por filtrar sobre lo que el usuario ya está viendo
-  vista = comprobarStockMinimo(vista);
-  renderizarTabla(vista);
+    vista = comprobarStockMinimo(vista);
+    actualizarGrid();
 }
 
 function handleMostrarTodos() {
-  // Reseteamos los valores de los inputs visualmente
-  const inputBusqueda = document.querySelector('#busqueda');
-  const selectCat = document.querySelector('#categoriaSelect');
-  const selectProv = document.querySelector('#proveedorSelect');
-  const selectOrden = document.querySelector('#ordenSelect');
-
-  if(inputBusqueda) inputBusqueda.value = '';
-  if(selectCat) selectCat.value = '';
-  if(selectProv) selectProv.value = '';
-  if(selectOrden) selectOrden.value = 'asc';
-
-  // Recargamos aplicando estos valores "vacíos" (es decir, mostrar todo)
-  aplicarFiltrosGlobales();
+    const els = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
+    els.forEach(sel => {
+        const el = document.querySelector(sel);
+        if(el) el.value = (sel === '#ordenSelect') ? 'asc' : '';
+    });
+    aplicarFiltrosGlobales();
 }
 
-// Mapeo de eventos
+// Eventos
 const eventMap = [
-  { selector: '#btnBuscar', event: 'click', handler: handleInputs },
-  { selector: '#busqueda', event: 'keyup', handler: handleInputs }, // Búsqueda en tiempo real
-  { selector: '#categoriaSelect', event: 'change', handler: handleInputs },
-  { selector: '#proveedorSelect', event: 'change', handler: handleInputs },
-  { selector: '#ordenSelect', event: 'change', handler: handleInputs },
-  { selector: '#btnStock', event: 'click', handler: handleStock },
-  { selector: '#btnMostrarTodos', event: 'click', handler: handleMostrarTodos }
+    { selector: '#btnBuscar', event: 'click', handler: aplicarFiltrosGlobales },
+    { selector: '#busqueda', event: 'keyup', handler: aplicarFiltrosGlobales },
+    { selector: '#categoriaSelect', event: 'change', handler: aplicarFiltrosGlobales },
+    { selector: '#proveedorSelect', event: 'change', handler: aplicarFiltrosGlobales },
+    { selector: '#ordenSelect', event: 'change', handler: aplicarFiltrosGlobales },
+    { selector: '#btnStock', event: 'click', handler: handleStock },
+    { selector: '#btnMostrarTodos', event: 'click', handler: handleMostrarTodos }
 ];
 
 export function inicializarEventos() {
-  eventMap.forEach(({ selector, event, handler }) => {
-    const elemento = document.querySelector(selector);
-    if (elemento) elemento.addEventListener(event, handler);
-  });
+    setTimeout(() => {
+        eventMap.forEach(({ selector, event, handler }) => {
+            const el = document.querySelector(selector);
+            if (el) {
+                const clone = el.cloneNode(true);
+                el.parentNode.replaceChild(clone, el);
+                clone.addEventListener(event, handler);
+            }
+        });
+    }, 100);
 }

@@ -1,5 +1,7 @@
 <link rel="stylesheet" href="assets/css/estilos.css">
 <link rel="stylesheet" href="assets/css/inventario.css">
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
 <div class="header-inventario">
     <div>
@@ -76,24 +78,8 @@
 <!-- Tabla de Productos -->
 <div class="panel-tabla">
     <div class="tabla-wrapper">
-        <table id="tablaProductos" class="tabla-inventario">
-            <thead>
-                <tr>
-                    <th class="col-id">ID</th>
-                    <th class="col-nombre">Nombre</th>
-                    <th class="col-categoria">Categoría</th>
-                    <th class="col-precio">Precio (€)</th>
-                    <th class="col-stock">Stock</th>
-                    <th class="col-stock-min">Stock Mín.</th>
-                    <th class="col-caducidad">Caducidad</th>
-                    <th class="col-alergenos">Alérgenos</th>
-                    <th class="col-proveedor">Proveedor</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div id="grid-inventario"></div>
     </div>
     
-    <!-- Resumen al pie -->
     <div id="resumenInventario" class="resumen-inventario"></div>
 </div>
