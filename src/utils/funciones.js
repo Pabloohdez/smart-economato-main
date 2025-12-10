@@ -12,10 +12,18 @@ export function filtrarPorProveedor(productos, proveedor) {
   return productos.filter(p => (p.proveedor?.nombre ?? "") === prov);
 }
 
-export function buscarProducto(productos, nombre) {
-  const q = (nombre ?? "").trim().toLowerCase();
+export function buscarProducto(productos, termino) {
+  const q = (termino ?? "").trim().toLowerCase();
   if (!q) return [...productos];
-  return productos.filter(p => (p.nombre ?? "").toLowerCase().includes(q));
+
+  return productos.filter(p => {
+    // Obtenemos nombre y código asegurándonos de que sean texto
+    const nombre = (p.nombre ?? "").toLowerCase();
+    const codigo = (p.codigoBarras ?? "").toString().toLowerCase(); // Añadido .toString() por seguridad
+    
+    // Devolvemos true si el término de búsqueda está en el nombre O en el código
+    return nombre.includes(q) || codigo.includes(q);
+  });
 }
 
 export function ordenarPorPrecio(productos, orden) {
@@ -251,3 +259,4 @@ export function renderizarProveedores(proveedores) {
     select.appendChild(opcion);
   });
 }
+

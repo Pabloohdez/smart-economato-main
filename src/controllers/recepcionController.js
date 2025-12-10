@@ -5,6 +5,8 @@ let categorias = [];
 let proveedores = [];
 let productosRecepcion = []; // Lista de productos en la recepción actual
 let productoSeleccionado = null; // Para el modal
+let barcodeBufferRecepcion = '';
+let barcodeTimeoutRecepcion = null;
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
@@ -90,6 +92,8 @@ function configurarEventos() {
         if (e.key === 'Enter') confirmarCantidadModal();
     });
 }
+
+
 
 function buscarProductos() {
     const textoBusqueda = document.getElementById("inputBusquedaProducto").value.trim().toLowerCase();
