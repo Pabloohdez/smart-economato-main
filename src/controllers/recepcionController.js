@@ -1,4 +1,5 @@
 import { getProductos, getCategorias, getProveedores, actualizarProducto } from "../services/apiService.js";
+import { navigateTo } from "../router.js"; // <--- AÑADIR ESTA LÍNEA
 
 let todosLosProductos = [];
 let categorias = [];
@@ -127,13 +128,25 @@ function mostrarResultados(productos) {
     const contenedor = document.getElementById("resultadosBusqueda");
     
     if (productos.length === 0) {
+        // Mostramos el mensaje y el botón de "Crear Producto"
         contenedor.innerHTML = `
             <div style="text-align: center; padding: 20px; color: #a0aec0;">
                 <i class="fa-solid fa-search" style="font-size: 32px; margin-bottom: 10px;"></i>
-                <p>No se encontraron productos</p>
+                <p>No se encontraron productos.</p>
+                <p style="margin-bottom: 15px; font-size: 0.9em;">¿Es un producto nuevo?</p>
+                
+                <button id="btnIrACrear" class="btn-primario" style="background-color: #2f855a;">
+                    <i class="fa-solid fa-plus"></i> Ingresar Nuevo Producto
+                </button>
             </div>
         `;
         contenedor.classList.remove("oculto");
+
+        // Damos vida al botón para que navegue a la pantalla de Ingreso
+        document.getElementById("btnIrACrear")?.addEventListener("click", () => {
+            navigateTo('ingresarproductos'); // Usamos el router para cambiar de pantalla
+        });
+        
         return;
     }
     
