@@ -310,7 +310,7 @@
       "nombre": "Tomate Raf",
       "precio": 4.2,
       "precioUnitario": "kg",
-      "stock": 0,
+      "stock": 1,
       "stockMinimo": 30,
       "categoriaId": 1,
       "proveedorId": 2,

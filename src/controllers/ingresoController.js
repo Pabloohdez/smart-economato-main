@@ -58,7 +58,7 @@ function agregarALista() {
     const nuevoProducto = {
         nombre: nombre,
         precio: precio,
-        precioUnitario: "unidad", // Puedes añadir un campo para esto si quieres
+        precioUnitario: "unidad",
         stock: isNaN(stock) ? 0 : stock,
         stockMinimo: isNaN(stockMin) ? 5 : stockMin,
         categoriaId: categoriaId,
