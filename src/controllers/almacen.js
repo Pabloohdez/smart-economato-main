@@ -35,7 +35,7 @@ const columnasGrid = [
         width: '100px',
         formatter: (cell, row) => {
             const stock = Number(cell);
-            // row.cells[5] es la columna stockMin (índice 5)
+            // celda 5 es la columna stockMin 
             const stockMin = Number(row.cells[5].data); 
             
             if (stock <= stockMin) {
@@ -44,9 +44,9 @@ const columnasGrid = [
             return window.gridjs.html(`<span class="badge-stock-ok">${stock}</span>`);
         }
     },
-    { id: 'stockMinimo', name: 'Min', hidden: true }, // OJO: Tu JSON usa 'stockMinimo', no 'stockMin'
+    { id: 'stockMinimo', name: 'Min', hidden: true }, 
     { 
-        id: 'fechaCaducidad', // Tu JSON usa 'fechaCaducidad'
+        id: 'fechaCaducidad',
         name: 'Caducidad',
         formatter: (cell) => {
             if (!cell) return 'Sin fecha';
@@ -140,7 +140,7 @@ function actualizarGrid() {
     }
 }
 
-// Lógica de filtrado (ahora funcionará porque 'productos' tiene los objetos corregidos inside)
+
 function aplicarFiltrosGlobales() {
     const texto = document.querySelector('#busqueda')?.value || '';
     const catNombre = document.querySelector('#categoriaSelect')?.value || '';
@@ -150,7 +150,7 @@ function aplicarFiltrosGlobales() {
     // 1. Empezamos con los productos normalizados
     let resultado = [...productos];
 
-    // 2. Filtramos (Tus funciones en 'funciones.js' buscan p.categoria.nombre, ¡ahora ya existe!)
+    // 2. Filtramos 'funciones.js' buscan p.categoria.nombre
     resultado = buscarProducto(resultado, texto);
     resultado = filtrarPorCategoria(resultado, catNombre);
     resultado = filtrarPorProveedor(resultado, provNombre);
