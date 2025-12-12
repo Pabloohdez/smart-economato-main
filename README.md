@@ -1,9 +1,3 @@
-¡Hola! He analizado la estructura de tu proyecto smart-economato. Basándome en los archivos que has subido, he redactado un README.md profesional, humanizado y sin emoticonos.
-
-El objetivo de este documento es presentar tu proyecto de forma honesta, destacando que tienes una arquitectura muy organizada para ser JavaScript nativo (Vanilla), pero reconociendo las limitaciones naturales de no usar un framework y de simular el backend.
-
-Aquí tienes la propuesta para tu archivo README.md:
-
 Smart Economato - Sistema de Gestión de Inventario
 Este proyecto consiste en una aplicación web diseñada para la gestión integral de un economato o almacén (específicamente vinculado al CIFP Virgen de Candelaria). La aplicación permite administrar el inventario, gestionar la recepción de mercancías, tramitar bajas de productos, controlar usuarios y supervisar la información nutricional (alérgenos) de los artículos.
 
