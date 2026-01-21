@@ -1,6 +1,6 @@
-# 📚 Documentación de la API - Smart Economato
+#  Documentación de la API - Smart Economato
 
-## 🌐 Configuración General
+## Configuración General
 
 **Base URL:** `http://localhost/smart-economato/backend`
 
@@ -19,7 +19,7 @@ Access-Control-Allow-Origin: *
 
 ---
 
-## 👤 Endpoint: Usuarios
+## Endpoint: Usuarios
 
 ### 1. Obtener Lista de Usuarios
 **GET** `/usuarios.php`
@@ -101,8 +101,8 @@ Registra un nuevo usuario en el sistema.
 ```
 
 **Campos Requeridos:**
-- `username` ⭐ - Nombre de usuario único
-- `password` ⭐ - Contraseña del usuario
+- `username`  - Nombre de usuario único
+- `password`  - Contraseña del usuario
 
 **Campos Opcionales:**
 - `role` - Rol del usuario (administrador, almacenero, etc.)
@@ -114,7 +114,7 @@ Registra un nuevo usuario en el sistema.
 **Respuesta Exitosa (201):**
 ```json
 {
-  "message": "✅ Usuario registrado correctamente"
+  "message": " Usuario registrado correctamente"
 }
 ```
 
@@ -124,13 +124,13 @@ Registra un nuevo usuario en el sistema.
 
 ```json
 {
-  "error": "❌ Error al crear usuario: UNIQUE constraint failed"
+  "error": " Error al crear usuario: UNIQUE constraint failed"
 }
 ```
 
 ---
 
-## 📦 Endpoint: Productos
+##  Endpoint: Productos
 
 ### 1. Obtener Lista de Productos
 **GET** `/productos.php`
@@ -241,12 +241,12 @@ Crea un nuevo producto en la base de datos.
 ```
 
 **Campos Requeridos:**
-- `nombre` ⭐
-- `precio` ⭐
-- `precioUnitario` ⭐
-- `stock` ⭐
-- `categoriaId` ⭐
-- `proveedorId` ⭐
+- `nombre` 
+- `precio` 
+- `precioUnitario` 
+- `stock` 
+- `categoriaId` 
+- `proveedorId` 
 
 **Campos Opcionales:**
 - `stockMinimo` - Stock mínimo antes de alertar (por defecto 0)
@@ -343,7 +343,7 @@ Elimina un producto de la base de datos.
 
 ---
 
-## 📂 Endpoint: Categorías
+##  Endpoint: Categorías
 
 ### 1. Obtener Lista de Categorías
 **GET** `/categorias.php`
@@ -375,7 +375,7 @@ Obtiene todas las categorías disponibles.
 
 ---
 
-## 🏭 Endpoint: Proveedores
+##  Endpoint: Proveedores
 
 ### 1. Obtener Lista de Proveedores
 **GET** `/proveedores.php`
@@ -408,7 +408,7 @@ Obtiene todos los proveedores registrados.
 
 ---
 
-## 🔐 Códigos de Estado HTTP
+##  Códigos de Estado HTTP
 
 | Código | Descripción |
 |--------|-------------|
@@ -420,9 +420,9 @@ Obtiene todos los proveedores registrados.
 
 ---
 
-## ⚠️ Consideraciones de Seguridad
+##  Consideraciones de Seguridad
 
-⚠️ **IMPORTANTE:** Esta API actualmente tiene problemas de seguridad que deben ser corregidos:
+ **IMPORTANTE:** Esta API actualmente tiene problemas de seguridad que deben ser corregidos:
 
 1. **Contraseñas sin encriptación**: Las contraseñas se almacenan en texto plano. Usar hashing (`password_hash()` en PHP).
 2. **Sin autenticación real**: No hay token o sesión. Implementar JWT o sesiones.
@@ -432,7 +432,7 @@ Obtiene todos los proveedores registrados.
 
 ---
 
-## 📝 Ejemplos de Uso desde JavaScript
+##  Ejemplos de Uso desde JavaScript
 
 ### Obtener Productos
 ```javascript
