@@ -59,8 +59,8 @@ export async function navigateTo(pageName) {
     const route = routes[key] || routes['inicio'];
 
     try {
-        // 1. Cargar el HTML
-        const response = await fetch(route.template);
+        // 1. Cargar el HTML (con cache busting)
+        const response = await fetch(`${route.template}?t=${Date.now()}`);
         if (!response.ok) throw new Error(`Error cargando ${route.template}`);
         const html = await response.text();
 

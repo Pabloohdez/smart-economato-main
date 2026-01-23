@@ -270,13 +270,14 @@ function renderizarTablaRecepcion() {
                     value="${p.cantidadRecibida}" 
                     min="1"
                     data-index="${index}"
+                    aria-label="Cantidad recibida para ${p.nombre}"
                 >
             </td>
             <td class="stock-nuevo">${p.stock + p.cantidadRecibida}</td>
             <td>${p.precio.toFixed(2)} €</td>
             <td><strong>${p.subtotal.toFixed(2)} €</strong></td>
             <td>
-                <button class="btn-eliminar-item" data-index="${index}">
+                <button class="btn-eliminar-item" data-index="${index}" aria-label="Eliminar ${p.nombre} de la recepción">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>

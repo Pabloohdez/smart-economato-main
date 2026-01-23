@@ -330,7 +330,7 @@ function renderizarTablaBajas() {
                 <td>${p.precio.toFixed(2)} €</td>
                 <td><strong style="color: #c53030;">${p.valorPerdido.toFixed(2)} €</strong></td>
                 <td>
-                    <button class="btn-eliminar-baja" data-index="${index}">
+                    <button class="btn-eliminar-baja" data-index="${index}" aria-label="Eliminar ${p.nombre} de la lista de bajas">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>
