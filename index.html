@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,26 +8,31 @@
     <link rel="icon" type="image/png" href="assets/img/logo.png">
     <link rel="stylesheet" href="assets/css/login.css">
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/accessibility.css">
 </head>
+
 <body>
 
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-    
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
-    
+
+
     <div class="header">
         <img src="assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png" alt="Virgen de la Candelaria" class="logo">
     </div>
 
-    <div class="container">
+    <main class="container">
         <h2 class="form-title">Bienvenido</h2>
-        
+
         <form class="formulario" id="formu">
+            <label for="user-box1" class="visually-hidden">Usuario</label>
             <input type="text" id="user-box1" name="Usuario" placeholder="Usuario" class="user" required>
+
+            <label for="user-box2" class="visually-hidden">Contraseña</label>
             <input type="password" id="user-box2" name="Contraseña" placeholder="Contraseña" class="user" required>
-            
+
             <p class="resp"></p>
-            
+
             <input type="submit" value="Iniciar Sesión" class="user entrar">
         </form>
 
@@ -35,11 +41,17 @@
             <br>
             <a href="pages/crearUsuario.html" style="font-weight: 600;">Crear Cuenta Nueva</a>
         </div>
-    </div>
+        <div style="margin-top: 20px;">
+            <a href="#">¿Olvidaste tu contraseña?</a>
+            <br>
+            <a href="pages/crearUsuario.html" style="font-weight: 600;">Crear Cuenta Nueva</a>
+        </div>
+    </main>
 
     <footer>© 2025 Pablo Hdez. Todos los derechos reservados.</footer>
 
     <script src="src/utils/script.js"></script>
     <script type="module" src="src/controllers/loginController.js"></script>
 </body>
+
 </html>

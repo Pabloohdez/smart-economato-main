@@ -124,13 +124,26 @@ export async function cargarDatos() {
                     table: { 'width': '100%' },
                     th: { 'background-color': '#b33131', 'color': 'white' }
                 }
-            }).render(contenedor);
+            });
+
+            // Corregir tabindex de los encabezados (Accesibilidad)
+            gridInstance.on('ready', () => {
+                const headers = contenedor.querySelectorAll('.gridjs-th');
+                headers.forEach(header => {
+                    header.removeAttribute('tabindex');
+                });
+            });
+
+            gridInstance.render(contenedor);
+            
         }
 
     } catch (error) {
         console.error("Error cargando datos:", error);
     }
 }
+
+
 
 function actualizarGrid() {
     if (gridInstance) {

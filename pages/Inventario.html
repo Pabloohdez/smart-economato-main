@@ -1,6 +1,7 @@
 <link rel="stylesheet" href="assets/css/estilos.css">
 <link rel="stylesheet" href="assets/css/inventario.css">
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/accessibility.css">
 <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
 <div class="header-inventario">
@@ -20,18 +21,15 @@
     <div class="controles-busqueda">
         <div class="campo-busqueda-inventario">
             <i class="fa-solid fa-search icono-busqueda"></i>
-            <input 
-                type="text" 
-                id="busqueda" 
-                class="input-busqueda-inventario" 
-                placeholder="Buscar producto por nombre o código..."
-            >
+            <label for="busqueda" class="visually-hidden">Buscar producto</label>
+            <input type="text" id="busqueda" class="input-busqueda-inventario"
+                placeholder="Buscar producto por nombre o código...">
             <button id="btnBuscar" class="btn-buscar-inventario">
                 <i class="fa-solid fa-search"></i> Buscar
             </button>
         </div>
     </div>
-    
+
     <div class="controles-filtros">
         <div class="grupo-filtro">
             <label class="label-filtro">
@@ -41,7 +39,7 @@
                 <option value="">Cargando...</option>
             </select>
         </div>
-        
+
         <div class="grupo-filtro">
             <label class="label-filtro">
                 <i class="fa-solid fa-truck"></i> Proveedor
@@ -50,7 +48,7 @@
                 <option value="">Cargando...</option>
             </select>
         </div>
-        
+
         <div class="grupo-filtro">
             <label class="label-filtro">
                 <i class="fa-solid fa-arrow-down-up-across-line"></i> Ordenar
@@ -61,7 +59,7 @@
             </select>
         </div>
     </div>
-    
+
     <div class="controles-acciones">
         <button id="btnStock" class="btn-accion-inventario btn-stock">
             <i class="fa-solid fa-triangle-exclamation"></i> Stock Bajo
@@ -80,6 +78,6 @@
     <div class="tabla-wrapper">
         <div id="grid-inventario"></div>
     </div>
-    
+
     <div id="resumenInventario" class="resumen-inventario"></div>
 </div>

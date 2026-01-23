@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,11 +9,13 @@
     <link rel="stylesheet" href="assets/css/dashboard.css">
     <link rel="stylesheet" href="assets/css/ingreso.css">
     <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/accessibility.css">
 </head>
+
 <body>
 
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<script type="module" src="src/views/main.js"></script>
+    <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+    <script type="module" src="src/views/main.js"></script>
 
     <!-- Overlay para cerrar menú en móvil -->
     <div class="menu-overlay" id="menuOverlay"></div>
@@ -53,7 +56,7 @@
             <a href="#" data-page="Configuracion">
                 <i class="fa-solid fa-gear"></i> Configuración
             </a>
-            
+
             <a href="index.html" class="logout-btn">
                 <i class="fa-solid fa-right-from-bracket"></i> Salir
             </a>
@@ -66,9 +69,9 @@
             <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú">
                 <i class="fa-solid fa-bars"></i>
             </button>
-            
+
             <h2 id="page-title">Panel de Control</h2>
-            
+
             <div class="user-info">
                 <span>Hola, Admin</span>
                 <div class="user-avatar">A</div>
@@ -81,26 +84,26 @@
 
     <script type="module" src="src/views/main.js"></script>
     <script src="src/utils/script.js"></script>
-    
+
     <!-- Script para toggle del menú móvil -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('menuOverlay');
-            
+
             // Abrir menú
             menuToggle?.addEventListener('click', () => {
                 sidebar.classList.toggle('open');
                 overlay.classList.toggle('active');
             });
-            
+
             // Cerrar menú al hacer clic en el overlay
             overlay?.addEventListener('click', () => {
                 sidebar.classList.remove('open');
                 overlay.classList.remove('active');
             });
-            
+
             // Cerrar menú al seleccionar una opción
             const menuLinks = sidebar.querySelectorAll('a[data-page]');
             menuLinks.forEach(link => {
@@ -115,4 +118,5 @@
         });
     </script>
 </body>
+
 </html>
