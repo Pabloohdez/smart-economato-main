@@ -25,7 +25,7 @@
 }
 
 .subtitulo {
-    color: #718096;
+    color: #4C5767;
     font-size: 14px;
     margin: 0;
 }
@@ -139,7 +139,7 @@
 .label-filtro {
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: #4C5767;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     display: flex;
