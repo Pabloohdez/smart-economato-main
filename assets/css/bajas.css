@@ -21,7 +21,7 @@
 }
 
 .subtitulo {
-    color: #718096;
+    color: #50596D;
     font-size: 14px;
     margin: 0;
 }
@@ -117,7 +117,7 @@
 
 .stat-label {
     font-size: 13px;
-    color: #718096;
+    color: #50596D;
     margin-bottom: 5px;
 }
 
@@ -279,7 +279,7 @@
 
 .detalles-producto-baja {
     font-size: 13px;
-    color: #718096;
+    color: #50596D;
 }
 
 .badge-caducidad {
@@ -593,7 +593,7 @@
 }
 
 .modal-producto-nombre-baja {
-    color: #718096;
+    color: #50596D;
     font-size: 14px;
     margin-bottom: 20px;
     font-weight: 600;
@@ -639,7 +639,7 @@
 
 .stock-disponible-info {
     margin-top: 5px;
-    color: #718096;
+    color: #50596D;
     font-size: 12px;
 }
 

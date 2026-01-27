@@ -15,28 +15,25 @@
 
 <!-- Panel de Búsqueda de Producto -->
 <div class="panel-busqueda">
-    <h3 class="titulo-seccion">
+    <h2 class="titulo-seccion">
         <i class="fa-solid fa-magnifying-glass"></i> Buscar Producto
-    </h3>
-    
+    </h2>
+
     <div class="controles-busqueda">
         <div class="campo-busqueda">
-            <input 
-                type="text" 
-                id="inputBusquedaProducto" 
-                class="input-busqueda" 
+            <input type="text" id="inputBusquedaProducto" class="input-busqueda"
                 placeholder="Escribe el nombre del producto o escanea código de barras..."
-            >
+                aria-label="Buscar producto por nombre o código">
             <button id="btnBuscarProducto" class="btn-buscar-producto">
                 <i class="fa-solid fa-search"></i> Buscar
             </button>
         </div>
-        
+
         <div class="filtros-rapidos">
-            <select id="selectProveedorFiltro" class="select-filtro">
+            <select id="selectProveedorFiltro" class="select-filtro" aria-label="Filtrar por proveedor">
                 <option value="">Todos los proveedores</option>
             </select>
-            <select id="selectCategoriaFiltro" class="select-filtro">
+            <select id="selectCategoriaFiltro" class="select-filtro" aria-label="Filtrar por categoría">
                 <option value="">Todas las categorías</option>
             </select>
         </div>
@@ -98,15 +95,11 @@
 <!-- Panel de Observaciones y Acciones -->
 <div class="panel-acciones">
     <div class="campo-observaciones">
-        <label class="label-observaciones">
+        <label class="label-observaciones" for="textareaObservaciones">
             <i class="fa-solid fa-note-sticky"></i> Observaciones / Notas
         </label>
-        <textarea 
-            id="textareaObservaciones" 
-            class="textarea-observaciones" 
-            placeholder="Añade notas sobre esta recepción (opcional)..."
-            rows="3"
-        ></textarea>
+        <textarea id="textareaObservaciones" class="textarea-observaciones"
+            placeholder="Añade notas sobre esta recepción (opcional)..." rows="3"></textarea>
     </div>
 
     <div class="botones-finales">
@@ -126,22 +119,16 @@
 <div id="modalCantidad" class="modal-overlay oculto">
     <div class="modal-contenido">
         <h3>
-            <i class="fa-solid fa-box-open"></i> 
+            <i class="fa-solid fa-box-open"></i>
             Cantidad Recibida
         </h3>
         <p id="modalNombreProducto" class="modal-producto-nombre"></p>
-        
+
         <div class="modal-input-group">
-            <label>Cantidad:</label>
-            <input 
-                type="number" 
-                id="modalInputCantidad" 
-                class="modal-input-cantidad" 
-                min="1" 
-                value="1"
-            >
+            <label for="modalInputCantidad">Cantidad:</label>
+            <input type="number" id="modalInputCantidad" class="modal-input-cantidad" min="1" value="1">
         </div>
-        
+
         <div class="modal-botones">
             <button id="btnModalCancelar" class="btn-modal btn-modal-cancelar">
                 Cancelar
