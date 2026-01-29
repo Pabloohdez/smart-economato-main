@@ -124,7 +124,18 @@ export async function cargarDatos() {
                     table: { 'width': '100%' },
                     th: { 'background-color': '#b33131', 'color': 'white' }
                 }
-            }).render(contenedor);
+            });
+            
+            gridInstance.render(contenedor);
+
+            // Fix accessibility: remove redundant title from pagination buttons
+            const observer = new MutationObserver(() => {
+                const buttons = contenedor.querySelectorAll('.gridjs-pagination button');
+                buttons.forEach(btn => {
+                    if (btn.title) btn.removeAttribute('title');
+                });
+            });
+            observer.observe(contenedor, { childList: true, subtree: true });
         }
 
     } catch (error) {

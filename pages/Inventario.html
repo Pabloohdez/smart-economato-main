@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="assets/css/estilos.css">
-<link rel="stylesheet" href="assets/css/inventario.css">
+<link rel="stylesheet" href="../assets/css/estilos.css">
+<link rel="stylesheet" href="../assets/css/inventario.css">
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
 
@@ -20,39 +20,35 @@
     <div class="controles-busqueda">
         <div class="campo-busqueda-inventario">
             <i class="fa-solid fa-search icono-busqueda"></i>
-            <input 
-                type="text" 
-                id="busqueda" 
-                class="input-busqueda-inventario" 
-                placeholder="Buscar producto por nombre o código..."
-            >
+            <input type="text" id="busqueda" class="input-busqueda-inventario"
+                placeholder="Buscar producto por nombre o código..." aria-label="Buscar producto por nombre o código">
             <button id="btnBuscar" class="btn-buscar-inventario">
                 <i class="fa-solid fa-search"></i> Buscar
             </button>
         </div>
     </div>
-    
+
     <div class="controles-filtros">
         <div class="grupo-filtro">
-            <label class="label-filtro">
+            <label class="label-filtro" for="categoriaSelect">
                 <i class="fa-solid fa-tag"></i> Categoría
             </label>
             <select id="categoriaSelect" class="select-filtro-inventario">
                 <option value="">Cargando...</option>
             </select>
         </div>
-        
+
         <div class="grupo-filtro">
-            <label class="label-filtro">
+            <label class="label-filtro" for="proveedorSelect">
                 <i class="fa-solid fa-truck"></i> Proveedor
             </label>
             <select id="proveedorSelect" class="select-filtro-inventario">
                 <option value="">Cargando...</option>
             </select>
         </div>
-        
+
         <div class="grupo-filtro">
-            <label class="label-filtro">
+            <label class="label-filtro" for="ordenSelect">
                 <i class="fa-solid fa-arrow-down-up-across-line"></i> Ordenar
             </label>
             <select id="ordenSelect" class="select-filtro-inventario">
@@ -61,7 +57,7 @@
             </select>
         </div>
     </div>
-    
+
     <div class="controles-acciones">
         <button id="btnStock" class="btn-accion-inventario btn-stock">
             <i class="fa-solid fa-triangle-exclamation"></i> Stock Bajo
@@ -80,6 +76,6 @@
     <div class="tabla-wrapper">
         <div id="grid-inventario"></div>
     </div>
-    
+
     <div id="resumenInventario" class="resumen-inventario"></div>
 </div>

@@ -1,0 +1,54 @@
+/* --- ACCESSIBILITY UTILITIES (FASE 3) --- */
+
+/* 
+   MEJORA DEL FOCO VISIBLE 
+   Asegura que todos los elementos interactivos tengan un indicador de foco claro y consistente.
+   Preferimos :focus-visible para no molestar a usuarios de ratón, pero aseguramos accesibilidad teclado.
+*/
+
+:focus-visible {
+    outline: 3px solid #b33131; /* Color primario fuerte */
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.2); /* Anillo suave exterior */
+    border-radius: 4px; /* Ligero radio para suavizar */
+    z-index: 1000; /* Asegurar que el foco esté por encima */
+}
+
+/* 
+   Para navegadores que no soportan :focus-visible completamente,
+   o para elementos específicos que requieren atención extra 
+*/
+[tabindex="0"]:focus,
+a:focus,
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 3px solid #b33131;
+    outline-offset: 2px;
+}
+
+/* 
+   CLASE SR-ONLY 
+   Oculta elementos visualmente pero los mantiene disponibles para lectores de pantalla.
+   Útil para etiquetas que solo deben ser oídas.
+*/
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* 
+   AJUSTES PARA MODALES Y FOCO 
+   Evitar que el outline quede cortado en contenedores con overflow hidden
+*/
+.modal-content :focus-visible {
+    outline-offset: -2px; /* Foco interno si hay riesgo de corte */
+}

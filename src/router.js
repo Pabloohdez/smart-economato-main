@@ -68,10 +68,23 @@ export async function navigateTo(pageName) {
         content.innerHTML = html;
 
         // 3. Ejecutar la lógica (controlador) asociada
+        // 3. Ejecutar la lógica (controlador) asociada
         if (route.action) {
             await route.action();
         }
 
+        // 4. ACCESIBILIDAD: Gestión del Foco
+        // Mover el foco al contenido nuevo para que el lector de pantalla anuncie el cambio
+        // Usamos setTimeout para asegurar que el DOM se ha actualizado visualmente
+        setTimeout(() => {
+            const headerTitulo = document.querySelector("#content h1");
+            const focusTarget = headerTitulo || content;
+            
+            focusTarget.setAttribute("tabindex", "-1");
+            focusTarget.focus({ preventScroll: false }); // Asegurar scroll al elemento
+            
+            console.log("📍 Foco movido a:", focusTarget);
+        }, 100);
     } catch (error) {
         console.error("Error en el router:", error);
         content.innerHTML = `

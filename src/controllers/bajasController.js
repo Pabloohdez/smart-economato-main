@@ -178,7 +178,7 @@ function mostrarResultados(productos, mostrarCaducidad = false) {
         }
         
         return `
-            <div class="item-resultado-baja" data-producto-id="${p.id}">
+            <div class="item-resultado-baja" data-producto-id="${p.id}" role="button" tabindex="0" aria-label="Seleccionar ${p.nombre}">
                 <div class="info-producto-baja">
                     <div class="nombre-producto-baja">${p.nombre}</div>
                     <div class="detalles-producto-baja">
@@ -194,11 +194,20 @@ function mostrarResultados(productos, mostrarCaducidad = false) {
     
     contenedor.classList.remove("oculto");
     
-    // Eventos de clic en resultados
+    // Eventos de clic y teclado en resultados (ACCESIBILIDAD)
     contenedor.querySelectorAll(".item-resultado-baja").forEach(item => {
-        item.addEventListener("click", () => {
+        const seleccion = () => {
             const productoId = item.dataset.productoId;
             seleccionarProducto(productoId);
+        };
+
+        item.addEventListener("click", seleccion);
+        
+        item.addEventListener("keydown", (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                seleccion();
+            }
         });
     });
 }
@@ -225,7 +234,13 @@ function seleccionarProducto(productoId) {
     abrirModal(producto);
 }
 
+// Variables para gestión de foco
+let elementoPrevioFoco = null;
+
 function abrirModal(producto) {
+    // Guardar elemento que tenía el foco
+    elementoPrevioFoco = document.activeElement;
+    
     document.getElementById("modalNombreProductoBaja").textContent = producto.nombre;
     document.getElementById("modalSelectTipoBaja").value = "Rotura";
     document.getElementById("modalInputCantidadBaja").value = "1";
@@ -233,13 +248,58 @@ function abrirModal(producto) {
     document.getElementById("modalStockDisponible").textContent = 
         `Stock disponible: ${producto.stock} unidades`;
     
-    document.getElementById("modalDetalleBaja").classList.remove("oculto");
+    const modal = document.getElementById("modalDetalleBaja");
+    modal.classList.remove("oculto");
+    
+    // Mover foco al primer elemento interactivo del modal
     document.getElementById("modalInputCantidadBaja").focus();
+    
+    // Añadir listener para trampa de foco
+    modal.addEventListener('keydown', manejarFocoModal);
 }
 
 function cerrarModal() {
-    document.getElementById("modalDetalleBaja").classList.add("oculto");
+    const modal = document.getElementById("modalDetalleBaja");
+    modal.classList.add("oculto");
+    
+    // Remover listener
+    modal.removeEventListener('keydown', manejarFocoModal);
+    
     productoSeleccionado = null;
+    
+    // Restaurar foco
+    if (elementoPrevioFoco) {
+        elementoPrevioFoco.focus();
+        elementoPrevioFoco = null;
+    }
+}
+
+function manejarFocoModal(e) {
+    const modal = document.getElementById("modalDetalleBaja");
+    const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (e.key === 'Tab') {
+        if (e.shiftKey) { // Shift + Tab
+            if (document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            }
+        } else { // Tab
+            if (document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+    }
+    
+    if (e.key === 'Escape') {
+        cerrarModal();
+    }
 }
 
 function validarCantidadModal() {

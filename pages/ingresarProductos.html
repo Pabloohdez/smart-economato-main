@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="assets/css/ingreso.css">
+<link rel="stylesheet" href="../assets/css/ingreso.css">
 
 <!-- Botón para volver al inventario -->
 <div style="margin-bottom: 20px;">
@@ -10,7 +10,7 @@
 <h1 class="titulo-ingreso">INGRESO MASIVO DE MERCANCÍA</h1>
 
 <div class="panel-captura">
-    
+
     <div class="campo-grupo campo-nombre">
         <label class="label-input">Nombre del Producto</label>
         <input type="text" id="inputNombre" class="input-form" placeholder="Ej: Leche Entera">
@@ -32,7 +32,7 @@
         <label class="label-input">Stock</label>
         <input type="number" id="inputStock" class="input-form" placeholder="0">
     </div>
-    
+
     <div class="campo-grupo campo-stock">
         <label class="label-input">Mínimo</label>
         <input type="number" id="inputStockMin" class="input-form" placeholder="5">
@@ -52,10 +52,10 @@
 
 <div class="seccion-tabla">
     <h3 class="titulo-lista">
-        <i class="fa-solid fa-list-check"></i> Lista de Previsualización 
+        <i class="fa-solid fa-list-check"></i> Lista de Previsualización
         <span id="contadorLista" class="badge-contador">0 productos</span>
     </h3>
-    
+
     <table id="tablaTemporal" class="tabla-temporal">
         <thead>
             <tr>
@@ -68,7 +68,9 @@
             </tr>
         </thead>
         <tbody id="tbodyTemporal">
-            <tr><td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">La lista está vacía.</td></tr>
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 30px; color: #a0aec0;">La lista está vacía.</td>
+            </tr>
         </tbody>
     </table>
 </div>

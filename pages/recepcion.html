@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="assets/css/recepcion.css">
+<link rel="stylesheet" href="../assets/css/recepcion.css">
 
 <div class="header-recepcion">
     <div>
@@ -58,6 +58,7 @@
     <!-- Tabla de productos recepcionados -->
     <div class="tabla-wrapper">
         <table id="tablaRecepcion" class="tabla-recepcion">
+            <caption class="visually-hidden">Listado de productos recibidos en la recepción actual</caption>
             <thead>
                 <tr>
                     <th>Producto</th>
@@ -99,7 +100,8 @@
             <i class="fa-solid fa-note-sticky"></i> Observaciones / Notas
         </label>
         <textarea id="textareaObservaciones" class="textarea-observaciones"
-            placeholder="Añade notas sobre esta recepción (opcional)..." rows="3"></textarea>
+            placeholder="Añade notas sobre esta recepción (opcional)..." rows="3"
+            aria-label="Observaciones y notas"></textarea>
     </div>
 
     <div class="botones-finales">

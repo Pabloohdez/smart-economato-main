@@ -42,7 +42,10 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // 1.1 Gestión visual del menú (ACTIVO)
     const menuLinks = document.querySelectorAll(".menu a[data-page]");
-    menuLinks.forEach((l) => l.classList.remove("activo"));
+    menuLinks.forEach((l) => {
+        l.classList.remove("activo");
+        l.removeAttribute("aria-current"); // Limpiar aria-current anterior
+    });
     
     // Truco: Si vamos a "ingresarProductos", marcamos "Inventario" como activo
     let pageKeyForMenu = pageName.toLowerCase();
@@ -53,7 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const activeMenuLink = Array.from(menuLinks).find(
       link => link.dataset.page.toLowerCase() === pageKeyForMenu
     );
-    if (activeMenuLink) activeMenuLink.classList.add("activo");
+    if (activeMenuLink) {
+        activeMenuLink.classList.add("activo");
+        activeMenuLink.setAttribute("aria-current", "page"); // Marcar para lector de pantalla
+    }
 
     // 1.2 LLAMAMOS AL ROUTER
     navigateTo(pageName);

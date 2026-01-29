@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="assets/css/bajas.css">
+<link rel="stylesheet" href="../assets/css/bajas.css">
 
 <div class="header-bajas">
     <div>
@@ -24,7 +24,7 @@
             <span class="stat-valor" id="statRoturas">0</span>
         </div>
     </div>
-    
+
     <div class="stat-card stat-caducados">
         <div class="stat-icon">
             <i class="fa-solid fa-clock"></i>
@@ -34,7 +34,7 @@
             <span class="stat-valor" id="statCaducados">0</span>
         </div>
     </div>
-    
+
     <div class="stat-card stat-mermas">
         <div class="stat-icon">
             <i class="fa-solid fa-scale-unbalanced"></i>
@@ -44,7 +44,7 @@
             <span class="stat-valor" id="statMermas">0</span>
         </div>
     </div>
-    
+
     <div class="stat-card stat-valor-perdido">
         <div class="stat-icon">
             <i class="fa-solid fa-euro-sign"></i>
@@ -58,30 +58,27 @@
 
 <!-- Panel de Búsqueda y Registro -->
 <div class="panel-registro-baja">
-    <h3 class="titulo-seccion">
+    <h2 class="titulo-seccion">
         <i class="fa-solid fa-clipboard-list"></i> Registrar Nueva Baja
-    </h3>
-    
+    </h2>
+
     <div class="controles-registro">
         <!-- Búsqueda de producto -->
         <div class="campo-busqueda-baja">
-            <input 
-                type="text" 
-                id="inputBusquedaBaja" 
-                class="input-busqueda-baja" 
+            <input type="text" id="inputBusquedaBaja" class="input-busqueda-baja"
                 placeholder="Buscar producto por nombre o código de barras..."
-            >
+                aria-label="Buscar producto por nombre o código de barras">
             <button id="btnBuscarBaja" class="btn-buscar-baja">
                 <i class="fa-solid fa-search"></i> Buscar
             </button>
         </div>
-        
+
         <!-- Filtros -->
         <div class="filtros-baja">
-            <select id="selectCategoriaBaja" class="select-filtro-baja">
+            <select id="selectCategoriaBaja" class="select-filtro-baja" aria-label="Filtrar por categoría">
                 <option value="">Todas las categorías</option>
             </select>
-            
+
             <button id="btnProductosCaducados" class="btn-filtro-especial">
                 <i class="fa-solid fa-clock"></i> Ver Productos Próximos a Caducar
             </button>
@@ -101,6 +98,7 @@
     <!-- Tabla de productos dados de baja -->
     <div class="tabla-wrapper">
         <table id="tablaBajas" class="tabla-bajas">
+            <caption class="visually-hidden">Listado de productos dados de baja en la sesión actual</caption>
             <thead>
                 <tr>
                     <th>Producto</th>
@@ -138,15 +136,12 @@
 <!-- Panel de Motivo y Acciones -->
 <div class="panel-acciones-baja">
     <div class="campo-motivo">
-        <label class="label-motivo">
+        <label class="label-motivo" for="textareaMotivoBaja">
             <i class="fa-solid fa-message"></i> Motivo / Descripción Detallada
         </label>
-        <textarea 
-            id="textareaMotivoBaja" 
-            class="textarea-motivo" 
-            placeholder="Describe el motivo de las bajas (opcional pero recomendado)..."
-            rows="3"
-        ></textarea>
+        <textarea id="textareaMotivoBaja" class="textarea-motivo"
+            placeholder="Describe el motivo de las bajas (opcional pero recomendado)..." rows="3"
+            aria-label="Motivo o descripción detallada de la baja"></textarea>
     </div>
 
     <div class="botones-finales-baja">
@@ -169,7 +164,8 @@
             <i class="fa-solid fa-clock-rotate-left"></i> Historial de Bajas
         </h3>
         <div class="filtros-historial">
-            <select id="selectFiltroTipoBaja" class="select-filtro-historial">
+            <select id="selectFiltroTipoBaja" class="select-filtro-historial"
+                aria-label="Filtrar historial por tipo de baja">
                 <option value="">Todos los tipos</option>
                 <option value="Rotura">Roturas</option>
                 <option value="Caducado">Caducados</option>
@@ -179,10 +175,10 @@
             </select>
         </div>
     </div>
-    
+
     <div id="contenedorHistorial" class="contenedor-historial">
-        <p style="text-align: center; color: #a0aec0; padding: 20px;">
-            El historial de bajas aparecerá aquí 
+        <p style="text-align: center; color: black; padding: 20px;">
+            El historial de bajas aparecerá aquí
         </p>
     </div>
 </div>
@@ -191,14 +187,14 @@
 <div id="modalDetalleBaja" class="modal-overlay oculto">
     <div class="modal-contenido-baja">
         <h3>
-            <i class="fa-solid fa-circle-minus"></i> 
+            <i class="fa-solid fa-circle-minus"></i>
             Detalles de la Baja
         </h3>
         <p id="modalNombreProductoBaja" class="modal-producto-nombre-baja"></p>
-        
+
         <div class="modal-campos-baja">
             <div class="modal-campo">
-                <label>Tipo de Baja:</label>
+                <label for="modalSelectTipoBaja">Tipo de Baja:</label>
                 <select id="modalSelectTipoBaja" class="modal-select-tipo">
                     <option value="Rotura">Rotura</option>
                     <option value="Caducado">Caducado</option>
@@ -207,20 +203,14 @@
                     <option value="Otro">Otro</option>
                 </select>
             </div>
-            
+
             <div class="modal-campo">
-                <label>Cantidad:</label>
-                <input 
-                    type="number" 
-                    id="modalInputCantidadBaja" 
-                    class="modal-input-cantidad-baja" 
-                    min="1" 
-                    value="1"
-                >
+                <label for="modalInputCantidadBaja">Cantidad:</label>
+                <input type="number" id="modalInputCantidadBaja" class="modal-input-cantidad-baja" min="1" value="1">
                 <small id="modalStockDisponible" class="stock-disponible-info"></small>
             </div>
         </div>
-        
+
         <div class="modal-botones-baja">
             <button id="btnModalCancelarBaja" class="btn-modal-baja btn-modal-cancelar-baja">
                 Cancelar
