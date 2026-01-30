@@ -140,6 +140,35 @@ export async function cargarDatos() {
 
     } catch (error) {
         console.error("Error cargando datos:", error);
+
+        // UI Error Handling
+        const contenedor = document.getElementById('grid-inventario');
+        const catSelect = document.querySelector('#categoriaSelect');
+        const provSelect = document.querySelector('#proveedorSelect');
+
+        if (contenedor) {
+            contenedor.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; background: #fff5f5; border: 1px solid #c53030; border-radius: 8px; color: #c53030;">
+                    <i class="fa-solid fa-server" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <h3 style="margin: 0; font-size: 20px;">Error de Conexión con el Servidor</h3>
+                    <p style="margin: 10px 0;">No se pudo conectar con la base de datos. Asegúrate de que XAMPP (Apache/MySQL) está iniciado.</p>
+                    <button onclick="location.reload()" style="padding: 8px 16px; background: #c53030; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
+                        <i class="fa-solid fa-rotate-right"></i> Reintentar
+                    </button>
+                    <div style="margin-top: 10px; font-size: 12px; color: #718096; white-space: pre-wrap;">Detalles: ${error.message}</div>
+                </div>
+            `;
+        }
+
+        if (catSelect) {
+            catSelect.innerHTML = '<option>⚠️ Error de conexión</option>';
+            catSelect.disabled = true;
+        }
+
+        if (provSelect) {
+            provSelect.innerHTML = '<option>⚠️ Error de conexión</option>';
+            provSelect.disabled = true;
+        }
     }
 }
 

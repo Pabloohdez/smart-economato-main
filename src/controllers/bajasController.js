@@ -37,6 +37,24 @@ async function cargarDatos() {
         });
     } catch (error) {
         console.error("❌ Error cargando datos:", error);
+        
+        const contenedor = document.getElementById("contenedorResultadosBaja");
+        const selectCategoria = document.getElementById("selectCategoriaBaja");
+
+        if (contenedor) {
+            contenedor.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; background: #fff5f5; border: 1px solid #c53030; border-radius: 8px; color: #c53030; grid-column: 1 / -1;">
+                    <i class="fa-solid fa-server" style="font-size: 32px; margin-bottom: 15px;"></i>
+                    <h3 style="margin: 0; font-size: 18px;">Error de Conexión</h3>
+                    <p style="margin: 5px 0; font-size: 14px;">No se pueden cargar los productos.</p>
+                </div>
+            `;
+        }
+
+        if (selectCategoria) {
+            selectCategoria.innerHTML = '<option>⚠️ Error de conexión</option>';
+            selectCategoria.disabled = true;
+        }
     }
 }
 

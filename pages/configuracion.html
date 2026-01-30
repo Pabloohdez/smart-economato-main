@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="../assets/css/configuracion.css">
+<link rel="stylesheet" href="assets/css/configuracion.css">
 
 <div class="header-configuracion">
     <h1 class="titulo-configuracion">
@@ -8,24 +8,30 @@
 </div>
 
 <!-- Tabs de Navegación -->
-<div class="tabs-navegacion">
-    <button class="tab-btn activo" data-tab="perfil">
+<!-- Tabs de Navegación -->
+<div class="tabs-navegacion" role="tablist" aria-label="Secciones de configuración">
+    <button class="tab-btn activo" data-tab="perfil" role="tab" aria-selected="true" aria-controls="tab-perfil"
+        id="btn-tab-perfil">
         <i class="fa-solid fa-user"></i> Perfil
     </button>
-    <button class="tab-btn" data-tab="alergias">
+    <button class="tab-btn" data-tab="alergias" role="tab" aria-selected="false" aria-controls="tab-alergias"
+        id="btn-tab-alergias" tabindex="-1">
         <i class="fa-solid fa-triangle-exclamation"></i> Alergias
     </button>
-    <button class="tab-btn" data-tab="notificaciones">
+    <button class="tab-btn" data-tab="notificaciones" role="tab" aria-selected="false"
+        aria-controls="tab-notificaciones" id="btn-tab-notificaciones" tabindex="-1">
         <i class="fa-solid fa-bell"></i> Notificaciones
     </button>
 </div>
 
 <!-- Tab 1: Perfil de Usuario -->
-<div id="tab-perfil" class="tab-content activo">
+<div id="tab-perfil" class="tab-content activo" role="tabpanel" aria-labelledby="btn-tab-perfil" tabindex="0">
     <div class="panel-perfil">
         <h2 class="titulo-seccion">
             <i class="fa-solid fa-id-card"></i> Información Personal
         </h2>
+        <!-- ... contenido perfil ... -->
+
 
         <div class="form-perfil">
             <div class="campo-perfil">
@@ -63,7 +69,7 @@
 </div>
 
 <!-- Tab 2: Gestión de Alergias -->
-<div id="tab-alergias" class="tab-content">
+<div id="tab-alergias" class="tab-content" role="tabpanel" aria-labelledby="btn-tab-alergias" tabindex="0" hidden>
 
     <!-- Alerta de Seguridad -->
     <div class="alerta-seguridad">
@@ -81,127 +87,130 @@
         </h3>
 
         <!-- Grid de Alérgenos Comunes -->
-        <div class="grid-alergenos">
-            <div class="card-alergeno" data-alergeno="Lácteos">
-                <input type="checkbox" id="check-lacteos" class="checkbox-alergeno">
-                <label for="check-lacteos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #e3f2fd; color: #1976d2;">
-                        <i class="fa-solid fa-cow"></i>
-                    </div>
-                    <span class="nombre-alergeno">Lácteos</span>
-                </label>
-            </div>
+        <fieldset class="fieldset-alergias">
+            <legend class="sr-only">Seleccione sus alergias alimentarias</legend>
+            <div class="grid-alergenos">
+                <div class="card-alergeno" data-alergeno="Lácteos">
+                    <input type="checkbox" id="check-lacteos" class="checkbox-alergeno">
+                    <label for="check-lacteos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #e3f2fd; color: #1976d2;">
+                            <i class="fa-solid fa-cow"></i>
+                        </div>
+                        <span class="nombre-alergeno">Lácteos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Gluten">
-                <input type="checkbox" id="check-gluten" class="checkbox-alergeno">
-                <label for="check-gluten" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #fff8e1; color: #f57c00;">
-                        <i class="fa-solid fa-wheat-awn"></i>
-                    </div>
-                    <span class="nombre-alergeno">Gluten</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Gluten">
+                    <input type="checkbox" id="check-gluten" class="checkbox-alergeno">
+                    <label for="check-gluten" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #fff8e1; color: #f57c00;">
+                            <i class="fa-solid fa-wheat-awn"></i>
+                        </div>
+                        <span class="nombre-alergeno">Gluten</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Huevos">
-                <input type="checkbox" id="check-huevos" class="checkbox-alergeno">
-                <label for="check-huevos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #fffde7; color: #f9a825;">
-                        <i class="fa-solid fa-egg"></i>
-                    </div>
-                    <span class="nombre-alergeno">Huevos</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Huevos">
+                    <input type="checkbox" id="check-huevos" class="checkbox-alergeno">
+                    <label for="check-huevos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #fffde7; color: #f9a825;">
+                            <i class="fa-solid fa-egg"></i>
+                        </div>
+                        <span class="nombre-alergeno">Huevos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Pescado">
-                <input type="checkbox" id="check-pescado" class="checkbox-alergeno">
-                <label for="check-pescado" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #e1f5fe; color: #0277bd;">
-                        <i class="fa-solid fa-fish"></i>
-                    </div>
-                    <span class="nombre-alergeno">Pescado</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Pescado">
+                    <input type="checkbox" id="check-pescado" class="checkbox-alergeno">
+                    <label for="check-pescado" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #e1f5fe; color: #0277bd;">
+                            <i class="fa-solid fa-fish"></i>
+                        </div>
+                        <span class="nombre-alergeno">Pescado</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Crustáceos">
-                <input type="checkbox" id="check-crustaceos" class="checkbox-alergeno">
-                <label for="check-crustaceos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #fce4ec; color: #c2185b;">
-                        <i class="fa-solid fa-shrimp"></i>
-                    </div>
-                    <span class="nombre-alergeno">Crustáceos</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Crustáceos">
+                    <input type="checkbox" id="check-crustaceos" class="checkbox-alergeno">
+                    <label for="check-crustaceos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #fce4ec; color: #c2185b;">
+                            <i class="fa-solid fa-shrimp"></i>
+                        </div>
+                        <span class="nombre-alergeno">Crustáceos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Moluscos">
-                <input type="checkbox" id="check-moluscos" class="checkbox-alergeno">
-                <label for="check-moluscos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #f3e5f5; color: #7b1fa2;">
-                        <i class="fa-solid fa-circle"></i>
-                    </div>
-                    <span class="nombre-alergeno">Moluscos</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Moluscos">
+                    <input type="checkbox" id="check-moluscos" class="checkbox-alergeno">
+                    <label for="check-moluscos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #f3e5f5; color: #7b1fa2;">
+                            <i class="fa-solid fa-circle"></i>
+                        </div>
+                        <span class="nombre-alergeno">Moluscos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Frutos secos">
-                <input type="checkbox" id="check-frutos" class="checkbox-alergeno">
-                <label for="check-frutos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #efebe9; color: #5d4037;">
-                        <i class="fa-solid fa-seedling"></i>
-                    </div>
-                    <span class="nombre-alergeno">Frutos Secos</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Frutos secos">
+                    <input type="checkbox" id="check-frutos" class="checkbox-alergeno">
+                    <label for="check-frutos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #efebe9; color: #5d4037;">
+                            <i class="fa-solid fa-seedling"></i>
+                        </div>
+                        <span class="nombre-alergeno">Frutos Secos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Soja">
-                <input type="checkbox" id="check-soja" class="checkbox-alergeno">
-                <label for="check-soja" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #f1f8e9; color: #558b2f;">
-                        <i class="fa-solid fa-leaf"></i>
-                    </div>
-                    <span class="nombre-alergeno">Soja</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Soja">
+                    <input type="checkbox" id="check-soja" class="checkbox-alergeno">
+                    <label for="check-soja" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #f1f8e9; color: #558b2f;">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <span class="nombre-alergeno">Soja</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Sulfitos">
-                <input type="checkbox" id="check-sulfitos" class="checkbox-alergeno">
-                <label for="check-sulfitos" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #f3e5f5; color: #8e24aa;">
-                        <i class="fa-solid fa-wine-bottle"></i>
-                    </div>
-                    <span class="nombre-alergeno">Sulfitos</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Sulfitos">
+                    <input type="checkbox" id="check-sulfitos" class="checkbox-alergeno">
+                    <label for="check-sulfitos" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #f3e5f5; color: #8e24aa;">
+                            <i class="fa-solid fa-wine-bottle"></i>
+                        </div>
+                        <span class="nombre-alergeno">Sulfitos</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Apio">
-                <input type="checkbox" id="check-apio" class="checkbox-alergeno">
-                <label for="check-apio" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #e8f5e9; color: #2e7d32;">
-                        <i class="fa-solid fa-carrot"></i>
-                    </div>
-                    <span class="nombre-alergeno">Apio</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Apio">
+                    <input type="checkbox" id="check-apio" class="checkbox-alergeno">
+                    <label for="check-apio" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #e8f5e9; color: #2e7d32;">
+                            <i class="fa-solid fa-carrot"></i>
+                        </div>
+                        <span class="nombre-alergeno">Apio</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Mostaza">
-                <input type="checkbox" id="check-mostaza" class="checkbox-alergeno">
-                <label for="check-mostaza" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #fff9c4; color: #f9a825;">
-                        <i class="fa-solid fa-pepper-hot"></i>
-                    </div>
-                    <span class="nombre-alergeno">Mostaza</span>
-                </label>
-            </div>
+                <div class="card-alergeno" data-alergeno="Mostaza">
+                    <input type="checkbox" id="check-mostaza" class="checkbox-alergeno">
+                    <label for="check-mostaza" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #fff9c4; color: #f9a825;">
+                            <i class="fa-solid fa-pepper-hot"></i>
+                        </div>
+                        <span class="nombre-alergeno">Mostaza</span>
+                    </label>
+                </div>
 
-            <div class="card-alergeno" data-alergeno="Sésamo">
-                <input type="checkbox" id="check-sesamo" class="checkbox-alergeno">
-                <label for="check-sesamo" class="label-alergeno">
-                    <div class="icono-alergeno" style="background: #ffe0b2; color: #e65100;">
-                        <i class="fa-solid fa-circle-dot"></i>
-                    </div>
-                    <span class="nombre-alergeno">Sésamo</span>
-                </label>
+                <div class="card-alergeno" data-alergeno="Sésamo">
+                    <input type="checkbox" id="check-sesamo" class="checkbox-alergeno">
+                    <label for="check-sesamo" class="label-alergeno">
+                        <div class="icono-alergeno" style="background: #ffe0b2; color: #e65100;">
+                            <i class="fa-solid fa-circle-dot"></i>
+                        </div>
+                        <span class="nombre-alergeno">Sésamo</span>
+                    </label>
+                </div>
             </div>
-        </div>
+        </fieldset>
 
         <div class="resumen-alergias">
             <h4><i class="fa-solid fa-list-check"></i> Resumen de Alergias Seleccionadas</h4>
@@ -217,7 +226,9 @@
 </div>
 
 <!-- Tab 3: Notificaciones -->
-<div id="tab-notificaciones" class="tab-content">
+<!-- Tab 3: Notificaciones -->
+<div id="tab-notificaciones" class="tab-content" role="tabpanel" aria-labelledby="btn-tab-notificaciones" tabindex="0"
+    hidden>
     <div class="panel-notificaciones">
         <h3 class="titulo-seccion">
             <i class="fa-solid fa-bell"></i> Preferencias de Alertas
@@ -228,7 +239,8 @@
                 <div class="info-opcion">
                     <i class="fa-solid fa-triangle-exclamation" style="color: #c53030;"></i>
                     <div>
-                        <label for="switchAlertasProductos" style="cursor: pointer;"><strong>Alertas de Productos con
+                        <label for="switchAlertasProductos" style="cursor: pointer;"><strong>Alertas de Productos
+                                con
                                 Alérgenos</strong></label>
                         <p>Recibir advertencias al buscar productos con tus alérgenos</p>
                     </div>

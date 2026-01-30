@@ -47,8 +47,41 @@ const routes = {
             const module = await import('./controllers/configuracionController.js');
             if (module.initConfiguracion) module.initConfiguracion();
         }
+    },
+    // --- PÁGINAS EN CONSTRUCCIÓN ---
+    'distribucion': {
+        template: 'pages/construccion.html',
+        action: () => setupConstruction('Distribución')
+    },
+    'proveedores': {
+        template: 'pages/construccion.html',
+        action: () => setupConstruction('Gestión de Proveedores')
+    },
+    'pedidos': {
+        template: 'pages/construccion.html',
+        action: () => setupConstruction('Pedidos y Compras')
+    },
+    'informes': {
+        template: 'pages/construccion.html',
+        action: () => setupConstruction('Informes y Estadísticas')
+    },
+    'usuarios': {
+        template: 'pages/construccion.html',
+        action: () => setupConstruction('Gestión de Usuarios')
     }
 };
+
+// Función auxiliar para configurar la página de construcción
+function setupConstruction(featureName) {
+    // Pequeño timeout para asegurar que el DOM se ha pintado
+    setTimeout(() => {
+        const title = document.getElementById('constructionTitle');
+        const feature = document.getElementById('constructionFeature');
+        
+        if (title) title.textContent = featureName || 'En Construcción';
+        if (feature) feature.textContent = featureName ? `el módulo de ${featureName}` : 'esta sección';
+    }, 50);
+}
 
 // --- FUNCIÓN PRINCIPAL DEL ROUTER ---
 export async function navigateTo(pageName) {
@@ -60,7 +93,7 @@ export async function navigateTo(pageName) {
 
     try {
         // 1. Cargar el HTML
-        const response = await fetch(route.template);
+        const response = await fetch(`${route.template}?t=${Date.now()}`);
         if (!response.ok) throw new Error(`Error cargando ${route.template}`);
         const html = await response.text();
 

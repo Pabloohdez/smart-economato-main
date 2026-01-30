@@ -1,21 +1,42 @@
 const API_URL = "http://localhost/smart-economato-main-2/api";
 
 async function getProductos(){
-    const response = await fetch(`${API_URL}/productos.php`)
-    const data = await response.json()
-    return data
+    try {
+        const response = await fetch(`${API_URL}/productos.php`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        return json.success && json.data ? json.data : json;
+    } catch (e) {
+        throw new Error("Error obteniendo productos: " + e.message);
+    }
 }
 
 async function getCategorias(){
-    const response = await fetch(`${API_URL}/categorias.php`)
-    const data = await response.json()
-    return data
+    try {
+        const response = await fetch(`${API_URL}/categorias.php`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        return json.success && json.data ? json.data : json;
+    } catch (e) {
+        throw new Error("Error obteniendo categorías: " + e.message);
+    }
 } 
 
 async function getProveedores(){
-    const response = await fetch(`${API_URL}/proveedores.php`)
-    const data = await response.json()
-    return data
+    try {
+        const response = await fetch(`${API_URL}/proveedores.php`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        return json.success && json.data ? json.data : json;
+    } catch (e) {
+        throw new Error("Error obteniendo proveedores: " + e.message);
+    }
 }
 
 export async function crearProducto(producto) {
@@ -36,8 +57,13 @@ export async function crearProducto(producto) {
         }
         
         const resultado = await response.json();
-        console.log("✅ Producto creado:", resultado);
-        return resultado;
+        
+        if (resultado.success === false) {
+             throw new Error(resultado.error?.message || "Error desconocido en API");
+        }
+
+        console.log("✅ Producto creado:", resultado.data);
+        return resultado.data || resultado;
     } catch (error) {
         console.error("❌ API Error:", error);
         throw error;
@@ -63,8 +89,13 @@ export async function crearProducto(producto) {
         }
         
         const resultado = await response.json();
-        console.log("✅ Producto actualizado:", resultado);
-        return resultado;
+        
+        if (resultado.success === false) {
+             throw new Error(resultado.error?.message || "Error desconocido en API");
+        }
+        
+        console.log("✅ Producto actualizado:", resultado.data);
+        return resultado.data || resultado;
     } catch (error) {
         console.error("❌ API Error:", error);
         throw error;

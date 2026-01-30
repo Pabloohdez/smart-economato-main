@@ -1,35 +1,46 @@
 <?php
 require_once 'config.php';
+require_once 'utils/response.php';
 
-header("Content-Type: application/json");
+$method = $_SERVER['REQUEST_METHOD'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
 
     if (!isset($data->username) || !isset($data->password)) {
-        echo json_encode(["error" => "Faltan datos"]);
-        exit;
+        sendError("Faltan datos (usuario o contraseña)", 400);
     }
 
-    $username = $conn->real_escape_string($data->username);
-    $password = $conn->real_escape_string($data->password);
-
-    // En un entorno real, las contraseñas deberían estar hasheadas.
-    // Como venimos de un JSON plano, asumimos que están en texto plano por ahora.
-    $sql = "SELECT * FROM usuarios WHERE username = '$username' AND password = '$password'";
+    // SENTENCIA PREPARADA para evitar Inyección SQL
+    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE username = ? AND password = ?");
     
-    $result = $conn->query($sql);
+    if (!$stmt) {
+        sendError("Error interno del servidor", 500, $conn->error);
+    }
+
+    $stmt->bind_param("ss", $data->username, $data->password);
+    
+    if (!$stmt->execute()) {
+        sendError("Error al ejecutar consulta", 500, $stmt->error);
+    }
+
+    $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
-        echo json_encode($user);
+        
+        // NO devolver la contraseña en la respuesta
+        unset($user['password']);
+        
+        sendResponse($user);
     } else {
         http_response_code(401);
-        echo json_encode(["error" => "Credenciales incorrectas"]);
+        sendError("Credenciales incorrectas", 401);
     }
+    
+    $stmt->close();
 } else {
-    http_response_code(405);
-    echo json_encode(["error" => "Método no permitido"]);
+    sendError("Método no permitido", 405);
 }
 
 $conn->close();

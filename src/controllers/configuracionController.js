@@ -50,17 +50,46 @@ function cargarDatosUsuario() {
 
 function configurarTabs() {
     const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.tab-content');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Remover clase activa de todos
-            tabs.forEach(t => t.classList.remove('activo'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('activo'));
+            // Desactivar todos
+            tabs.forEach(t => {
+                t.classList.remove('activo');
+                t.setAttribute('aria-selected', 'false');
+                t.setAttribute('tabindex', '-1');
+            });
+            panels.forEach(c => {
+                c.classList.remove('activo');
+                c.hidden = true;
+            });
             
-            // Activar el seleccionado
+            // Activar selección
             tab.classList.add('activo');
-            const targetTab = tab.dataset.tab;
-            document.getElementById(`tab-${targetTab}`).classList.add('activo');
+            tab.setAttribute('aria-selected', 'true');
+            tab.removeAttribute('tabindex'); // o tabindex="0"
+            
+            const targetId = `tab-${tab.dataset.tab}`;
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.classList.add('activo');
+                targetPanel.hidden = false;
+            }
+        });
+
+        // Soporte teclado (flechas)
+        tab.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const index = Array.from(tabs).indexOf(e.target);
+                let newIndex = e.key === 'ArrowRight' ? index + 1 : index - 1;
+                
+                if (newIndex >= tabs.length) newIndex = 0;
+                if (newIndex < 0) newIndex = tabs.length - 1;
+                
+                tabs[newIndex].focus();
+                tabs[newIndex].click(); // Opcional: activar al enfocar
+            }
         });
     });
 }
