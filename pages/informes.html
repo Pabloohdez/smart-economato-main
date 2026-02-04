@@ -1,0 +1,113 @@
+<link rel="stylesheet" href="assets/css/informes.css">
+
+<div class="content-header">
+    <h2>Informes y Estadísticas</h2>
+    <p>Visión general del rendimiento del economato</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <h3>Gasto Mensual</h3>
+        <div class="value" id="statGasto">0.00 €</div>
+        <p class="desc">En pedidos recibidos este mes</p>
+    </div>
+
+    <div class="stat-card red">
+        <h3>Alertas de Stock</h3>
+        <div class="value" id="statAlertas">0</div>
+        <p class="desc">Productos bajo mínimo</p>
+    </div>
+</div>
+
+<div class="charts-container">
+    <div class="card chart-card">
+        <h3>Top Salidas (Distribución)</h3>
+        <canvas id="chartTopProductos" aria-label="Gráfico de barras mostrando los productos más distribuidos"
+            role="img"></canvas>
+    </div>
+
+    <div class="card bg-white">
+        <h3>Últimos Movimientos</h3>
+        <table class="table-simple" id="tablaMovimientos">
+            <thead>
+                <tr>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Producto</th>
+                    <th scope="col">Tipo</th>
+                    <th scope="col">Cant.</th>
+                    <th scope="col">Usuario</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    (function () {
+        const API_URL = 'http://localhost/smart-economato-main-2/api';
+
+        async function cargarDatos() {
+            try {
+                const res = await fetch(`${API_URL}/informes.php?tipo=dashboard`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    actualizarUI(data.data);
+                }
+            } catch (error) {
+                console.error("Error cargando informes", error);
+            }
+        }
+
+        function actualizarUI(data) {
+            // KPI Cards
+            document.getElementById('statGasto').innerText = parseFloat(data.gasto_mensual).toFixed(2) + ' €';
+            document.getElementById('statAlertas').innerText = data.alertas_stock;
+
+            // Tabla Movimientos
+            const tbody = document.querySelector('#tablaMovimientos tbody');
+            tbody.innerHTML = '';
+            data.ultimos_movimientos.forEach(m => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${new Date(m.fecha).toLocaleDateString()}</td>
+                    <td>${m.producto}</td>
+                    <td><span class="badge ${m.tipo === 'ENTRADA' ? 'badge-success' : 'badge-warning'}">${m.tipo}</span></td>
+                    <td>${m.cantidad}</td>
+                    <td>${m.usuario_nombre || 'Sistema'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Gráfico Chart.js
+            const ctx = document.getElementById('chartTopProductos').getContext('2d');
+            const labels = data.top_productos.map(p => p.nombre);
+            const counts = data.top_productos.map(p => p.total_salida);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Unidades Distribuidas',
+                        data: counts,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        cargarDatos();
+    })();
+</script>

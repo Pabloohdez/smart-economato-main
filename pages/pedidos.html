@@ -1,0 +1,71 @@
+<link rel="stylesheet" href="assets/css/pedidos.css">
+
+<div class="content-header">
+    <h2>Pedidos y Compras</h2>
+    <div class="header-actions">
+        <button id="btnNuevoPedido" class="btn-primary">
+            <i class="fa-solid fa-plus"></i> Nuevo Pedido
+        </button>
+        <button id="btnListarPedidos" class="btn-secondary">
+            <i class="fa-solid fa-list"></i> Ver Historial
+        </button>
+    </div>
+</div>
+
+<!-- SECCION: LISTA DE PEDIDOS -->
+<div id="seccionLista" class="card">
+    <h3>Historial de Pedidos</h3>
+    <div id="gridPedidos"></div>
+</div>
+
+<!-- SECCION: NUEVO PEDIDO -->
+<div id="seccionNuevo" class="card" style="display: none;">
+    <h3><i class="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido</h3>
+
+    <div class="form-row">
+        <div class="form-group" style="flex:1">
+            <label for="selectProveedor">Proveedor:</label>
+            <select id="selectProveedor" class="form-control">
+                <option value="">-- Seleccionar Proveedor --</option>
+            </select>
+        </div>
+        <div class="form-group" style="flex:1">
+            <label for="fechaPedido">Fecha:</label>
+            <input type="date" id="fechaPedido" disabled class="form-control">
+        </div>
+    </div>
+
+    <div class="pedido-builder">
+        <div class="lista-productos-prov">
+            <h4>Productos Disponibles</h4>
+            <div id="listaProductosProv" class="lista-scroll">
+                <p class="text-muted">Selecciona un proveedor primero</p>
+            </div>
+        </div>
+
+        <div class="carrito-pedido">
+            <h4>Items del Pedido</h4>
+            <table class="table-carrito">
+                <thead>
+                    <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Cant.</th>
+                        <th scope="col">Precio</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaItemsPedido"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right"><strong>Total Estimado:</strong></td>
+                        <td colspan="2"><strong id="totalPedido">0.00 €</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <button id="btnGuardarPedido" class="btn-success btn-block">
+                Confirmar Pedido
+            </button>
+        </div>
+    </div>
+</div>

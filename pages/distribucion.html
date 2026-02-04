@@ -1,0 +1,225 @@
+<link rel="stylesheet" href="assets/css/distribucion.css">
+
+<div class="content-header">
+    <h2>Distribución / Salida de Stock</h2>
+    <p class="text-muted">Registra la salida de productos hacia cocina, bar u otros departamentos.</p>
+</div>
+
+<div class="distribucion-container">
+    <!-- Panel Izquierdo: Selección de Productos -->
+    <div class="card panel-seleccion">
+        <h3><i class="fa-solid fa-magnifying-glass"></i> Buscar Producto</h3>
+
+        <div class="form-group">
+            <label for="buscadorProd" class="sr-only">Buscar Producto</label>
+            <input type="text" id="buscadorProd" class="form-control"
+                placeholder="Escribe nombre o código de barras...">
+            <div id="listaResultados" class="lista-resultados"></div>
+        </div>
+
+        <div id="detalleProducto" class="detalle-producto" style="display: none;">
+            <h4 id="nombreSeleccionado">Nombre Producto</h4>
+            <p>Stock Actual: <strong id="stockSeleccionado">0</strong></p>
+
+            <div class="form-group">
+                <label for="cantidadSalida">Cantidad a retirar:</label>
+                <div class="input-cantidad">
+                    <button onclick="ajustarCant(-1)" aria-label="Disminuir cantidad">-</button>
+                    <input type="number" id="cantidadSalida" value="1" min="1">
+                    <button onclick="ajustarCant(1)" aria-label="Aumentar cantidad">+</button>
+                </div>
+            </div>
+
+            <button class="btn-primary btn-block" onclick="agregarAlCarrito()">
+                <i class="fa-solid fa-cart-plus"></i> Añadir a la Lista
+            </button>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Carrito de Salida -->
+    <div class="card panel-carrito">
+        <div class="carrito-header">
+            <h3>Lista de Salida</h3>
+            <span id="itemsCount" class="badge">0 items</span>
+        </div>
+
+        <div class="carrito-body">
+            <table class="table-carrito">
+                <thead>
+                    <tr>
+                        <th scope="col">Producto</th>
+                        <th scope="col">Cant.</th>
+                        <th scope="col">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaCarrito">
+                    <tr>
+                        <td colspan="3" class="text-center">La lista está vacía</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="carrito-footer">
+            <div class="form-group">
+                <label for="motivoSalida">Destino / Motivo:</label>
+                <select id="motivoSalida" class="form-control">
+                    <option value="Cocina">Cocina</option>
+                    <option value="Bar/Cafetería">Bar/Cafetería</option>
+                    <option value="Eventos">Eventos</option>
+                    <option value="Caducidad/Merma">Caducidad / Merma</option>
+                    <option value="Donación">Donación</option>
+                </select>
+            </div>
+            <button class="btn-success btn-block" onclick="confirmarSalida()">
+                <i class="fa-solid fa-check"></i> Confirmar Salida
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const API_URL = 'http://localhost/smart-economato-main-2/api';
+        let todosLosProductos = [];
+        let productoActual = null;
+        let carrito = [];
+
+        async function cargarProductos() {
+            const res = await fetch(`${API_URL}/productos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const json = await res.json();
+            if (json.success) todosLosProductos = json.data;
+        }
+
+        // Buscador
+        const input = document.getElementById('buscadorProd');
+        const lista = document.getElementById('listaResultados');
+
+        input.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            if (term.length < 2) { lista.style.display = 'none'; return; }
+
+            const matches = todosLosProductos.filter(p =>
+                p.nombre.toLowerCase().includes(term) ||
+                (p.codigoBarras && p.codigoBarras.includes(term))
+            );
+
+            lista.innerHTML = '';
+            matches.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'item-resultado';
+                div.innerHTML = `<strong>${p.nombre}</strong> <small>(${p.stock})</small>`;
+                div.setAttribute('tabindex', '0'); // Accessibility
+                div.setAttribute('role', 'button'); // Accessibility
+                div.onclick = () => seleccionarProducto(p);
+                div.onkeydown = (e) => { if (e.key === 'Enter') seleccionarProducto(p) }; // Keyboard support
+                lista.appendChild(div);
+            });
+            lista.style.display = matches.length ? 'block' : 'none';
+        });
+
+        function seleccionarProducto(p) {
+            productoActual = p;
+            document.getElementById('nombreSeleccionado').innerText = p.nombre;
+            document.getElementById('stockSeleccionado').innerText = p.stock;
+            document.getElementById('detalleProducto').style.display = 'block';
+            lista.style.display = 'none';
+            input.value = p.nombre;
+        }
+
+        window.ajustarCant = (delta) => {
+            const inp = document.getElementById('cantidadSalida');
+            let val = parseInt(inp.value) + delta;
+            if (val < 1) val = 1;
+            if (productoActual && val > productoActual.stock) val = productoActual.stock;
+            inp.value = val;
+        };
+
+        window.agregarAlCarrito = () => {
+            if (!productoActual) return;
+            const cant = parseInt(document.getElementById('cantidadSalida').value);
+
+            // Verificar si ya existe
+            const existente = carrito.find(i => i.producto_id == productoActual.id);
+            if (existente) {
+                existente.cantidad += cant;
+            } else {
+                carrito.push({
+                    producto_id: productoActual.id,
+                    nombre: productoActual.nombre,
+                    cantidad: cant
+                });
+            }
+
+            renderizarCarrito();
+            // Reset
+            productoActual = null;
+            document.getElementById('detalleProducto').style.display = 'none';
+            input.value = '';
+            input.focus(); // Retornar foco
+        };
+
+        function renderizarCarrito() {
+            const tbody = document.getElementById('tablaCarrito');
+            document.getElementById('itemsCount').innerText = `${carrito.length} items`;
+
+            if (carrito.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center">La lista está vacía</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            carrito.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.nombre}</td>
+                    <td>${item.cantidad}</td>
+                    <td><button onclick="eliminarDelCarrito(${index})" aria-label="Eliminar ${item.nombre}" style="color:#bd2130;"><i class="fa-solid fa-trash"></i></button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.eliminarDelCarrito = (index) => {
+            carrito.splice(index, 1);
+            renderizarCarrito();
+        };
+
+        window.confirmarSalida = async () => {
+            if (carrito.length === 0) return alert("El carrito está vacío");
+
+            const motivo = document.getElementById('motivoSalida').value;
+
+            const payload = {
+                items: carrito,
+                motivo: motivo,
+                usuario_id: "1" // Hardcoded, debería ser dinámico
+            };
+
+            if (!confirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
+
+            try {
+                const res = await fetch(`${API_URL}/movimientos.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('Salida registrada correctamente. Stock actualizado.');
+                    carrito = [];
+                    renderizarCarrito();
+                    cargarProductos(); // Actualizar stock local
+                } else {
+                    alert('Error: ' + JSON.stringify(data.error));
+                }
+            } catch (error) {
+                alert('Error de red');
+            }
+        };
+
+        cargarProductos();
+    })();
+</script>

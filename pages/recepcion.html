@@ -41,6 +41,25 @@
 
     <!-- Resultados de búsqueda -->
     <div id="resultadosBusqueda" class="resultados-busqueda oculto"></div>
+
+    <div style="text-align: right; margin-top: 15px;">
+        <button id="btnImportarPedido" class="btn-buscar-producto" style="background: #2d3748; display: inline-flex;">
+            <i class="fa-solid fa-cloud-arrow-down"></i> Importar/Recibir Pedido
+        </button>
+    </div>
+</div>
+
+<!-- Modal Selección de Pedidos -->
+<div id="modalPedidosPendientes" class="modal-overlay oculto">
+    <div class="modal-contenido" style="max-width: 600px;">
+        <h3><i class="fa-solid fa-list-check"></i> Pedidos Pendientes</h3>
+        <div id="listaPedidosPendientes" style="max-height: 300px; overflow-y: auto;">
+            <p>Cargando...</p>
+        </div>
+        <button class="btn-modal btn-modal-cancelar"
+            onclick="document.getElementById('modalPedidosPendientes').classList.add('oculto')"
+            style="margin-top:15px; width:100%">Cerrar</button>
+    </div>
 </div>
 
 <!-- Panel de Recepción Activa -->

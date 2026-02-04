@@ -1,0 +1,211 @@
+/* assets/css/pedidos.css - Red Theme */
+
+:root {
+    --text-primary: #2d3748;
+    --text-secondary: #50596D;
+    
+    --primary-color: #b33131;
+    --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
+    
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    
+    --success-color: #38a169;
+}
+
+body {
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+}
+
+.content-header {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #edf2f7; 
+    padding-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content-header h2 {
+    color: var(--primary-color);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+}
+
+.btn-secondary {
+    background: white;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* --- Layout --- */
+.card {
+    background: var(--bg-card);
+    border: 1px solid rgba(0,0,0,0.02);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    margin-bottom: 25px;
+}
+
+h3 {
+    color: #2d3748;
+    font-size: 18px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 10px;
+}
+
+.pedido-builder {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+@media (max-width: 900px) {
+    .pedido-builder { grid-template-columns: 1fr; }
+}
+
+/* --- Forms --- */
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+@media (max-width: 600px) { .form-row { flex-direction: column; gap: 15px; } }
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    color: #2d3748;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* --- Product Lists --- */
+.lista-scroll {
+    border: 2px solid var(--border-color);
+    height: 400px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 10px;
+}
+
+.item-prov {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 14px;
+}
+
+.item-prov:hover {
+    background-color: #f8fafc;
+}
+
+.item-prov button {
+    background: var(--primary-color); /* Red */
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- Orders Table --- */
+.table-carrito {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-carrito th {
+    background: #fff;
+    color: var(--text-secondary);
+    font-weight: 600;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.table-carrito td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.table-carrito tfoot td {
+    padding: 15px;
+    background: #f8fafc;
+    border-top: 2px solid #edf2f7;
+    font-size: 16px;
+    color: var(--primary-color);
+    font-weight: 700;
+    border-radius: 0 0 10px 10px;
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 20px;
+    padding: 15px;
+}

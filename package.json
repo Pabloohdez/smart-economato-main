@@ -1,5 +1,6 @@
 {
 "scripts": {
+  "start": "json-server assets/data/db.json --port 4000 --static ./",
   "server": "json-server --watch assets/data/db.json --port 4000"
 }
 }

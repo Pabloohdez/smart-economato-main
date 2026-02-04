@@ -3,7 +3,7 @@ require_once 'config.php';
 require_once 'utils/response.php';
 
 // Proteger endpoint: Solo permitir acceso desde AJAX
-requireAjax();
+//requireAjax();
 
 $method = $_SERVER['REQUEST_METHOD'];
 

@@ -1,512 +1,170 @@
-#  Documentación de la API - Smart Economato
+# Especificación Técnica de API - Smart Economato
 
-## Configuración General
+## 1. Visión General del Sistema
 
-**Base URL:** `http://localhost/smart-economato/backend`
+Este documento define la interfaz de programación de aplicaciones (API) y la arquitectura interna del backend para el sistema Smart Economato. El backend está construido sobre PHP vanilla, utilizando una arquitectura procedimental centrada en recursos y una capa de persistencia basada en MySQL.
 
-### Headers Requeridos
-```
-Content-Type: application/json
-Access-Control-Allow-Origin: *
-```
+### 1.1 Protocolos de Comunicación
 
-### Métodos HTTP Soportados
-- `GET` - Obtener datos
-- `POST` - Crear datos
-- `PUT` - Actualizar datos
-- `DELETE` - Eliminar datos
-- `OPTIONS` - Preflight CORS
+- **Base URL:** `/api`
+- **Formato de Intercambio:** JSON (`application/json`)
+- **Codificación:** UTF-8
+
+### 1.2 Estándares de Seguridad
+
+- **Protección SQL Injection:** Uso estricto de Sentencias Preparadas (Prepared Statements) en todas las operaciones de base de datos.
+- **Restricción de Origen (CORS):** Configurado en `config.php` para permitir métodos GET, POST, PUT, DELETE.
+- **Validación de Entorno:** Los endpoints sensibles (`categorias.php`, `proveedores.php`) implementan validación de cabecera `X-Requested-With` para restringir el acceso directo vía navegador.
 
 ---
 
-## Endpoint: Usuarios
+## 2. Referencia de API (Interfaz Pública)
 
-### 1. Obtener Lista de Usuarios
-**GET** `/usuarios.php`
+### A. Autenticación (`/login.php`)
 
-Obtiene la lista completa de todos los usuarios registrados (sin mostrar contraseñas).
+Permite la identificación de usuarios en el sistema.
 
-**Parámetros de Query:** Ninguno
+**Método:** `POST`
 
-**Respuesta Exitosa (200):**
+**Parámetros del Cuerpo (JSON):**
+| Campo | Tipo | Requerido | Descripción |
+| :--- | :--- | :--- | :--- |
+| `username` | String | Sí | Identificador del usuario. |
+| `password` | String | Sí | Contraseña en texto plano. |
+
+**Respuestas:**
+
+- `200 OK`: Autenticación exitosa. Retorna objeto usuario (sin contraseña).
+- `400 Bad Request`: Payload malformado o campos faltantes.
+- `401 Unauthorized`: Credenciales inválidas.
+
+### B. Gestión de Productos (`/productos.php`)
+
+Controlador principal para operaciones CRUD sobre el inventario.
+
+#### Listar Productos
+
+**Método:** `GET`
+**Descripción:** Retorna todos los productos con relaciones a categorías y proveedores resueltas.
+
+**Estructura de Respuesta (Array JSON):**
+
 ```json
 [
   {
-    "id": 1,
-    "username": "admin",
-    "role": "administrador",
-    "nombre": "Juan",
-    "email": "juan@example.com"
-  },
-  {
-    "id": 2,
-    "username": "almacenero",
-    "role": "almacenero",
-    "nombre": "Carlos",
-    "email": "carlos@example.com"
-  }
-]
-```
-
----
-
-### 2. Login de Usuario
-**GET** `/usuarios.php?username=<username>&password=<password>`
-
-Autentica un usuario verificando sus credenciales.
-
-**Parámetros de Query:**
-- `username` (requerido) - Nombre de usuario
-- `password` (requerido) - Contraseña del usuario
-
-**Respuesta Exitosa (200) - Credenciales Válidas:**
-```json
-[
-  {
-    "id": 1,
-    "username": "admin",
-    "password": "admin123",
-    "role": "administrador",
-    "nombre": "Juan",
-    "apellidos": "Pérez García",
-    "email": "juan@example.com",
-    "telefono": "123456789"
-  }
-]
-```
-
-**Respuesta - Credenciales Inválidas:**
-```json
-[]
-```
-
----
-
-### 3. Crear Nuevo Usuario (Registro)
-**POST** `/usuarios.php`
-
-Registra un nuevo usuario en el sistema.
-
-**Body (JSON):**
-```json
-{
-  "username": "nuevouser",
-  "password": "password123",
-  "role": "almacenero",
-  "nombre": "Miguel",
-  "apellidos": "López Rodríguez",
-  "email": "miguel@example.com",
-  "telefono": "987654321"
-}
-```
-
-**Campos Requeridos:**
-- `username`  - Nombre de usuario único
-- `password`  - Contraseña del usuario
-
-**Campos Opcionales:**
-- `role` - Rol del usuario (administrador, almacenero, etc.)
-- `nombre` - Nombre del usuario
-- `apellidos` - Apellidos del usuario
-- `email` - Email del usuario
-- `telefono` - Teléfono del usuario
-
-**Respuesta Exitosa (201):**
-```json
-{
-  "message": " Usuario registrado correctamente"
-}
-```
-
-**Errores Posibles:**
-- `400` - Faltan datos obligatorios
-- `500` - Error al crear el usuario (posible duplicado)
-
-```json
-{
-  "error": " Error al crear usuario: UNIQUE constraint failed"
-}
-```
-
----
-
-##  Endpoint: Productos
-
-### 1. Obtener Lista de Productos
-**GET** `/productos.php`
-
-Obtiene todos los productos con información de categoría y proveedor.
-
-**Parámetros de Query:** Ninguno
-
-**Respuesta Exitosa (200):**
-```json
-[
-  {
-    "id": 1,
-    "nombre": "Leche Desnatada",
-    "precio": 1.50,
-    "precioUnitario": 0.75,
+    "id": "a1b2c3d4",
+    "nombre": "Producto Ejemplo",
+    "precio": 10.5,
     "stock": 100,
-    "stockMinimo": 20,
-    "categoriaId": 1,
-    "cat_nombre": "Lácteos",
-    "proveedorId": 2,
-    "prov_nombre": "ProveAlimentario",
-    "unidadMedida": "litro",
-    "marca": "LaLactea",
-    "codigoBarras": "8471000001234",
-    "fechaCaducidad": "2026-03-15",
-    "alergenos": ["lactosa"],
-    "descripcion": "Leche desnatada sin lactosa",
-    "imagen": "leche.jpg",
-    "activo": 1,
-    "categoria": {
-      "id": 1,
-      "nombre": "Lácteos"
-    },
-    "proveedor": {
-      "id": 2,
-      "nombre": "ProveAlimentario"
-    }
+    "categoria": { "id": 1, "nombre": "General" },
+    "proveedor": { "id": 2, "nombre": "Proveedor A" }
   }
 ]
 ```
 
----
+#### Crear Producto
 
-### 2. Obtener Producto por ID
-**GET** `/productos.php?id=<id>`
+**Método:** `POST`
+**Descripción:** Registra un nuevo ítem en el inventario.
 
-Obtiene los detalles de un producto específico.
+**Parámetros Principales:**
+| Campo | Tipo | Requerido | Notas |
+| :--- | :--- | :--- | :--- |
+| `nombre` | String | Sí | |
+| `precio` | Float | Sí | |
+| `categoriaId` | Int | Sí | Debe existir en tabla `categorias`. |
+| `proveedorId` | Int | Sí | Debe existir en tabla `proveedores`. |
+| `stock` | Int | Opcional | Default: 0 |
 
-**Parámetros de Query:**
-- `id` (requerido) - ID del producto
+#### Actualizar Producto
 
-**Respuesta Exitosa (200):**
-```json
-{
-  "id": 1,
-  "nombre": "Leche Desnatada",
-  "precio": 1.50,
-  "precioUnitario": 0.75,
-  "stock": 100,
-  "stockMinimo": 20,
-  "categoriaId": 1,
-  "proveedorId": 2,
-  "unidadMedida": "litro",
-  "marca": "LaLactea",
-  "codigoBarras": "8471000001234",
-  "fechaCaducidad": "2026-03-15",
-  "alergenos": ["lactosa"],
-  "descripcion": "Leche desnatada sin lactosa",
-  "imagen": "leche.jpg",
-  "activo": 1,
-  "categoria": {
-    "id": 1,
-    "nombre": "Lácteos"
-  },
-  "proveedor": {
-    "id": 2,
-    "nombre": "ProveAlimentario"
-  }
-}
-```
+**Método:** `PUT`
+**URL:** `/productos.php?id={id}`
+**Descripción:** Actualización completa del recurso. Se requiere enviar el objeto completo.
+
+### C. Catálogos Auxiliares
+
+Endpoints para poblar listas de selección en la interfaz.
+
+- **GET /categorias.php**: Lista de categorías.
+- **GET /proveedores.php**: Lista de proveedores.
+- **Nota:** Requieren cabecera `X-Requested-With: XMLHttpRequest`.
 
 ---
 
-### 3. Crear Nuevo Producto
-**POST** `/productos.php`
+## 3. Implementación Interna (Lógica de Backend)
 
-Crea un nuevo producto en la base de datos.
+Esta sección detalla la lógica operativa de cada archivo fuente para propósitos de mantenimiento.
 
-**Body (JSON):**
-```json
-{
-  "nombre": "Yogur Natural",
-  "precio": 2.50,
-  "precioUnitario": 1.25,
-  "stock": 50,
-  "stockMinimo": 10,
-  "categoriaId": 1,
-  "proveedorId": 2,
-  "unidadMedida": "unidad",
-  "marca": "NaturaYogur",
-  "codigoBarras": "8471000002345",
-  "fechaCaducidad": "2026-02-28",
-  "alergenos": ["lactosa"],
-  "descripcion": "Yogur natural con frutas",
-  "imagen": "yogur.jpg"
-}
-```
+### 3.1 Núcleo del Sistema (`api/config.php`)
 
-**Campos Requeridos:**
-- `nombre` 
-- `precio` 
-- `precioUnitario` 
-- `stock` 
-- `categoriaId` 
-- `proveedorId` 
+Archivo de arranque (bootstrap) incluido en todos los endpoints.
 
-**Campos Opcionales:**
-- `stockMinimo` - Stock mínimo antes de alertar (por defecto 0)
-- `unidadMedida` - Unidad de medida (kg, litro, unidad, etc.)
-- `marca` - Marca del producto
-- `codigoBarras` - Código de barras
-- `fechaCaducidad` - Fecha de caducidad (formato: YYYY-MM-DD)
-- `alergenos` - Array de alérgenos
-- `descripcion` - Descripción del producto
-- `imagen` - Nombre del archivo de imagen
+- **Gestión de Errores:** Establece `mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT)` para convertir errores de base de datos en excepciones capturables.
+- **Conexión Resiliente:** Envuelve la instanciación de `mysqli` en un bloque `try-catch`. En caso de fallo, termina la ejecución invocando `sendError(500)`.
 
-**Respuesta Exitosa (201):**
-```json
-{
-  "id": 2,
-  "nombre": "Yogur Natural",
-  "precio": 2.50,
-  "precioUnitario": 1.25,
-  "stock": 50,
-  "stockMinimo": 10,
-  "categoriaId": 1,
-  "proveedorId": 2,
-  "unidadMedida": "unidad",
-  "marca": "NaturaYogur",
-  "codigoBarras": "8471000002345",
-  "fechaCaducidad": "2026-02-28",
-  "alergenos": ["lactosa"],
-  "descripcion": "Yogur natural con frutas",
-  "imagen": "yogur.jpg"
-}
-```
+### 3.2 Lógica de Controladores
 
-**Errores Posibles:**
-- `500` - Error al crear el producto
+#### `api/productos.php`
 
-```json
-{
-  "error": "Error al crear"
-}
-```
+- **Optimización de Consultas:** Utiliza `LEFT JOIN` con las tablas `categorias` y `proveedores` para evitar el problema de "N+1 consultas".
+- **Tipado de Datos (Type Casting):** PHP recupera los datos de MySQL como cadenas por defecto. Este script realiza un casteo explícito (`(float)`, `(int)`) antes de enviar el JSON para garantizar la integridad de tipos en el cliente.
+- **Generación de Claves:** Implementa un algoritmo de IDs semialeatorios usando `substr(md5(uniqid(rand(), true)), 0, 8)` para evitar IDs secuenciales predecibles.
+
+#### `api/login.php`
+
+- **Sanitización de Salida:** Implementa una medida de seguridad crítica al ejecutar `unset($user['password'])` sobre el array de resultados antes de la serialización JSON. Esto asegura que ningún hash o contraseña escape del servidor.
+
+#### `api/categorias.php` y `api/proveedores.php`
+
+- **Middlewares:** Implementan una llamada a `requireAjax()` al inicio del script. Esto actúa como un firewall de aplicación, rechazando peticiones que no provengan de un cliente HTTP válido (como navegadores navegando directamente).
+
+### 3.3 Sistema de Respuestas (`api/utils/`)
+
+#### `response.php`
+
+Implementa el patrón de **Negociación de Contenido**.
+
+1.  **Detección:** Analiza las cabeceras `Accept` y `X-Requested-With`.
+2.  **Ramificación:**
+    - **Contexto API:** Si es una petición AJAX, serializa la respuesta como JSON estandarizado: `{ "success": boolean, "data": mixed, "error": object }`.
+    - **Contexto Usuario:** Si es una petición de navegador, invoca al motor de renderizado HTML.
+
+#### `error_page.php`
+
+Motor de plantillas para errores.
+
+- Genera documentos HTML5 completos con CSS embebido (Inline CSS) para asegurar la visualización correcta sin dependencias externas.
+- **Modo Depuración:** Si la IP del cliente es `127.0.0.1`, inyecta un bloque de detalles técnicos (Stack Trace / Mensaje SQL) en la vista HTML.
 
 ---
 
-### 4. Actualizar Producto
-**PUT** `/productos.php?id=<id>`
+## 4. Aseguramiento de Calidad (QA)
 
-Actualiza un producto existente (actualmente solo nombre, precio y stock).
+El proyecto incluye herramientas de prueba integradas en la raíz.
 
-**Parámetros de Query:**
-- `id` (requerido) - ID del producto a actualizar
+### Suite de Pruebas Automatizadas (`test_api.html`)
 
-**Body (JSON):**
-```json
-{
-  "nombre": "Leche Desnatada Premium",
-  "precio": 1.75,
-  "stock": 95
-}
-```
+Interfaz basada en navegador para validación de integración (Integration Testing).
 
-**Respuesta Exitosa (200):**
-```json
-{
-  "message": "Actualizado"
-}
-```
+- **Pruebas de Seguridad:** Simula ataques de Inyección SQL (`' OR '1'='1`) y verifica que el servidor responda con `401 Unauthorized` en lugar de `200 OK`.
+- **Pruebas de Carga (Stress Testing):** Utiliza `Promise.allSettled` para despachar lotes concurrentes de peticiones, permitiendo evaluar el comportamiento del servidor web y la base de datos bajo condiciones de alta concurrencia.
 
-**Errores Posibles:**
-- `400` - Falta el parámetro ID
-- `500` - Error al actualizar
+### Previsualización de Errores (`test_errors.html`)
 
-```json
-{
-  "error": "Error actualizando"
-}
-```
+Herramienta de desarrollo UI/UX. Permite verificar la consistencia visual de todas las páginas de error del sistema (400-503) mediante llamadas controladas al script `test_error.php`.
 
 ---
 
-### 5. Eliminar Producto
-**DELETE** `/productos.php?id=<id>`
+## 5. Glosario de Códigos de Estado
 
-Elimina un producto de la base de datos.
-
-**Parámetros de Query:**
-- `id` (requerido) - ID del producto a eliminar
-
-**Respuesta Exitosa (200):**
-```json
-{
-  "message": "Eliminado"
-}
-```
-
----
-
-##  Endpoint: Categorías
-
-### 1. Obtener Lista de Categorías
-**GET** `/categorias.php`
-
-Obtiene todas las categorías disponibles.
-
-**Parámetros de Query:** Ninguno
-
-**Respuesta Exitosa (200):**
-```json
-[
-  {
-    "id": 1,
-    "nombre": "Lácteos",
-    "descripcion": "Productos lácteos y derivados"
-  },
-  {
-    "id": 2,
-    "nombre": "Bebidas",
-    "descripcion": "Bebidas variadas"
-  },
-  {
-    "id": 3,
-    "nombre": "Frutas y Verduras",
-    "descripcion": "Productos frescos"
-  }
-]
-```
-
----
-
-##  Endpoint: Proveedores
-
-### 1. Obtener Lista de Proveedores
-**GET** `/proveedores.php`
-
-Obtiene todos los proveedores registrados.
-
-**Parámetros de Query:** Ninguno
-
-**Respuesta Exitosa (200):**
-```json
-[
-  {
-    "id": 1,
-    "nombre": "DistributorMayor",
-    "contacto": "Juan Rodríguez",
-    "telefono": "912345678",
-    "email": "contacto@distributor.es",
-    "direccion": "Calle Principal 123"
-  },
-  {
-    "id": 2,
-    "nombre": "ProveAlimentario",
-    "contacto": "María García",
-    "telefono": "934567890",
-    "email": "ventas@provealimentario.es",
-    "direccion": "Avenida Central 456"
-  }
-]
-```
-
----
-
-##  Códigos de Estado HTTP
-
-| Código | Descripción |
-|--------|-------------|
-| `200` | Solicitud exitosa |
-| `201` | Recurso creado exitosamente |
-| `400` | Solicitud incorrecta (faltan parámetros) |
-| `404` | Recurso no encontrado |
-| `500` | Error del servidor |
-
----
-
-##  Consideraciones de Seguridad
-
- **IMPORTANTE:** Esta API actualmente tiene problemas de seguridad que deben ser corregidos:
-
-1. **Contraseñas sin encriptación**: Las contraseñas se almacenan en texto plano. Usar hashing (`password_hash()` en PHP).
-2. **Sin autenticación real**: No hay token o sesión. Implementar JWT o sesiones.
-3. **Sin validación de permisos**: Cualquiera puede acceder a cualquier endpoint.
-4. **CORS abierto**: Permite acceso desde cualquier origen. Especificar dominios permitidos.
-5. **Inyección SQL prevenida**: Se usan prepared statements, ✅ bien hecho.
-
----
-
-##  Ejemplos de Uso desde JavaScript
-
-### Obtener Productos
-```javascript
-const API_URL = "http://localhost/smart-economato/backend";
-
-async function getProductos() {
-    try {
-        const response = await fetch(`${API_URL}/productos.php`);
-        const data = await response.json();
-        console.log(data);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-```
-
-### Crear Producto
-```javascript
-async function crearProducto(producto) {
-    try {
-        const response = await fetch(`${API_URL}/productos.php`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(producto)
-        });
-        
-        const resultado = await response.json();
-        console.log("Producto creado:", resultado);
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-// Uso
-crearProducto({
-    nombre: "Leche",
-    precio: 1.50,
-    precioUnitario: 0.75,
-    stock: 100,
-    stockMinimo: 20,
-    categoriaId: 1,
-    proveedorId: 1,
-    unidadMedida: "litro",
-    marca: "LaLactea",
-    codigoBarras: "8471000001234"
-});
-```
-
-### Login de Usuario
-```javascript
-async function login(username, password) {
-    try {
-        const response = await fetch(
-            `${API_URL}/usuarios.php?username=${username}&password=${password}`
-        );
-        const usuarios = await response.json();
-        
-        if (usuarios.length > 0) {
-            console.log("Login exitoso:", usuarios[0]);
-            localStorage.setItem('usuario', JSON.stringify(usuarios[0]));
-        } else {
-            console.log("Credenciales inválidas");
-        }
-    } catch (error) {
-        console.error("Error:", error);
-    }
-}
-
-// Uso
-login("admin", "admin123");
-```
-
----
-
-**Última actualización:** Enero 2026
+| Código  | Descripción Técnica   | Condición de Disparo                   |
+| :------ | :-------------------- | :------------------------------------- |
+| **200** | OK                    | Petición procesada correctamente.      |
+| **201** | Created               | Recurso creado exitosamente (POST).    |
+| **400** | Bad Request           | Error de validación o JSON malformado. |
+| **401** | Unauthorized          | Fallo de autenticación.                |
+| **403** | Forbidden             | Restricción de acceso (`requireAjax`). |
+| **404** | Not Found             | Recurso o Endpoint no localizado.      |
+| **500** | Internal Server Error | Excepción no controlada o fallo de BD. |
+| **503** | Service Unavailable   | Mantenimiento o sobrecarga.            |

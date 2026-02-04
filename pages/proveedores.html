@@ -1,0 +1,129 @@
+<link rel="stylesheet" href="assets/css/proveedores.css">
+
+<div class="content-header">
+    <h2>Gestión de Proveedores</h2>
+    <div class="header-actions">
+        <button class="btn-primary" onclick="abrirModalProveedor()">
+            <i class="fa-solid fa-plus"></i> Nuevo Proveedor
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div id="gridProveedores"></div>
+</div>
+
+<!-- Modal Crear Proveedor -->
+<div id="modalProveedor" class="modal" style="display: none;" role="dialog" aria-modal="true"
+    aria-labelledby="modalTitle">
+    <div class="modal-content">
+        <button class="close" onclick="cerrarModalProveedor()" aria-label="Cerrar modal">&times;</button>
+        <h2 id="modalTitle">Nuevo Proveedor</h2>
+        <form id="formProveedor">
+            <div class="form-group">
+                <label for="nombreProv">Nombre Empresa</label>
+                <input type="text" id="nombreProv" required class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="contactoProv">Persona de Contacto</label>
+                <input type="text" id="contactoProv" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="telefonoProv">Teléfono</label>
+                <input type="text" id="telefonoProv" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="emailProv">Email</label>
+                <input type="email" id="emailProv" class="form-control">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Guardar Proveedor</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Lógica encapsulada para Proveedores
+    (function () {
+        const API_URL = 'http://localhost/smart-economato-main-2/api';
+
+        async function cargarProveedores() {
+            try {
+                const res = await fetch(`${API_URL}/proveedores.php`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    renderGrid(data.data);
+                }
+            } catch (e) {
+                console.error("Error cargando proveedores", e);
+            }
+        }
+
+        function renderGrid(data) {
+            const gridElement = document.getElementById("gridProveedores");
+            if (!gridElement) return;
+
+            gridElement.innerHTML = '';
+
+            new gridjs.Grid({
+                columns: ['ID', 'Nombre', 'Contacto', 'Teléfono', 'Email'],
+                data: data.map(p => [p.id, p.nombre, p.contacto, p.telefono, p.email]),
+                search: true,
+                pagination: { limit: 10 },
+                language: {
+                    'search': { 'placeholder': 'Buscar proveedor...' },
+                    'pagination': {
+                        'previous': 'Anterior',
+                        'next': 'Siguiente',
+                        'showing': 'Mostrando',
+                        'results': () => 'resultados'
+                    }
+                }
+            }).render(gridElement);
+        }
+
+        // Exponer funciones globales para el HTML onclick
+        window.abrirModalProveedor = () => {
+            document.getElementById('modalProveedor').style.display = 'flex';
+            document.getElementById('nombreProv').focus(); // Accessibility: Focus Logic
+        };
+        window.cerrarModalProveedor = () => document.getElementById('modalProveedor').style.display = 'none';
+
+        document.getElementById('formProveedor').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nuevo = {
+                nombre: document.getElementById('nombreProv').value,
+                contacto: document.getElementById('contactoProv').value,
+                telefono: document.getElementById('telefonoProv').value,
+                email: document.getElementById('emailProv').value,
+                direccion: ''
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/proveedores.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body: JSON.stringify(nuevo)
+                });
+
+                if (res.ok) {
+                    alert('Proveedor guardado');
+                    window.cerrarModalProveedor();
+                    cargarProveedores(); // Recargar tabla
+                } else {
+                    alert('Error al guardar');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Error de red');
+            }
+        });
+
+        // Inicializar
+        cargarProveedores();
+    })();
+</script>

@@ -1685,5 +1685,8 @@
       "imagen": "producto-generico.jpg",
       "activo": true
     }
-  ]
+  ],
+  "pedidos": [],
+  "detalles_pedido": [],
+  "movimientos": []
 }

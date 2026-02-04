@@ -30,8 +30,12 @@ const routes = {
     'recepcion': {
         template: 'pages/recepcion.html',
         action: async () => {
-            const module = await import('./controllers/recepcionController.js');
-            if (module.initRecepcion) module.initRecepcion();
+             try {
+                 const module = await import('./controllers/recepcionController.js');
+                 if (module.initRecepcion) await module.initRecepcion();
+             } catch (e) {
+                 console.error("Error loading recepcionController:", e);
+             }
         }
     },
     'bajas': {
@@ -48,22 +52,25 @@ const routes = {
             if (module.initConfiguracion) module.initConfiguracion();
         }
     },
-    // --- PÁGINAS EN CONSTRUCCIÓN ---
+    // --- MÓDULOS IMPLEMENTADOS ---
     'distribucion': {
-        template: 'pages/construccion.html',
-        action: () => setupConstruction('Distribución')
+        template: 'pages/distribucion.html',
+        action: () => { /* Lógica autocontenida en el HTML */ }
     },
     'proveedores': {
-        template: 'pages/construccion.html',
-        action: () => setupConstruction('Gestión de Proveedores')
+        template: 'pages/proveedores.html',
+        action: () => { /* Lógica autocontenida en el HTML */ }
     },
     'pedidos': {
-        template: 'pages/construccion.html',
-        action: () => setupConstruction('Pedidos y Compras')
+        template: 'pages/pedidos.html',
+        action: async () => {
+            const module = await import('./controllers/pedidosController.js');
+            if (module.initPedidos) module.initPedidos();
+        }
     },
     'informes': {
-        template: 'pages/construccion.html',
-        action: () => setupConstruction('Informes y Estadísticas')
+        template: 'pages/informes.html',
+        action: () => { /* Lógica autocontenida en el HTML */ }
     },
     'usuarios': {
         template: 'pages/construccion.html',

@@ -1,24 +1,21 @@
 import { getProductos, getCategorias, getProveedores, actualizarProducto } from "../services/apiService.js";
-import { navigateTo } from "../router.js"; // <--- AÑADIR ESTA LÍNEA
+import { navigateTo } from "../router.js";
 
 let todosLosProductos = [];
 let categorias = [];
 let proveedores = [];
-let productosRecepcion = []; // Lista de productos en la recepción actual
-let productoSeleccionado = null; // Para el modal
-let barcodeBufferRecepcion = '';
-let barcodeTimeoutRecepcion = null;
+let productosRecepcion = []; 
+let productoSeleccionado = null; 
+let pedidosPendientes = [];
+
+const API_URL = 'http://localhost/smart-economato-main-2/api';
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
+    alert("DEBUG: Controlador Recepción Iniciado. Si ves esto, el JS cargó.");
     
-    // Cargar datos
     await cargarDatos();
-    
-    // Mostrar fecha actual
     mostrarFechaActual();
-    
-    // Configurar eventos
     configurarEventos();
 }
 
@@ -29,14 +26,7 @@ async function cargarDatos() {
             getCategorias(),
             getProveedores()
         ]);
-        
-        // Cargar filtros
         cargarFiltros();
-        console.log("✅ Datos cargados:", {
-            productos: todosLosProductos.length,
-            categorias: categorias.length,
-            proveedores: proveedores.length
-        });
     } catch (error) {
         console.error("❌ Error cargando datos:", error);
     }
@@ -44,164 +34,298 @@ async function cargarDatos() {
 
 function mostrarFechaActual() {
     const fecha = new Date();
-    const opciones = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-    };
-    document.getElementById("fechaActual").textContent = 
-        fecha.toLocaleDateString('es-ES', opciones);
+    const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById("fechaActual").textContent = fecha.toLocaleDateString('es-ES', opciones);
 }
 
 function cargarFiltros() {
     const selectProveedor = document.getElementById("selectProveedorFiltro");
     const selectCategoria = document.getElementById("selectCategoriaFiltro");
     
-    // Proveedores
     selectProveedor.innerHTML = '<option value="">Todos los proveedores</option>';
-    proveedores.forEach(p => {
-        selectProveedor.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
-    });
+    proveedores.forEach(p => selectProveedor.innerHTML += `<option value="${p.id}">${p.nombre}</option>`);
     
-    // Categorías
     selectCategoria.innerHTML = '<option value="">Todas las categorías</option>';
-    categorias.forEach(c => {
-        selectCategoria.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-    });
+    categorias.forEach(c => selectCategoria.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
 }
 
+// ...
 function configurarEventos() {
-    // Búsqueda
-    document.getElementById("btnBuscarProducto").addEventListener("click", buscarProductos);
-    document.getElementById("inputBusquedaProducto").addEventListener("keypress", (e) => {
-        if (e.key === 'Enter') buscarProductos();
-    });
+    const btnBuscar = document.getElementById("btnBuscarProducto");
+    if(btnBuscar) btnBuscar.onclick = buscarProductos;
     
-    // Filtros
-    document.getElementById("selectProveedorFiltro").addEventListener("change", buscarProductos);
-    document.getElementById("selectCategoriaFiltro").addEventListener("change", buscarProductos);
+    document.getElementById("inputBusquedaProducto").onkeypress = (e) => { if (e.key === 'Enter') buscarProductos(); };
     
-    // Botones principales
-    document.getElementById("btnCancelarRecepcion").addEventListener("click", cancelarRecepcion);
-    document.getElementById("btnGuardarRecepcion").addEventListener("click", confirmarRecepcion);
+    document.getElementById("selectProveedorFiltro").onchange = buscarProductos;
+    document.getElementById("selectCategoriaFiltro").onchange = buscarProductos;
     
-    // Modal
-    document.getElementById("btnModalCancelar").addEventListener("click", cerrarModal);
-    document.getElementById("btnModalConfirmar").addEventListener("click", confirmarCantidadModal);
-    document.getElementById("modalInputCantidad").addEventListener("keypress", (e) => {
-        if (e.key === 'Enter') confirmarCantidadModal();
+    document.getElementById("btnCancelarRecepcion").onclick = cancelarRecepcion;
+    document.getElementById("btnGuardarRecepcion").onclick = confirmarRecepcionManual;
+    
+    document.getElementById("btnModalCancelar").onclick = cerrarModal;
+    document.getElementById("btnModalConfirmar").onclick = confirmarCantidadModal;
+    document.getElementById("modalInputCantidad").onkeypress = (e) => { if (e.key === 'Enter') confirmarCantidadModal(); };
+    
+    // IMPORTAR PEDIDOS
+    const btnImport = document.getElementById('btnImportarPedido');
+    if(btnImport) {
+        console.log("✅ Botón Importar encontrado, asignando evento...");
+        btnImport.onclick = abrirModalPedidos;
+    } else {
+        console.error("❌ Botón Importar NO encontrado");
+    }
+}
+
+// --- LOGICA IMPORTACION PEDIDOS (WORKFLOW V3) ---
+async function abrirModalPedidos() {
+    alert("DEBUG: Click funcionando. Abriendo lista...");
+    console.log("🔘 Click en Importar Pedidos");
+    
+    const modal = document.getElementById('modalPedidosPendientes');
+    if(!modal) {
+        alert("ERROR CRÍTICO: Modal no encontrado en HTML");
+        return;
+    }
+    
+    console.log("Modal encontrado:", modal);
+    
+    // Forzar visibilidad
+    modal.classList.remove('oculto');
+    modal.style.display = 'flex';  // Forzar display
+    modal.style.visibility = 'visible';
+    modal.style.opacity = '1';
+    
+    const div = document.getElementById('listaPedidosPendientes');
+    div.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
+    
+    try {
+        const res = await fetch(`${API_URL}/pedidos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        if(!res.ok) throw new Error("Error HTTP " + res.status);
+        
+        const json = await res.json();
+        
+        if (!json.success || !json.data) {
+            div.innerHTML = 'Error: Respuesta inesperada de API';
+            return;
+        }
+        
+        // Filtramos pendientes o incompletos
+        pedidosPendientes = json.data.filter(p => p.estado === 'PENDIENTE' || p.estado === 'INCOMPLETO');
+        
+        if (!pedidosPendientes.length) {
+            div.innerHTML = '<div style="padding:10px">No hay pedidos pendientes de recepción.</div>';
+            return;
+        }
+
+        renderTablaPedidos(pedidosPendientes, div);
+        
+    } catch (e) {
+        console.error(e);
+        div.innerHTML = 'Error cargando pedidos: ' + e.message;
+    }
+}
+// ...
+
+function renderTablaPedidos(lista, container) {
+    container.innerHTML = '<table class="tabla-recepcion" style="width:100%"><thead style="font-size:0.8em"><tr><th>ID</th><th>Proveedor</th><th>Estado</th><th>Total</th><th>Acción</th></tr></thead><tbody></tbody></table>';
+    const tbody = container.querySelector('tbody');
+
+    lista.forEach(p => {
+         const tr = document.createElement('tr');
+         tr.innerHTML = `
+            <td>#${p.id}</td>
+            <td>${p.proveedor_nombre}</td>
+            <td><span class="badge ${p.estado === 'INCOMPLETO' ? 'badge-warning' : 'badge-primary'}">${p.estado}</span></td>
+            <td>${parseFloat(p.total).toFixed(2)} €</td>
+            <td>
+                <button class="btn-primary btn-sm" onclick="window.verificarPedido(${p.id})">
+                    <i class="fa-solid fa-clipboard-check"></i> Verificar
+                </button>
+            </td>
+         `;
+         tbody.appendChild(tr);
     });
 }
 
+// Global para acceder desde onclick
+window.verificarPedido = async (id) => {
+    // Obtener detalles del pedido
+    try {
+        const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const json = await res.json();
+        
+        if (!json.success) return alert("Error cargando detalles");
+        
+        const pedido = json.data;
+        mostrarModalVerificacion(pedido);
+        
+    } catch (e) {
+        alert("Error de red");
+    }
+};
 
+function mostrarModalVerificacion(pedido) {
+    const div = document.getElementById('listaPedidosPendientes');
+    
+    let html = `
+        <div class="verificacion-header">
+            <h4>Verificando Pedido #${pedido.id} - ${pedido.proveedor_nombre}</h4>
+            <button class="btn-sm btn-secondary" onclick="window.initRecepcion ? window.initRecepcion().then(abrirModalPedidos) : location.reload()">Volver</button>
+        </div>
+        <table class="tabla-recepcion" style="width:100%; margin-top:10px">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Solicitado</th>
+                    <th>Recibido</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    pedido.items.forEach((item, idx) => {
+        html += `
+            <tr class="fila-verificacion">
+                <td>${item.producto_nombre}</td>
+                <td>${item.cantidad}</td>
+                <td>
+                    <input type="number" 
+                           id="rec_qty_${item.id}" 
+                           value="${item.cantidad}" 
+                           min="0" 
+                           max="${item.cantidad}" 
+                           class="form-control-sm" 
+                           style="width:80px">
+                </td>
+                <td id="status_row_${item.id}">
+                    <i class="fa-solid fa-check text-success"></i>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += `
+            </tbody>
+        </table>
+        
+        <div class="acciones-verificacion" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end">
+             <button class="btn-danger" onclick="window.rechazarPedido(${pedido.id})">Rechazar Todo</button>
+             <button class="btn-success" onclick="window.confirmarVerificacion(${pedido.id})">Confirmar Recepción</button>
+        </div>
+    `;
+    
+    div.innerHTML = html;
+}
+
+window.confirmarVerificacion = async (pedidoId) => {
+    // Recolectar datos
+    const inputs = document.querySelectorAll('input[id^="rec_qty_"]');
+    const items = [];
+    
+    inputs.forEach(inp => {
+        const detalleId = inp.id.split('_')[2];
+        items.push({
+            detalle_id: detalleId,
+            cantidad_recibida: parseInt(inp.value) || 0
+        });
+    });
+    
+    if(!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                accion: 'RECIBIR',
+                items: items
+            })
+        });
+        
+        const json = await res.json();
+        
+        if (res.ok) {
+            alert(json.data.message || "Recepción procesada");
+            document.getElementById('modalPedidosPendientes').classList.add('oculto');
+            cargarDatos(); // Refresh stock global
+        } else {
+            alert("Error: " + (json.error?.message || "Desconocido"));
+        }
+    } catch(e) {
+        alert("Error de conexión");
+    }
+};
+
+window.rechazarPedido = async (id) => {
+    if(!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
+    
+    try {
+        const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ accion: 'CANCELAR' })
+        });
+        
+        if(res.ok) {
+            alert("Pedido rechazado");
+            abrirModalPedidos(); // Volver a lista
+        }
+    } catch(e) { alert("Error"); }
+};
+
+
+// --- LOGICA MANUAL (ORIGINAL) ---
 
 function buscarProductos() {
-    const textoBusqueda = document.getElementById("inputBusquedaProducto").value.trim().toLowerCase();
-    const proveedorId = document.getElementById("selectProveedorFiltro").value;
-    const categoriaId = document.getElementById("selectCategoriaFiltro").value;
+    const term = document.getElementById("inputBusquedaProducto").value.trim().toLowerCase();
+    const provId = document.getElementById("selectProveedorFiltro").value;
+    const catId = document.getElementById("selectCategoriaFiltro").value;
     
-    let resultados = [...todosLosProductos];
-    
-    // Filtrar por texto
-    if (textoBusqueda) {
-        resultados = resultados.filter(p => 
-            p.nombre.toLowerCase().includes(textoBusqueda) ||
-            p.codigoBarras?.includes(textoBusqueda)
-        );
-    }
-    
-    // Filtrar por proveedor
-    if (proveedorId) {
-        resultados = resultados.filter(p => p.proveedorId === proveedorId);
-    }
-    
-    // Filtrar por categoría
-    if (categoriaId) {
-        resultados = resultados.filter(p => p.categoriaId === categoriaId);
-    }
-    
-    mostrarResultados(resultados);
+    let res = todosLosProductos.filter(p => {
+        const matchText = !term || p.nombre.toLowerCase().includes(term);
+        const matchProv = !provId || p.proveedorId == provId;
+        const matchCat = !catId || p.categoriaId == catId;
+        return matchText && matchProv && matchCat;
+    });
+    mostrarResultados(res);
 }
 
 function mostrarResultados(productos) {
-    const contenedor = document.getElementById("resultadosBusqueda");
-    
-    if (productos.length === 0) {
-        // Mostramos el mensaje y el botón de "Crear Producto"
-        contenedor.innerHTML = `
-            <div style="text-align: center; padding: 20px; color: #a0aec0;">
-                <i class="fa-solid fa-search" style="font-size: 32px; margin-bottom: 10px;"></i>
-                <p>No se encontraron productos.</p>
-                <p style="margin-bottom: 15px; font-size: 0.9em;">¿Es un producto nuevo?</p>
-                
-                <button id="btnIrACrear" class="btn-primario" style="background-color: #2f855a;">
-                    <i class="fa-solid fa-plus"></i> Ingresar Nuevo Producto
-                </button>
-            </div>
-        `;
-        contenedor.classList.remove("oculto");
-
-        // Damos vida al botón para que navegue a la pantalla de Ingreso
-        document.getElementById("btnIrACrear")?.addEventListener("click", () => {
-            navigateTo('ingresarproductos'); // Usamos el router para cambiar de pantalla
-        });
-        
+    const div = document.getElementById("resultadosBusqueda");
+    if (!productos.length) {
+        div.innerHTML = `<div style="text-align: center; padding: 20px;">No se encontraron productos. <button id="btnCrearNuevo" class="btn-link">Crear Nuevo</button></div>`;
+        document.getElementById('btnCrearNuevo')?.addEventListener('click', () => navigateTo('ingresarproductos'));
+        div.classList.remove('oculto');
         return;
     }
     
-    contenedor.innerHTML = productos.map(p => {
-        const stockBajo = p.stock < p.stockMinimo;
-        const proveedor = proveedores.find(prov => prov.id === p.proveedorId);
-        const categoria = categorias.find(cat => cat.id === p.categoriaId);
-        
-        return `
-            <div class="item-resultado" data-producto-id="${p.id}">
-                <div class="info-producto-resultado">
-                    <div class="nombre-producto-resultado">${p.nombre}</div>
-                    <div class="detalles-producto-resultado">
-                        ${categoria?.nombre || 'Sin categoría'} • 
-                        ${proveedor?.nombre || 'Sin proveedor'} • 
-                        ${p.precio.toFixed(2)} €
-                    </div>
-                </div>
-                <div class="stock-producto-resultado ${stockBajo ? 'stock-bajo' : 'stock-normal'}">
-                    Stock: ${p.stock}
-                </div>
+    div.innerHTML = productos.map(p => `
+        <div class="item-resultado" onclick="window.selProdManual('${p.id}')">
+            <div class="info-producto-resultado">
+                <div class="nombre-producto-resultado">${p.nombre}</div>
+                <div class="detalles-producto-resultado">Stock: ${p.stock} | ${parseFloat(p.precio).toFixed(2)} €</div>
             </div>
-        `;
-    }).join('');
+        </div>
+    `).join('');
+    div.classList.remove('oculto');
     
-    contenedor.classList.remove("oculto");
-    
-    // Eventos de clic en resultados
-    contenedor.querySelectorAll(".item-resultado").forEach(item => {
-        item.addEventListener("click", () => {
-            const productoId = item.dataset.productoId;
-            seleccionarProducto(productoId);
-        });
-    });
+    window.selProdManual = (id) => {
+        const p = todosLosProductos.find(x => x.id == id);
+        if (p) abrirModal(p);
+    };
 }
 
-function seleccionarProducto(productoId) {
-    const producto = todosLosProductos.find(p => p.id === productoId);
-    if (!producto) return;
-    
-    // Verificar si ya está en la recepción
-    const yaExiste = productosRecepcion.find(p => p.id === productoId);
-    if (yaExiste) {
-        alert("Este producto ya está en la recepción. Puedes modificar la cantidad en la tabla.");
-        return;
-    }
-    
-    // Abrir modal para cantidad
-    productoSeleccionado = producto;
-    abrirModal(producto);
-}
-
-function abrirModal(producto) {
-    document.getElementById("modalNombreProducto").textContent = producto.nombre;
-    document.getElementById("modalInputCantidad").value = "1";
+function abrirModal(p) {
+    productoSeleccionado = p;
+    document.getElementById("modalNombreProducto").innerText = p.nombre;
+    document.getElementById("modalInputCantidad").value = 1;
     document.getElementById("modalCantidad").classList.remove("oculto");
     document.getElementById("modalInputCantidad").focus();
 }
@@ -212,254 +336,104 @@ function cerrarModal() {
 }
 
 function confirmarCantidadModal() {
-    const cantidad = parseInt(document.getElementById("modalInputCantidad").value);
-    
-    if (!cantidad || cantidad <= 0) {
-        alert("Por favor, ingresa una cantidad válida.");
-        return;
+    const cant = parseInt(document.getElementById("modalInputCantidad").value);
+    if (cant > 0 && productoSeleccionado) {
+        agregarProductoRecepcion(productoSeleccionado, cant);
+        cerrarModal();
     }
-    
-    agregarProductoRecepcion(productoSeleccionado, cantidad);
-    cerrarModal();
 }
 
-function agregarProductoRecepcion(producto, cantidad) {
-    const proveedor = proveedores.find(p => p.id === producto.proveedorId);
-    
+function agregarProductoRecepcion(p, cant) {
+    const prov = proveedores.find(x => x.id == p.proveedorId);
     productosRecepcion.push({
-        ...producto,
-        cantidadRecibida: cantidad,
-        subtotal: producto.precio * cantidad,
-        nombreProveedor: proveedor?.nombre || "Sin proveedor"
+        producto_id: p.id,
+        nombre: p.nombre,
+        proveedor: prov ? prov.nombre : 'N/A',
+        stock: p.stock,
+        cantidadRecibida: cant,
+        precio: p.precio,
+        subtotal: p.precio * cant
     });
-    
     renderizarTablaRecepcion();
-    limpiarBusqueda();
-    mostrarBotones();
+    document.getElementById("inputBusquedaProducto").value = '';
+    document.getElementById("resultadosBusqueda").classList.add("oculto");
 }
 
 function renderizarTablaRecepcion() {
     const tbody = document.getElementById("tbodyRecepcion");
     const tfoot = document.getElementById("tfootRecepcion");
     
-    if (productosRecepcion.length === 0) {
-        tbody.innerHTML = `
-            <tr class="fila-vacia">
-                <td colspan="8">
-                    <div class="mensaje-vacio">
-                        <i class="fa-solid fa-inbox"></i>
-                        <p>No hay productos en la recepción actual</p>
-                        <small>Busca y selecciona productos para comenzar</small>
-                    </div>
-                </td>
-            </tr>
-        `;
+    if (!productosRecepcion.length) {
+        tbody.innerHTML = '<tr class="fila-vacia"><td colspan="8"><div class="mensaje-vacio">Lista vacía</div></td></tr>';
+        document.getElementById("btnGuardarRecepcion").classList.add("oculto");
+        document.getElementById("btnCancelarRecepcion").classList.add("oculto");
         tfoot.classList.add("oculto");
         return;
     }
     
-    tbody.innerHTML = productosRecepcion.map((p, index) => `
+    document.getElementById("btnGuardarRecepcion").classList.remove("oculto");
+    document.getElementById("btnCancelarRecepcion").classList.remove("oculto");
+    
+    tbody.innerHTML = productosRecepcion.map((p, idx) => `
         <tr>
-            <td><strong>${p.nombre}</strong></td>
-            <td>${p.nombreProveedor}</td>
+            <td>${p.nombre}</td>
+            <td>${p.proveedor}</td>
             <td>${p.stock}</td>
-            <td>
-                <input 
-                    type="number" 
-                    class="input-cantidad-recepcion" 
-                    value="${p.cantidadRecibida}" 
-                    min="1"
-                    data-index="${index}"
-                >
-            </td>
-            <td class="stock-nuevo">${p.stock + p.cantidadRecibida}</td>
-            <td>${p.precio.toFixed(2)} €</td>
-            <td><strong>${p.subtotal.toFixed(2)} €</strong></td>
-            <td>
-                <button class="btn-eliminar-item" data-index="${index}">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </td>
+            <td>${p.cantidadRecibida}</td>
+            <td style="color:var(--success-color); font-weight:bold">${p.stock + p.cantidadRecibida}</td>
+            <td>${p.precio} €</td>
+            <td>${p.subtotal.toFixed(2)} €</td>
+            <td><button class="btn-eliminar-item" onclick="window.delItemManual(${idx})"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
     `).join('');
     
-    // Calcular total
+    window.delItemManual = (idx) => {
+        productosRecepcion.splice(idx, 1);
+        renderizarTablaRecepcion();
+    };
+    
     const total = productosRecepcion.reduce((sum, p) => sum + p.subtotal, 0);
-    document.getElementById("totalRecepcion").textContent = `${total.toFixed(2)} €`;
+    document.getElementById("totalRecepcion").innerText = total.toFixed(2) + ' €';
     tfoot.classList.remove("oculto");
-    
-    // Eventos
-    tbody.querySelectorAll(".input-cantidad-recepcion").forEach(input => {
-        input.addEventListener("change", (e) => {
-            actualizarCantidad(parseInt(e.target.dataset.index), parseInt(e.target.value));
-        });
-    });
-    
-    tbody.querySelectorAll(".btn-eliminar-item").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            eliminarProductoRecepcion(parseInt(e.target.closest("button").dataset.index));
-        });
-    });
-    
-    // Actualizar info de proveedor
-    actualizarInfoProveedor();
-}
-
-function actualizarCantidad(index, nuevaCantidad) {
-    if (nuevaCantidad <= 0) {
-        alert("La cantidad debe ser mayor a 0");
-        renderizarTablaRecepcion();
-        return;
-    }
-    
-    productosRecepcion[index].cantidadRecibida = nuevaCantidad;
-    productosRecepcion[index].subtotal = productosRecepcion[index].precio * nuevaCantidad;
-    renderizarTablaRecepcion();
-}
-
-function eliminarProductoRecepcion(index) {
-    if (confirm("¿Eliminar este producto de la recepción?")) {
-        productosRecepcion.splice(index, 1);
-        renderizarTablaRecepcion();
-        
-        if (productosRecepcion.length === 0) {
-            ocultarBotones();
-        }
-    }
-}
-
-function actualizarInfoProveedor() {
-    const proveedoresUnicos = [...new Set(productosRecepcion.map(p => p.nombreProveedor))];
-    const nombreProveedor = document.getElementById("nombreProveedorActual");
-    
-    if (proveedoresUnicos.length === 1) {
-        nombreProveedor.textContent = proveedoresUnicos[0];
-    } else if (proveedoresUnicos.length > 1) {
-        nombreProveedor.textContent = "Múltiples proveedores";
-    } else {
-        nombreProveedor.textContent = "Sin seleccionar";
-    }
-}
-
-function limpiarBusqueda() {
-    document.getElementById("inputBusquedaProducto").value = "";
-    document.getElementById("resultadosBusqueda").classList.add("oculto");
-}
-
-function mostrarBotones() {
-    document.getElementById("btnCancelarRecepcion").classList.remove("oculto");
-    document.getElementById("btnGuardarRecepcion").classList.remove("oculto");
-}
-
-function ocultarBotones() {
-    document.getElementById("btnCancelarRecepcion").classList.add("oculto");
-    document.getElementById("btnGuardarRecepcion").classList.add("oculto");
 }
 
 function cancelarRecepcion() {
-    if (confirm("¿Estás seguro de cancelar esta recepción? Se perderán todos los datos.")) {
-        productosRecepcion = [];
-        document.getElementById("textareaObservaciones").value = "";
-        renderizarTablaRecepcion();
-        ocultarBotones();
-        mostrarMensaje("Recepción cancelada", "orange");
-    }
+    productosRecepcion = [];
+    renderizarTablaRecepcion();
 }
 
-async function confirmarRecepcion() {
-    if (productosRecepcion.length === 0) {
-        alert("No hay productos para recepcionar");
-        return;
-    }
+async function confirmarRecepcionManual() {
+    if (!productosRecepcion.length) return;
+    if (!confirm("¿Confirmar esta recepción manual?")) return;
     
-    const observaciones = document.getElementById("textareaObservaciones").value.trim();
-    const total = productosRecepcion.reduce((sum, p) => sum + p.subtotal, 0);
+    const obs = document.getElementById("textareaObservaciones").value;
+    const payload = {
+        tipo: 'ENTRADA',
+        motivo: obs || 'Recepción Manual',
+        usuario_id: 1,
+        items: productosRecepcion.map(p => ({
+            producto_id: p.producto_id,
+            cantidad: p.cantidadRecibida
+        }))
+    };
     
-    const confirmacion = confirm(
-        `¿Confirmar recepción de ${productosRecepcion.length} productos por un total de ${total.toFixed(2)} €?`
-    );
-    
-    if (!confirmacion) return;
-    
-    // Deshabilitar botón
-    const btnGuardar = document.getElementById("btnGuardarRecepcion");
-    btnGuardar.disabled = true;
-    btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-    
-    let exitosos = 0;
-    let errores = 0;
-    
-    // Actualizar stock de cada producto
-    for (const productoRecepcion of productosRecepcion) {
-        try {
-            const productoActualizado = {
-                ...productoRecepcion,
-                stock: productoRecepcion.stock + productoRecepcion.cantidadRecibida,
-                // Eliminar campos temporales
-                cantidadRecibida: undefined,
-                subtotal: undefined,
-                nombreProveedor: undefined
-            };
-            
-            // Limpiar propiedades undefined
-            Object.keys(productoActualizado).forEach(key => 
-                productoActualizado[key] === undefined && delete productoActualizado[key]
-            );
-            
-            await actualizarProducto(productoRecepcion.id, productoActualizado);
-            exitosos++;
-            console.log(`✅ Stock actualizado: ${productoRecepcion.nombre}`);
-        } catch (error) {
-            console.error(`❌ Error actualizando ${productoRecepcion.nombre}:`, error);
-            errores++;
+    try {
+        const res = await fetch(`${API_URL}/movimientos.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            alert("Recepción Exitosa ✅");
+            productosRecepcion = [];
+            renderizarTablaRecepcion();
+            cargarDatos();
+        } else {
+            alert("Error al guardar");
         }
-    }
-    
-    // Restaurar botón
-    btnGuardar.disabled = false;
-    btnGuardar.innerHTML = '<i class="fa-solid fa-check-circle"></i> CONFIRMAR RECEPCIÓN';
-    
-    // Mostrar resultado
-    if (errores === 0) {
-        mostrarMensaje(`✅ Recepción completada: ${exitosos} productos actualizados`, "green");
-        
-        // Limpiar todo
-        productosRecepcion = [];
-        document.getElementById("textareaObservaciones").value = "";
-        renderizarTablaRecepcion();
-        ocultarBotones();
-        
-        // Recargar datos
-        await cargarDatos();
-        
-        setTimeout(() => {
-            alert("Recepción completada exitosamente. Los stocks han sido actualizados.");
-        }, 500);
-    } else {
-        mostrarMensaje(
-            `⚠️ Recepción parcial: ${exitosos} exitosos, ${errores} errores. Revisa la consola.`,
-            "orange"
-        );
-    }
-}
-
-function mostrarMensaje(texto, color) {
-    const mensaje = document.getElementById("mensajeEstadoRecepcion");
-    mensaje.textContent = texto;
-    mensaje.style.background = 
-        color === "green" ? "#f0fff4" : 
-        color === "orange" ? "#fffaf0" : "#fff5f5";
-    mensaje.style.color = 
-        color === "green" ? "#2f855a" : 
-        color === "orange" ? "#c05621" : "#c53030";
-    mensaje.style.border = `2px solid ${
-        color === "green" ? "#9ae6b4" : 
-        color === "orange" ? "#fbd38d" : "#fc8181"
-    }`;
-    
-    setTimeout(() => {
-        mensaje.textContent = "";
-        mensaje.style.background = "transparent";
-        mensaje.style.border = "none";
-    }, 5000);
+    } catch (e) { alert("Error red"); }
 }

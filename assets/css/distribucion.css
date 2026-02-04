@@ -1,0 +1,222 @@
+/* assets/css/distribucion.css - Red Theme */
+
+:root {
+    --text-primary: #2d3748;
+    --text-secondary: #50596D;
+    --bg-card: #ffffff;
+    
+    --primary-color: #b33131;
+    --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
+    --focus-ring: rgba(179, 49, 49, 0.25);
+    
+    --success-color: #38a169;
+    --danger-color: #e53e3e;
+    --border-color: #e2e8f0;
+}
+
+body {
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+}
+
+.content-header h2 {
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: 10px;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 20px;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+}
+
+.distribucion-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    margin-top: 25px;
+}
+
+@media (max-width: 768px) {
+    .distribucion-container { grid-template-columns: 1fr; }
+}
+
+.panel-seleccion, .panel-carrito {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.02);
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+h3 {
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    color: #2d3748;
+    font-weight: 600;
+}
+
+/* --- Inputs --- */
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px var(--focus-ring);
+    outline: none;
+}
+
+/* --- Search Results --- */
+.lista-resultados {
+    border: 2px solid var(--border-color);
+    border-top: none;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 0 0 10px 10px;
+}
+
+.item-resultado {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.item-resultado:hover {
+    background-color: #fff5f5; /* Light red bg */
+    border-left: 3px solid var(--primary-color);
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    /* Styles matching providers */
+}
+
+/* --- Quantity Inputs --- */
+.input-cantidad {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.input-cantidad button {
+    width: 40px;
+    height: 40px;
+    font-weight: bold;
+    background: #edf2f7;
+    border: none;
+    border-radius: 8px;
+    color: #2d3748;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.input-cantidad button:hover {
+    background: #e2e8f0;
+}
+
+.input-cantidad input {
+    width: 70px;
+    text-align: center;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* --- Table --- */
+.table-carrito {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.table-carrito th {
+    text-align: left;
+    background: #fff;
+    padding: 12px;
+    border-bottom: 2px solid #edf2f7;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.table-carrito td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+    color: var(--text-primary);
+}
+
+.table-carrito button {
+    background: #fff5f5;
+    color: var(--danger-color);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.table-carrito button:hover {
+    background: #fed7d7;
+}
+
+/* --- Footer --- */
+.carrito-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 2px solid #edf2f7;
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 15px;
+    padding: 14px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+}
+
+.btn-primary {
+     background: var(--primary-gradient);
+     color: white;
+      box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
+}
+
+.btn-block:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}

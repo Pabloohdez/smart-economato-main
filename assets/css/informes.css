@@ -1,0 +1,145 @@
+/* assets/css/informes.css - Red Theme */
+
+:root {
+    --text-primary: #2d3748;
+    --border-color: #e2e8f0;
+    --card-bg: #ffffff;
+    --primary-color: #b33131;
+}
+
+body {
+    color: var(--text-primary);
+    font-family: 'Poppins', sans-serif;
+}
+
+.content-header {
+    margin-bottom: 30px;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 20px;
+}
+
+.content-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+}
+
+.content-header p {
+    font-size: 15px;
+    color: #718096;
+}
+
+/* --- Stat Cards --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.02);
+    border-left: 5px solid transparent;
+}
+
+.stat-card h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card .value {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 15px 0;
+    color: #2d3748;
+}
+
+.stat-card .desc {
+    font-size: 14px;
+    color: #a0aec0;
+}
+
+.stat-card.blue {
+    border-left-color: #4299e1; /* Blue for money/sales */
+}
+.stat-card.red {
+    border-left-color: #e53e3e; /* Red for alerts */
+}
+
+/* --- Charts Area --- */
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+@media (max-width: 900px) {
+    .charts-container { grid-template-columns: 1fr; }
+}
+
+.chart-card, .bg-white {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.02);
+    min-height: 400px;
+}
+
+h3 {
+    color: #2d3748;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* --- Data Tables --- */
+.table-simple {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-simple th {
+    text-align: left;
+    border-bottom: 2px solid #edf2f7;
+    padding: 12px;
+    background: #fff;
+    color: #718096;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.table-simple td {
+    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.badge {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 20px;
+}
+
+.badge-success {
+    background-color: #f0fff4;
+    color: #2f855a;
+}
+
+.badge-warning {
+    background-color: #fffaf0;
+    color: #c05621;
+}
