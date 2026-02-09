@@ -15,13 +15,9 @@ export function filtrarPorProveedor(productos, proveedor) {
 export function buscarProducto(productos, termino) {
   const q = (termino ?? "").trim().toLowerCase();
   if (!q) return [...productos];
-
   return productos.filter(p => {
-    // Obtenemos nombre y código asegurándonos de que sean texto
     const nombre = (p.nombre ?? "").toLowerCase();
-    const codigo = (p.codigoBarras ?? "").toString().toLowerCase(); // Añadido .toString() por seguridad
-    
-    // Devolvemos true si el término de búsqueda está en el nombre O en el código
+    const codigo = (p.codigoBarras ?? p.codigobarras ?? "").toString().toLowerCase();
     return nombre.includes(q) || codigo.includes(q);
   });
 }
@@ -36,227 +32,123 @@ export function ordenarPorPrecio(productos, orden) {
 }
 
 export function comprobarStockMinimo(productos) {
-  return productos.filter(p => Number(p.stock) < Number(p.stockMinimo));
-}
-
-export function comprobarProximoCaducar(productos) {
-  const hoy = new Date();
-  const diasLimite = 30;
-  
   return productos.filter(p => {
-    if (!p.fechaCaducidad) return false;
-    
-    const fechaCad = new Date(p.fechaCaducidad);
-    const diferenciaDias = Math.ceil((fechaCad - hoy) / (1000 * 60 * 60 * 24));
-    
-    return diferenciaDias >= 0 && diferenciaDias <= diasLimite;
+    const stock = Number(p.stock) || 0;
+    const min = Number(p.stockMinimo || p.stockminimo) || 0;
+    return stock < min;
   });
 }
 
-// Función auxiliar para formatear fecha de caducidad
+// --- LÓGICA DE CADUCIDAD ---
 function formatearFechaCaducidad(fechaStr) {
-  if (!fechaStr) {
-    return { 
-      badge: 'badge-fecha-normal', 
-      texto: 'Sin fecha', 
-      clase: '' 
-    };
+  if (!fechaStr || fechaStr === "NULL") {
+    return { badge: 'badge-fecha-normal', texto: 'Sin fecha', clase: '' };
   }
-  
+
   try {
     const fecha = new Date(fechaStr);
     const hoy = new Date();
+    // Resetear horas para comparar solo días
+    hoy.setHours(0, 0, 0, 0);
     const diferenciaDias = Math.ceil((fecha - hoy) / (1000 * 60 * 60 * 24));
-    
+
     const opciones = { year: 'numeric', month: '2-digit', day: '2-digit' };
     const textoFecha = fecha.toLocaleDateString('es-ES', opciones);
-    
+
     if (diferenciaDias < 0) {
-      return {
-        badge: 'badge-caducado',
-        texto: `⚠️ CADUCADO`,
-        clase: 'alerta'
-      };
+      return { badge: 'badge-caducado', texto: `⚠️ CADUCADO`, clase: 'alerta' };
     } else if (diferenciaDias <= 7) {
-      return {
-        badge: 'badge-caducado',
-        texto: `⚠️ ${diferenciaDias}d`,
-        clase: 'alerta'
-      };
+      return { badge: 'badge-caducado', texto: `⚠️ ${diferenciaDias}d`, clase: 'alerta' };
     } else if (diferenciaDias <= 30) {
-      return {
-        badge: 'badge-proximo-caducar',
-        texto: `⏰ ${diferenciaDias}d`,
-        clase: ''
-      };
+      return { badge: 'badge-proximo-caducar', texto: `⏰ ${diferenciaDias}d`, clase: '' };
     } else {
-      return {
-        badge: 'badge-fecha-normal',
-        texto: textoFecha,
-        clase: ''
-      };
+      return { badge: 'badge-fecha-normal', texto: textoFecha, clase: '' };
     }
   } catch (error) {
-    return { 
-      badge: 'badge-fecha-normal', 
-      texto: 'Fecha inválida', 
-      clase: '' 
-    };
+    return { badge: 'badge-fecha-normal', texto: 'Error fecha', clase: '' };
   }
 }
 
-// Configuración de iconos y colores para alérgenos
-const ICONOS_ALERGENOS = {
-  'Lácteos': { icono: 'fa-cow', bg: '#e3f2fd', color: '#1976d2' },
-  'Gluten': { icono: 'fa-wheat-awn', bg: '#fff8e1', color: '#f57c00' },
-  'Huevos': { icono: 'fa-egg', bg: '#fffde7', color: '#f9a825' },
-  'Pescado': { icono: 'fa-fish', bg: '#e1f5fe', color: '#0277bd' },
-  'Crustáceos': { icono: 'fa-shrimp', bg: '#fce4ec', color: '#c2185b' },
-  'Moluscos': { icono: 'fa-circle', bg: '#f3e5f5', color: '#7b1fa2' },
-  'Frutos secos': { icono: 'fa-seedling', bg: '#efebe9', color: '#5d4037' },
-  'Soja': { icono: 'fa-leaf', bg: '#f1f8e9', color: '#558b2f' },
-  'Sulfitos': { icono: 'fa-wine-bottle', bg: '#f3e5f5', color: '#8e24aa' }
-};
-
-// Función auxiliar para generar badges de alérgenos
-function generarBadgesAlergenos(alergenos) {
-  if (!alergenos || alergenos.length === 0) {
-    return '<span style="color: #a0aec0; font-size: 12px; font-style: italic;">Sin alérgenos</span>';
-  }
-  
-  const badges = alergenos.map(alergeno => {
-    const config = ICONOS_ALERGENOS[alergeno] || { 
-      icono: 'fa-triangle-exclamation', 
-      bg: '#fff5f5', 
-      color: '#c53030' 
-    };
-    
-    return `<span class="badge-alergeno" style="background: ${config.bg}; color: ${config.color};">
-      <i class="fa-solid ${config.icono}"></i> ${alergeno}
-    </span>`;
-  }).join('');
-  
-  return `<div class="contenedor-alergenos">${badges}</div>`;
-}
-
+// --- RENDERIZADO DE TABLA ---
 export function renderizarTabla(datos) {
   const cuerpo = document.querySelector('#tablaProductos tbody');
   const resumen = document.querySelector('#resumenInventario');
-  
+
   if (!cuerpo) return;
   cuerpo.innerHTML = '';
 
   if (!Array.isArray(datos) || datos.length === 0) {
-    cuerpo.innerHTML = `
-      <tr>
-        <td colspan="9" style="text-align: center; padding: 60px 20px;">
-          <div style="color: #a0aec0;">
-            <i class="fa-solid fa-box-open" style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-            <p style="font-size: 16px; font-weight: 600; margin: 10px 0;">No se encontraron productos</p>
-            <small style="font-size: 13px;">Intenta ajustar los filtros o buscar otro término</small>
-          </div>
-        </td>
-      </tr>
-    `;
-    if (resumen) resumen.innerHTML = '';
+    cuerpo.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:50px;">No hay productos</td></tr>`;
     return;
   }
 
   datos.forEach(p => {
     const fila = document.createElement('tr');
-    const stockBajo = Number(p.stock) < Number(p.stockMinimo);
-    
-    // Calcular estado de caducidad
-    const caducidad = formatearFechaCaducidad(p.fechaCaducidad);
-    
-    if (stockBajo || caducidad.clase === 'alerta') {
+
+    // Normalización de nombres (Postgres vs JS)
+    const stockActual = Number(p.stock) || 0;
+    const stockMinimo = Number(p.stockMinimo || p.stockminimo) || 0;
+    const fechaCad = p.fechaCaducidad || p.fechacaducidad;
+
+    const stockBajo = stockActual < stockMinimo;
+    const infoCad = formatearFechaCaducidad(fechaCad);
+
+    // Si el stock es bajo o está caducado/crítico, añadimos la clase 'alerta'
+    if (stockBajo || infoCad.clase === 'alerta') {
       fila.classList.add('alerta');
     }
-    
-    // Badge de stock
-    const badgeStock = stockBajo 
-      ? `<span class="badge-stock-bajo">⚠️ ${p.stock}</span>`
-      : `<span class="badge-stock-ok">✓ ${p.stock}</span>`;
-    
-    // Badges de alérgenos
-    const badgesAlergenos = generarBadgesAlergenos(p.alergenos);
-    
+
+    // Badge de stock con estilo directo por si falla el CSS
+    const badgeStock = stockBajo
+      ? `<span class="badge-stock-bajo" style="background:#fff5f5; color:#e53e3e; padding:4px 8px; border-radius:4px; font-weight:bold; border:1px solid #feb2b2;">⚠️ ${stockActual}</span>`
+      : `<span class="badge-stock-ok" style="color:#2f855a; font-weight:bold;">✓ ${stockActual}</span>`;
+
     fila.innerHTML = `
-      <td style="text-align: center; color: #718096; font-weight: 600;">${p.id ?? ''}</td>
-      <td><strong style="color: #2d3748;">${p.nombre ?? ''}</strong></td>
-      <td>
-        <span style="display: inline-block; padding: 4px 12px; background: #edf2f7; 
-                     color: #4a5568; border-radius: 12px; font-size: 12px; font-weight: 600;">
-          ${p.categoria?.nombre ?? '-'}
-        </span>
-      </td>
-      <td style="text-align: right; font-weight: 700; color: #2f855a;">
-        ${Number(p.precio).toFixed(2)} €
-      </td>
-      <td style="text-align: center;">${badgeStock}</td>
-      <td style="text-align: center; color: #718096; font-weight: 600;">${p.stockMinimo ?? 0}</td>
-      <td style="text-align: center;">
-        <span class="${caducidad.badge}">${caducidad.texto}</span>
-      </td>
-      <td>${badgesAlergenos}</td>
-      <td style="color: #4a5568; font-size: 13px;">
-        <i class="fa-solid fa-truck" style="color: #a0aec0; margin-right: 6px;"></i>
-        ${p.proveedor?.nombre ?? '-'}
-      </td>
-    `;
+            <td style="text-align: center; font-weight: bold; color: #718096;">${p.id ?? ''}</td>
+            <td><strong style="color: #2d3748;">${p.nombre ?? ''}</strong></td>
+            <td><span style="background:#edf2f7; padding:2px 8px; border-radius:10px; font-size:11px;">${p.categoria?.nombre || p.categoria_nombre || '-'}</span></td>
+            <td style="text-align: right; font-weight: bold; color: #2f855a;">${Number(p.precio).toFixed(2)} €</td>
+            <td style="text-align: center;">${badgeStock}</td>
+            <td style="text-align: center; color: #a0aec0;">${stockMinimo}</td>
+            <td style="text-align: center;"><span class="${infoCad.badge}">${infoCad.texto}</span></td>
+            <td><small>${p.proveedor?.nombre || p.proveedor_nombre || '-'}</small></td>
+            <td style="text-align: center;">
+                <button class="btn-editar" onclick="alert('Editar ID: ${p.id}')" style="border:none; background:none; cursor:pointer; color:#4a5568;">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+            </td>
+        `;
     cuerpo.appendChild(fila);
   });
 
-  // Calcular resumen
-  const totalProductos = datos.length;
-  const productosStockBajo = datos.filter(p => Number(p.stock) < Number(p.stockMinimo)).length;
-  const valorTotal = datos
-    .reduce((acc, p) => acc + (Number(p.precio) || 0) * (Number(p.stock) || 0), 0)
-    .toFixed(2);
-
+  // Actualizar Resumen inferior
   if (resumen) {
+    const total = datos.length;
+    const bajos = datos.filter(p => (Number(p.stock) || 0) < (Number(p.stockMinimo || p.stockminimo) || 0)).length;
     resumen.innerHTML = `
-      <div class="resumen-item">
-        <i class="fa-solid fa-boxes-stacked" style="color: #a0aec0;"></i>
-        <span>Total Productos: <span class="resumen-valor">${totalProductos}</span></span>
-      </div>
-      ${productosStockBajo > 0 ? `
-        <div class="resumen-item">
-          <i class="fa-solid fa-triangle-exclamation" style="color: #e53e3e;"></i>
-          <span>Stock Bajo: <span class="resumen-valor" style="color: #e53e3e;">${productosStockBajo}</span></span>
-        </div>
-      ` : ''}
-      <div class="resumen-item">
-        <i class="fa-solid fa-euro-sign" style="color: #a0aec0;"></i>
-        <span>Valor Total: <span class="resumen-valor">${valorTotal} €</span></span>
-      </div>
-    `;
+            <div style="display:flex; gap:20px; padding:10px; background:#f7fafc; border-radius:8px; font-size:13px;">
+                <span>📦 Total: <strong>${total}</strong></span>
+                <span style="color:${bajos > 0 ? '#e53e3e' : '#2f855a'}">⚠️ Stock Bajo: <strong>${bajos}</strong></span>
+            </div>
+        `;
   }
 }
 
+// --- SELECTS ---
 export function renderizarCategorias(categorias) {
   const select = document.querySelector('#categoriaSelect');
   if (!select) return;
-  
   select.innerHTML = '<option value="">Todas las categorías</option>';
   categorias.forEach(c => {
-    const opcion = document.createElement('option');
-    opcion.value = c.nombre ?? '';
-    opcion.textContent = c.nombre ?? '';
-    select.appendChild(opcion);
+    select.innerHTML += `<option value="${c.nombre}">${c.nombre}</option>`;
   });
 }
 
 export function renderizarProveedores(proveedores) {
   const select = document.querySelector('#proveedorSelect');
   if (!select) return;
-
   select.innerHTML = '<option value="">Todos los proveedores</option>';
   proveedores.forEach(p => {
-    const opcion = document.createElement('option');
-    opcion.value = p.nombre ?? '';
-    opcion.textContent = p.nombre ?? '';
-    select.appendChild(opcion);
+    select.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
   });
 }
-

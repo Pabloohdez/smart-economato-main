@@ -1,11 +1,10 @@
 // src/router.js
 
-// Importamos las funciones necesarias para Inventario (ya que son estáticas)
+// Importamos las funciones necesarias para Inventario
 import { renderizarTabla } from "./utils/funciones.js";
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
 
 // --- CONFIGURACIÓN DE RUTAS ---
-// Aquí definimos qué archivo HTML carga cada página y qué lógica ejecuta
 const routes = {
     'inicio': {
         template: 'pages/inicio.html',
@@ -22,7 +21,6 @@ const routes = {
     'ingresarproductos': {
         template: 'pages/ingresarProductos.html',
         action: async () => {
-            // Importación dinámica (Lazy Loading) para optimizar
             const module = await import('./controllers/ingresoController.js');
             if (module.initIngreso) module.initIngreso();
         }
@@ -31,7 +29,7 @@ const routes = {
         template: 'pages/recepcion.html',
         action: async () => {
             try {
-                `?t=${Date.now()}`;
+                // Truco del timestamp para evitar caché en desarrollo
                 const module = await import(`./controllers/recepcionController.js?t=${Date.now()}`);
                 if (module.initRecepcion) await module.initRecepcion();
             } catch (e) {
@@ -53,15 +51,26 @@ const routes = {
             if (module.initConfiguracion) module.initConfiguracion();
         }
     },
-    // --- MÓDULOS IMPLEMENTADOS ---
     'distribucion': {
         template: 'pages/distribucion.html',
         action: () => { /* Lógica autocontenida en el HTML */ }
     },
+
+    // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
     'proveedores': {
         template: 'pages/proveedores.html',
-        action: () => { /* Lógica autocontenida en el HTML */ }
+        action: async () => {
+            // Carga dinámica del nuevo controlador
+            try {
+                const module = await import('./controllers/proveedorController.js');
+                if (module.initProveedores) module.initProveedores();
+            } catch (error) {
+                console.error("Error cargando el controlador de proveedores:", error);
+            }
+        }
     },
+    // --------------------------------------
+
     'pedidos': {
         template: 'pages/pedidos.html',
         action: async () => {
@@ -81,11 +90,10 @@ const routes = {
 
 // Función auxiliar para configurar la página de construcción
 function setupConstruction(featureName) {
-    // Pequeño timeout para asegurar que el DOM se ha pintado
     setTimeout(() => {
         const title = document.getElementById('constructionTitle');
         const feature = document.getElementById('constructionFeature');
-        
+
         if (title) title.textContent = featureName || 'En Construcción';
         if (feature) feature.textContent = featureName ? `el módulo de ${featureName}` : 'esta sección';
     }, 50);
@@ -95,8 +103,7 @@ function setupConstruction(featureName) {
 export async function navigateTo(pageName) {
     const content = document.getElementById("content");
     const key = pageName.toLowerCase();
-    
-    // Si la ruta no existe, por defecto vamos a inicio o lanzamos error
+
     const route = routes[key] || routes['inicio'];
 
     try {
@@ -109,29 +116,26 @@ export async function navigateTo(pageName) {
         content.innerHTML = html;
 
         // 3. Ejecutar la lógica (controlador) asociada
-        // 3. Ejecutar la lógica (controlador) asociada
         if (route.action) {
             await route.action();
         }
 
         // 4. ACCESIBILIDAD: Gestión del Foco
-        // Mover el foco al contenido nuevo para que el lector de pantalla anuncie el cambio
-        // Usamos setTimeout para asegurar que el DOM se ha actualizado visualmente
         setTimeout(() => {
             const headerTitulo = document.querySelector("#content h1");
             const focusTarget = headerTitulo || content;
-            
+
             focusTarget.setAttribute("tabindex", "-1");
-            focusTarget.focus({ preventScroll: false }); // Asegurar scroll al elemento
-            
-            console.log("📍 Foco movido a:", focusTarget);
+            focusTarget.focus({ preventScroll: false });
         }, 100);
+
     } catch (error) {
         console.error("Error en el router:", error);
         content.innerHTML = `
             <div style="text-align: center; padding: 40px; color: #721c24;">
                 <h3>Error 404</h3>
                 <p>No se pudo cargar la página solicitada.</p>
+                <p><small>${error.message}</small></p>
             </div>`;
     }
 }
