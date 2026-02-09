@@ -112,7 +112,7 @@ async function cargarPedidos() {
         }
     } catch (e) {
         console.error("❌ Excepción en cargarPedidos:", e);
-        document.getElementById("gridPedidos").innerHTML = `<p style="color:red">Error de conexión: ${e.message}</p>`;
+        document.getElementById("gridPedidos").innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
     }
 }
 
