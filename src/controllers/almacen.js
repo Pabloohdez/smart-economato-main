@@ -1,3 +1,5 @@
+// src/controllers/almacen.js
+
 import {
     filtrarPorCategoria,
     filtrarPorProveedor,
@@ -16,227 +18,202 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
-// Configuración de columnas
+/**
+ * Procesa la fecha de caducidad para devolver el texto y la clase CSS correcta
+ */
+function procesarCaducidad(fechaStr) {
+    if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
+        return { texto: 'Sin fecha', clase: 'badge-fecha-normal' };
+    }
+
+    const fecha = new Date(fechaStr);
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const dif = Math.ceil((fecha - hoy) / (1000 * 60 * 60 * 24));
+
+    if (dif < 0) return { texto: '⚠️ CADUCADO', clase: 'badge-caducado' };
+    if (dif <= 7) return { texto: `⚠️ ${dif}d`, clase: 'badge-caducado' };
+    if (dif <= 30) return { texto: `⏰ ${dif}d`, clase: 'badge-proximo-caducar' };
+
+    return {
+        texto: fecha.toLocaleDateString('es-ES'),
+        clase: 'badge-fecha-normal'
+    };
+}
+
+/**
+ * Configuración de las columnas para Grid.js
+ */
 const columnasGrid = [
-    { id: 'id', name: 'ID', width: '50px' },
+    { id: 'id', name: 'ID', width: '80px' },
     { id: 'nombre', name: 'Nombre' },
-    { 
-        id: 'nombreCategoria', // Usamos el nombre procesado
-        name: 'Categoría' 
-    },
-    { 
-        id: 'precio', 
+    { id: 'nombreCategoria', name: 'Categoría' },
+    {
+        id: 'precio',
         name: 'Precio',
         formatter: (cell) => window.gridjs.html(`<span style="color: #2f855a; font-weight: bold;">${Number(cell).toFixed(2)} €</span>`)
     },
-    { 
-        id: 'stock', 
+    {
+        id: 'stock',
         name: 'Stock',
         width: '100px',
         formatter: (cell, row) => {
             const stock = Number(cell);
-            // celda 5 es la columna stockMin 
-            const stockMin = Number(row.cells[5].data); 
-            
-            if (stock <= stockMin) {
-                return window.gridjs.html(`<span class="badge-stock-bajo">${stock}</span>`);
-            }
-            return window.gridjs.html(`<span class="badge-stock-ok">${stock}</span>`);
+            const stockMin = Number(row.cells[5].data); // Columna stockMinimo (oculta)
+            const clase = stock <= stockMin ? 'badge-stock-bajo' : 'badge-stock-ok';
+            const icono = stock <= stockMin ? '⚠️ ' : '✓ ';
+            return window.gridjs.html(`<span class="${clase}">${icono}${stock}</span>`);
         }
     },
-    { id: 'stockMinimo', name: 'Min', hidden: true }, 
-    { 
+    { id: 'stockMinimo', name: 'Min', hidden: true },
+    {
         id: 'fechaCaducidad',
         name: 'Caducidad',
         formatter: (cell) => {
-            if (!cell) return 'Sin fecha';
-            return window.gridjs.html(`<span class="fecha-badge">${cell}</span>`);
+            const info = procesarCaducidad(cell);
+            return window.gridjs.html(`<span class="${info.clase}">${info.texto}</span>`);
         }
     },
-    { 
-        id: 'nombreProveedor', // Usamos el nombre procesado
-        name: 'Proveedor' 
-    }
+    { id: 'nombreProveedor', name: 'Proveedor' }
 ];
 
-// ESTA FUNCIÓN ES LA CLAVE: Normaliza los datos para arreglar la inconsistencia de IDs
-function normalizarProductos(listaProductos) {
-    return listaProductos.map(prod => {
-        // 1. Averiguar el ID de categoría (puede venir en categoriaId o dentro de un objeto categoria)
-        // Usamos '==' para que "1" sea igual a 1
-        const catId = prod.categoriaId || (prod.categoria ? prod.categoria.id : null);
-        const provId = prod.proveedorId || (prod.proveedor ? prod.proveedor.id : null);
+/**
+ * Normaliza los datos que vienen de Supabase (minúsculas) y hace los JOINS manuales
+ */
+function normalizarDatos(lista) {
+    if (!Array.isArray(lista)) return [];
+    return lista.map(p => {
+        const cat = categorias.find(c => c.id == (p.categoriaid || p.categoriaId)) || {};
+        const prov = proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId)) || {};
 
-        // 2. Buscar en los arrays maestros
-        const catObj = categorias.find(c => c.id == catId);
-        const provObj = proveedores.find(p => p.id == provId);
-
-        // 3. Devolver un objeto enriquecido
         return {
-            ...prod, // Mantiene datos originales
-            // AÑADIMOS los objetos que faltan para que funcionen tus filtros de funciones.js
-            categoria: catObj || { nombre: 'Desconocido' },
-            proveedor: provObj || { nombre: 'Desconocido' },
-            // AÑADIMOS los nombres planos para Grid.js
-            nombreCategoria: catObj ? catObj.nombre : 'Desconocido',
-            nombreProveedor: provObj ? provObj.nombre : 'Desconocido'
+            ...p,
+            nombreCategoria: cat.nombre || p.categoria_nombre || 'General',
+            nombreProveedor: prov.nombre || p.proveedor_nombre || 'N/A',
+            // Corregimos nombres para Grid.js
+            fechaCaducidad: p.fechacaducidad || p.fechaCaducidad || null,
+            stockMinimo: p.stockminimo || p.stockMinimo || 0,
+            stock: p.stock || 0
         };
     });
 }
 
 export async function cargarDatos() {
-    try {
-        // 1. Cargar todo
-        productos = await getProductos();   
-        categorias = await getCategorias();
-        proveedores = await getProveedores();
+    const contenedor = document.getElementById('grid-inventario');
+    if (contenedor) contenedor.innerHTML = '<div style="text-align:center; padding:20px;">Cargando inventario de Supabase...</div>';
 
-        // 2. Normalizar (Esto arregla tus datos mezclados)
-        // Sobreescribimos la variable 'productos' con la versión arreglada
-        productos = normalizarProductos(productos);
+    try {
+        // Carga en paralelo
+        const [resProd, resCat, resProv] = await Promise.all([
+            getProductos(),
+            getCategorias(),
+            getProveedores()
+        ]);
+
+        productos = resProd;
+        categorias = resCat;
+        proveedores = resProv;
+
+        vista = normalizarDatos(productos);
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-        
-        // 3. Crear vista inicial ordenada
-        vista = ordenarPorPrecio(productos, 'asc');
 
-        // 4. Iniciar Grid
-        const contenedor = document.getElementById('grid-inventario');
-        if (contenedor && window.gridjs) {
-            contenedor.innerHTML = '';
-            
-            gridInstance = new window.gridjs.Grid({
-                columns: columnasGrid,
-                data: vista, // Grid.js leerá 'nombreCategoria' y 'nombreProveedor' de aquí
-                pagination: { limit: 20, summary: true },
-                search: false,
-                sort: false,
-                language: { 
-                    'pagination': { 
-                        'previous': 'Anterior', 
-                        'next': 'Siguiente', 
-                        'showing': 'Mostrando', 
-                        'results': () => 'resultados' 
-                    } 
-                },
-                style: { 
-                    table: { 'width': '100%' },
-                    th: { 'background-color': '#b33131', 'color': 'white' }
-                }
-            });
-            
-            gridInstance.render(contenedor);
-
-            // Fix accessibility: remove redundant title from pagination buttons
-            const observer = new MutationObserver(() => {
-                const buttons = contenedor.querySelectorAll('.gridjs-pagination button');
-                buttons.forEach(btn => {
-                    if (btn.title) btn.removeAttribute('title');
-                });
-            });
-            observer.observe(contenedor, { childList: true, subtree: true });
-        }
+        actualizarGrid();
+        actualizarResumen();
 
     } catch (error) {
-        console.error("Error cargando datos:", error);
-
-        // UI Error Handling
-        const contenedor = document.getElementById('grid-inventario');
-        const catSelect = document.querySelector('#categoriaSelect');
-        const provSelect = document.querySelector('#proveedorSelect');
-
-        if (contenedor) {
-            contenedor.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; background: #fff5f5; border: 1px solid #c53030; border-radius: 8px; color: #c53030;">
-                    <i class="fa-solid fa-server" style="font-size: 48px; margin-bottom: 20px;"></i>
-                    <h3 style="margin: 0; font-size: 20px;">Error de Conexión con el Servidor</h3>
-                    <p style="margin: 10px 0;">No se pudo conectar con la base de datos. Asegúrate de que XAMPP (Apache/MySQL) está iniciado.</p>
-                    <button onclick="location.reload()" style="padding: 8px 16px; background: #c53030; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-                        <i class="fa-solid fa-rotate-right"></i> Reintentar
-                    </button>
-                    <div style="margin-top: 10px; font-size: 12px; color: #718096; white-space: pre-wrap;">Detalles: ${error.message}</div>
-                </div>
-            `;
-        }
-
-        if (catSelect) {
-            catSelect.innerHTML = '<option>⚠️ Error de conexión</option>';
-            catSelect.disabled = true;
-        }
-
-        if (provSelect) {
-            provSelect.innerHTML = '<option>⚠️ Error de conexión</option>';
-            provSelect.disabled = true;
-        }
+        console.error("❌ Error cargando datos:", error);
+        if (contenedor) contenedor.innerHTML = '<div style="color:red; text-align:center;">Error de conexión con la API</div>';
     }
 }
 
 function actualizarGrid() {
-    if (gridInstance) {
-        gridInstance.updateConfig({
-            data: vista
-        }).forceRender();
-    }
-}
+    const contenedor = document.getElementById('grid-inventario');
+    if (!contenedor || !window.gridjs) return;
 
+    contenedor.innerHTML = '';
 
-function aplicarFiltrosGlobales() {
-    const texto = document.querySelector('#busqueda')?.value || '';
-    const catNombre = document.querySelector('#categoriaSelect')?.value || '';
-    const provNombre = document.querySelector('#proveedorSelect')?.value || '';
-    const orden = document.querySelector('#ordenSelect')?.value || 'asc';
-
-    // 1. Empezamos con los productos normalizados
-    let resultado = [...productos];
-
-    // 2. Filtramos 'funciones.js' buscan p.categoria.nombre
-    resultado = buscarProducto(resultado, texto);
-    resultado = filtrarPorCategoria(resultado, catNombre);
-    resultado = filtrarPorProveedor(resultado, provNombre);
-    
-    // 3. Ordenamos
-    resultado = ordenarPorPrecio(resultado, orden);
-
-    // 4. Actualizamos
-    vista = resultado;
-    actualizarGrid();
-}
-
-function handleStock() {
-    vista = comprobarStockMinimo(vista);
-    actualizarGrid();
-}
-
-function handleMostrarTodos() {
-    const els = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
-    els.forEach(sel => {
-        const el = document.querySelector(sel);
-        if(el) el.value = (sel === '#ordenSelect') ? 'asc' : '';
+    gridInstance = new window.gridjs.Grid({
+        columns: columnasGrid,
+        data: vista,
+        pagination: { limit: 10, summary: true },
+        sort: true,
+        className: {
+            table: 'tabla-grid-custom',
+            td: 'celda-grid'
+        },
+        language: {
+            'search': { 'placeholder': 'Buscar...' },
+            'pagination': { 'previous': 'Anterior', 'next': 'Siguiente' },
+            'noRecordsFound': 'No hay productos que coincidan'
+        }
     });
-    aplicarFiltrosGlobales();
+
+    gridInstance.render(contenedor);
 }
 
-// Eventos
-const eventMap = [
-    { selector: '#btnBuscar', event: 'click', handler: aplicarFiltrosGlobales },
-    { selector: '#busqueda', event: 'keyup', handler: aplicarFiltrosGlobales },
-    { selector: '#categoriaSelect', event: 'change', handler: aplicarFiltrosGlobales },
-    { selector: '#proveedorSelect', event: 'change', handler: aplicarFiltrosGlobales },
-    { selector: '#ordenSelect', event: 'change', handler: aplicarFiltrosGlobales },
-    { selector: '#btnStock', event: 'click', handler: handleStock },
-    { selector: '#btnMostrarTodos', event: 'click', handler: handleMostrarTodos }
-];
+function actualizarResumen() {
+    const resumenDiv = document.getElementById('resumenInventario');
+    if (!resumenDiv) return;
+
+    const total = vista.length;
+    const bajos = vista.filter(p => Number(p.stock) <= (Number(p.stockMinimo))).length;
+    const valor = vista.reduce((acc, p) => acc + (Number(p.precio) * Number(p.stock)), 0);
+
+    resumenDiv.innerHTML = `
+        <div class="resumen-item">📦 Total: <span class="resumen-valor">${total}</span></div>
+        <div class="resumen-item" style="color: ${bajos > 0 ? '#e53e3e' : 'inherit'}">⚠️ Stock Bajo: <span class="resumen-valor">${bajos}</span></div>
+        <div class="resumen-item">💰 Valor: <span class="resumen-valor">${valor.toFixed(2)} €</span></div>
+    `;
+}
+
+// --- FILTROS Y EVENTOS ---
+
+function aplicarFiltros() {
+    const busq = document.getElementById('busqueda')?.value || '';
+    const cat = document.getElementById('categoriaSelect')?.value || '';
+    const prov = document.getElementById('proveedorSelect')?.value || '';
+    const orden = document.getElementById('ordenSelect')?.value || 'asc';
+
+    let filtrados = normalizarDatos(productos);
+
+    if (busq) filtrados = buscarProducto(filtrados, busq);
+    if (cat) filtrados = filtrarPorCategoria(filtrados, cat);
+    if (prov) filtrados = filtrarPorProveedor(filtrados, prov);
+
+    filtrados = ordenarPorPrecio(filtrados, orden);
+
+    vista = filtrados;
+    actualizarGrid();
+    actualizarResumen();
+}
 
 export function inicializarEventos() {
-    setTimeout(() => {
-        eventMap.forEach(({ selector, event, handler }) => {
-            const el = document.querySelector(selector);
-            if (el) {
-                const clone = el.cloneNode(true);
-                el.parentNode.replaceChild(clone, el);
-                clone.addEventListener(event, handler);
-            }
-        });
-    }, 100);
+    // Escuchar cambios en todos los controles
+    const controles = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
+    controles.forEach(id => {
+        const el = document.querySelector(id);
+        if (el) {
+            const ev = (id === '#busqueda') ? 'keyup' : 'change';
+            el.addEventListener(ev, aplicarFiltros);
+        }
+    });
+
+    // Botón de Stock Bajo rápido
+    document.getElementById('btnStock')?.addEventListener('click', () => {
+        vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
+        actualizarGrid();
+        actualizarResumen();
+    });
+
+    // Botón Mostrar Todos
+    document.getElementById('btnMostrarTodos')?.addEventListener('click', () => {
+        // Reset de selects
+        document.querySelectorAll('.controless select').forEach(s => s.selectedIndex = 0);
+        document.getElementById('busqueda').value = '';
+        vista = normalizarDatos(productos);
+        actualizarGrid();
+        actualizarResumen();
+    });
 }

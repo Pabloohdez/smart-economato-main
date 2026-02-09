@@ -2,59 +2,46 @@
 require_once 'config.php';
 require_once 'utils/response.php';
 
-// Proteger endpoint: Solo permitir acceso desde AJAX
-requireAjax();
+header('Content-Type: application/json');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        $result = $conn->query("SELECT * FROM categorias");
+        // Listar Categorías
+        $result = pg_query($conn, "SELECT * FROM categorias ORDER BY nombre ASC");
         
         if (!$result) {
-            sendError("Error al consultar categorías", 500, $conn->error);
+            sendError("Error al obtener categorías", 500, pg_last_error($conn));
         }
-        
-        $categorias = [];
-        if ($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $row['id'] = (int)$row['id'];
-                $categorias[] = $row;
-            }
-        }
-        sendResponse($categorias);
+
+        $data = pg_fetch_all($result);
+        if (!$data) $data = []; // Si no hay datos, array vacío
+
+        echo json_encode(["success" => true, "data" => $data]);
         break;
-        
+
     case 'POST':
-        $data = json_decode(file_get_contents("php://input"));
-        
-        if (empty($data->nombre)) {
-            sendError("El nombre de la categoría es obligatorio", 400);
+        // Crear Categoría
+        $input = json_decode(file_get_contents("php://input"));
+        if (!$input || empty($input->nombre)) {
+            sendError("Nombre obligatorio", 400);
         }
+
+        $nombre = pg_escape_literal($conn, $input->nombre);
+        $desc = isset($input->descripcion) ? pg_escape_literal($conn, $input->descripcion) : 'NULL';
+
+        $query = "INSERT INTO categorias (nombre, descripcion) VALUES ($nombre, $desc)";
         
-        // ID autoincremental en DB o manual. Asumimos autoincremental o int.
-        // Si db original usaba IDs manuales...
-        $id = isset($data->id) ? $data->id : rand(1000, 9999); 
-        
-        $stmt = $conn->prepare("INSERT INTO categorias (id, nombre, descripcion) VALUES (?, ?, ?)");
-        if (!$stmt) {
-             sendError("Error prepare", 500, $conn->error);
-        }
-        
-        $stmt->bind_param("iss", $id, $data->nombre, $data->descripcion);
-        
-        if ($stmt->execute()) {
-             $data->id = $id;
-             sendResponse($data, 201);
+        if (pg_query($conn, $query)) {
+            echo json_encode(["success" => true, "message" => "Categoría creada"]);
         } else {
-             sendError("Error al crear categoría", 500, $stmt->error);
+            sendError("Error al crear: " . pg_last_error($conn), 500);
         }
-        $stmt->close();
         break;
-        
+
     default:
         sendError("Método no permitido", 405);
-        break;
 }
-$conn->close();
+pg_close($conn);
 ?>
