@@ -1,6 +1,5 @@
-# Configuración básica para Apache
+# Configuración limpia
 Options -Indexes
-
 <FilesMatch "\.(env|log|sql|md|json)$">
     Require all denied
 </FilesMatch>
