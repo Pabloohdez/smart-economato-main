@@ -15,9 +15,4 @@ EXPOSE 80
 
 # Instalar base de datos postgresql
 RUN apt-get update && apt-get install -y libpq-dev
-<<<<<<< HEAD
 RUN docker-php-ext-install pdo pdo_pgsql pgsql
-=======
-RUN docker-php-ext-install pdo pdo_pgsql pgsql
-
->>>>>>> d3b1c9a4c9fcb5ad29caad64f41990256d826003
