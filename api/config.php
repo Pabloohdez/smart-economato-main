@@ -8,7 +8,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 // Configuración de PostgreSQL (MODO TRANSACTION POOLER)
-// CORREGIDO: Puesto aws-1-eu-west-1 según tu captura de pantalla
 $db_host = 'aws-1-eu-west-1.pooler.supabase.com';
 $db_port = '6543'; 
 $db_name = 'postgres';
