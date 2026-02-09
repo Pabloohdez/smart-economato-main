@@ -30,12 +30,13 @@ const routes = {
     'recepcion': {
         template: 'pages/recepcion.html',
         action: async () => {
-             try {
-                 const module = await import('./controllers/recepcionController.js');
-                 if (module.initRecepcion) await module.initRecepcion();
-             } catch (e) {
-                 console.error("Error loading recepcionController:", e);
-             }
+            try {
+                `?t=${Date.now()}`;
+                const module = await import(`./controllers/recepcionController.js?t=${Date.now()}`);
+                if (module.initRecepcion) await module.initRecepcion();
+            } catch (e) {
+                console.error("Error loading recepcionController:", e);
+            }
         }
     },
     'bajas': {

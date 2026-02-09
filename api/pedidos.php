@@ -186,7 +186,7 @@ switch ($method) {
                         // 3. Registrar Movimiento
                         $motivo = "Recepción Pedido #$id";
                         $userId = "1"; 
-                        $stmtMov->bind_param("siiiSs", $prodId, $cantNueva, $stockActual, $stockFinal, $motivo, $userId);
+                        $stmtMov->bind_param("siiiss", $prodId, $cantNueva, $stockActual, $stockFinal, $motivo, $userId);
                         $stmtMov->execute();
                     }
 

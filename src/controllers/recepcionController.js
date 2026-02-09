@@ -12,7 +12,6 @@ const API_URL = 'http://localhost/smart-economato-main-2/api';
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
-    alert("DEBUG: Controlador Recepción Iniciado. Si ves esto, el JS cargó.");
     
     await cargarDatos();
     mostrarFechaActual();
@@ -78,16 +77,15 @@ function configurarEventos() {
 
 // --- LOGICA IMPORTACION PEDIDOS (WORKFLOW V3) ---
 async function abrirModalPedidos() {
-    alert("DEBUG: Click funcionando. Abriendo lista...");
     console.log("🔘 Click en Importar Pedidos");
     
     const modal = document.getElementById('modalPedidosPendientes');
     if(!modal) {
-        alert("ERROR CRÍTICO: Modal no encontrado en HTML");
+        console.error("ERROR CRÍTICO: Modal no encontrado en HTML");
         return;
     }
     
-    console.log("Modal encontrado:", modal);
+
     
     // Forzar visibilidad
     modal.classList.remove('oculto');
@@ -249,14 +247,57 @@ window.confirmarVerificacion = async (pedidoId) => {
         const json = await res.json();
         
         if (res.ok) {
-            alert(json.data.message || "Recepción procesada");
+            // Cerrar modal
             document.getElementById('modalPedidosPendientes').classList.add('oculto');
-            cargarDatos(); // Refresh stock global
+            
+            // Obtener info completa del pedido para agregar a la tabla
+            try {
+                const pedidoRes = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const pedidoData = await pedidoRes.json();
+                
+                if (pedidoData.success) {
+                    const pedido = pedidoData.data;
+                    
+                    // Agregar cada producto recibido a la tabla de recepción
+                    pedido.items.forEach(item => {
+                        if (item.cantidad_recibida > 0) {
+                            // Buscar el producto en todosLosProductos para obtener info completa
+                            const prod = todosLosProductos.find(p => p.id == item.producto_id);
+                            if (prod) {
+                                const prov = proveedores.find(x => x.id == prod.proveedorId);
+                                
+                                productosRecepcion.push({
+                                    producto_id: prod.id,
+                                    nombre: item.producto_nombre || prod.nombre,
+                                    proveedor: prov ? prov.nombre : pedido.proveedor_nombre,
+                                    stock: prod.stock - item.cantidad_recibida, // Stock anterior antes de la recepción
+                                    cantidadRecibida: item.cantidad_recibida,
+                                    precio: item.precio_unitario || prod.precio,
+                                    subtotal: (item.precio_unitario || prod.precio) * item.cantidad_recibida
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Renderizar la tabla actualizada
+                    renderizarTablaRecepcion();
+                }
+            } catch (err) {
+                console.error("Error al obtener detalles del pedido:", err);
+            }
+            
+            // Actualizar datos globales
+            await cargarDatos();
+            
+            alert(json.data.message || "Recepción procesada y agregada a la tabla");
         } else {
             alert("Error: " + (json.error?.message || "Desconocido"));
         }
     } catch(e) {
-        alert("Error de conexión");
+        console.error("Error en confirmarVerificacion:", e);
+        alert("Error de conexión: " + e.message);
     }
 };
 
