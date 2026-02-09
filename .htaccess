@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Smart Economato - Configuración de docker
 RUN a2enmod rewrite
 
@@ -10,10 +11,10 @@ ErrorDocument 500 /smart-economato-main-2/errors/500.html
 # RewriteEngine On
 
 # Prevenir listado de directorios
+=======
+# Configuración limpia
+>>>>>>> d3b1c9a4c9fcb5ad29caad64f41990256d826003
 Options -Indexes
-
-# Proteger archivos sensibles
-<FilesMatch "\.(env|log|sql|md)$">
-    Order allow,deny
-    Deny from all
+<FilesMatch "\.(env|log|sql|md|json)$">
+    Require all denied
 </FilesMatch>
