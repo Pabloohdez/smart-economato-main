@@ -1,6 +1,6 @@
 import { getProveedores } from "../services/apiService.js";
 
-const API_URL = 'api/proveedores.php';
+const API_URL = 'http://localhost:8080/api/proveedores.php';
 
 export async function initProveedores() {
     console.log("Iniciando módulo de Proveedores...");
