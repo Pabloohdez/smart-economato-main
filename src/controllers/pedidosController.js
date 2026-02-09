@@ -1,7 +1,7 @@
 import { getProductos, getProveedores } from "../services/apiService.js";
 import { navigateTo } from "../router.js";
 
-const API_URL = 'http://localhost/smart-economato-main-2/api';
+const API_URL = 'http://localhost:8080/api';
 let itemsPedido = [];
 let productosCache = [];
 

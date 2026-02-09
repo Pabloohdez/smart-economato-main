@@ -8,7 +8,7 @@ let productosRecepcion = [];
 let productoSeleccionado = null; 
 let pedidosPendientes = [];
 
-const API_URL = 'http://localhost/smart-economato-main-2/api';
+const API_URL = 'http://localhost:8080/api';
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
