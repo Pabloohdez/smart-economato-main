@@ -2,46 +2,53 @@
 require_once 'config.php';
 require_once 'utils/response.php';
 
+header('Content-Type: application/json');
+
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'POST') {
-    $data = json_decode(file_get_contents("php://input"));
+    $input = file_get_contents("php://input");
+    $data = json_decode($input);
 
-    if (!isset($data->username) || !isset($data->password)) {
-        sendError("Faltan datos (usuario o contraseña)", 400);
+    if (!$data || !isset($data->username) || !isset($data->password)) {
+        sendError("Faltan datos", 400);
+        exit;
     }
 
-    // SENTENCIA PREPARADA para evitar Inyección SQL
-    $stmt = $conn->prepare("SELECT * FROM usuarios WHERE username = ? AND password = ?");
+    // --- CAMBIO IMPORTANTE PARA PUERTO 6543 ---
+    // Como el Transaction Pooler no soporta "Prepare", limpiamos las variables manualmente
+    $user_safe = pg_escape_literal($conn, $data->username);
+    $pass_safe = pg_escape_literal($conn, $data->password);
+
+    // Consulta directa (sin $1 y $2)
+    $query = "SELECT * FROM usuarios WHERE username = $user_safe AND password = $pass_safe";
     
-    if (!$stmt) {
-        sendError("Error interno del servidor", 500, $conn->error);
+    $result = pg_query($conn, $query);
+
+    if (!$result) {
+        sendError("Error en SQL: " . pg_last_error($conn), 500);
+        exit;
     }
 
-    $stmt->bind_param("ss", $data->username, $data->password);
-    
-    if (!$stmt->execute()) {
-        sendError("Error al ejecutar consulta", 500, $stmt->error);
-    }
-
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+    if (pg_num_rows($result) > 0) {
+        $user = pg_fetch_assoc($result);
+        unset($user['password']); // Quitamos la contraseña
         
-        // NO devolver la contraseña en la respuesta
-        unset($user['password']);
-        
-        sendResponse($user);
+        echo json_encode([
+            "success" => true,
+            "data" => $user
+        ]);
     } else {
         http_response_code(401);
-        sendError("Credenciales incorrectas", 401);
+        echo json_encode([
+            "success" => false,
+            "error" => ["message" => "Usuario o contraseña incorrectos"]
+        ]);
     }
-    
-    $stmt->close();
+    pg_free_result($result);
+
 } else {
     sendError("Método no permitido", 405);
 }
-
-$conn->close();
+pg_close($conn);
 ?>
