@@ -12,3 +12,7 @@ RUN chown -R www-data:www-data /var/www/html/
 
 # Exponemos el puerto 80
 EXPOSE 80
+
+# Instalar base de datos postgresql
+RUN apt-get update && apt-get install -y libpq-dev
+RUN docker-php-ext-install pdo pdo_pgsql pgsql

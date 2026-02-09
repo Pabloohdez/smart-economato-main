@@ -1,4 +1,5 @@
-# Smart Economato - Configuración de Apache
+# Smart Economato - Configuración de docker
+RUN a2enmod rewrite
 
 # Páginas de error personalizadas
 ErrorDocument 404 /smart-economato-main-2/errors/404.html
