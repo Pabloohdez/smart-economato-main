@@ -92,8 +92,10 @@ switch ($method) {
 
             echo json_encode([
                 "success" => true, 
-                "message" => "Movimiento registrado",
-                "stock_nuevo" => $stockNuevo
+                "data" => [
+                    "message" => "Movimiento registrado",
+                    "stock_nuevo" => $stockNuevo
+                ]
             ]);
         } else {
             sendError("Error al registrar: " . pg_last_error($conn), 500);

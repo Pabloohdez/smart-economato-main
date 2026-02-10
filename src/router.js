@@ -81,7 +81,7 @@ const routes = {
     'pedidos': {
         template: 'pages/pedidos.html',
         action: async () => {
-            const module = await import('./controllers/pedidosController.js');
+            const module = await import(`./controllers/pedidosController.js?t=${Date.now()}`);
             if (module.initPedidos) module.initPedidos();
         }
     },
