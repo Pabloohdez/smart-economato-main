@@ -1,6 +1,13 @@
 {
-"scripts": {
-  "start": "json-server assets/data/db.json --port 4000 --static ./",
-  "server": "json-server --watch assets/data/db.json --port 4000"
-}
+    "name": "smart-economato",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "type-check": "tsc --noEmit",
+        "start": "json-server assets/data/db.json --port 4000 --static ./",
+        "server": "json-server --watch assets/data/db.json --port 4000"
+    }
 }
