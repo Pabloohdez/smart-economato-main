@@ -1,5 +1,14 @@
-# Configuración limpia
+# Smart Economato - Configuración Apache
+
+# Páginas de error personalizadas
+ErrorDocument 404 /errors/404.html
+ErrorDocument 403 /errors/403.html
+ErrorDocument 500 /errors/500.html
+
+# Prevenir listado de directorios
 Options -Indexes
+
+# Proteger archivos sensibles
 <FilesMatch "\.(env|log|sql|md|json)$">
     Require all denied
 </FilesMatch>

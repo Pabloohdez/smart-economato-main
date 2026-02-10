@@ -1,0 +1,164 @@
+<link rel="stylesheet" href="assets/css/escandallos.css">
+
+<div class="table-wrapper">
+    <div class="table-header">
+        <h1>Escandallos y Recetas</h1>
+
+        <div class="escandallo-controls">
+            <!-- Buscar por receta -->
+            <div class="grupo-busqueda">
+                <label for="busquedaEscandallos" class="label-control">Buscar Receta</label>
+                <input type="text" id="busquedaEscandallos" class="input-control" placeholder="Buscar por nombre...">
+            </div>
+
+            <button id="btnBuscarEscandallo" class="btn-accion btn-buscar">
+                <i class="fa-solid fa-search"></i> Buscar
+            </button>
+
+            <!-- Buscar por ingrediente -->
+            <div class="grupo-busqueda">
+                <label for="busquedaIngrediente" class="label-control">Buscar por Ingrediente</label>
+                <input type="text" id="busquedaIngrediente" class="input-control" placeholder="Por ingrediente...">
+            </div>
+
+            <button id="btnBuscarIngrediente" class="btn-accion btn-buscar">
+                <i class="fa-solid fa-filter"></i> Filtrar
+            </button>
+
+            <!-- Botón Mostrar Todo -->
+            <button id="btnMostrarTodo" class="btn-accion btn-limpiar" style="background: #2d3748; color: white;">
+                <i class="fa-solid fa-sync"></i> Mostrar Todo
+            </button>
+
+            <!-- Botón Nueva Receta -->
+            <button class="btn-accion btn-nuevo" id="btnNuevoEscandallo">
+                <i class="fa-solid fa-plus"></i> Nueva Receta
+            </button>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <caption class="sr-only">Lista de escandallos y recetas disponibles</caption>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Autor</th>
+                    <th>Ingredientes</th>
+                    <th>Coste Total</th>
+                    <th>PVP</th>
+                    <th>Margen %</th>
+                    <th style="text-align: center;">Editar</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-escandallos-cuerpo">
+                <tr>
+                    <td colspan="7" style="text-align:center; padding: 20px;">Cargando recetas...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL EDITOR ESCANDALLO -->
+<div id="modalEscandallo" class="modal-overlay">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModalEscandallo" aria-label="Cerrar ventana">&times;</button>
+        <h2 id="tituloModalEscandallo" class="modal-title">Nueva Receta</h2>
+
+        <form id="formEscandallo">
+            <input type="hidden" id="editEscandalloId">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="nombrePlato" class="label-form">
+                        <i class="fa-solid fa-utensils"></i>
+                        Nombre del Plato
+                    </label>
+                    <input type="text" id="nombrePlato" required class="input-form" placeholder="Ej: Tortilla Española">
+                </div>
+                <div class="form-group">
+                    <label for="pvpPlato" class="label-form">
+                        <i class="fa-solid fa-euro-sign"></i>
+                        Precio Venta (PVP)
+                    </label>
+                    <input type="number" id="pvpPlato" step="0.01" value="0" class="input-form">
+                </div>
+                <div class="form-group full-width">
+                    <label for="elaboracionPlato" class="label-form">
+                        <i class="fa-solid fa-list-ol"></i>
+                        Pasos de Elaboración
+                    </label>
+                    <textarea id="elaboracionPlato" rows="4" placeholder="Describe los pasos para preparar la receta..."
+                        class="textarea-form"></textarea>
+                </div>
+            </div>
+
+            <div class="calculadora-panel">
+                <h3 class="calculadora-title">
+                    <i class="fa-solid fa-basket-shopping"></i>
+                    Ingredientes
+                </h3>
+
+                <div class="calculadora-controls">
+                    <div class="control-group-grow">
+                        <label for="selectProductoIngrediente" class="label-control">Producto</label>
+                        <select id="selectProductoIngrediente" class="select-form">
+                            <option value="">Buscar ingrediente...</option>
+                        </select>
+                    </div>
+                    <div class="control-group-fixed">
+                        <label for="cantidadIngrediente" class="label-control">Cant.</label>
+                        <input type="number" id="cantidadIngrediente" step="0.001" placeholder="0" class="input-form">
+                    </div>
+                    <button type="button" id="btnAddIngrediente" class="btn-add-ingredient" title="Añadir ingrediente">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="table-container-ing">
+                    <table class="table-ingredientes">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th style="width:80px;">Cant.</th>
+                                <th style="width:80px;">Coste U.</th>
+                                <th style="width:90px;">Total</th>
+                                <th style="width:50px; text-align:center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaIngredientes">
+                            <!-- Items dinámicos -->
+                        </tbody>
+                        <tfoot>
+                            <tr style="background-color: #f7fafc; font-weight: bold;">
+                                <td colspan="3" style="text-align:right; padding:15px; color:#2d3748;">COSTE TOTAL:</td>
+                                <td id="costeTotalReceta" style="color:#c53030;">0.00€</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RESUMEN FINAL -->
+            <div class="resumen-panel">
+                <div class="resumen-item">
+                    <strong>Margen Beneficio:</strong>
+                    <span id="margenBeneficio" class="resumen-value">0%</span>
+                </div>
+                <div class="resumen-item">
+                    <strong>Beneficio Neto:</strong>
+                    <span id="beneficioNeto" class="resumen-value">0.00€</span>
+                </div>
+            </div>
+
+            <div class="form-footer">
+                <button type="button" id="btnCancelarEscandallo" class="btn-cancel">Cancelar</button>
+                <button type="submit" class="btn-save">
+                    <i class="fa-solid fa-save"></i> Guardar Receta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

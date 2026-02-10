@@ -4,15 +4,15 @@ import { navigateTo } from "../router.js";
 let todosLosProductos = [];
 let categorias = [];
 let proveedores = [];
-let productosRecepcion = []; 
-let productoSeleccionado = null; 
+let productosRecepcion = [];
+let productoSeleccionado = null;
 let pedidosPendientes = [];
 
 const API_URL = 'http://localhost:8080/api';
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
-    
+
     await cargarDatos();
     mostrarFechaActual();
     configurarEventos();
@@ -40,10 +40,10 @@ function mostrarFechaActual() {
 function cargarFiltros() {
     const selectProveedor = document.getElementById("selectProveedorFiltro");
     const selectCategoria = document.getElementById("selectCategoriaFiltro");
-    
+
     selectProveedor.innerHTML = '<option value="">Todos los proveedores</option>';
     proveedores.forEach(p => selectProveedor.innerHTML += `<option value="${p.id}">${p.nombre}</option>`);
-    
+
     selectCategoria.innerHTML = '<option value="">Todas las categorías</option>';
     categorias.forEach(c => selectCategoria.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
 }
@@ -51,23 +51,23 @@ function cargarFiltros() {
 // ...
 function configurarEventos() {
     const btnBuscar = document.getElementById("btnBuscarProducto");
-    if(btnBuscar) btnBuscar.onclick = buscarProductos;
-    
+    if (btnBuscar) btnBuscar.onclick = buscarProductos;
+
     document.getElementById("inputBusquedaProducto").onkeypress = (e) => { if (e.key === 'Enter') buscarProductos(); };
-    
+
     document.getElementById("selectProveedorFiltro").onchange = buscarProductos;
     document.getElementById("selectCategoriaFiltro").onchange = buscarProductos;
-    
+
     document.getElementById("btnCancelarRecepcion").onclick = cancelarRecepcion;
     document.getElementById("btnGuardarRecepcion").onclick = confirmarRecepcionManual;
-    
+
     document.getElementById("btnModalCancelar").onclick = cerrarModal;
     document.getElementById("btnModalConfirmar").onclick = confirmarCantidadModal;
     document.getElementById("modalInputCantidad").onkeypress = (e) => { if (e.key === 'Enter') confirmarCantidadModal(); };
-    
+
     // IMPORTAR PEDIDOS
     const btnImport = document.getElementById('btnImportarPedido');
-    if(btnImport) {
+    if (btnImport) {
         console.log("✅ Botón Importar encontrado, asignando evento...");
         btnImport.onclick = abrirModalPedidos;
     } else {
@@ -78,45 +78,45 @@ function configurarEventos() {
 // --- LOGICA IMPORTACION PEDIDOS (WORKFLOW V3) ---
 async function abrirModalPedidos() {
     console.log("🔘 Click en Importar Pedidos");
-    
+
     const modal = document.getElementById('modalPedidosPendientes');
-    if(!modal) {
+    if (!modal) {
         console.error("ERROR CRÍTICO: Modal no encontrado en HTML");
         return;
     }
-    
 
-    
+
+
     // Forzar visibilidad
     modal.classList.remove('oculto');
     modal.style.display = 'flex';  // Forzar display
     modal.style.visibility = 'visible';
     modal.style.opacity = '1';
-    
+
     const div = document.getElementById('listaPedidosPendientes');
     div.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
-    
+
     try {
         const res = await fetch(`${API_URL}/pedidos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        if(!res.ok) throw new Error("Error HTTP " + res.status);
-        
+        if (!res.ok) throw new Error("Error HTTP " + res.status);
+
         const json = await res.json();
-        
+
         if (!json.success || !json.data) {
             div.innerHTML = 'Error: Respuesta inesperada de API';
             return;
         }
-        
+
         // Filtramos pendientes o incompletos
         pedidosPendientes = json.data.filter(p => p.estado === 'PENDIENTE' || p.estado === 'INCOMPLETO');
-        
+
         if (!pedidosPendientes.length) {
             div.innerHTML = '<div style="padding:10px">No hay pedidos pendientes de recepción.</div>';
             return;
         }
 
         renderTablaPedidos(pedidosPendientes, div);
-        
+
     } catch (e) {
         console.error(e);
         div.innerHTML = 'Error cargando pedidos: ' + e.message;
@@ -129,8 +129,8 @@ function renderTablaPedidos(lista, container) {
     const tbody = container.querySelector('tbody');
 
     lista.forEach(p => {
-         const tr = document.createElement('tr');
-         tr.innerHTML = `
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
             <td>#${p.id}</td>
             <td>${p.proveedor_nombre}</td>
             <td><span class="badge ${p.estado === 'INCOMPLETO' ? 'badge-warning' : 'badge-primary'}">${p.estado}</span></td>
@@ -141,7 +141,7 @@ function renderTablaPedidos(lista, container) {
                 </button>
             </td>
          `;
-         tbody.appendChild(tr);
+        tbody.appendChild(tr);
     });
 }
 
@@ -151,12 +151,12 @@ window.verificarPedido = async (id) => {
     try {
         const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         const json = await res.json();
-        
+
         if (!json.success) return alert("Error cargando detalles");
-        
+
         const pedido = json.data;
         mostrarModalVerificacion(pedido);
-        
+
     } catch (e) {
         alert("Error de red");
     }
@@ -164,7 +164,7 @@ window.verificarPedido = async (id) => {
 
 function mostrarModalVerificacion(pedido) {
     const div = document.getElementById('listaPedidosPendientes');
-    
+
     let html = `
         <div class="verificacion-header">
             <h4>Verificando Pedido #${pedido.id} - ${pedido.proveedor_nombre}</h4>
@@ -181,7 +181,7 @@ function mostrarModalVerificacion(pedido) {
             </thead>
             <tbody>
     `;
-    
+
     pedido.items.forEach((item, idx) => {
         html += `
             <tr class="fila-verificacion">
@@ -202,7 +202,7 @@ function mostrarModalVerificacion(pedido) {
             </tr>
         `;
     });
-    
+
     html += `
             </tbody>
         </table>
@@ -212,7 +212,7 @@ function mostrarModalVerificacion(pedido) {
              <button class="btn-success" onclick="window.confirmarVerificacion(${pedido.id})">Confirmar Recepción</button>
         </div>
     `;
-    
+
     div.innerHTML = html;
 }
 
@@ -220,7 +220,7 @@ window.confirmarVerificacion = async (pedidoId) => {
     // Recolectar datos
     const inputs = document.querySelectorAll('input[id^="rec_qty_"]');
     const items = [];
-    
+
     inputs.forEach(inp => {
         const detalleId = inp.id.split('_')[2];
         items.push({
@@ -228,13 +228,13 @@ window.confirmarVerificacion = async (pedidoId) => {
             cantidad_recibida: parseInt(inp.value) || 0
         });
     });
-    
-    if(!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
-    
+
+    if (!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
+
     try {
         const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
             method: 'PUT',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
@@ -243,23 +243,23 @@ window.confirmarVerificacion = async (pedidoId) => {
                 items: items
             })
         });
-        
+
         const json = await res.json();
-        
+
         if (res.ok) {
             // Cerrar modal
             document.getElementById('modalPedidosPendientes').classList.add('oculto');
-            
+
             // Obtener info completa del pedido para agregar a la tabla
             try {
                 const pedidoRes = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 const pedidoData = await pedidoRes.json();
-                
+
                 if (pedidoData.success) {
                     const pedido = pedidoData.data;
-                    
+
                     // Agregar cada producto recibido a la tabla de recepción
                     pedido.items.forEach(item => {
                         if (item.cantidad_recibida > 0) {
@@ -267,7 +267,7 @@ window.confirmarVerificacion = async (pedidoId) => {
                             const prod = todosLosProductos.find(p => p.id == item.producto_id);
                             if (prod) {
                                 const prov = proveedores.find(x => x.id == prod.proveedorId);
-                                
+
                                 productosRecepcion.push({
                                     producto_id: prod.id,
                                     nombre: item.producto_nombre || prod.nombre,
@@ -280,45 +280,45 @@ window.confirmarVerificacion = async (pedidoId) => {
                             }
                         }
                     });
-                    
+
                     // Renderizar la tabla actualizada
                     renderizarTablaRecepcion();
                 }
             } catch (err) {
                 console.error("Error al obtener detalles del pedido:", err);
             }
-            
+
             // Actualizar datos globales
             await cargarDatos();
-            
+
             alert(json.data.message || "Recepción procesada y agregada a la tabla");
         } else {
             alert("Error: " + (json.error?.message || "Desconocido"));
         }
-    } catch(e) {
+    } catch (e) {
         console.error("Error en confirmarVerificacion:", e);
         alert("Error de conexión: " + e.message);
     }
 };
 
 window.rechazarPedido = async (id) => {
-    if(!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
-    
+    if (!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
+
     try {
         const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, {
             method: 'PUT',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ accion: 'CANCELAR' })
         });
-        
-        if(res.ok) {
+
+        if (res.ok) {
             alert("Pedido rechazado");
             abrirModalPedidos(); // Volver a lista
         }
-    } catch(e) { alert("Error"); }
+    } catch (e) { alert("Error"); }
 };
 
 
@@ -328,7 +328,7 @@ function buscarProductos() {
     const term = document.getElementById("inputBusquedaProducto").value.trim().toLowerCase();
     const provId = document.getElementById("selectProveedorFiltro").value;
     const catId = document.getElementById("selectCategoriaFiltro").value;
-    
+
     let res = todosLosProductos.filter(p => {
         const matchText = !term || p.nombre.toLowerCase().includes(term);
         const matchProv = !provId || p.proveedorId == provId;
@@ -346,7 +346,7 @@ function mostrarResultados(productos) {
         div.classList.remove('oculto');
         return;
     }
-    
+
     div.innerHTML = productos.map(p => `
         <div class="item-resultado" onclick="window.selProdManual('${p.id}')">
             <div class="info-producto-resultado">
@@ -356,7 +356,7 @@ function mostrarResultados(productos) {
         </div>
     `).join('');
     div.classList.remove('oculto');
-    
+
     window.selProdManual = (id) => {
         const p = todosLosProductos.find(x => x.id == id);
         if (p) abrirModal(p);
@@ -403,7 +403,7 @@ function agregarProductoRecepcion(p, cant) {
 function renderizarTablaRecepcion() {
     const tbody = document.getElementById("tbodyRecepcion");
     const tfoot = document.getElementById("tfootRecepcion");
-    
+
     if (!productosRecepcion.length) {
         tbody.innerHTML = '<tr class="fila-vacia"><td colspan="8"><div class="mensaje-vacio">Lista vacía</div></td></tr>';
         document.getElementById("btnGuardarRecepcion").classList.add("oculto");
@@ -411,10 +411,10 @@ function renderizarTablaRecepcion() {
         tfoot.classList.add("oculto");
         return;
     }
-    
+
     document.getElementById("btnGuardarRecepcion").classList.remove("oculto");
     document.getElementById("btnCancelarRecepcion").classList.remove("oculto");
-    
+
     tbody.innerHTML = productosRecepcion.map((p, idx) => `
         <tr>
             <td>${p.nombre}</td>
@@ -427,12 +427,12 @@ function renderizarTablaRecepcion() {
             <td><button class="btn-eliminar-item" onclick="window.delItemManual(${idx})"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
     `).join('');
-    
+
     window.delItemManual = (idx) => {
         productosRecepcion.splice(idx, 1);
         renderizarTablaRecepcion();
     };
-    
+
     const total = productosRecepcion.reduce((sum, p) => sum + p.subtotal, 0);
     document.getElementById("totalRecepcion").innerText = total.toFixed(2) + ' €';
     tfoot.classList.remove("oculto");
@@ -446,7 +446,7 @@ function cancelarRecepcion() {
 async function confirmarRecepcionManual() {
     if (!productosRecepcion.length) return;
     if (!confirm("¿Confirmar esta recepción manual?")) return;
-    
+
     const obs = document.getElementById("textareaObservaciones").value;
     const payload = {
         tipo: 'ENTRADA',
@@ -457,7 +457,7 @@ async function confirmarRecepcionManual() {
             cantidad: p.cantidadRecibida
         }))
     };
-    
+
     try {
         const res = await fetch(`${API_URL}/movimientos.php`, {
             method: 'POST',
@@ -467,7 +467,7 @@ async function confirmarRecepcionManual() {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (res.ok) {
             alert("Recepción Exitosa ✅");
             productosRecepcion = [];
