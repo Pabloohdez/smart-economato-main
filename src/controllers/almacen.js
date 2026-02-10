@@ -1,4 +1,5 @@
 // src/controllers/almacen.js
+
 import {
     filtrarPorCategoria,
     filtrarPorProveedor,
@@ -17,26 +18,32 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
-// Formateador de fecha y color para la columna Caducidad
+/**
+ * Procesa la fecha de caducidad para devolver el texto y la clase CSS correcta
+ */
 function procesarCaducidad(fechaStr) {
     if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
         return { texto: 'Sin fecha', clase: 'badge-fecha-normal' };
     }
+
     const fecha = new Date(fechaStr);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    const dif = Math.ceil((fecha - hoy) / (86400000));
+    const dif = Math.ceil((fecha - hoy) / (1000 * 60 * 60 * 24));
 
-    let clase = 'badge-fecha-normal';
-    let texto = fecha.toLocaleDateString('es-ES');
+    if (dif < 0) return { texto: '⚠️ CADUCADO', clase: 'badge-caducado' };
+    if (dif <= 7) return { texto: `⚠️ ${dif}d`, clase: 'badge-caducado' };
+    if (dif <= 30) return { texto: `⏰ ${dif}d`, clase: 'badge-proximo-caducar' };
 
-    if (dif < 0) { clase = 'badge-caducado'; texto = '⚠️ CADUCADO'; }
-    else if (dif <= 7) { clase = 'badge-caducado'; texto = `⚠️ ${dif}d`; }
-    else if (dif <= 30) { clase = 'badge-proximo-caducar'; texto = `⏰ ${dif}d`; }
-
-    return { texto, clase };
+    return {
+        texto: fecha.toLocaleDateString('es-ES'),
+        clase: 'badge-fecha-normal'
+    };
 }
 
+/**
+ * Configuración de las columnas para Grid.js
+ */
 const columnasGrid = [
     { id: 'id', name: 'ID', width: '80px' },
     { id: 'nombre', name: 'Nombre' },
@@ -44,16 +51,18 @@ const columnasGrid = [
     {
         id: 'precio',
         name: 'Precio',
-        formatter: (cell) => window.gridjs.html(`<span style="color:#2f855a; font-weight:bold;">${Number(cell).toFixed(2)} €</span>`)
+        formatter: (cell) => window.gridjs.html(`<span style="color: #2f855a; font-weight: bold;">${Number(cell).toFixed(2)} €</span>`)
     },
     {
         id: 'stock',
         name: 'Stock',
+        width: '100px',
         formatter: (cell, row) => {
             const stock = Number(cell);
-            const min = Number(row.cells[5].data); // Columna stockMinimo (oculta)
-            const clase = stock <= min ? 'badge-stock-bajo' : 'badge-stock-ok';
-            return window.gridjs.html(`<span class="${clase}">${stock <= min ? '⚠️ ' : ''}${stock}</span>`);
+            const stockMin = Number(row.cells[5].data); // Columna stockMinimo (oculta)
+            const clase = stock <= stockMin ? 'badge-stock-bajo' : 'badge-stock-ok';
+            const icono = stock <= stockMin ? '⚠️ ' : '✓ ';
+            return window.gridjs.html(`<span class="${clase}">${icono}${stock}</span>`);
         }
     },
     { id: 'stockMinimo', name: 'Min', hidden: true },
@@ -68,38 +77,59 @@ const columnasGrid = [
     { id: 'nombreProveedor', name: 'Proveedor' }
 ];
 
-export async function cargarDatos() {
-    try {
-        const [resProd, resCat, resProv] = await Promise.all([
-            getProductos(), getCategorias(), getProveedores()
-        ]);
-        categorias = resCat;
-        proveedores = resProv;
+/**
+ * Normaliza los datos que vienen de Supabase (minúsculas) y hace los JOINS manuales
+ */
+function normalizarDatos(lista) {
+    if (!Array.isArray(lista)) return [];
+    return lista.map(p => {
+        const cat = categorias.find(c => c.id == (p.categoriaid || p.categoriaId)) || {};
+        const prov = proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId)) || {};
 
-        // Normalización para Supabase (unifica nombres de campos)
-        productos = resProd.map(p => ({
+        return {
             ...p,
-            nombreCategoria: categorias.find(c => c.id == (p.categoriaid || p.categoriaId))?.nombre || 'General',
-            nombreProveedor: proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId))?.nombre || 'N/A',
+            nombreCategoria: cat.nombre || p.categoria_nombre || 'General',
+            nombreProveedor: prov.nombre || p.proveedor_nombre || 'N/A',
+            // Corregimos nombres para Grid.js
             fechaCaducidad: p.fechacaducidad || p.fechaCaducidad || null,
             stockMinimo: p.stockminimo || p.stockMinimo || 0,
             stock: p.stock || 0
-        }));
+        };
+    });
+}
+
+export async function cargarDatos() {
+    const contenedor = document.getElementById('grid-inventario');
+    if (contenedor) contenedor.innerHTML = '<div style="text-align:center; padding:20px;">Cargando inventario de Supabase...</div>';
+
+    try {
+        // Carga en paralelo
+        const [resProd, resCat, resProv] = await Promise.all([
+            getProductos(),
+            getCategorias(),
+            getProveedores()
+        ]);
+
+        productos = resProd;
+        categorias = resCat;
+        proveedores = resProv;
+
+        vista = normalizarDatos(productos);
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-        vista = [...productos];
+
         actualizarGrid();
+        actualizarResumen();
+
     } catch (error) {
-        console.error("Error al cargar datos:", error);
+        console.error("❌ Error cargando datos:", error);
+        if (contenedor) contenedor.innerHTML = '<div style="color:red; text-align:center;">Error de conexión con la API</div>';
     }
 }
 
 function actualizarGrid() {
     const contenedor = document.getElementById('grid-inventario');
-<<<<<<< HEAD
-    if (!contenedor) return;
-=======
     if (!contenedor || !window.gridjs) return;
 
     console.log('🔄 Actualizando grid con', vista.length, 'productos');
@@ -115,7 +145,6 @@ function actualizarGrid() {
     }
 
     // Limpiar el contenedor completamente
->>>>>>> origin/Pablo
     contenedor.innerHTML = '';
 
     // Crear nueva instancia de Grid.js con los datos filtrados
@@ -125,37 +154,14 @@ function actualizarGrid() {
         pagination: { limit: 10, summary: true },
         sort: true,
         className: {
-            // ESTO ACTIVA LA FRANJA ROJA EN LA FILA COMPLETA
-            tr: (row) => {
-                const stock = Number(row.cells[4].data);
-                const min = Number(row.cells[5].data);
-                return stock <= min ? 'fila-alerta' : '';
-            }
+            table: 'tabla-grid-custom',
+            td: 'celda-grid'
+        },
+        language: {
+            'search': { 'placeholder': 'Buscar...' },
+            'pagination': { 'previous': 'Anterior', 'next': 'Siguiente' },
+            'noRecordsFound': 'No hay productos que coincidan'
         }
-<<<<<<< HEAD
-    }).render(contenedor);
-}
-
-export function inicializarEventos() {
-    // Filtros de búsqueda
-    document.getElementById('busqueda')?.addEventListener('keyup', (e) => {
-        vista = buscarProducto(productos, e.target.value);
-        actualizarGrid();
-    });
-
-    // Botón Stock Bajo
-    document.getElementById('btnStock')?.addEventListener('click', () => {
-        vista = comprobarStockMinimo(productos);
-        actualizarGrid();
-    });
-
-    // Botón Mostrar Todos
-    document.getElementById('btnMostrarTodos')?.addEventListener('click', () => {
-        vista = [...productos];
-        actualizarGrid();
-    });
-}
-=======
     });
 
     gridInstance.render(contenedor);
@@ -329,4 +335,3 @@ export async function inicializarEventos() {
 }
 
 
->>>>>>> origin/Pablo
