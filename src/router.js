@@ -1,8 +1,8 @@
 // src/router.js
 
 // Importamos las funciones necesarias para Inventario
-import { renderizarTabla } from "./utils/funciones.js";
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
+import { initEscandallos } from "./controllers/escandallosController.js";
 
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
@@ -13,7 +13,6 @@ const routes = {
     'inventario': {
         template: 'pages/Inventario.html',
         action: async () => {
-            renderizarTabla([]); // Limpiar tabla visualmente
             await cargarDatos(); // Cargar datos de la API
             inicializarEventos(); // Activar filtros y botones
         }
@@ -76,6 +75,13 @@ const routes = {
         action: async () => {
             const module = await import('./controllers/pedidosController.js');
             if (module.initPedidos) module.initPedidos();
+        }
+    },
+    'escandallos': {
+        template: 'pages/escandallos.html',
+        action: async () => {
+            const module = await import('./controllers/escandallosController.js');
+            if (module.initEscandallos) module.initEscandallos();
         }
     },
     'informes': {

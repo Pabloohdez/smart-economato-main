@@ -1,17 +1,17 @@
 import { getProductos, getProveedores } from "../services/apiService.js";
 import { navigateTo } from "../router.js";
 
-const API_URL = 'http://localhost/smart-economato-main-2/api';
+const API_URL = './api';
 let itemsPedido = [];
 let productosCache = [];
 
 export async function initPedidos() {
     console.log("🛒 Iniciando módulo de Pedidos...");
-    
+
     // Set Date in JS
     const today = new Date().toISOString().split('T')[0];
     const dateInput = document.getElementById('fechaPedido');
-    if(dateInput) dateInput.value = today;
+    if (dateInput) dateInput.value = today;
 
     // Attach global window functions if gridjs needs them
     window.irARecepcion = irARecepcion;
@@ -22,17 +22,17 @@ export async function initPedidos() {
     // Event Listeners
     // Navigation
     const btnNuevo = document.getElementById("btnNuevoPedido");
-    if(btnNuevo) btnNuevo.onclick = () => mostrarSeccion('nuevo');
+    if (btnNuevo) btnNuevo.onclick = () => mostrarSeccion('nuevo');
 
     const btnListar = document.getElementById("btnListarPedidos");
-    if(btnListar) btnListar.onclick = () => mostrarSeccion('lista');
+    if (btnListar) btnListar.onclick = () => mostrarSeccion('lista');
 
     // Actions
     const selProv = document.getElementById("selectProveedor");
-    if(selProv) selProv.addEventListener("change", actualizarProductosDeProveedor);
+    if (selProv) selProv.addEventListener("change", actualizarProductosDeProveedor);
 
     const btnGuardar = document.getElementById("btnGuardarPedido");
-    if(btnGuardar) btnGuardar.onclick = guardarPedido;
+    if (btnGuardar) btnGuardar.onclick = guardarPedido;
 }
 
 function mostrarSeccion(sec) {
@@ -43,7 +43,7 @@ function mostrarSeccion(sec) {
 
 async function cargarPedidos() {
     console.log("🔄 Cargando lista de pedidos...");
-    
+
     // Verificar si GridJS está cargado
     if (typeof gridjs === 'undefined') {
         console.error("❌ GridJS no está cargado.");
@@ -54,11 +54,11 @@ async function cargarPedidos() {
     try {
         const res = await fetch(`${API_URL}/pedidos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         console.log("📡 Respuesta API status:", res.status);
-        
+
         if (!res.ok) {
-             const text = await res.text();
-             console.error("❌ Error API:", text);
-             throw new Error(`Error API: ${res.status}`);
+            const text = await res.text();
+            console.error("❌ Error API:", text);
+            throw new Error(`Error API: ${res.status}`);
         }
 
         const json = await res.json();
@@ -71,12 +71,12 @@ async function cargarPedidos() {
                 return;
             }
             gridElement.innerHTML = '';
-            
+
             const data = Array.isArray(json.data) ? json.data : [];
-            
+
             if (data.length === 0) {
-                 gridElement.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay pedidos registrados todavía.</div>';
-                 return;
+                gridElement.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay pedidos registrados todavía.</div>';
+                return;
             }
 
             new gridjs.Grid({
@@ -134,7 +134,7 @@ async function cargarProveedores() {
 
 async function actualizarProductosDeProveedor() {
     const provId = document.getElementById('selectProveedor').value;
-    
+
     if (!productosCache.length) {
         try {
             const res = await fetch(`${API_URL}/productos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
@@ -157,7 +157,7 @@ async function actualizarProductosDeProveedor() {
 }
 
 function renderProductos(lista, container) {
-     lista.forEach(p => {
+    lista.forEach(p => {
         const el = document.createElement('div');
         el.className = 'item-prov';
         el.innerHTML = `
@@ -193,7 +193,7 @@ function renderizarCarritoPedido() {
     itemsPedido.forEach((item, idx) => {
         const sub = item.cantidad * item.precio;
         total += sub;
-        
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${item.nombre}</td>
@@ -205,10 +205,10 @@ function renderizarCarritoPedido() {
             <td>${sub.toFixed(2)}</td>
             <td><button class="btn-remove" aria-label="Eliminar item">x</button></td>
         `;
-        
+
         tr.querySelector('input').onchange = (e) => cambiarCant(idx, e.target.value);
         tr.querySelector('.btn-remove').onclick = () => borrarItem(idx);
-        
+
         tbody.appendChild(tr);
     });
     document.getElementById('totalPedido').innerText = total.toFixed(2) + ' €';
