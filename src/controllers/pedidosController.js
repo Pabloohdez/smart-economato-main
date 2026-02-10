@@ -225,39 +225,69 @@ function borrarItem(idx) {
 }
 
 async function guardarPedido() {
+    console.log('💾 Intentando guardar pedido...');
+    
     const provId = document.getElementById('selectProveedor').value;
-    if (!provId || itemsPedido.length === 0) return alert("Faltan datos");
+    
+    // Validaciones mejoradas
+    if (!provId) {
+        alert("Por favor, selecciona un proveedor");
+        return;
+    }
+    
+    if (itemsPedido.length === 0) {
+        alert("El pedido está vacío. Agrega al menos un producto.");
+        return;
+    }
 
     const payload = {
         proveedor_id: provId,
         items: itemsPedido,
         usuario_id: "1"
     };
+    
+    console.log('📦 Payload del pedido:', payload);
 
     try {
         const res = await fetch(`${API_URL}/pedidos.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-Requested-With': 'XMLHttpRequest' 
+            },
             body: JSON.stringify(payload)
         });
+        
+        console.log('📡 Respuesta status:', res.status);
+        
+        // Verificar status HTTP
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error('❌ Error HTTP:', errorText);
+            throw new Error(`Error del servidor (${res.status}): ${errorText}`);
+        }
 
-        if (res.ok) {
-            alert("Pedido Creado con Éxito ✅");
+        const data = await res.json();
+        console.log('✅ Respuesta JSON:', data);
+        
+        if (data.success) {
+            alert("✅ Pedido creado con éxito");
             itemsPedido = [];
             document.getElementById('selectProveedor').value = "";
             document.getElementById('listaProductosProv').innerHTML = '<p class="text-muted">Selecciona un proveedor primero</p>';
             renderizarCarritoPedido();
             mostrarSeccion('lista');
-            cargarPedidos();
+            await cargarPedidos();
         } else {
-            const errorData = await res.json();
-            alert("Error al crear pedido: " + (errorData.error || "Error desconocido"));
+            console.error('❌ Error en respuesta:', data);
+            alert("Error al crear pedido: " + (data.error?.message || data.error || "Error desconocido"));
         }
-    } catch (e) {
-        console.error(e);
-        alert("Error de red");
+    } catch (error) {
+        console.error('❌ Excepción al guardar pedido:', error);
+        alert("Error de conexión: " + error.message + "\n\nVerifica que el servidor esté funcionando.");
     }
 }
+
 
 function irARecepcion(id) {
     alert("Para recepcionar este pedido, ve al módulo de Recepción e impórtalo desde allí.");
