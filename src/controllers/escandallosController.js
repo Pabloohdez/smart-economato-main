@@ -48,7 +48,8 @@ async function cargarDatos() {
             items: [
                 { producto_id: 101, nombre: "Huevos", cantidad: 4, precio: 0.20 },
                 { producto_id: 102, nombre: "Patatas", cantidad: 1, precio: 0.50 },
-                { producto_id: 103, nombre: "Aceite", cantidad: 0.1, precio: 2.00 }
+                { producto_id: 103, nombre: "Aceite", cantidad: 0.1, precio: 2.00 },
+                { producto_id: 999, nombre: "Sal", cantidad: 0.01, precio: 0.60 }
             ],
             elaboracion: "1. Pelar y cortar las patatas.\n2. Freír las patatas en abundante aceite.\n3. Batir los huevos con sal.\n4. Mezclar patatas con huevos.\n5. Cuajar la tortilla en la sartén."
         },
@@ -137,35 +138,54 @@ function configurarEventos() {
     document.getElementById("busquedaIngrediente")?.addEventListener("keyup", (e) => {
         if (e.key === "Enter") filtrarEscandallos();
     });
+
+    // Botón Mostrar Todo
+    document.getElementById("btnMostrarTodo")?.addEventListener("click", () => {
+        document.getElementById("busquedaEscandallos").value = "";
+        document.getElementById("busquedaIngrediente").value = "";
+        renderizarTablaEscandallos();
+    });
 }
 
 // --- GESTIÓN DEL MODAL ---
 
-function cerrarAbrirModal(escandallo = null) {
+function cerrarAbrirModal(escandallo = null, readonly = false) {
     const modal = document.getElementById("modalEscandallo");
     if (!modal) return;
 
     limpiarFormulario();
 
+    const inputs = ["nombrePlato", "pvpPlato", "elaboracionPlato"];
+    inputs.forEach(id => {
+        document.getElementById(id).disabled = readonly;
+    });
+
+    const btnSave = document.querySelector(".btn-save");
+    const panelIngredientes = document.querySelector(".calculadora-controls");
+
+    if (readonly) {
+        if (btnSave) btnSave.style.display = "none";
+        if (panelIngredientes) panelIngredientes.style.display = "none";
+        document.getElementById("tituloModalEscandallo").innerText = "Ver Receta";
+    } else {
+        if (btnSave) btnSave.style.display = "inline-flex";
+        if (panelIngredientes) panelIngredientes.style.display = "flex";
+        document.getElementById("tituloModalEscandallo").innerText = escandallo ? "Editar Receta" : "Nueva Receta";
+    }
+
     if (escandallo) {
-        // Modo Edición
-        document.getElementById("tituloModalEscandallo").innerText = "Editar Receta";
+        // Modo Edición / Ver
         document.getElementById("editEscandalloId").value = escandallo.id;
         document.getElementById("nombrePlato").value = escandallo.nombre;
         document.getElementById("pvpPlato").value = escandallo.pvp;
 
-        // Elemento opcional, verificar existencia
         const elab = document.getElementById("elaboracionPlato");
         if (elab) elab.value = escandallo.elaboracion || "";
 
-        // Cargar ingredientes
         ingredientesReceta = [...(escandallo.items || [])];
-    } else {
-        // Modo Creación
-        document.getElementById("tituloModalEscandallo").innerText = "Nueva Receta";
     }
 
-    renderizarTablaIngredientes();
+    renderizarTablaIngredientes(readonly);
     calcularTotales();
 
     modal.style.display = "flex";
@@ -223,12 +243,18 @@ function agregarIngrediente() {
     calcularTotales();
 }
 
-function renderizarTablaIngredientes() {
+function renderizarTablaIngredientes(readonly = false) {
     const tbody = document.getElementById("listaIngredientes");
     tbody.innerHTML = "";
 
     ingredientesReceta.forEach((ing, index) => {
         const costeTotal = ing.cantidad * ing.precio;
+
+        const deleteBtn = readonly ? '' : `
+            <button type="button" class="btn-eliminar-item" onclick="window.eliminarIngrediente(${index})">
+                <i class="fa-solid fa-trash" style="color: #dc3545;"></i>
+            </button>
+        `;
 
         tbody.innerHTML += `
             <tr>
@@ -237,9 +263,7 @@ function renderizarTablaIngredientes() {
                 <td>${ing.precio.toFixed(2)} €</td>
                 <td>${costeTotal.toFixed(2)} €</td>
                 <td class="action-cell">
-                    <button type="button" class="btn-eliminar-item" onclick="window.eliminarIngrediente(${index})">
-                        <i class="fa-solid fa-trash" style="color: #dc3545;"></i>
-                    </button>
+                    ${deleteBtn}
                 </td>
             </tr>
         `;
@@ -334,7 +358,9 @@ function renderizarTablaEscandallos(lista = escandallos) {
 
         return `
         <tr>
-            <td class="font-bold text-primary">${esc.nombre}</td>
+            <td class="font-bold text-primary clickable-name" onclick="window.verReceta(${esc.id})">
+                ${esc.nombre}
+            </td>
             <td>${esc.autor || 'Admin'}</td>
             <td>${esc.items ? esc.items.length : 0} ingredientes</td>
             <td>${esc.coste.toFixed(2)} €</td>
@@ -353,7 +379,13 @@ function renderizarTablaEscandallos(lista = escandallos) {
 // Global para editar
 window.editarEscandallo = (id) => {
     const esc = escandallos.find(x => x.id == id);
-    if (esc) cerrarAbrirModal(esc);
+    if (esc) cerrarAbrirModal(esc, false);
+};
+
+// Global para ver (Solo lectura)
+window.verReceta = (id) => {
+    const esc = escandallos.find(x => x.id == id);
+    if (esc) cerrarAbrirModal(esc, true);
 };
 
 function filtrarEscandallos() {

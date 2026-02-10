@@ -420,6 +420,42 @@ tr:hover td {
     color: #2b6cb0;
 }
 
+/* --- ACTIONS TABLE --- */
+.action-cell {
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+.btn-sm {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0 !important;
+    border-radius: 6px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0 auto !important;
+}
+
+.btn-sm i {
+    margin: 0 !important;
+}
+
+.btn-primary {
+    background: #ebf8ff;
+    color: #3182ce;
+}
+
+.btn-primary:hover {
+    background: #bee3f8;
+    color: #2c5282;
+}
+
 /* --- FOOTER & UTILIDADES --- */
 .form-footer {
     display: flex;
@@ -481,4 +517,16 @@ tr:hover td {
 
 .text-primary {
     color: #b33131 !important;
+}
+
+.clickable-name {
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: all 0.2s;
+}
+
+.clickable-name:hover {
+    text-decoration-color: #b33131;
+    color: #902424 !important;
 }
