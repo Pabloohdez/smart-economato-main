@@ -70,7 +70,7 @@ const routes = {
         action: async () => {
             // Carga dinámica del nuevo controlador
             try {
-                const module = await import('./controllers/proveedorController.js');
+                const module = await import(`./controllers/proveedorController.js?t=${Date.now()}`);
                 if (module.initProveedores) module.initProveedores();
             } catch (error) {
                 console.error("Error cargando el controlador de proveedores:", error);
