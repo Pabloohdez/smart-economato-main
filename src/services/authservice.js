@@ -1,4 +1,4 @@
-const API_URL = './api';
+const API_URL = 'http://localhost:8080/api';
 
 export const AuthService = {
     async login(username, password) {
