@@ -14,8 +14,9 @@ export async function initBajas() {
     // Mostrar fecha actual
     mostrarFechaActual();
     
-    // Actualizar estadísticas
+    // Actualizar estadísticas e historial
     actualizarEstadisticas();
+    cargarHistorialBajas();
     
     // Configurar eventos
     configurarEventos();
@@ -70,31 +71,164 @@ function mostrarFechaActual() {
         fecha.toLocaleDateString('es-ES', opciones);
 }
 
-function actualizarEstadisticas() {
-    // Estadísticas simuladas (en una app real vendrían de la BD)
-    const hoy = new Date();
-    const mesActual = hoy.getMonth();
-    
-    // Simular roturas del mes
-    const roturasMes = Math.floor(Math.random() * 15) + 5;
-    document.getElementById("statRoturas").textContent = roturasMes;
-    
-    // Productos próximos a caducar o caducados
-    const caducados = todosLosProductos.filter(p => {
-        if (!p.fechaCaducidad) return false;
-        const fechaCad = new Date(p.fechaCaducidad);
-        return fechaCad <= hoy;
-    });
-    document.getElementById("statCaducados").textContent = caducados.length;
-    
-    // Mermas registradas (simulado)
-    const mermas = Math.floor(Math.random() * 20) + 10;
-    document.getElementById("statMermas").textContent = mermas;
-    
-    // Valor perdido total (simulado)
-    const valorPerdido = (Math.random() * 500 + 200).toFixed(2);
-    document.getElementById("statValorPerdido").textContent = `${valorPerdido} €`;
+async function actualizarEstadisticas() {
+    // Cargar estadísticas reales del mes
+    await cargarEstadisticasMes();
 }
+
+async function cargarEstadisticasMes() {
+    try {
+        const hoy = new Date();
+        const mes = hoy.getMonth() + 1;
+        const anio = hoy.getFullYear();
+        
+        console.log(`📊 Cargando estadísticas de bajas para ${mes}/${anio}...`);
+        
+        // Fetch bajas del mes actual
+        const res = await fetch(`http://localhost:8080/api/bajas.php?mes=${mes}&anio=${anio}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const json = await res.json();
+        
+        if (!json.success || !json.data) {
+            console.warn('⚠️ No se pudieron cargar las bajas del mes');
+            // Mostrar 0 en todas las estadísticas
+            document.getElementById("statRoturas").textContent = '0';
+            document.getElementById("statCaducados").textContent = '0';
+            document.getElementById("statMermas").textContent = '0';
+            document.getElementById("statValorPerdido").textContent = '0.00 €';
+            return;
+        }
+        
+        const bajasDelMes = json.data;
+        
+        // Calcular estadísticas reales basadas en las bajas
+        const stats = {
+            roturas: bajasDelMes.filter(b => b.tipoBaja === 'Rotura').length,
+            caducados: bajasDelMes.filter(b => b.tipoBaja === 'Caducado').length,
+            mermas: bajasDelMes.filter(b => b.tipoBaja === 'Merma').length,
+            otros: bajasDelMes.filter(b => !['Rotura', 'Caducado', 'Merma'].includes(b.tipoBaja)).length,
+            valorPerdido: bajasDelMes.reduce((sum, b) => {
+                const precio = parseFloat(b.producto_precio) || 0;
+                const cantidad = parseInt(b.cantidad) || 0;
+                return sum + (precio * cantidad);
+            }, 0)
+        };
+        
+        // Actualizar DOM con estadísticas reales
+        document.getElementById("statRoturas").textContent = stats.roturas;
+        document.getElementById("statCaducados").textContent = stats.caducados;
+        document.getElementById("statMermas").textContent = stats.mermas;
+        document.getElementById("statValorPerdido").textContent = `${stats.valorPerdido.toFixed(2)} €`;
+        
+        console.log(`✅ Estadísticas del mes cargadas:`, stats);
+        console.log(`📈 Total de bajas en ${mes}/${anio}: ${bajasDelMes.length}`);
+        
+   } catch (error) {
+        console.error('❌ Error cargando estadísticas del mes:', error);
+        // Mostrar 0 en caso de error
+        document.getElementById("statRoturas").textContent = '0';
+        document.getElementById("statCaducados").textContent = '0';
+        document.getElementById("statMermas").textContent = '0';
+        document.getElementById("statValorPerdido").textContent = '0.00 €';
+    }
+}
+
+async function cargarHistorialBajas() {
+    try {
+        const hoy = new Date();
+        const mes = hoy.getMonth() + 1;
+        const anio = hoy.getFullYear();
+        
+        console.log(`📜 Cargando historial de bajas para ${mes}/${anio}...`);
+        
+        // Fetch bajas del mes actual
+        const res = await fetch(`http://localhost:8080/api/bajas.php?mes=${mes}&anio=${anio}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const json = await res.json();
+        console.log('✅ Historial recibido:', json);
+        
+        const contenedor = document.getElementById('contenedorHistorial');
+        
+        if (!json.success || !json.data || json.data.length === 0) {
+            contenedor.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No hay bajas registradas este mes</p>';
+            return;
+        }
+        
+        const bajas = json.data;
+        
+        // Crear HTML para cada baja
+        let html = '<div style="max-height: 400px; overflow-y: auto;">';
+        
+        bajas.forEach(baja => {
+            const fecha = new Date(baja.fechaBaja);
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+            });
+            const horaFormateada = fecha.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            // Clase CSS según el tipo de baja
+            const claseTipo = {
+                'Rotura': 'badge-tipo-baja tipo-rotura',
+                'Caducado': 'badge-tipo-baja tipo-caducado',
+                'Merma': 'badge-tipo-baja tipo-merma',
+                'Ajuste': 'badge-tipo-baja tipo-ajuste',
+                'Otro': 'badge-tipo-baja tipo-otro'
+            }[baja.tipoBaja] || 'badge-tipo-baja tipo-otro';
+            
+            html += `
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="font-size: 16px;">${baja.producto_nombre || 'Producto desconocido'}</strong>
+                            <div style="margin-top: 5px;">
+                                <span class="${claseTipo}">${baja.tipoBaja}</span>
+                            </div>
+                        </div>
+                        <div style="text-align: right; color: #718096; font-size: 14px;">
+                            <div>${fechaFormateada}</div>
+                            <div>${horaFormateada}</div>
+                        </div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; color: #4a5568;">
+                        <div><strong>Cantidad:</strong> ${baja.cantidad}</div>
+                        <div><strong>Usuario:</strong> ${baja.usuario_nombre || 'Desconocido'}</div>
+                        <div><strong>Precio Ud.:</strong> ${parseFloat(baja.producto_precio).toFixed(2)} €</div>
+                        <div><strong>Total:</strong> ${(baja.cantidad * parseFloat(baja.producto_precio)).toFixed(2)} €</div>
+                        <div style="grid-column: 1 / -1;"><strong>Motivo:</strong> ${baja.motivo || 'Sin especificar'}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        contenedor.innerHTML = html;
+        
+        console.log(`✅ ${bajas.length} bajas mostradas en el historial`);
+    } catch (error) {
+        console.error('❌ Error cargando historial de bajas:', error);
+        const contenedor = document.getElementById('contenedorHistorial');
+        contenedor.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Error al cargar el historial</p>';
+    }
+}
+
 
 function cargarFiltros() {
     const selectCategoria = document.getElementById("selectCategoriaBaja");
@@ -487,41 +621,42 @@ async function confirmarBaja() {
     btnConfirmar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
     
     let exitosos = 0;
-    let errores = 0;
+    let errores = [];
     
-    // Actualizar stock de cada producto
+    // Registrar cada baja usando el nuevo endpoint
     for (const productoBaja of productosBaja) {
         try {
-            const nuevoStock = productoBaja.stock - productoBaja.cantidadBaja;
-            
-            // Validación de seguridad
-            if (nuevoStock < 0) {
-                console.error(`❌ Stock negativo para ${productoBaja.nombre}`);
-                errores++;
-                continue;
-            }
-            
-            const productoActualizado = {
-                ...productoBaja,
-                stock: nuevoStock,
-                // Eliminar campos temporales
-                tipoBaja: undefined,
-                cantidadBaja: undefined,
-                valorPerdido: undefined,
-                nombreCategoria: undefined
+            const payload = {
+                productoId: productoBaja.id,
+                cantidad: productoBaja.cantidadBaja,
+                tipoBaja: productoBaja.tipoBaja,
+                motivo: motivo || 'Sin especificar',
+                usuarioId: 'admin1'
             };
             
-            // Limpiar propiedades undefined
-            Object.keys(productoActualizado).forEach(key => 
-                productoActualizado[key] === undefined && delete productoActualizado[key]
-            );
+            console.log('📤 Enviando baja:', payload);
             
-            await actualizarProducto(productoBaja.id, productoActualizado);
-            exitosos++;
-            console.log(`✅ Baja registrada: ${productoBaja.nombre} (${productoBaja.cantidadBaja} unidades)`);
+            const res = await fetch('http://localhost:8080/api/bajas.php', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await res.json();
+            
+            if (data.success) {
+                exitosos++;
+                console.log(`✅ Baja registrada: ${productoBaja.nombre} (${productoBaja.cantidadBaja} unidades)`);
+            } else {
+                errores.push(`${productoBaja.nombre}: ${data.error || 'Error desconocido'}`);
+                console.error(`❌ Error con ${productoBaja.nombre}:`, data.error);
+            }
         } catch (error) {
-            console.error(`❌ Error registrando baja de ${productoBaja.nombre}:`, error);
-            errores++;
+            errores.push(`${productoBaja.nombre}: Error de red`);
+            console.error(`❌ Error de red con ${productoBaja.nombre}:`, error);
         }
     }
     
@@ -530,7 +665,7 @@ async function confirmarBaja() {
     btnConfirmar.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> CONFIRMAR BAJAS';
     
     // Mostrar resultado
-    if (errores === 0) {
+    if (errores.length === 0) {
         mostrarMensaje(
             `✅ Bajas registradas correctamente: ${exitosos} productos actualizados`,
             "green"
@@ -544,7 +679,8 @@ async function confirmarBaja() {
         
         // Recargar datos y estadísticas
         await cargarDatos();
-        actualizarEstadisticas();
+        await actualizarEstadisticas();
+        await cargarHistorialBajas(); // Actualizar historial
         
         setTimeout(() => {
             alert(
@@ -554,11 +690,32 @@ async function confirmarBaja() {
                 `Los stocks han sido actualizados.`
             );
         }, 500);
-    } else {
+    } else if (exitosos > 0) {
         mostrarMensaje(
-            `⚠️ Registro parcial: ${exitosos} exitosos, ${errores} errores. Revisa la consola.`,
+            `⚠️ Bajas parcialmente completadas: ${exitosos} exitosos, ${errores.length} errores`,
             "orange"
         );
+        
+        // Limpiar todo igualmente
+        productosBaja = [];
+        document.getElementById("textareaMotivoBaja").value = "";
+        renderizarTablaBajas();
+        ocultarBotones();
+        
+        await cargarDatos();
+        await actualizarEstadisticas();
+        
+        alert(`⚠️ Resultado mixto:\n\n` +
+              `Exitosos: ${exitosos}\n` +
+              `Errores: ${errores.length}\n\n` +
+              `Detalles:\n${errores.join('\n')}`);
+    } else {
+        mostrarMensaje(
+            `❌ Error al registrar bajas: ${errores.length} errores`,
+            "red"
+        );
+        
+        alert(`❌ Error al registrar bajas:\n\n${errores.join('\n')}`);
     }
 }
 

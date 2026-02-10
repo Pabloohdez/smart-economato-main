@@ -15,7 +15,7 @@ const routes = {
         action: async () => {
             renderizarTabla([]); // Limpiar tabla visualmente
             await cargarDatos(); // Cargar datos de la API
-            inicializarEventos(); // Activar filtros y botones
+            await inicializarEventos(); // Activar filtros y botones
         }
     },
     'ingresarproductos': {
@@ -40,8 +40,13 @@ const routes = {
     'bajas': {
         template: 'pages/bajas.html',
         action: async () => {
-            const module = await import('./controllers/bajasController.js');
-            if (module.initBajas) module.initBajas();
+            try {
+                // Truco del timestamp para evitar caché en desarrollo
+                const module = await import(`./controllers/bajasController.js?t=${Date.now()}`);
+                if (module.initBajas) await module.initBajas();
+            } catch (e) {
+                console.error("Error loading bajasController:", e);
+            }
         }
     },
     'configuracion': {
@@ -53,7 +58,10 @@ const routes = {
     },
     'distribucion': {
         template: 'pages/distribucion.html',
-        action: () => { /* Lógica autocontenida en el HTML */ }
+        action: async () => {
+            const module = await import('./controllers/distribucionController.js');
+            if (module.initDistribucion) module.initDistribucion();
+        }
     },
 
     // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---

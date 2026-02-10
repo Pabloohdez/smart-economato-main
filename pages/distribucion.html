@@ -12,8 +12,13 @@
 
         <div class="form-group">
             <label for="buscadorProd" class="sr-only">Buscar Producto</label>
-            <input type="text" id="buscadorProd" class="form-control"
-                placeholder="Escribe nombre o código de barras...">
+            <div style="display: flex; gap: 8px; align-items: stretch;">
+                <input type="text" id="buscadorProd" class="form-control"
+                    placeholder="Escribe nombre o código de barras..." style="flex: 1;">
+                <button id="btnBuscarDistribucion" class="btn btn-primary" style="min-width: 100px;">
+                    <i class="fa-solid fa-search"></i> Buscar
+                </button>
+            </div>
             <div id="listaResultados" class="lista-resultados"></div>
         </div>
 
@@ -78,148 +83,28 @@
     </div>
 </div>
 
-<script>
-    (function () {
-        const API_URL = 'http://localhost:8080/api';
-        let todosLosProductos = [];
-        let productoActual = null;
-        let carrito = [];
+<!-- Historial de Movimientos -->
+<div class="card" style="margin-top: 20px;">
+    <h3><i class="fa-solid fa-clock-rotate-left"></i> Historial de Movimientos</h3>
 
-        async function cargarProductos() {
-            const res = await fetch(`${API_URL}/productos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            const json = await res.json();
-            if (json.success) todosLosProductos = json.data;
-        }
-
-        // Buscador
-        const input = document.getElementById('buscadorProd');
-        const lista = document.getElementById('listaResultados');
-
-        input.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            if (term.length < 2) { lista.style.display = 'none'; return; }
-
-            const matches = todosLosProductos.filter(p =>
-                p.nombre.toLowerCase().includes(term) ||
-                (p.codigoBarras && p.codigoBarras.includes(term))
-            );
-
-            lista.innerHTML = '';
-            matches.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'item-resultado';
-                div.innerHTML = `<strong>${p.nombre}</strong> <small>(${p.stock})</small>`;
-                div.setAttribute('tabindex', '0'); // Accessibility
-                div.setAttribute('role', 'button'); // Accessibility
-                div.onclick = () => seleccionarProducto(p);
-                div.onkeydown = (e) => { if (e.key === 'Enter') seleccionarProducto(p) }; // Keyboard support
-                lista.appendChild(div);
-            });
-            lista.style.display = matches.length ? 'block' : 'none';
-        });
-
-        function seleccionarProducto(p) {
-            productoActual = p;
-            document.getElementById('nombreSeleccionado').innerText = p.nombre;
-            document.getElementById('stockSeleccionado').innerText = p.stock;
-            document.getElementById('detalleProducto').style.display = 'block';
-            lista.style.display = 'none';
-            input.value = p.nombre;
-        }
-
-        window.ajustarCant = (delta) => {
-            const inp = document.getElementById('cantidadSalida');
-            let val = parseInt(inp.value) + delta;
-            if (val < 1) val = 1;
-            if (productoActual && val > productoActual.stock) val = productoActual.stock;
-            inp.value = val;
-        };
-
-        window.agregarAlCarrito = () => {
-            if (!productoActual) return;
-            const cant = parseInt(document.getElementById('cantidadSalida').value);
-
-            // Verificar si ya existe
-            const existente = carrito.find(i => i.producto_id == productoActual.id);
-            if (existente) {
-                existente.cantidad += cant;
-            } else {
-                carrito.push({
-                    producto_id: productoActual.id,
-                    nombre: productoActual.nombre,
-                    cantidad: cant
-                });
-            }
-
-            renderizarCarrito();
-            // Reset
-            productoActual = null;
-            document.getElementById('detalleProducto').style.display = 'none';
-            input.value = '';
-            input.focus(); // Retornar foco
-        };
-
-        function renderizarCarrito() {
-            const tbody = document.getElementById('tablaCarrito');
-            document.getElementById('itemsCount').innerText = `${carrito.length} items`;
-
-            if (carrito.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center">La lista está vacía</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = '';
-            carrito.forEach((item, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.nombre}</td>
-                    <td>${item.cantidad}</td>
-                    <td><button onclick="eliminarDelCarrito(${index})" aria-label="Eliminar ${item.nombre}" style="color:#bd2130;"><i class="fa-solid fa-trash"></i></button></td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        window.eliminarDelCarrito = (index) => {
-            carrito.splice(index, 1);
-            renderizarCarrito();
-        };
-
-        window.confirmarSalida = async () => {
-            if (carrito.length === 0) return alert("El carrito está vacío");
-
-            const motivo = document.getElementById('motivoSalida').value;
-
-            const payload = {
-                items: carrito,
-                motivo: motivo,
-                usuario_id: "1" // Hardcoded, debería ser dinámico
-            };
-
-            if (!confirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
-
-            try {
-                const res = await fetch(`${API_URL}/movimientos.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await res.json();
-
-                if (data.success) {
-                    alert('Salida registrada correctamente. Stock actualizado.');
-                    carrito = [];
-                    renderizarCarrito();
-                    cargarProductos(); // Actualizar stock local
-                } else {
-                    alert('Error: ' + JSON.stringify(data.error));
-                }
-            } catch (error) {
-                alert('Error de red');
-            }
-        };
-
-        cargarProductos();
-    })();
-</script>
+    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+        <table class="table" id="tablaHistorialMovimientos">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Destino/Motivo</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyHistorialMovimientos">
+                <tr>
+                    <td colspan="5" class="text-center" style="padding: 20px; color: #666;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Cargando historial...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
