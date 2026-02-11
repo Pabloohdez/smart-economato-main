@@ -1,3 +1,5 @@
+import { mostrarAlertaAlergenos } from "../utils/alergenosUtils.js";
+
 // Controlador de Distribución
 import { showNotification, showConfirm } from "../utils/notifications.js";
 
@@ -206,9 +208,15 @@ window.ajustarCant = (delta) => {
     inp.value = val;
 };
 
-window.agregarAlCarrito = () => {
+window.agregarAlCarrito = async () => {
     if (!productoActual) return;
     const cant = parseInt(document.getElementById('cantidadSalida').value);
+
+    // VERIFICACIÓN DE ALÉRGENOS
+    // Si el usuario tiene alertas activas y el producto contiene alérgenos peligrosos
+    // mostrarAlertaAlergenos devolverá true si el usuario CANCELA la operación.
+    const debeBloquear = await mostrarAlertaAlergenos(productoActual);
+    if (debeBloquear) return;
 
     const existente = carrito.find(i => i.productoId == productoActual.id);
     if (existente) {

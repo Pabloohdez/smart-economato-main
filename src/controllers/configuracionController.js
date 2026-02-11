@@ -113,6 +113,13 @@ function configurarEventos() {
 
     // Guardar notificaciones
     document.getElementById("btnGuardarNotificaciones").addEventListener("click", guardarNotificaciones);
+
+    // Listener para switch de alertas de productos (Popup inmediato)
+    document.getElementById("switchAlertasProductos").addEventListener("change", (e) => {
+        if (e.target.checked) {
+            alert("⚠️ HAS ACTIVADO LAS ALERTAS DE ALÉRGENOS\n\nEl sistema te avisará automáticamente cuando intentes distribuir un producto que contenga tus alérgenos registrados.");
+        }
+    });
 }
 
 function guardarPerfil() {

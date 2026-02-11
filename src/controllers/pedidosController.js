@@ -116,12 +116,7 @@ async function cargarPedidos() {
                 language: {
                     search: { placeholder: 'Buscar...' },
                     pagination: {
-                        previous: 'Anterior',
-                        next: 'Siguiente',
-                        showing: 'Mostrando',
-                        of: 'de',
-                        to: 'a',
-                        results: () => 'resultados'
+                        previous: 'Ant', next: 'Sig', showing: 'Mostrando', results: () => 'resultados'
                     }
                 }
             }).render(gridElement);

@@ -129,8 +129,6 @@ async function cargarTablaProveedores(forceReload = false) {
                         'previous': 'Anterior',
                         'next': 'Siguiente',
                         'showing': 'Mostrando',
-                        'of': 'de',
-                        'to': 'a',
                         'results': () => 'resultados'
                     }
                 }

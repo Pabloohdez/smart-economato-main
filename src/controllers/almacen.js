@@ -17,51 +17,68 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
-/**
- * Procesa la fecha de caducidad para devolver el texto y la clase CSS correcta
- */
+// Helper para normalizar datos (clonar array para no mutar el original en filtros)
+function normalizarDatos(data) {
+    return data.map(item => ({ ...item }));
+}
+
+// Formateador de caducidad (sin emojis, estilo profesional)
 function procesarCaducidad(fechaStr) {
     if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
-        return { texto: 'Sin fecha', clase: 'badge-fecha-normal' };
+        return { texto: '-', clase: 'text-muted', dot: '' };
     }
-
     const fecha = new Date(fechaStr);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    const dif = Math.ceil((fecha - hoy) / (1000 * 60 * 60 * 24));
+    const dif = Math.ceil((fecha - hoy) / (86400000));
+    const fechaTexto = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-    if (dif < 0) return { texto: '⚠️ CADUCADO', clase: 'badge-caducado' };
-    if (dif <= 7) return { texto: `⚠️ ${dif}d`, clase: 'badge-caducado' };
-    if (dif <= 30) return { texto: `⏰ ${dif}d`, clase: 'badge-proximo-caducar' };
-
-    return {
-        texto: fecha.toLocaleDateString('es-ES'),
-        clase: 'badge-fecha-normal'
-    };
+    if (dif < 0) {
+        return {
+            texto: 'Caducado',
+            clase: 'text-status-danger',
+            dot: '<span class="status-dot status-dot--danger"></span>'
+        };
+    } else if (dif <= 30) {
+        return {
+            texto: fechaTexto,
+            clase: 'text-status-warning',
+            dot: '<span class="status-dot status-dot--warning"></span>'
+        };
+    }
+    return { texto: fechaTexto, clase: 'text-muted', dot: '' };
 }
 
-/**
- * Configuración de las columnas para Grid.js
- */
 const columnasGrid = [
-    { id: 'id', name: 'ID', width: '80px' },
-    { id: 'nombre', name: 'Nombre' },
-    { id: 'nombreCategoria', name: 'Categoría' },
+    {
+        id: 'id',
+        name: 'ID',
+        width: '80px',
+        formatter: (cell) => window.gridjs.html(`<span class="col-id">${cell}</span>`)
+    },
+    {
+        id: 'nombre',
+        name: 'Producto',
+        formatter: (cell) => window.gridjs.html(`<span class="col-name">${cell}</span>`)
+    },
+    { id: 'nombreCategoria', name: 'Categoria' },
     {
         id: 'precio',
         name: 'Precio',
-        formatter: (cell) => window.gridjs.html(`<span style="color: #2f855a; font-weight: bold;">${Number(cell).toFixed(2)} €</span>`)
+        formatter: (cell) => window.gridjs.html(`<span class="col-price">${Number(cell).toFixed(2)} &euro;</span>`)
     },
     {
         id: 'stock',
         name: 'Stock',
-        width: '100px',
         formatter: (cell, row) => {
             const stock = Number(cell);
-            const stockMin = Number(row.cells[5].data); // Columna stockMinimo (oculta)
-            const clase = stock <= stockMin ? 'badge-stock-bajo' : 'badge-stock-ok';
-            const icono = stock <= stockMin ? '⚠️ ' : '✓ ';
-            return window.gridjs.html(`<span class="${clase}">${icono}${stock}</span>`);
+            const min = Number(row.cells[5].data);
+            if (stock <= min) {
+                return window.gridjs.html(
+                    `<span class="col-stock text-status-warning"><span class="status-dot status-dot--warning"></span>${stock}</span>`
+                );
+            }
+            return window.gridjs.html(`<span class="col-stock text-status-ok">${stock}</span>`);
         }
     },
     { id: 'stockMinimo', name: 'Min', hidden: true },
@@ -70,60 +87,36 @@ const columnasGrid = [
         name: 'Caducidad',
         formatter: (cell) => {
             const info = procesarCaducidad(cell);
-            return window.gridjs.html(`<span class="${info.clase}">${info.texto}</span>`);
+            return window.gridjs.html(`<span class="${info.clase}">${info.dot}${info.texto}</span>`);
         }
     },
     { id: 'nombreProveedor', name: 'Proveedor' }
 ];
 
-/**
- * Normaliza los datos que vienen de Supabase (minúsculas) y hace los JOINS manuales
- */
-function normalizarDatos(lista) {
-    if (!Array.isArray(lista)) return [];
-    return lista.map(p => {
-        const cat = categorias.find(c => c.id == (p.categoriaid || p.categoriaId)) || {};
-        const prov = proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId)) || {};
-
-        return {
-            ...p,
-            nombreCategoria: cat.nombre || p.categoria_nombre || 'General',
-            nombreProveedor: prov.nombre || p.proveedor_nombre || 'N/A',
-            // Corregimos nombres para Grid.js
-            fechaCaducidad: p.fechacaducidad || p.fechaCaducidad || null,
-            stockMinimo: p.stockminimo || p.stockMinimo || 0,
-            stock: p.stock || 0
-        };
-    });
-}
-
 export async function cargarDatos() {
-    const contenedor = document.getElementById('grid-inventario');
-    if (contenedor) contenedor.innerHTML = '<div style="text-align:center; padding:20px;">Cargando inventario de Supabase...</div>';
-
     try {
-        // Carga en paralelo
         const [resProd, resCat, resProv] = await Promise.all([
-            getProductos(),
-            getCategorias(),
-            getProveedores()
+            getProductos(), getCategorias(), getProveedores()
         ]);
-
-        productos = resProd;
         categorias = resCat;
         proveedores = resProv;
 
-        vista = normalizarDatos(productos);
+        // Normalización para Supabase (unifica nombres de campos)
+        productos = resProd.map(p => ({
+            ...p,
+            nombreCategoria: categorias.find(c => c.id == (p.categoriaid || p.categoriaId))?.nombre || 'General',
+            nombreProveedor: proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId))?.nombre || 'N/A',
+            fechaCaducidad: p.fechacaducidad || p.fechaCaducidad || null,
+            stockMinimo: p.stockminimo || p.stockMinimo || 0,
+            stock: p.stock || 0
+        }));
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-
+        vista = [...productos];
         actualizarGrid();
-        actualizarResumen();
-
     } catch (error) {
-        console.error("❌ Error cargando datos:", error);
-        if (contenedor) contenedor.innerHTML = '<div style="color:red; text-align:center;">Error de conexión con la API</div>';
+        console.error("Error al cargar datos:", error);
     }
 }
 
@@ -146,27 +139,31 @@ function actualizarGrid() {
     // Limpiar el contenedor completamente
     contenedor.innerHTML = '';
 
-    // Crear nueva instancia de Grid.js con los datos filtrados
+    // Crear nueva instancia de Grid.js
     gridInstance = new window.gridjs.Grid({
         columns: columnasGrid,
-        data: vista,  // Usar vista filtrada, NO productos
+        data: vista,
         pagination: { limit: 10, summary: true },
         sort: true,
         className: {
-            table: 'tabla-grid-custom',
-            td: 'celda-grid'
-        },
-        language: {
-            'search': { 'placeholder': 'Buscar...' },
-            'pagination': {
-                'previous': 'Anterior',
-                'next': 'Siguiente',
-                'showing': 'Mostrando',
-                'of': 'de',
-                'to': 'a',
-                'results': () => 'resultados'
-            },
-            'noRecordsFound': 'No hay productos que coincidan'
+            tr: (row) => {
+                const stock = Number(row.cells[4].data);
+                const min = Number(row.cells[5].data);
+                const fechaStr = row.cells[6].data;
+
+                // Prioridad 1: Caducado
+                if (fechaStr && fechaStr !== 'NULL' && fechaStr !== 'Sin fecha') {
+                    const fecha = new Date(fechaStr);
+                    const hoy = new Date();
+                    hoy.setHours(0, 0, 0, 0);
+                    if (fecha < hoy) return 'row-danger';
+                }
+
+                // Prioridad 2: Stock bajo
+                if (stock <= min) return 'row-warning';
+
+                return '';
+            }
         }
     });
 
@@ -339,4 +336,3 @@ export async function inicializarEventos() {
         showNotification('Error al inicializar los controles de inventario', 'error');
     }
 }
-

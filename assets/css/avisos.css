@@ -1,0 +1,676 @@
+/* === AVISOS PAGE === */
+
+.avisos-page {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.avisos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.avisos-titulo {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avisos-titulo i {
+  color: #f59e0b;
+}
+
+.avisos-subtitulo {
+  color: #6b7280;
+  font-size: 14px;
+  margin: 0;
+}
+
+.avisos-timestamp {
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 6px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+
+/* Metricas Cards */
+.avisos-metricas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.metrica-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: all 0.2s;
+}
+
+.metrica-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.metrica-icono {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.metrica-total .metrica-icono {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.metrica-critico .metrica-icono {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.metrica-valor .metrica-icono {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.metrica-info {
+  flex: 1;
+}
+
+.metrica-numero {
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.metrica-label {
+  display: block;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+/* Secciones */
+.avisos-seccion {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.seccion-header {
+  padding: 16px 20px;
+  border-left: 4px solid #d1d5db;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+}
+
+.seccion-header--danger {
+  border-left-color: #dc2626;
+  background: linear-gradient(90deg, #fef2f2 0%, #f9fafb 100%);
+}
+
+.seccion-header--warning {
+  border-left-color: #f59e0b;
+  background: linear-gradient(90deg, #fffbeb 0%, #f9fafb 100%);
+}
+
+.seccion-header--info {
+  border-left-color: #2563eb;
+  background: linear-gradient(90deg, #eff6ff 0%, #f9fafb 100%);
+}
+
+.seccion-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seccion-titulo h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.seccion-titulo i {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.seccion-contador {
+  background: white;
+  color: #374151;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+}
+
+.seccion-body {
+  padding: 0;
+}
+
+/* Alert Items */
+.alerta-item {
+  display: grid;
+  grid-template-columns: 4px 1fr auto auto;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.alerta-item:last-child {
+  border-bottom: none;
+}
+
+.alerta-item:hover {
+  background: #f9fafb;
+}
+
+.alerta-indicador {
+  width: 4px;
+  height: 40px;
+  border-radius: 2px;
+  background: #d1d5db;
+}
+
+.alerta-indicador--danger {
+  background: #dc2626;
+}
+
+.alerta-indicador--warning {
+  background: #f59e0b;
+}
+
+.alerta-contenido {
+  flex: 1;
+}
+
+.alerta-titulo {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.alerta-detalle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.alerta-meta {
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.alerta-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+/* Botones de Accion - PROFESSIONAL DESIGN */
+.btn-accion-alert {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.btn-accion-alert i {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.btn-baja {
+  color: #991b1b;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.btn-baja:hover {
+  background: #fee2e2;
+  border-color: #f87171;
+  color: #7f1d1d;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.btn-pedir {
+  color: #1e40af;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.btn-pedir:hover {
+  background: #dbeafe;
+  border-color: #60a5fa;
+  color: #1e3a8a;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Stock Progress Bar */
+.stock-bar-container {
+  width: 120px;
+  height: 6px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stock-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.stock-bar-fill--danger {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+}
+
+.stock-bar-fill--warning {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stock-bar-fill--ok {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+/* Financiero Grid */
+.financiero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.financiero-item {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #f3f4f6;
+}
+
+.financiero-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.financiero-valor {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.financiero-valor--danger {
+  color: #dc2626;
+}
+
+.financiero-valor--warning {
+  color: #f59e0b;
+}
+
+.financiero-valor--ok {
+  color: #10b981;
+}
+
+/* Empty States */
+.aviso-ok,
+.avisos-vacio {
+  padding: 40px;
+  text-align: center;
+  color: #9ca3af;
+}
+
+.aviso-ok {
+  color: #10b981;
+}
+
+.aviso-ok i {
+  font-size: 32px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* === MODAL === */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-out;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid #e5e7eb;
+}
+
+.modal-overlay.active .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-texto {
+  margin: 0 0 20px 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+.input-grupo label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.input-wrapper input {
+  flex: 1;
+  border: none;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.input-wrapper input::-webkit-outer-spin-button,
+.input-wrapper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.btn-cantidad {
+  background: #f9fafb;
+  border: none;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  color: #6b7280;
+  cursor: pointer;
+  border-left: 1px solid #e5e7eb;
+  border-right: 1px solid #e5e7eb;
+}
+
+.btn-cantidad:first-child {
+  border-left: none;
+}
+
+.btn-cantidad:last-child {
+  border-right: none;
+  border-left: 1px solid #e5e7eb;
+}
+
+.btn-cantidad:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.modal-footer {
+  padding: 16px 20px;
+  background: #f9fafb;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+.btn-modal {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  transition: all 0.15s ease;
+}
+
+.btn-cancelar {
+  background: white;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.btn-cancelar:hover {
+  background: #f3f4f6;
+}
+
+.btn-confirmar {
+  background: #111827;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-confirmar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.modo-danger .btn-confirmar {
+  background: #dc2626;
+}
+
+.modo-danger .btn-confirmar:hover {
+  background: #b91c1c;
+}
+
+.modo-success .btn-confirmar {
+  background: #2563eb;
+}
+
+.modo-success .btn-confirmar:hover {
+  background: #1d4ed8;
+}
+
+.btn-loader {
+  display: none;
+}
+
+.btn-confirmar.loading .btn-loader {
+  display: inline-block;
+}
+
+.btn-confirmar.loading .btn-texto {
+  display: none;
+}
+
+/* === TOAST === */
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #111827;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 2000;
+  font-size: 13px;
+  font-weight: 500;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+.toast.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast-success i {
+  color: #34d399;
+}
+
+.toast-error i {
+  color: #f87171;
+}
+
+/* === RESPONSIVE === */
+
+@media (max-width: 768px) {
+  .avisos-page {
+    padding: 16px;
+  }
+
+  .alerta-item {
+    grid-template-columns: 4px 1fr;
+    gap: 12px;
+  }
+
+  .alerta-acciones {
+    grid-column: 2;
+    margin-top: 8px;
+  }
+
+  .alerta-meta {
+    grid-column: 2;
+    text-align: left;
+    margin-top: 4px;
+  }
+
+  .stock-bar-container {
+    grid-column: 2;
+    width: 100%;
+    margin-top: 8px;
+  }
+}

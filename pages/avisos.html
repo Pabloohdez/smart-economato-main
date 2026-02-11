@@ -1,0 +1,118 @@
+<link rel="stylesheet" href="assets/css/avisos.css">
+
+<div class="avisos-page">
+
+    <!-- Header -->
+    <div class="avisos-header">
+        <div>
+            <h1 class="avisos-titulo">
+                <i class="fa-solid fa-bell"></i> Centro de Avisos
+            </h1>
+            <p class="avisos-subtitulo">Resumen de alertas y notificaciones del sistema</p>
+        </div>
+        <div id="avisos-timestamp" class="avisos-timestamp"></div>
+    </div>
+
+    <!-- Resumen rapido (3 metricas) -->
+    <div class="avisos-metricas" id="avisos-metricas">
+        <div class="metrica-card metrica-total">
+            <div class="metrica-icono"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="metrica-info">
+                <span class="metrica-numero" id="metrica-total">-</span>
+                <span class="metrica-label">Alertas Activas</span>
+            </div>
+        </div>
+        <div class="metrica-card metrica-critico">
+            <div class="metrica-icono"><i class="fa-solid fa-skull-crossbones"></i></div>
+            <div class="metrica-info">
+                <span class="metrica-numero" id="metrica-criticos">-</span>
+                <span class="metrica-label">Productos Caducados</span>
+            </div>
+        </div>
+        <div class="metrica-card metrica-valor">
+            <div class="metrica-icono"><i class="fa-solid fa-coins"></i></div>
+            <div class="metrica-info">
+                <span class="metrica-numero" id="metrica-valor">-</span>
+                <span class="metrica-label">Valor en Riesgo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seccion: Productos Caducados -->
+    <section class="avisos-seccion" id="seccion-caducados">
+        <div class="seccion-header seccion-header--danger">
+            <div class="seccion-titulo">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <h2>Productos Caducados</h2>
+            </div>
+            <span class="seccion-contador" id="contador-caducados">0</span>
+        </div>
+        <div class="seccion-body" id="lista-caducados">
+            <div class="avisos-vacio">Cargando...</div>
+        </div>
+    </section>
+
+    <!-- Seccion: Stock Bajo -->
+    <section class="avisos-seccion" id="seccion-stock">
+        <div class="seccion-header seccion-header--warning">
+            <div class="seccion-titulo">
+                <i class="fa-solid fa-box-open"></i>
+                <h2>Stock por Debajo del Minimo</h2>
+            </div>
+            <span class="seccion-contador" id="contador-stock">0</span>
+        </div>
+        <div class="seccion-body" id="lista-stock">
+            <div class="avisos-vacio">Cargando...</div>
+        </div>
+    </section>
+
+    <!-- Seccion: Resumen Financiero -->
+    <section class="avisos-seccion" id="seccion-financiero">
+        <div class="seccion-header seccion-header--info">
+            <div class="seccion-titulo">
+                <i class="fa-solid fa-chart-line"></i>
+                <h2>Resumen Financiero</h2>
+            </div>
+        </div>
+        <div class="seccion-body" id="lista-financiero">
+            <div class="avisos-vacio">Cargando...</div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Modal de Accion Generico -->
+<div id="modal-accion" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3 id="modal-titulo">Confirmar Accion</h3>
+            <button class="modal-close" id="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <p id="modal-mensaje" class="modal-texto"></p>
+
+            <div class="input-grupo">
+                <label for="modal-cantidad">Cantidad</label>
+                <div class="input-wrapper">
+                    <button class="btn-cantidad" id="btn-menos">-</button>
+                    <input type="number" id="modal-cantidad" min="1" value="1">
+                    <button class="btn-cantidad" id="btn-mas">+</button>
+                </div>
+                <span class="modal-hint" id="modal-hint"></span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-modal btn-cancelar" id="btn-cancelar">Cancelar</button>
+            <button class="btn-modal btn-confirmar" id="btn-confirmar">
+                <span class="btn-texto">Confirmar</span>
+                <span class="btn-loader"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast-notificacion" class="toast">
+    <i class="fa-solid fa-circle-check" id="toast-icon"></i>
+    <span id="toast-mensaje">Accion realizada correctamente</span>
+</div>
