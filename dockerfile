@@ -14,5 +14,6 @@ RUN chown -R www-data:www-data /var/www/html/
 EXPOSE 80
 
 # Instalar base de datos postgresql
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 RUN apt-get update && apt-get install -y libpq-dev
 RUN docker-php-ext-install pdo pdo_pgsql pgsql
