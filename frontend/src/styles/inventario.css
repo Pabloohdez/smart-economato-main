@@ -1,0 +1,179 @@
+.inv-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.inv-title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.inv-subtitle {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.inv-btn-primary {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #b8322d;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.inv-panel {
+  background: white;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  margin-bottom: 16px;
+}
+
+.inv-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inv-search {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.inv-input {
+  flex: 1;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.inv-select {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: white;
+  min-width: 200px;
+}
+
+.inv-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-btn {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.inv-table th,
+.inv-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid #eef2f7;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.inv-table th {
+  background: #f8fafc;
+  font-weight: 800;
+}
+
+.inv-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.inv-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.inv-muted {
+  color: #6b7280;
+}
+.estado {
+  padding: 16px 20px;
+  color: #4a5568;
+}
+.estado.error {
+  color: #c53030;
+}
+
+.inv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.inv-table thead th {
+  text-align: left;
+  padding: 14px 16px;
+  background: #f7fafc;
+  border-bottom: 1px solid #edf2f7;
+  color: #2d3748;
+}
+.inv-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #edf2f7;
+}
+.inv-table tbody tr:hover td {
+  background: #fafafa;
+}
+.inv-table .precio {
+  color: #2f855a;
+  font-weight: 600;
+}
+/* Caducidad */
+.inv-date {
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.inv-caducado {
+  background: #c53030 !important;
+  color: #fff !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.inv-proximo {
+  background: #fffaf0 !important;
+  color: #c05621 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  border: 2px solid #f6ad55 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import InventarioPage from "./pages/InventarioPage";
 import LoginPage from "./pages/LoginPage";
 import InicioPage from "./pages/InicioPage";
 import AppLayout from "./layouts/AppLayout";
@@ -20,9 +21,7 @@ export default function App() {
         >
           <Route index element={<Navigate to="/inicio" replace />} />
           <Route path="inicio" element={<InicioPage />} />
-
-          {/* Las irás creando una por una: */}
-          {/* <Route path="recepcion" element={<RecepcionPage/>} /> */}
+          <Route path="inventario" element={<InventarioPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/inicio" replace />} />

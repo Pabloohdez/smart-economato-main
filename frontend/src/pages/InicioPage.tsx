@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import "../styles/dashboard.css";
+import "../styles/inicio.css";
 
 const cards = [
   { title: "Recepción", desc: "Registrar entradas de mercancía", to: "/recepcion", icon: "📥" },
