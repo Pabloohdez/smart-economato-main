@@ -1,6 +1,7 @@
 // src/controllers/escandallosController.js
 
 import { getProductos } from "../services/apiService.js";
+import { showNotification } from "../utils/notifications.js";
 
 // Estado local
 let escandallos = []; // Lista de recetas
@@ -27,6 +28,7 @@ async function cargarDatos() {
         llenarSelectorIngredientes();
     } catch (error) {
         console.warn("No se pudieron cargar productos de la API, usando lista vacía.", error);
+        showNotification("No se pudieron cargar productos de la API", 'warning');
         todosLosProductos = [];
     }
 
@@ -214,7 +216,7 @@ function agregarIngrediente() {
     const cantidad = parseFloat(inputCant.value);
 
     if (!prodId || isNaN(cantidad) || cantidad <= 0) {
-        alert("Selecciona un producto y una cantidad válida.");
+        showNotification("Selecciona un producto y una cantidad válida.", 'warning');
         return;
     }
 
@@ -312,7 +314,7 @@ async function guardarEscandallo(e) {
     e.preventDefault();
 
     if (ingredientesReceta.length === 0) {
-        alert("La receta debe tener al menos un ingrediente.");
+        showNotification("La receta debe tener al menos un ingrediente.", 'warning');
         return;
     }
 
@@ -341,7 +343,7 @@ async function guardarEscandallo(e) {
 
     cerrarModal();
     renderizarTablaEscandallos();
-    alert("Receta guardada correctamente (Local)");
+    showNotification("Receta guardada correctamente (Local)", 'success');
 }
 
 function renderizarTablaEscandallos(lista = escandallos) {
@@ -409,5 +411,5 @@ function filtrarEscandallos() {
 }
 
 function mostrarError(msg) {
-    alert(msg);
+    showNotification(msg, 'error');
 }

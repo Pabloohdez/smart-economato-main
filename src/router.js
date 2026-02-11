@@ -1,5 +1,8 @@
 // src/router.js
 
+// Version for cache busting - increment when deploying code changes
+const APP_VERSION = '1.0.1';
+
 // Importamos las funciones necesarias para Inventario
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
 import { initEscandallos } from "./controllers/escandallosController.js";
@@ -20,7 +23,7 @@ const routes = {
     'ingresarproductos': {
         template: 'pages/ingresarProductos.html',
         action: async () => {
-            const module = await import('./controllers/ingresoController.js');
+            const module = await import(`./controllers/ingresoController.js?t=${Date.now()}`);
             if (module.initIngreso) module.initIngreso();
         }
     },
@@ -51,14 +54,14 @@ const routes = {
     'configuracion': {
         template: 'pages/configuracion.html',
         action: async () => {
-            const module = await import('./controllers/configuracionController.js');
+            const module = await import(`./controllers/configuracionController.js?t=${Date.now()}`);
             if (module.initConfiguracion) module.initConfiguracion();
         }
     },
     'distribucion': {
         template: 'pages/distribucion.html',
         action: async () => {
-            const module = await import('./controllers/distribucionController.js');
+            const module = await import(`./controllers/distribucionController.js?t=${Date.now()}`);
             if (module.initDistribucion) module.initDistribucion();
         }
     },
@@ -88,7 +91,7 @@ const routes = {
     'escandallos': {
         template: 'pages/escandallos.html',
         action: async () => {
-            const module = await import('./controllers/escandallosController.js');
+            const module = await import(`./controllers/escandallosController.js?t=${Date.now()}`);
             if (module.initEscandallos) module.initEscandallos();
         }
     },
