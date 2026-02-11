@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProductos, type Producto } from "../services/productosService";
+import { useNavigate } from "react-router-dom";
 import "../styles/inventario.css";
 
 type QuickFilter = "all" | "lowStock" | "expiring";
@@ -12,7 +13,8 @@ function parseFechaCaducidad(raw: unknown): Date | null {
   if (!s) return null;
 
   // Normaliza "YYYY-MM-DD HH:mm:ss" -> "YYYY-MM-DDTHH:mm:ss"
-  const normalized = s.includes(" ") && !s.includes("T") ? s.replace(" ", "T") : s;
+  const normalized =
+    s.includes(" ") && !s.includes("T") ? s.replace(" ", "T") : s;
 
   const d = new Date(normalized);
   return Number.isNaN(d.getTime()) ? null : d;
@@ -21,8 +23,16 @@ function parseFechaCaducidad(raw: unknown): Date | null {
 function daysUntil(date: Date): number {
   const now = new Date();
   // quitamos horas para no tener desfases raros
-  const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const b = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const a = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  const b = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  ).getTime();
   return Math.floor((b - a) / (1000 * 60 * 60 * 24));
 }
 
@@ -33,6 +43,7 @@ function formatEuro(n: unknown): string {
 }
 
 export default function InventarioPage() {
+  const nav = useNavigate();
   const [items, setItems] = useState<Producto[]>([]);
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("");
@@ -112,13 +123,13 @@ export default function InventarioPage() {
     // Select filters
     if (cat) {
       list = list.filter(
-        (p) => (p.categoria?.nombre ?? "").toString().toLowerCase() === cat
+        (p) => (p.categoria?.nombre ?? "").toString().toLowerCase() === cat,
       );
     }
 
     if (prov) {
       list = list.filter(
-        (p) => (p.proveedor?.nombre ?? "").toString().toLowerCase() === prov
+        (p) => (p.proveedor?.nombre ?? "").toString().toLowerCase() === prov,
       );
     }
 
@@ -153,10 +164,16 @@ export default function InventarioPage() {
       <div className="inv-header">
         <div>
           <h1 className="inv-title">INVENTARIO</h1>
-          <p className="inv-subtitle">Gestiona y consulta el stock de productos</p>
+          <p className="inv-subtitle">
+            Gestiona y consulta el stock de productos
+          </p>
         </div>
 
-        <button className="inv-btn-primary" type="button">
+        <button
+          className="inv-btn-primary"
+          type="button"
+          onClick={() => nav("/inventario/nuevo")}
+        >
           + Ingresar Producto
         </button>
       </div>
@@ -251,12 +268,12 @@ export default function InventarioPage() {
               let cadEl: React.ReactNode = "-";
               if (cadDate && cadDiff !== null) {
                 if (cadDiff < 0) {
-                  cadEl = <span className="inv-badge inv-caducado">CADUCADO</span>;
+                  cadEl = (
+                    <span className="inv-badge inv-caducado">CADUCADO</span>
+                  );
                 } else if (cadDiff <= EXPIRING_DAYS_THRESHOLD) {
                   cadEl = (
-                    <span className="inv-badge inv-proximo">
-                      ⏱ {cadDiff}d
-                    </span>
+                    <span className="inv-badge inv-proximo">⏱ {cadDiff}d</span>
                   );
                 } else {
                   cadEl = (
@@ -273,7 +290,9 @@ export default function InventarioPage() {
                   <td>{p.nombre ?? "-"}</td>
 
                   <td>
-                    <span className="inv-badge">{p.categoria?.nombre ?? "-"}</span>
+                    <span className="inv-badge">
+                      {p.categoria?.nombre ?? "-"}
+                    </span>
                   </td>
 
                   <td>{p.proveedor?.nombre ?? "-"}</td>
