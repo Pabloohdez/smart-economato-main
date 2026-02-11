@@ -4,11 +4,11 @@
     --text-primary: #2d3748;
     --text-secondary: #50596D;
     --bg-card: #ffffff;
-    
+
     --primary-color: #b33131;
     --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
     --focus-ring: rgba(179, 49, 49, 0.25);
-    
+
     --success-color: #38a169;
     --danger-color: #e53e3e;
     --border-color: #e2e8f0;
@@ -40,15 +40,18 @@ body {
 }
 
 @media (max-width: 768px) {
-    .distribucion-container { grid-template-columns: 1fr; }
+    .distribucion-container {
+        grid-template-columns: 1fr;
+    }
 }
 
-.panel-seleccion, .panel-carrito {
+.panel-seleccion,
+.panel-carrito {
     background: var(--bg-card);
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-    border: 1px solid rgba(0,0,0,0.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.02);
     min-height: 500px;
     display: flex;
     flex-direction: column;
@@ -105,7 +108,8 @@ h3 {
 }
 
 .item-resultado:hover {
-    background-color: #fff5f5; /* Light red bg */
+    background-color: #fff5f5;
+    /* Light red bg */
     border-left: 3px solid var(--primary-color);
 }
 
@@ -211,12 +215,315 @@ h3 {
 }
 
 .btn-primary {
-     background: var(--primary-gradient);
-     color: white;
-      box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
+    background: var(--primary-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
 }
 
 .btn-block:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Historial de Movimientos --- */
+.card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.table-responsive {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+#tablaHistorialMovimientos {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    table-layout: fixed;
+}
+
+#tablaHistorialMovimientos thead {
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+}
+
+#tablaHistorialMovimientos th {
+    padding: 16px 12px;
+    text-align: left;
+    font-weight: 400;
+    color: #2d3748;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #cbd5e0;
+}
+
+#tablaHistorialMovimientos tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+#tablaHistorialMovimientos tbody tr:hover {
+    background-color: #fff5f5;
+    box-shadow: -4px 0 0 0 var(--primary-color);
+}
+
+#tablaHistorialMovimientos td {
+    padding: 14px 20px;
+    color: #4a5568;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#tablaHistorialMovimientos th {
+    padding: 16px 20px;
+    text-align: center;
+}
+
+/* Estilos para columnas específicas */
+#tablaHistorialMovimientos td:first-child,
+#tablaHistorialMovimientos th:first-child {
+    font-weight: 400;
+    color: #2d3748;
+    font-size: 14px;
+    width: 12%;
+    text-align: center;
+}
+
+#tablaHistorialMovimientos td:nth-child(2),
+#tablaHistorialMovimientos th:nth-child(2) {
+    font-weight: 400;
+    color: #2d3748;
+    font-size: 14px;
+    width: 8%;
+    text-align: center;
+}
+
+#tablaHistorialMovimientos td:nth-child(3),
+#tablaHistorialMovimientos th:nth-child(3) {
+    width: 25%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+#tablaHistorialMovimientos td:nth-child(4),
+#tablaHistorialMovimientos th:nth-child(4) {
+    font-weight: 400;
+    color: #2d3748;
+    font-size: 14px;
+    width: 10%;
+    text-align: center;
+}
+
+#tablaHistorialMovimientos td:nth-child(5),
+#tablaHistorialMovimientos th:nth-child(5) {
+    width: 25%;
+    text-align: center;
+}
+
+#tablaHistorialMovimientos td:nth-child(6),
+#tablaHistorialMovimientos th:nth-child(6) {
+    width: 20%;
+    text-align: center;
+}
+
+/* Badge para destino/motivo */
+.badge-destino {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-cocina {
+    background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+    color: #c53030;
+}
+
+.badge-bar {
+    background: linear-gradient(135deg, #feebc8 0%, #fbd38d 100%);
+    color: #c05621;
+}
+
+.badge-eventos {
+    background: linear-gradient(135deg, #e9d8fd 0%, #d6bcfa 100%);
+    color: #6b46c1;
+}
+
+.badge-merma {
+    background: linear-gradient(135deg, #fed7e2 0%, #fbb6ce 100%);
+    color: #97266d;
+}
+
+.badge-donacion {
+    background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+    color: #22543d;
+}
+
+.badge-default {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+    color: #2d3748;
+}
+
+/* Usuario badge */
+.usuario-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #edf2f7;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #4a5568;
+    font-weight: 400;
+}
+
+.usuario-badge i {
+    color: var(--primary-color);
+}
+
+/* Empty state styling */
+.text-center {
+    text-align: center;
+}
+
+/* Scroll styling */
+.table-responsive::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablets y pantallas medianas (hasta 1024px) */
+@media (max-width: 1024px) {
+
+    #tablaHistorialMovimientos th,
+    #tablaHistorialMovimientos td {
+        padding: 12px 10px;
+        font-size: 12px;
+    }
+
+    .badge-destino,
+    .usuario-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+}
+
+/* Tablets pequeñas (hasta 768px) */
+@media (max-width: 768px) {
+
+    /* Ocultar tabla tradicional en móviles */
+    #tablaHistorialMovimientos thead {
+        display: none;
+    }
+
+    #tablaHistorialMovimientos tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 12px;
+    }
+
+    #tablaHistorialMovimientos tbody tr:hover {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transform: none;
+    }
+
+    #tablaHistorialMovimientos td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid #f7fafc;
+        text-align: left;
+    }
+
+    #tablaHistorialMovimientos td:last-child {
+        border-bottom: none;
+    }
+
+    /* Añadir etiquetas antes de cada dato */
+    #tablaHistorialMovimientos td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 11px;
+        color: #718096;
+        letter-spacing: 0.5px;
+        flex-shrink: 0;
+        width: 100px;
+    }
+
+    /* Ajustar anchos de columnas en móvil */
+    #tablaHistorialMovimientos td:nth-child(1),
+    #tablaHistorialMovimientos td:nth-child(2),
+    #tablaHistorialMovimientos td:nth-child(3),
+    #tablaHistorialMovimientos td:nth-child(4),
+    #tablaHistorialMovimientos td:nth-child(5),
+    #tablaHistorialMovimientos td:nth-child(6) {
+        width: 100%;
+    }
+}
+
+/* Móviles (hasta 480px) */
+@media (max-width: 480px) {
+    .table-responsive {
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    #tablaHistorialMovimientos tbody tr {
+        padding: 10px;
+        margin-bottom: 12px;
+    }
+
+    #tablaHistorialMovimientos td {
+        padding: 6px 0;
+        font-size: 13px;
+    }
+
+    #tablaHistorialMovimientos td:before {
+        font-size: 10px;
+        width: 90px;
+    }
+
+    .badge-destino {
+        font-size: 10px;
+        padding: 4px 8px;
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .usuario-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
 }

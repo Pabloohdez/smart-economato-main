@@ -9,8 +9,6 @@ ErrorDocument 500 /errors/500.html
 
 # Prevenir listado de directorios
 Options -Indexes
-
-# Proteger archivos sensibles
 <FilesMatch "\.(env|log|sql|md|json)$">
     Require all denied
 </FilesMatch>
