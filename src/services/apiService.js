@@ -101,4 +101,48 @@ export async function actualizarProducto(id, producto) {
     }
 }
 
-export { getProductos, getCategorias, getProveedores };
+async function registrarBaja(bajaData) {
+    try {
+        console.log("📤 Registrando baja:", bajaData);
+        const response = await fetch(`${API_URL}/bajas.php`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(bajaData)
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || "Error al registrar baja");
+
+        return result;
+    } catch (error) {
+        console.error("❌ API Error (Baja):", error);
+        throw error;
+    }
+}
+
+async function crearPedido(pedidoData) {
+    try {
+        console.log("📤 Creando pedido:", pedidoData);
+        const response = await fetch(`${API_URL}/pedidos.php`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify(pedidoData)
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error || "Error al crear pedido");
+
+        return result;
+    } catch (error) {
+        console.error("❌ API Error (Pedido):", error);
+        throw error;
+    }
+}
+
+export { getProductos, getCategorias, getProveedores, registrarBaja, crearPedido };

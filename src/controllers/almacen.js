@@ -19,46 +19,66 @@ let gridInstance = null;
 
 // Helper para normalizar datos (clonar array para no mutar el original en filtros)
 function normalizarDatos(data) {
-    return data.map(item => ({...item}));
+    return data.map(item => ({ ...item }));
 }
 
-// Formateador de fecha y color para la columna Caducidad
+// Formateador de caducidad (sin emojis, estilo profesional)
 function procesarCaducidad(fechaStr) {
     if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
-        return { texto: 'Sin fecha', clase: 'badge-fecha-normal' };
+        return { texto: '-', clase: 'text-muted', dot: '' };
     }
     const fecha = new Date(fechaStr);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const dif = Math.ceil((fecha - hoy) / (86400000));
+    const fechaTexto = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-    let clase = 'badge-fecha-normal';
-    let texto = fecha.toLocaleDateString('es-ES');
-
-    if (dif < 0) { clase = 'badge-caducado'; texto = '⚠️ CADUCADO'; }
-    else if (dif <= 7) { clase = 'badge-caducado'; texto = `⚠️ ${dif}d`; }
-    else if (dif <= 30) { clase = 'badge-proximo-caducar'; texto = `⏰ ${dif}d`; }
-
-    return { texto, clase };
+    if (dif < 0) {
+        return {
+            texto: 'Caducado',
+            clase: 'text-status-danger',
+            dot: '<span class="status-dot status-dot--danger"></span>'
+        };
+    } else if (dif <= 30) {
+        return {
+            texto: fechaTexto,
+            clase: 'text-status-warning',
+            dot: '<span class="status-dot status-dot--warning"></span>'
+        };
+    }
+    return { texto: fechaTexto, clase: 'text-muted', dot: '' };
 }
 
 const columnasGrid = [
-    { id: 'id', name: 'ID', width: '80px' },
-    { id: 'nombre', name: 'Nombre' },
-    { id: 'nombreCategoria', name: 'Categoría' },
+    {
+        id: 'id',
+        name: 'ID',
+        width: '80px',
+        formatter: (cell) => window.gridjs.html(`<span class="col-id">${cell}</span>`)
+    },
+    {
+        id: 'nombre',
+        name: 'Producto',
+        formatter: (cell) => window.gridjs.html(`<span class="col-name">${cell}</span>`)
+    },
+    { id: 'nombreCategoria', name: 'Categoria' },
     {
         id: 'precio',
         name: 'Precio',
-        formatter: (cell) => window.gridjs.html(`<span style="color:#2f855a; font-weight:bold;">${Number(cell).toFixed(2)} €</span>`)
+        formatter: (cell) => window.gridjs.html(`<span class="col-price">${Number(cell).toFixed(2)} &euro;</span>`)
     },
     {
         id: 'stock',
         name: 'Stock',
         formatter: (cell, row) => {
             const stock = Number(cell);
-            const min = Number(row.cells[5].data); // Columna stockMinimo (oculta)
-            const clase = stock <= min ? 'badge-stock-bajo' : 'badge-stock-ok';
-            return window.gridjs.html(`<span class="${clase}">${stock <= min ? '⚠️ ' : ''}${stock}</span>`);
+            const min = Number(row.cells[5].data);
+            if (stock <= min) {
+                return window.gridjs.html(
+                    `<span class="col-stock text-status-warning"><span class="status-dot status-dot--warning"></span>${stock}</span>`
+                );
+            }
+            return window.gridjs.html(`<span class="col-stock text-status-ok">${stock}</span>`);
         }
     },
     { id: 'stockMinimo', name: 'Min', hidden: true },
@@ -67,7 +87,7 @@ const columnasGrid = [
         name: 'Caducidad',
         formatter: (cell) => {
             const info = procesarCaducidad(cell);
-            return window.gridjs.html(`<span class="${info.clase}">${info.texto}</span>`);
+            return window.gridjs.html(`<span class="${info.clase}">${info.dot}${info.texto}</span>`);
         }
     },
     { id: 'nombreProveedor', name: 'Proveedor' }
@@ -119,18 +139,30 @@ function actualizarGrid() {
     // Limpiar el contenedor completamente
     contenedor.innerHTML = '';
 
-    // Crear nueva instancia de Grid.js con los datos filtrados
+    // Crear nueva instancia de Grid.js
     gridInstance = new window.gridjs.Grid({
         columns: columnasGrid,
-        data: vista,  // Usar vista filtrada, NO productos
+        data: vista,
         pagination: { limit: 10, summary: true },
         sort: true,
         className: {
-            // ESTO ACTIVA LA FRANJA ROJA EN LA FILA COMPLETA
             tr: (row) => {
                 const stock = Number(row.cells[4].data);
                 const min = Number(row.cells[5].data);
-                return stock <= min ? 'fila-alerta' : '';
+                const fechaStr = row.cells[6].data;
+
+                // Prioridad 1: Caducado
+                if (fechaStr && fechaStr !== 'NULL' && fechaStr !== 'Sin fecha') {
+                    const fecha = new Date(fechaStr);
+                    const hoy = new Date();
+                    hoy.setHours(0, 0, 0, 0);
+                    if (fecha < hoy) return 'row-danger';
+                }
+
+                // Prioridad 2: Stock bajo
+                if (stock <= min) return 'row-warning';
+
+                return '';
             }
         }
     });
@@ -158,7 +190,7 @@ function actualizarResumen() {
 
 function aplicarFiltros() {
     console.log('🔧 Aplicando filtros...');
-    
+
     const busq = document.getElementById('busqueda')?.value || '';
     const cat = document.getElementById('categoriaSelect')?.value || '';
     const prov = document.getElementById('proveedorSelect')?.value || '';
@@ -188,21 +220,21 @@ function aplicarFiltros() {
     vista = filtrados;
     actualizarGrid();
     actualizarResumen();
-    
+
     console.log(`✅ Filtros aplicados. Total mostrado: ${vista.length} productos`);
 }
 
 export async function inicializarEventos() {
     console.log('🎯 Iniciando eventos de inventario...');
-    
+
     // Esperar a que el DOM esté completamente listo
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     try {
         // Escuchar cambios en todos los controles
         const controles = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
         let controlesConectados = 0;
-        
+
         controles.forEach(id => {
             const el = document.querySelector(id);
             if (el) {
@@ -218,7 +250,7 @@ export async function inicializarEventos() {
         // Botón de Stock Bajo
         const btnStock = document.getElementById('btnStock');
         if (btnStock) {
-            btnStock.addEventListener('click', function() {
+            btnStock.addEventListener('click', function () {
                 console.log('🔍 Filtrando productos con stock bajo...');
                 try {
                     vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
@@ -232,27 +264,27 @@ export async function inicializarEventos() {
             console.log('✅ Event listener agregado a btnStock');
         } else {
             console.error('❌ Botón btnStock NO encontrado en el DOM');
-            console.log('ℹ️ Todos los botones en el DOM:', 
+            console.log('ℹ️ Todos los botones en el DOM:',
                 Array.from(document.querySelectorAll('button')).map(b => b.id || b.textContent.trim()));
         }
 
         // Botón de Próximo a Caducar
         const btnProximo = document.getElementById('btnProximoCaducar');
         if (btnProximo) {
-            btnProximo.addEventListener('click', function() {
+            btnProximo.addEventListener('click', function () {
                 console.log('📅 Filtrando productos próximos a caducar...');
                 try {
                     const hoy = new Date();
                     hoy.setHours(0, 0, 0, 0);
                     const treintaDias = new Date(hoy);
                     treintaDias.setDate(treintaDias.getDate() + 30);
-                    
+
                     vista = normalizarDatos(productos).filter(p => {
                         if (!p.fechaCaducidad || p.fechaCaducidad === "NULL") return false;
                         const fechaCad = new Date(p.fechaCaducidad);
                         return fechaCad > hoy && fechaCad <= treintaDias;
                     });
-                    
+
                     actualizarGrid();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos próximos a caducar`);
@@ -268,7 +300,7 @@ export async function inicializarEventos() {
         // Botón Mostrar Todos
         const btnMostrarTodos = document.getElementById('btnMostrarTodos');
         if (btnMostrarTodos) {
-            btnMostrarTodos.addEventListener('click', function() {
+            btnMostrarTodos.addEventListener('click', function () {
                 console.log('🔄 Limpiando filtros y mostrando todos los productos...');
                 try {
                     // Reset de selects
@@ -287,17 +319,17 @@ export async function inicializarEventos() {
         } else {
             console.error('❌ Botón btnMostrarTodos NO encontrado en el DOM');
         }
-        
+
         console.log(`✅ Eventos inicializados correctamente`);
         console.log(`📊 Resumen: ${controlesConectados}/4 controles conectados`);
-        
+
         // Verificar si tenemos productos cargados
         if (productos && productos.length > 0) {
             console.log(`📦 ${productos.length} productos disponibles para filtrar`);
         } else {
             console.warn('⚠️ No hay productos cargados aún');
         }
-        
+
     } catch (error) {
         console.error('❌ Error crítico al inicializar eventos:', error);
         console.error('Stack:', error.stack);

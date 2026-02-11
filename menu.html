@@ -31,6 +31,9 @@
             <a href="#" data-page="Inicio" class="activo">
                 <i class="fa-solid fa-house"></i> Inicio
             </a>
+            <a href="#" data-page="Avisos">
+                <i class="fa-solid fa-bell"></i> Avisos
+            </a>
             <a href="#" data-page="Recepcion">
                 <i class="fa-solid fa-truck-ramp-box"></i> Recepción
             </a>
@@ -75,9 +78,59 @@
 
             <h1 id="page-title">Panel de Control</h1>
 
-            <div class="user-info">
-                <span>Hola, Admin</span>
-                <div class="user-avatar">A</div>
+            <div class="user-info-wrapper">
+                <div class="user-info" id="profileToggle" role="button" tabindex="0" aria-haspopup="true">
+                    <span>Hola, Administrador</span>
+                    <div class="user-avatar">A</div>
+                    <i class="fa-solid fa-chevron-down profile-chevron"></i>
+                </div>
+
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <div class="dropdown-header">
+                        <div class="dropdown-avatar">A</div>
+                        <div class="dropdown-user-info">
+                            <span class="dropdown-name">Administrador</span>
+                            <span class="dropdown-role">Gestor de Economato</span>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <div class="dropdown-section">
+                        <a href="#" data-page="Avisos" class="dropdown-item">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Centro de Avisos</span>
+                            <span class="dropdown-badge" id="dropdown-alertas"></span>
+                        </a>
+                        <a href="#" data-page="Configuracion" class="dropdown-item">
+                            <i class="fa-solid fa-gear"></i>
+                            <span>Configuracion</span>
+                        </a>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <div class="dropdown-section">
+                        <div class="dropdown-item dropdown-info">
+                            <i class="fa-solid fa-clock"></i>
+                            <span>Sesion iniciada</span>
+                            <span class="dropdown-meta" id="dropdown-session"></span>
+                        </div>
+                        <div class="dropdown-item dropdown-info">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <span>Fecha</span>
+                            <span class="dropdown-meta" id="dropdown-fecha"></span>
+                        </div>
+                    </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <a href="index.html" class="dropdown-item dropdown-logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Cerrar Sesion</span>
+                    </a>
+                </div>
             </div>
         </header>
 
@@ -111,11 +164,65 @@
             const menuLinks = sidebar.querySelectorAll('a[data-page]');
             menuLinks.forEach(link => {
                 link.addEventListener('click', () => {
-                    // Pequeño delay para que se vea la transición
                     setTimeout(() => {
                         sidebar.classList.remove('open');
                         overlay.classList.remove('active');
                     }, 100);
+                });
+            });
+
+            // --- Profile Dropdown ---
+            const profileToggle = document.getElementById('profileToggle');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const sessionStart = new Date();
+
+            // Populate session info
+            const fechaEl = document.getElementById('dropdown-fecha');
+            if (fechaEl) {
+                fechaEl.textContent = new Date().toLocaleDateString('es-ES', {
+                    weekday: 'long', day: 'numeric', month: 'long'
+                });
+            }
+
+            function updateSessionTime() {
+                const el = document.getElementById('dropdown-session');
+                if (!el) return;
+                const mins = Math.floor((Date.now() - sessionStart) / 60000);
+                if (mins < 1) el.textContent = 'Ahora';
+                else if (mins < 60) el.textContent = mins + ' min';
+                else el.textContent = Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm';
+            }
+            updateSessionTime();
+            setInterval(updateSessionTime, 60000);
+
+            // Toggle dropdown
+            profileToggle?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('open');
+                profileToggle.classList.toggle('active');
+            });
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!profileDropdown?.contains(e.target) && !profileToggle?.contains(e.target)) {
+                    profileDropdown?.classList.remove('open');
+                    profileToggle?.classList.remove('active');
+                }
+            });
+
+            // Close on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    profileDropdown?.classList.remove('open');
+                    profileToggle?.classList.remove('active');
+                }
+            });
+
+            // Close dropdown when clicking a link inside it
+            profileDropdown?.querySelectorAll('a[data-page]').forEach(link => {
+                link.addEventListener('click', () => {
+                    profileDropdown.classList.remove('open');
+                    profileToggle.classList.remove('active');
                 });
             });
         });

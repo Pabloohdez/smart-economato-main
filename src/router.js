@@ -6,6 +6,25 @@ const routes = {
         template: 'pages/inicio.html',
         action: () => { /* No hay lógica específica para inicio */ }
     },
+    'avisos': {
+        template: 'pages/avisos.html',
+        action: async () => {
+            try {
+                const module = await import(`./controllers/avisosController.js?t=${Date.now()}`);
+                if (module.initAvisos) await module.initAvisos();
+            } catch (e) {
+                console.error('Error loading avisosController:', e);
+                const content = document.getElementById('content');
+                if (content) {
+                    content.innerHTML += `<div style="background:#fee; border:2px solid #c00; padding:20px; margin:20px; border-radius:8px;">
+                        <h3 style="color:#c00; margin:0 0 10px 0;">❌ Error al cargar el controlador</h3>
+                        <p><strong>Mensaje:</strong> ${e.message}</p>
+                        <pre style="background:#fff; padding:10px; overflow:auto; font-size:11px;">${e.stack}</pre>
+                    </div>`;
+                }
+            }
+        }
+    },
     'inventario': {
         template: 'pages/Inventario.html',
         action: async () => {
