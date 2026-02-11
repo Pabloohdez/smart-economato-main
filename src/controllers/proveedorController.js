@@ -38,7 +38,7 @@ function abrirModalProveedor() {
 function cerrarModalProveedor() {
     const modal = document.getElementById('modalProveedor');
     if (modal) modal.style.display = 'none';
-    
+
     // Resetear formulario y título al cerrar
     document.getElementById('formProveedor').reset();
     document.getElementById('idProveedor').value = '';
@@ -122,6 +122,8 @@ async function cargarTablaProveedores() {
                         'previous': 'Anterior',
                         'next': 'Siguiente',
                         'showing': 'Mostrando',
+                        'of': 'de',
+                        'to': 'a',
                         'results': () => 'resultados'
                     }
                 }
@@ -148,7 +150,7 @@ async function guardarProveedor(event) {
     if (!nombre) return alert("El nombre es obligatorio");
 
     const datos = { nombre, contacto, telefono, email };
-    
+
     let url = API_URL;
     let method = 'POST';
 
@@ -169,7 +171,7 @@ async function guardarProveedor(event) {
         if (json.success) {
             alert(id ? "Proveedor actualizado correctamente" : "Proveedor creado correctamente");
             cerrarModalProveedor();
-            cargarTablaProveedores(); 
+            cargarTablaProveedores();
         } else {
             alert("Error: " + (json.error?.message || json.message || "Desconocido"));
         }

@@ -58,7 +58,7 @@ const routes = {
     'distribucion': {
         template: 'pages/distribucion.html',
         action: async () => {
-            const module = await import('./controllers/distribucionController.js');
+            const module = await import(`./controllers/distribucionController.js?t=${Date.now()}`);
             if (module.initDistribucion) module.initDistribucion();
         }
     },
