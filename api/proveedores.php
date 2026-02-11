@@ -79,6 +79,22 @@ switch ($method) {
         }
         break;
 
+    case 'DELETE':
+        // Eliminar Proveedor
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
+            sendError("ID obligatorio para eliminar", 400);
+        }
+
+        $query = "DELETE FROM proveedores WHERE id = $id";
+        
+        if (pg_query($conn, $query)) {
+            echo json_encode(["success" => true, "message" => "Proveedor eliminado"]);
+        } else {
+            sendError("Error al eliminar: " . pg_last_error($conn), 500);
+        }
+        break;
+
     default:
         sendError("Método no permitido", 405);
 }

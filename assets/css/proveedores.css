@@ -74,6 +74,34 @@ body {
     outline-offset: 2px;
 }
 
+/* Delete Button - Red styling like avisos */
+.btn-eliminar {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-eliminar:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #7f1d1d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
+.btn-eliminar i {
+    font-size: 12px;
+}
+
+
 /* --- Modal --- */
 .modal {
     position: fixed;

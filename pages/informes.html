@@ -5,11 +5,43 @@
     <p>Visión general del rendimiento del economato</p>
 </div>
 
+<!-- Filtros -->
+<div class="filtros-panel">
+    <div class="form-group">
+        <label for="filtroUsuario">Profesor</label>
+        <select id="filtroUsuario" class="select-form">
+            <option value="">Todos los profesores</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="fechaInicio">Desde (Mes)</label>
+        <input type="month" id="fechaInicio" class="input-form">
+    </div>
+
+    <div class="form-group">
+        <label for="fechaFin">Hasta (Mes)</label>
+        <input type="month" id="fechaFin" class="input-form">
+    </div>
+
+    <button id="btnFiltrar" class="btn-primary">
+        <i class="fa-solid fa-filter"></i>
+        Aplicar Filtros
+    </button>
+</div>
+
+<!-- KPI Cards -->
 <div class="stats-grid">
     <div class="stat-card blue">
-        <h3>Gasto Mensual</h3>
+        <h3>Gasto Mensual Actual</h3>
         <div class="value" id="statGasto">0.00 €</div>
         <p class="desc">En pedidos recibidos este mes</p>
+    </div>
+
+    <div class="stat-card green">
+        <h3>Total del Curso</h3>
+        <div class="value" id="statTotalCurso">0.00 €</div>
+        <p class="desc">Todos los pedidos recibidos</p>
     </div>
 
     <div class="stat-card red">
@@ -19,13 +51,38 @@
     </div>
 </div>
 
+<!-- Gráficos -->
 <div class="charts-container">
+    <!-- Gráfico de Gastos Mensuales -->
+    <div class="card chart-card chart-large">
+        <h3>Gastos Mensuales por Profesor</h3>
+        <canvas id="chartGastosMensuales" aria-label="Gráfico de línea mostrando gastos mensuales" role="img"></canvas>
+    </div>
+
+    <!-- Gráfico de Top Productos -->
     <div class="card chart-card">
         <h3>Top Salidas (Distribución)</h3>
         <canvas id="chartTopProductos" aria-label="Gráfico de barras mostrando los productos más distribuidos"
             role="img"></canvas>
     </div>
 
+    <!-- Tabla de Gastos Mensuales -->
+    <div class="card bg-white">
+        <h3>Desglose Mensual</h3>
+        <table class="table-simple" id="tablaGastosMensuales">
+            <thead>
+                <tr>
+                    <th scope="col">Mes</th>
+                    <th scope="col">Profesor</th>
+                    <th scope="col">Pedidos</th>
+                    <th scope="col">Total</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- Tabla de Últimos Movimientos -->
     <div class="card bg-white">
         <h3>Últimos Movimientos</h3>
         <table class="table-simple" id="tablaMovimientos">
@@ -44,70 +101,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    (function () {
-        const API_URL = 'http://localhost:8080/api';
-
-        async function cargarDatos() {
-            try {
-                const res = await fetch(`${API_URL}/informes.php?tipo=dashboard`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                const data = await res.json();
-
-                if (data.success) {
-                    actualizarUI(data.data);
-                }
-            } catch (error) {
-                console.error("Error cargando informes", error);
-            }
-        }
-
-        function actualizarUI(data) {
-            // KPI Cards
-            document.getElementById('statGasto').innerText = parseFloat(data.gasto_mensual).toFixed(2) + ' €';
-            document.getElementById('statAlertas').innerText = data.alertas_stock;
-
-            // Tabla Movimientos
-            const tbody = document.querySelector('#tablaMovimientos tbody');
-            tbody.innerHTML = '';
-            data.ultimos_movimientos.forEach(m => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${new Date(m.fecha).toLocaleDateString()}</td>
-                    <td>${m.producto}</td>
-                    <td><span class="badge ${m.tipo === 'ENTRADA' ? 'badge-success' : 'badge-warning'}">${m.tipo}</span></td>
-                    <td>${m.cantidad}</td>
-                    <td>${m.usuario_nombre || 'Sistema'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Gráfico Chart.js
-            const ctx = document.getElementById('chartTopProductos').getContext('2d');
-            const labels = data.top_productos.map(p => p.nombre);
-            const counts = data.top_productos.map(p => p.total_salida);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Unidades Distribuidas',
-                        data: counts,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        cargarDatos();
-    })();
+<script type="module">
+    import { initInformes } from './src/controllers/informesController.js';
+    initInformes();
 </script>

@@ -17,6 +17,7 @@ export async function initProveedores() {
     window.cerrarModalProveedor = cerrarModalProveedor;
     window.guardarProveedor = guardarProveedor;
     window.editarProveedor = editarProveedor;
+    window.eliminarProveedor = eliminarProveedor;
 
     // 3. Event Listener del Formulario
     const form = document.getElementById('formProveedor');
@@ -70,6 +71,35 @@ function editarProveedor(id) {
     abrirModalProveedor();
 }
 
+async function eliminarProveedor(id) {
+    const proveedor = listaProveedores.find(p => p.id == id);
+    if (!proveedor) {
+        showNotification("Error: Proveedor no encontrado", 'error');
+        return;
+    }
+
+    const confirmado = await showConfirm(`¿Eliminar el proveedor "${proveedor.nombre}"?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmado) return;
+
+    try {
+        const res = await fetch(`${API_URL}?id=${id}`, {
+            method: 'DELETE',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const json = await res.json();
+
+        if (json.success) {
+            showNotification("Proveedor eliminado correctamente", 'success');
+            await cargarTablaProveedores(true);
+        } else {
+            showNotification("Error: " + (json.error?.message || json.message || "Desconocido"), 'error');
+        }
+    } catch (e) {
+        showNotification("Error de conexión al eliminar proveedor", 'error');
+        console.error(e);
+    }
+}
+
 // --- LOGICA DE DATOS ---
 
 async function cargarTablaProveedores(forceReload = false) {
@@ -108,7 +138,14 @@ async function cargarTablaProveedores(forceReload = false) {
                         formatter: (cell, row) => {
                             const p = listaProveedores.find(item => item.nombre === row.cells[0].data);
                             if (p) {
-                                return gridjs.html(`<button class="btn-editar" onclick="editarProveedor('${p.id}')"><i class="fa-solid fa-pen"></i></button>`);
+                                return gridjs.html(`
+                                    <button class="btn-editar" onclick="editarProveedor('${p.id}')" title="Editar">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button class="btn-eliminar" onclick="eliminarProveedor('${p.id}')" title="Eliminar">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                `);
                             }
                             return null;
                         }

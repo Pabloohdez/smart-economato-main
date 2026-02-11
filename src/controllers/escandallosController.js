@@ -1,7 +1,7 @@
 // src/controllers/escandallosController.js
 
 import { getProductos } from "../services/apiService.js";
-import { showNotification } from "../utils/notifications.js";
+import { showNotification, showConfirm } from "../utils/notifications.js";
 
 // Estado local
 let escandallos = []; // Lista de recetas
@@ -369,8 +369,11 @@ function renderizarTablaEscandallos(lista = escandallos) {
             <td>${esc.pvp.toFixed(2)} €</td>
             <td class="font-bold ${margen > 30 ? 'text-success' : 'text-danger'}">${margen.toFixed(1)}%</td>
             <td class="action-cell">
-                <button class="btn-sm btn-primary" onclick="window.editarEscandallo(${esc.id})">
+                <button class="btn-sm btn-primary" onclick="window.editarEscandallo(${esc.id})" title="Editar">
                     <i class="fa-solid fa-pen"></i>
+                </button>
+                <button class="btn-sm btn-danger" onclick="window.eliminarEscandallo(${esc.id})" title="Eliminar">
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
             </td>
         </tr>
@@ -388,6 +391,25 @@ window.editarEscandallo = (id) => {
 window.verReceta = (id) => {
     const esc = escandallos.find(x => x.id == id);
     if (esc) cerrarAbrirModal(esc, true);
+};
+
+// Global para eliminar
+window.eliminarEscandallo = async (id) => {
+    const esc = escandallos.find(x => x.id == id);
+    if (!esc) {
+        showNotification("Error: Receta no encontrada", 'error');
+        return;
+    }
+
+    const confirmado = await showConfirm(`¿Eliminar la receta "${esc.nombre}"?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmado) return;
+
+    const index = escandallos.findIndex(x => x.id == id);
+    if (index !== -1) {
+        escandallos.splice(index, 1);
+        renderizarTablaEscandallos();
+        showNotification("Receta eliminada correctamente", 'success');
+    }
 };
 
 function filtrarEscandallos() {
