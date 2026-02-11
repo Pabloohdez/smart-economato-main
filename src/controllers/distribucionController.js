@@ -1,5 +1,11 @@
-// Controlador de Distribución
 import { showNotification, showConfirm } from "../utils/notifications.js";
+import {
+    productoTieneAlergenos,
+    verificarPreferencias,
+    mostrarAlertaAlergenos,
+    filtrarListaPorAlergenos,
+    generarBadgesProducto
+} from "../utils/alergenosUtils.js";
 
 const API_URL = 'http://localhost:8080/api';
 let todosLosProductos = [];
@@ -153,8 +159,12 @@ async function realizarBusqueda() {
 
         let matches = [];
         if (json.success && json.data) {
+            let data = json.data;
+            // Aplicar filtrado por preferencias (si está activo)
+            data = filtrarListaPorAlergenos(data);
+
             // Filtrar por el término de búsqueda en el cliente también
-            matches = json.data.filter(p =>
+            matches = data.filter(p =>
                 p.nombre.toLowerCase().includes(term) ||
                 (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term))
             );
@@ -190,8 +200,18 @@ async function realizarBusqueda() {
 }
 
 function seleccionarProducto(p) {
+    const verificacion = productoTieneAlergenos(p);
+    const pref = verificarPreferencias();
+
+    if (verificacion.tiene && pref.alertas) {
+        showNotification(`⚠️ ATENCIÓN: "${p.nombre}" contiene alérgenos: ${verificacion.alergenos.join(', ')}`, 'warning');
+    }
+
     productoActual = p;
-    document.getElementById('nombreSeleccionado').innerText = p.nombre;
+    document.getElementById('nombreSeleccionado').innerHTML = `
+        ${p.nombre} 
+        <div style="margin-top: 5px;">${generarBadgesProducto(p)}</div>
+    `;
     document.getElementById('stockSeleccionado').innerText = p.stock;
     document.getElementById('detalleProducto').style.display = 'block';
     document.getElementById('listaResultados').style.display = 'none';
@@ -206,8 +226,28 @@ window.ajustarCant = (delta) => {
     inp.value = val;
 };
 
-window.agregarAlCarrito = () => {
+window.agregarAlCarrito = async () => {
     if (!productoActual) return;
+
+    const verificacion = productoTieneAlergenos(productoActual);
+    const pref = verificarPreferencias();
+
+    // Bloqueo estricto
+    if (verificacion.tiene && pref.bloqueo) {
+        showNotification(`❌ ACCIÓN BLOQUEADA: No puedes distribuir este producto debido a tu alergia a: ${verificacion.alergenos.join(', ')}`, 'error');
+        return;
+    }
+
+    // Alerta de confirmación
+    if (verificacion.tiene && pref.alertas) {
+        const confirmar = await showConfirm(
+            `⚠️ ADVERTENCIA DE SEGURIDAD\n\n` +
+            `Vas a distribuir "${productoActual.nombre}", que contiene: ${verificacion.alergenos.join(', ')}.\n\n` +
+            `¿Estás seguro de que deseas continuar?`
+        );
+        if (!confirmar) return;
+    }
+
     const cant = parseInt(document.getElementById('cantidadSalida').value);
 
     const existente = carrito.find(i => i.productoId == productoActual.id);
@@ -367,7 +407,11 @@ export async function initDistribucion() {
             return;
         }
 
-        const matches = todosLosProductos.filter(p =>
+        let data = todosLosProductos;
+        // Aplicar filtrado por preferencias (si está activo)
+        data = filtrarListaPorAlergenos(data);
+
+        const matches = data.filter(p =>
             p.nombre.toLowerCase().includes(term) ||
             (p.codigoBarras && p.codigoBarras.includes(term))
         );

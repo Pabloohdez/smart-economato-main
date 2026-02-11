@@ -119,6 +119,13 @@ const routes = {
         template: 'pages/informes.html',
         action: () => { /* Lógica autocontenida en el HTML */ }
     },
+    'auditoria': {
+        template: 'pages/auditoria.html',
+        action: async () => {
+            const module = await import(`./controllers/auditoriaController.js?t=${Date.now()}`);
+            if (module.init) module.init();
+        }
+    },
     'usuarios': {
         template: 'pages/construccion.html',
         action: () => setupConstruction('Gestión de Usuarios')

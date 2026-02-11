@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/utils/auditoria.php';
 
 header('Content-Type: application/json');
 
@@ -106,6 +107,30 @@ switch ($method) {
             $nuevoStock = $stockActual - $cantidad;
             $queryUpdate = "UPDATE productos SET stock = $nuevoStock WHERE id = $prodId";
             pg_query($conn, $queryUpdate);
+            
+            // Registrar en auditoría
+            $resProducto = pg_query($conn, "SELECT nombre FROM productos WHERE id = $prodId");
+            $producto = pg_fetch_assoc($resProducto);
+            
+            // Extraer valores sin comillas para auditoría
+            $tipoBajaRaw = str_replace("'", "", $tipoBaja);
+            $motivoRaw = str_replace("'", "", $motivo);
+            $userIdRaw = str_replace("'", "", $usuarioId);
+            
+            registrarAuditoria(
+                $conn,
+                $userIdRaw,
+                null,
+                ACCION_BAJA,
+                ENTIDAD_BAJA,
+                null,
+                [
+                    'tipo' => $tipoBajaRaw,
+                    'producto' => $producto['nombre'],
+                    'cantidad' => $cantidad,
+                    'motivo' => $motivoRaw
+                ]
+            );
             
             echo json_encode([
                 "success" => true,

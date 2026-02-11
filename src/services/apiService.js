@@ -153,7 +153,12 @@ async function crearPedido(pedidoData) {
         });
 
         const result = await response.json();
-        if (!result.success) throw new Error(result.error || "Error al crear pedido");
+        if (!result.success) {
+            const errorMsg = typeof result.error === 'object' ?
+                (result.error.message || JSON.stringify(result.error)) :
+                (result.error || "Error al crear pedido");
+            throw new Error(errorMsg);
+        }
 
         return result;
     } catch (error) {

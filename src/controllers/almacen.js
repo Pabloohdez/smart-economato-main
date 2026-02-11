@@ -10,6 +10,11 @@ import {
 
 import { getProductos, getCategorias, getProveedores } from '../services/apiService.js';
 import { showNotification } from '../utils/notifications.js';
+import {
+    productoTieneAlergenos,
+    verificarPreferencias,
+    filtrarListaPorAlergenos
+} from '../utils/alergenosUtils.js';
 
 let productos = [];
 let categorias = [];
@@ -17,10 +22,7 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
-// Helper para normalizar datos (clonar array para no mutar el original en filtros)
-function normalizarDatos(data) {
-    return data.map(item => ({ ...item }));
-}
+// Helper para normalizar datos eliminado (duplicado)
 
 // Formateador de caducidad (sin emojis, estilo profesional)
 function procesarCaducidad(fechaStr) {
@@ -63,7 +65,23 @@ const columnasGrid = [
     {
         id: 'nombre',
         name: 'Producto',
-        formatter: (cell) => window.gridjs.html(`<span class="col-name">${cell}</span>`)
+        formatter: (cell, row) => {
+            const id = row.cells[0].data;
+            // Necesitamos el objeto producto completo para la verificación
+            // Como Grid.js trabaja con datos ya normalizados, podemos buscarlo
+            const p = productos.find(prod => prod.id == id) || {};
+            const verificacion = productoTieneAlergenos(p);
+
+            if (verificacion.tiene) {
+                return window.gridjs.html(`
+                    <div class="col-name" title="Contiene: ${verificacion.alergenos.join(', ')}">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #e53e3e; margin-right: 5px;"></i>
+                        ${cell}
+                    </div>
+                `);
+            }
+            return window.gridjs.html(`<span class="col-name">${cell}</span>`);
+        }
     },
     { id: 'nombreCategoria', name: 'Categoria' },
     {
@@ -253,6 +271,9 @@ function aplicarFiltros() {
     console.log(`📦 Productos iniciales: ${productos.length}`);
 
     let filtrados = normalizarDatos(productos);
+
+    // Aplicar filtrado estricto por alérgenos si está activo
+    filtrados = filtrarListaPorAlergenos(filtrados);
 
     if (busq) {
         filtrados = buscarProducto(filtrados, busq);
