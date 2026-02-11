@@ -1,9 +1,11 @@
 import { getProductos, getProveedores } from "../services/apiService.js";
 import { navigateTo } from "../router.js";
+import { showNotification, showConfirm } from "../utils/notifications.js";
 
 const API_URL = 'http://localhost:8080/api';
 let itemsPedido = [];
 let productosCache = [];
+let gridInstance = null; // Almacenar instancia de GridJS para poder destruirla
 
 export async function initPedidos() {
     console.log("🛒 Iniciando módulo de Pedidos...");
@@ -47,12 +49,13 @@ async function cargarPedidos() {
     // Verificar si GridJS está cargado
     if (typeof gridjs === 'undefined') {
         console.error("❌ GridJS no está cargado.");
-        alert("Error crítico: Librería GridJS no encontrada. Verifique su conexión a internet.");
+        showNotification("Error crítico: Librería GridJS no encontrada.", 'error');
         return;
     }
 
     try {
-        const res = await fetch(`${API_URL}/pedidos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        // AÑADIDO: Cache buster ?t=... para evitar caché del navegador
+        const res = await fetch(`${API_URL}/pedidos.php?t=${Date.now()}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         console.log("📡 Respuesta API status:", res.status);
 
         if (!res.ok) {
@@ -70,6 +73,17 @@ async function cargarPedidos() {
                 console.error("❌ Elemento #gridPedidos no encontrado en el DOM");
                 return;
             }
+
+            // Destruir grid anterior si existe
+            if (gridInstance) {
+                try {
+                    gridInstance.destroy();
+                } catch (e) {
+                    console.log('No se pudo destruir grid anterior:', e);
+                }
+            }
+
+            // Limpiar contenido previo para evitar duplicados
             gridElement.innerHTML = '';
 
             const data = Array.isArray(json.data) ? json.data : [];
@@ -79,7 +93,7 @@ async function cargarPedidos() {
                 return;
             }
 
-            new gridjs.Grid({
+            gridInstance = new gridjs.Grid({
                 columns: [
                     'ID',
                     'Proveedor',
@@ -113,27 +127,29 @@ async function cargarPedidos() {
             }).render(gridElement);
         } else {
             console.error("❌ Error lógico:", json);
-            alert("Error cargando pedidos: " + (json.error?.message || "Desconocido"));
+            showNotification("Error cargando pedidos: " + (json.error?.message || "Desconocido"), 'error');
         }
     } catch (e) {
         console.error("❌ Excepción en cargarPedidos:", e);
-        document.getElementById("gridPedidos").innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
+        const el = document.getElementById("gridPedidos");
+        if (el) el.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
     }
 }
 
 async function cargarProveedores() {
     try {
-        const res = await fetch(`${API_URL}/proveedores.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-        const json = await res.json();
+        // Usar servicio con caché
+        const data = await getProveedores();
         const sel = document.getElementById('selectProveedor');
         sel.innerHTML = '<option value="">-- Seleccionar --</option>';
-        if (json.success) {
-            json.data.forEach(p => {
+        if (Array.isArray(data)) {
+            data.forEach(p => {
                 sel.innerHTML += `<option value="${p.id}">${p.nombre}</option>`;
             });
         }
     } catch (e) {
         console.error(e);
+        showNotification("Error cargando proveedores", 'error');
     }
 }
 
@@ -142,9 +158,8 @@ async function actualizarProductosDeProveedor() {
 
     if (!productosCache.length) {
         try {
-            const res = await fetch(`${API_URL}/productos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-            const json = await res.json();
-            if (json.success) productosCache = json.data;
+            // Usar servicio con caché
+            productosCache = await getProductos();
         } catch (e) { console.error(e); }
     }
 
@@ -181,6 +196,7 @@ function agregarItem(prod) {
     const existente = itemsPedido.find(i => i.producto_id == prod.id);
     if (existente) {
         existente.cantidad++;
+        showNotification(`Cantidad de ${prod.nombre} aumentada`, 'info');
     } else {
         itemsPedido.push({
             producto_id: prod.id,
@@ -189,6 +205,7 @@ function agregarItem(prod) {
             cantidad: 1,
             proveedor_id: provId // Guardar ID proveedor para agrupar luego
         });
+        showNotification(`${prod.nombre} añadido al pedido`, 'success');
     }
     renderizarCarritoPedido();
 }
@@ -238,7 +255,7 @@ async function guardarPedido() {
     console.log('💾 Intentando guardar pedido(s)...');
 
     if (itemsPedido.length === 0) {
-        alert("El pedido está vacío. Agrega al menos un producto.");
+        showNotification("El pedido está vacío. Agrega al menos un producto.", 'warning');
         return;
     }
 
@@ -267,11 +284,11 @@ async function guardarPedido() {
 
     const proveedoresIds = Object.keys(pedidosPorProveedor);
     if (proveedoresIds.length === 0) {
-        alert("Error: No se pudo determinar el proveedor de los productos.");
+        showNotification("Error: No se pudo determinar el proveedor de los productos.", 'error');
         return;
     }
 
-    if (!confirm(`Se generarán ${proveedoresIds.length} pedido(s) distinto(s) según el proveedor. ¿Continuar?`)) {
+    if (!await showConfirm(`Se generarán ${proveedoresIds.length} pedido(s) distinto(s) según el proveedor. ¿Continuar?`)) {
         return;
     }
 
@@ -310,13 +327,13 @@ async function guardarPedido() {
         } catch (e) {
             errores++;
             console.error(`❌ Excepción proveedor ${pid}:`, e);
-            alert("Error de conexión al crear uno de los pedidos.");
+            showNotification("Error de conexión al crear uno de los pedidos.", 'error');
         }
     }
 
     // 3. Resumen
     if (exitos > 0 && errores === 0) {
-        alert(`✅ Se han creado ${exitos} pedido(s) correctamente.`);
+        showNotification(`✅ Se han creado ${exitos} pedido(s) correctamente.`, 'success');
         // Limpiar
         itemsPedido = [];
         document.getElementById('selectProveedor').value = "";
@@ -332,18 +349,18 @@ async function guardarPedido() {
         }
         await cargarPedidos(); // Recargar datos frescos
     } else if (exitos > 0 && errores > 0) {
-        alert(`⚠️ Proceso terminado con advertencias.\nCreados: ${exitos}\nFallidos: ${errores}\nRevise la consola.`);
+        showNotification(`⚠️ Proceso terminado con advertencias. Creados: ${exitos}, Fallidos: ${errores}`, 'warning');
         // No limpiamos el carrito para que pueda reintentar los fallidos (aunque esto requeriría lógica más compleja de filtrado post-éxito)
         // Por simplicidad, recargamos la lista
         mostrarSeccion('lista');
         await cargarPedidos();
     } else {
-        alert("❌ No se pudo crear ningún pedido. Revise los errores.");
+        showNotification("❌ No se pudo crear ningún pedido. Revise los errores.", 'error');
     }
 }
 
 
 function irARecepcion(id) {
-    alert("Para recepcionar este pedido, ve al módulo de Recepción e impórtalo desde allí.");
+    showNotification("Redirigiendo a recepción...", 'info');
     navigateTo('recepcion');
 }

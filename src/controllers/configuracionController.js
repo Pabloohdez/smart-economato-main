@@ -1,3 +1,5 @@
+import { showNotification } from "../utils/notifications.js";
+
 let usuarioActual = null;
 
 const ALERGENOS_DISPONIBLES = [
@@ -31,7 +33,7 @@ export async function initConfiguracion() {
 function cargarDatosUsuario() {
     const userStr = localStorage.getItem('usuarioActivo');
     if (!userStr) {
-        alert("No se encontró información del usuario");
+        showNotification("No se encontró información del usuario", 'error');
         window.location.href = 'index.html';
         return;
     }
@@ -182,12 +184,13 @@ function guardarAlergias() {
     // Mostrar advertencia
     if (alergiasSeleccionadas.length > 0) {
         setTimeout(() => {
-            alert(
+            showNotification(
                 `⚠️ IMPORTANTE\n\n` +
                 `Has registrado ${alergiasSeleccionadas.length} alergia(s):\n` +
                 `${alergiasSeleccionadas.join(', ')}\n\n` +
                 `Recibirás alertas automáticas cuando busques o intentes ` +
-                `distribuir productos que contengan estos alérgenos.`
+                `distribuir productos que contengan estos alérgenos.`,
+                'warning'
             );
         }, 500);
     }

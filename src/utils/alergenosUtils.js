@@ -1,4 +1,5 @@
 // Utilidades para gestionar alertas de alérgenos
+import { showConfirm } from "./notifications.js";
 
 const ICONOS_ALERGENOS = {
     'Lácteos': 'fa-cow',
@@ -121,14 +122,14 @@ export function generarBadgesProducto(producto) {
 /**
  * Muestra modal de alerta para producto con alérgenos
  */
-export function mostrarAlertaAlergenos(producto) {
+export async function mostrarAlertaAlergenos(producto) {
     const verificacion = productoTieneAlergenos(producto);
     
     if (!verificacion.tiene) return false;
     
     const alergenosTexto = verificacion.alergenos.join(', ');
     
-    const confirmar = confirm(
+    const confirmar = await showConfirm(
         `⚠️ ALERTA DE ALÉRGENOS ⚠️\n\n` +
         `El producto "${producto.nombre}" contiene:\n` +
         `${alergenosTexto}\n\n` +

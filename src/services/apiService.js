@@ -1,38 +1,55 @@
 const API_URL = 'http://localhost:8080/api';
-async function getProductos() {
+// Cache in-memory
+let _cacheProductos = null;
+let _cacheCategorias = null;
+let _cacheProveedores = null;
+
+async function getProductos(forceReload = false) {
+    if (_cacheProductos && !forceReload) return _cacheProductos;
     try {
-        const response = await fetch(`${API_URL}/productos.php`, {
+        const url = forceReload ? `${API_URL}/productos.php?t=${Date.now()}` : `${API_URL}/productos.php`;
+        const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = await response.json();
-        return json.success && json.data ? json.data : json;
+        const data = json.success && json.data ? json.data : json;
+        _cacheProductos = data; // Guardar en caché
+        return data;
     } catch (e) {
         throw new Error("Error obteniendo productos: " + e.message);
     }
 }
 
-async function getCategorias() {
+async function getCategorias(forceReload = false) {
+    if (_cacheCategorias && !forceReload) return _cacheCategorias;
     try {
-        const response = await fetch(`${API_URL}/categorias.php`, {
+        const url = forceReload ? `${API_URL}/categorias.php?t=${Date.now()}` : `${API_URL}/categorias.php`;
+        const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = await response.json();
-        return json.success && json.data ? json.data : json;
+        const data = json.success && json.data ? json.data : json;
+        _cacheCategorias = data;
+        return data;
     } catch (e) {
         throw new Error("Error obteniendo categorías: " + e.message);
     }
 }
 
-async function getProveedores() {
+async function getProveedores(forceReload = false) {
+    if (_cacheProveedores && !forceReload) return _cacheProveedores;
     try {
-        const response = await fetch(`${API_URL}/proveedores.php`, {
+        const url = forceReload ? `${API_URL}/proveedores.php?t=${Date.now()}` : `${API_URL}/proveedores.php`;
+        const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const json = await response.json();
-        return json.success && json.data ? json.data : json;
+        const data = json.success && json.data ? json.data : json;
+        _cacheProveedores = data;
+        return data;
     } catch (e) {
         throw new Error("Error obteniendo proveedores: " + e.message);
     }
