@@ -1,5 +1,3 @@
-// src/controllers/almacen.js
-
 import {
     filtrarPorCategoria,
     filtrarPorProveedor,
@@ -187,7 +185,7 @@ function actualizarResumen() {
 
 function aplicarFiltros() {
     console.log('🔧 Aplicando filtros...');
-    
+
     const busq = document.getElementById('busqueda')?.value || '';
     const cat = document.getElementById('categoriaSelect')?.value || '';
     const prov = document.getElementById('proveedorSelect')?.value || '';
@@ -217,21 +215,21 @@ function aplicarFiltros() {
     vista = filtrados;
     actualizarGrid();
     actualizarResumen();
-    
+
     console.log(`✅ Filtros aplicados. Total mostrado: ${vista.length} productos`);
 }
 
 export async function inicializarEventos() {
     console.log('🎯 Iniciando eventos de inventario...');
-    
+
     // Esperar a que el DOM esté completamente listo
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     try {
         // Escuchar cambios en todos los controles
         const controles = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
         let controlesConectados = 0;
-        
+
         controles.forEach(id => {
             const el = document.querySelector(id);
             if (el) {
@@ -247,7 +245,7 @@ export async function inicializarEventos() {
         // Botón de Stock Bajo
         const btnStock = document.getElementById('btnStock');
         if (btnStock) {
-            btnStock.addEventListener('click', function() {
+            btnStock.addEventListener('click', function () {
                 console.log('🔍 Filtrando productos con stock bajo...');
                 try {
                     vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
@@ -261,27 +259,27 @@ export async function inicializarEventos() {
             console.log('✅ Event listener agregado a btnStock');
         } else {
             console.error('❌ Botón btnStock NO encontrado en el DOM');
-            console.log('ℹ️ Todos los botones en el DOM:', 
+            console.log('ℹ️ Todos los botones en el DOM:',
                 Array.from(document.querySelectorAll('button')).map(b => b.id || b.textContent.trim()));
         }
 
         // Botón de Próximo a Caducar
         const btnProximo = document.getElementById('btnProximoCaducar');
         if (btnProximo) {
-            btnProximo.addEventListener('click', function() {
+            btnProximo.addEventListener('click', function () {
                 console.log('📅 Filtrando productos próximos a caducar...');
                 try {
                     const hoy = new Date();
                     hoy.setHours(0, 0, 0, 0);
                     const treintaDias = new Date(hoy);
                     treintaDias.setDate(treintaDias.getDate() + 30);
-                    
+
                     vista = normalizarDatos(productos).filter(p => {
                         if (!p.fechaCaducidad || p.fechaCaducidad === "NULL") return false;
                         const fechaCad = new Date(p.fechaCaducidad);
                         return fechaCad > hoy && fechaCad <= treintaDias;
                     });
-                    
+
                     actualizarGrid();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos próximos a caducar`);
@@ -297,7 +295,7 @@ export async function inicializarEventos() {
         // Botón Mostrar Todos
         const btnMostrarTodos = document.getElementById('btnMostrarTodos');
         if (btnMostrarTodos) {
-            btnMostrarTodos.addEventListener('click', function() {
+            btnMostrarTodos.addEventListener('click', function () {
                 console.log('🔄 Limpiando filtros y mostrando todos los productos...');
                 try {
                     // Reset de selects
@@ -316,22 +314,21 @@ export async function inicializarEventos() {
         } else {
             console.error('❌ Botón btnMostrarTodos NO encontrado en el DOM');
         }
-        
+
         console.log(`✅ Eventos inicializados correctamente`);
         console.log(`📊 Resumen: ${controlesConectados}/4 controles conectados`);
-        
+
         // Verificar si tenemos productos cargados
         if (productos && productos.length > 0) {
             console.log(`📦 ${productos.length} productos disponibles para filtrar`);
         } else {
             console.warn('⚠️ No hay productos cargados aún');
         }
-        
+
     } catch (error) {
         console.error('❌ Error crítico al inicializar eventos:', error);
         console.error('Stack:', error.stack);
         alert('Error al inicializar los controles de inventario. Revisa la consola para más detalles.');
     }
 }
-
 
