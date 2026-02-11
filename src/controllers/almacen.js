@@ -27,6 +27,7 @@ function procesarCaducidad(fechaStr) {
     if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
         return { texto: '-', clase: 'text-muted', dot: '' };
     }
+
     const fecha = new Date(fechaStr);
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -49,6 +50,9 @@ function procesarCaducidad(fechaStr) {
     return { texto: fechaTexto, clase: 'text-muted', dot: '' };
 }
 
+/**
+ * Configuración de las columnas para Grid.js
+ */
 const columnasGrid = [
     {
         id: 'id',
@@ -70,9 +74,15 @@ const columnasGrid = [
     {
         id: 'stock',
         name: 'Stock',
+        width: '100px',
         formatter: (cell, row) => {
             const stock = Number(cell);
+            // El índice de la columna cambió en HEAD vs Sonia? 
+            // HEAD: cells[5] -> Min
+            // Sonia: cells[5] -> Min
+            // Parece que coinciden.
             const min = Number(row.cells[5].data);
+
             if (stock <= min) {
                 return window.gridjs.html(
                     `<span class="col-stock text-status-warning"><span class="status-dot status-dot--warning"></span>${stock}</span>`
@@ -93,46 +103,75 @@ const columnasGrid = [
     { id: 'nombreProveedor', name: 'Proveedor' }
 ];
 
-export async function cargarDatos() {
-    try {
-        const [resProd, resCat, resProv] = await Promise.all([
-            getProductos(), getCategorias(), getProveedores()
-        ]);
-        categorias = resCat;
-        proveedores = resProv;
+/**
+ * Normaliza los datos que vienen de Supabase (minúsculas) y hace los JOINS manuales
+ */
+function normalizarDatos(lista) {
+    if (!Array.isArray(lista)) return [];
+    return lista.map(p => {
+        const cat = categorias.find(c => c.id == (p.categoriaid || p.categoriaId)) || {};
+        const prov = proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId)) || {};
 
-        // Normalización para Supabase (unifica nombres de campos)
-        productos = resProd.map(p => ({
+        return {
             ...p,
-            nombreCategoria: categorias.find(c => c.id == (p.categoriaid || p.categoriaId))?.nombre || 'General',
-            nombreProveedor: proveedores.find(pr => pr.id == (p.proveedorid || p.proveedorId))?.nombre || 'N/A',
+            nombreCategoria: cat.nombre || p.categoria_nombre || 'General',
+            nombreProveedor: prov.nombre || p.proveedor_nombre || 'N/A',
+            // Corregimos nombres para Grid.js
             fechaCaducidad: p.fechacaducidad || p.fechaCaducidad || null,
             stockMinimo: p.stockminimo || p.stockMinimo || 0,
             stock: p.stock || 0
-        }));
+        };
+    });
+}
+
+export async function cargarDatos() {
+    const contenedor = document.getElementById('grid-inventario');
+    if (contenedor) contenedor.innerHTML = '<div style="text-align:center; padding:20px;">Cargando inventario de Supabase...</div>';
+
+    try {
+        // Carga en paralelo
+        const [resProd, resCat, resProv] = await Promise.all([
+            getProductos(),
+            getCategorias(),
+            getProveedores()
+        ]);
+
+        productos = resProd;
+        categorias = resCat;
+        proveedores = resProv;
+
+        vista = normalizarDatos(productos);
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-        vista = [...productos];
-        actualizarGrid();
+
+        renderizarTabla();
+        actualizarResumen();
+
     } catch (error) {
-        console.error("Error al cargar datos:", error);
+        console.error("❌ Error cargando datos:", error);
+        if (contenedor) contenedor.innerHTML = '<div style="color:red; text-align:center;">Error de conexión con la API</div>';
     }
 }
 
-function actualizarGrid() {
+async function renderizarTabla() {
     const contenedor = document.getElementById('grid-inventario');
-    if (!contenedor || !window.gridjs) return;
+    if (!contenedor) return;
 
     console.log('🔄 Actualizando grid con', vista.length, 'productos');
 
-    // IMPORTANTE: Destruir la instancia anterior de Grid.js
+    // Si ya existe instancia, actualizar datos o destruir
     if (gridInstance) {
         try {
-            gridInstance.destroy();
-            console.log('🗑️ Grid anterior destruido');
+            gridInstance.updateConfig({
+                data: vista
+            }).forceRender();
+            console.log('🔄 Grid actualizado con', vista.length, 'productos');
+            return;
         } catch (e) {
-            console.warn('⚠️ Error al destruir grid anterior:', e);
+            console.warn('⚠️ Error al actualizar grid existente, intentando destruir y recrear:', e);
+            gridInstance.destroy();
+            gridInstance = null; // Reset instance
         }
     }
 
@@ -163,7 +202,21 @@ function actualizarGrid() {
                 if (stock <= min) return 'row-warning';
 
                 return '';
-            }
+            },
+            table: 'tabla-grid-custom',
+            td: 'celda-grid'
+        },
+        language: {
+            'search': { 'placeholder': 'Buscar...' },
+            'pagination': {
+                'previous': 'Anterior',
+                'next': 'Siguiente',
+                'showing': 'Mostrando',
+                'of': 'de',
+                'to': 'a',
+                'results': () => 'resultados'
+            },
+            'noRecordsFound': 'No hay productos que coincidan'
         }
     });
 
@@ -336,3 +389,4 @@ export async function inicializarEventos() {
         showNotification('Error al inicializar los controles de inventario', 'error');
     }
 }
+

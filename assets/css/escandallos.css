@@ -85,6 +85,15 @@
     box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
 
+/* --- Centrado de Columna de Acciones --- */
+.action-cell {
+    text-align: center !important;
+}
+
+table th:last-child {
+    text-align: center !important;
+}
+
 /* --- BOTONES --- */
 .btn-accion {
     height: 44px;

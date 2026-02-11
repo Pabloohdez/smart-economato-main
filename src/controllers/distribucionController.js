@@ -33,24 +33,19 @@ async function cargarProductos() {
     }
 }
 
+// Función para cargar el historial de movimientos
 async function cargarHistorialMovimientos() {
     try {
-        console.log('📜 Cargando historial de movimientos...');
         const res = await fetch(`${API_URL}/movimientos.php`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
         const json = await res.json();
         console.log('✅ Historial recibido:', json);
 
         const tbody = document.getElementById('tbodyHistorialMovimientos');
-        
+
         if (!json.success || !json.data || json.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #666;">No hay movimientos registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #666;">No hay movimientos registrados</td></tr>';
             return;
         }
 
@@ -58,31 +53,56 @@ async function cargarHistorialMovimientos() {
         const salidas = json.data.filter(m => m.tipo === 'SALIDA');
 
         if (salidas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #666;">No hay salidas registradas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #666;">No hay salidas registradas</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
-        
+
         salidas.forEach(mov => {
             const fecha = new Date(mov.fecha);
-            const fechaFormateada = fecha.toLocaleDateString('es-ES', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric' 
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
             });
-            const horaFormateada = fecha.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const horaFormateada = fecha.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
+
+            // Determinar clase de badge según el destino/motivo
+            const motivo = mov.motivo || 'Sin especificar';
+            let badgeClass = 'badge-default';
+
+            if (motivo.toLowerCase().includes('cocina')) {
+                badgeClass = 'badge-cocina';
+            } else if (motivo.toLowerCase().includes('bar') || motivo.toLowerCase().includes('cafetería')) {
+                badgeClass = 'badge-bar';
+            } else if (motivo.toLowerCase().includes('eventos')) {
+                badgeClass = 'badge-eventos';
+            } else if (motivo.toLowerCase().includes('caducidad') || motivo.toLowerCase().includes('merma')) {
+                badgeClass = 'badge-merma';
+            } else if (motivo.toLowerCase().includes('donación')) {
+                badgeClass = 'badge-donacion';
+            }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${fechaFormateada} ${horaFormateada}</td>
-                <td><strong>${mov.producto_nombre || 'Producto desconocido'}</strong></td>
-                <td>${mov.cantidad}</td>
-                <td>${mov.motivo || 'Sin especificar'}</td>
-                <td>${mov.usuario_nombre || 'Desconocido'}</td>
+                <td data-label="Fecha">${fechaFormateada}</td>
+                <td data-label="Hora">${horaFormateada}</td>
+                <td data-label="Producto">${mov.producto_nombre || 'Producto desconocido'}</td>
+                <td data-label="Cantidad">${mov.cantidad}</td>
+                <td data-label="Destino">
+                    <span class="badge-destino ${badgeClass}">
+                        ${motivo}
+                    </span>
+                </td>
+                <td data-label="Usuario">
+                    <span class="usuario-badge">
+                        ${mov.usuario_nombre || 'Desconocido'}
+                    </span>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -91,15 +111,16 @@ async function cargarHistorialMovimientos() {
     } catch (error) {
         console.error('❌ Error cargando historial:', error);
         const tbody = document.getElementById('tbodyHistorialMovimientos');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: red;">Error al cargar el historial</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: red;">Error al cargar el historial</td></tr>';
     }
 }
+
 
 // Función para realizar la búsqueda en la base de datos
 async function realizarBusqueda() {
     const input = document.getElementById('buscadorProd');
     const lista = document.getElementById('listaResultados');
-    
+
     const term = input.value.toLowerCase().trim();
     console.log('🔍 Buscando en la base de datos:', term);
 
@@ -322,7 +343,7 @@ export async function initDistribucion() {
     console.log('✅ Elementos del buscador encontrados');
 
     // Event listener para el botón de búsqueda
-    btnBuscar.addEventListener('click', function() {
+    btnBuscar.addEventListener('click', function () {
         console.log('👆 ¡CLICK EN BOTÓN DE BÚSQUEDA DETECTADO!');
         realizarBusqueda();
     });

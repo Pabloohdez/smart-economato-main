@@ -41,7 +41,7 @@ function abrirModalProveedor() {
 function cerrarModalProveedor() {
     const modal = document.getElementById('modalProveedor');
     if (modal) modal.style.display = 'none';
-    
+
     // Resetear formulario y título al cerrar
     document.getElementById('formProveedor').reset();
     document.getElementById('idProveedor').value = '';
@@ -97,7 +97,7 @@ async function cargarTablaProveedores(forceReload = false) {
                     console.log('No se pudo destruir grid anterior:', e);
                 }
             }
-            
+
             gridElement.innerHTML = '';
             listaProveedores = data; // Guardar datos globalmente
 
@@ -129,6 +129,8 @@ async function cargarTablaProveedores(forceReload = false) {
                         'previous': 'Anterior',
                         'next': 'Siguiente',
                         'showing': 'Mostrando',
+                        'of': 'de',
+                        'to': 'a',
                         'results': () => 'resultados'
                     }
                 }
@@ -136,7 +138,7 @@ async function cargarTablaProveedores(forceReload = false) {
         }
     } catch (error) {
         console.error("Error cargando proveedores:", error);
-        if(document.getElementById('gridProveedores')) document.getElementById('gridProveedores').innerHTML = '<p>Error de conexión.</p>';
+        if (document.getElementById('gridProveedores')) document.getElementById('gridProveedores').innerHTML = '<p>Error de conexión.</p>';
         showNotification("Error cargando la lista de proveedores", 'error');
     }
 }
@@ -153,8 +155,9 @@ async function guardarProveedor(event) {
     if (!nombre) return showNotification("El nombre del proveedor es obligatorio", 'warning');
 
     const datos = { nombre, contacto, telefono, email };
-    
-    let url = API_URL; 
+    const datos = { nombre, contacto, telefono, email };
+
+    let url = API_URL;
     let method = 'POST';
 
     // Si hay ID, es una edición (PUT)
@@ -166,7 +169,7 @@ async function guardarProveedor(event) {
     try {
         const res = await fetch(url, {
             method: method,
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
@@ -177,9 +180,9 @@ async function guardarProveedor(event) {
         if (json.success) {
             showNotification(id ? "Proveedor actualizado correctamente" : "Proveedor creado correctamente", 'success');
             cerrarModalProveedor();
-            
+
             // INVALIDAR CACHÉ y recargar tabla con datos frescos
-            await cargarTablaProveedores(true); 
+            await cargarTablaProveedores(true);
         } else {
             showNotification("Error: " + (json.error?.message || json.message || "Desconocido"), 'error');
         }

@@ -73,7 +73,7 @@ async function cargarPedidos() {
                 console.error("❌ Elemento #gridPedidos no encontrado en el DOM");
                 return;
             }
-            
+
             // Destruir grid anterior si existe
             if (gridInstance) {
                 try {
@@ -82,7 +82,7 @@ async function cargarPedidos() {
                     console.log('No se pudo destruir grid anterior:', e);
                 }
             }
-            
+
             // Limpiar contenido previo para evitar duplicados
             gridElement.innerHTML = '';
 
@@ -116,7 +116,12 @@ async function cargarPedidos() {
                 language: {
                     search: { placeholder: 'Buscar...' },
                     pagination: {
-                        previous: 'Ant', next: 'Sig', showing: 'Mostrando', results: () => 'resultados'
+                        previous: 'Anterior',
+                        next: 'Siguiente',
+                        showing: 'Mostrando',
+                        of: 'de',
+                        to: 'a',
+                        results: () => 'resultados'
                     }
                 }
             }).render(gridElement);
@@ -127,7 +132,7 @@ async function cargarPedidos() {
     } catch (e) {
         console.error("❌ Excepción en cargarPedidos:", e);
         const el = document.getElementById("gridPedidos");
-        if(el) el.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
+        if (el) el.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
     }
 }
 
@@ -187,7 +192,7 @@ function renderProductos(lista, container) {
 
 function agregarItem(prod) {
     const provId = prod.proveedorId || (prod.proveedor ? prod.proveedor.id : null);
-    
+
     const existente = itemsPedido.find(i => i.producto_id == prod.id);
     if (existente) {
         existente.cantidad++;
@@ -248,7 +253,7 @@ function borrarItem(idx) {
 
 async function guardarPedido() {
     console.log('💾 Intentando guardar pedido(s)...');
-    
+
     if (itemsPedido.length === 0) {
         showNotification("El pedido está vacío. Agrega al menos un producto.", 'warning');
         return;
@@ -256,7 +261,7 @@ async function guardarPedido() {
 
     // 1. Agrupar items por proveedor
     const pedidosPorProveedor = {};
-    
+
     // Obtener fallback proveedor del select si algún producto no tiene ID (caso raro)
     const selectProvId = document.getElementById('selectProveedor').value;
 
@@ -293,7 +298,7 @@ async function guardarPedido() {
 
     for (const pid of proveedoresIds) {
         const pedidoData = pedidosPorProveedor[pid];
-        
+
         const payload = {
             proveedorId: pedidoData.proveedorId,
             items: pedidoData.items,
@@ -304,9 +309,9 @@ async function guardarPedido() {
         try {
             const res = await fetch(`${API_URL}/pedidos.php`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'X-Requested-With': 'XMLHttpRequest' 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(payload)
             });
@@ -327,17 +332,18 @@ async function guardarPedido() {
     }
 
     // 3. Resumen
-        if (exitos > 0 && errores === 0) {
+    // 3. Resumen
+    if (exitos > 0 && errores === 0) {
         showNotification(`✅ Se han creado ${exitos} pedido(s) correctamente.`, 'success');
         // Limpiar
         itemsPedido = [];
         document.getElementById('selectProveedor').value = "";
         document.getElementById('listaProductosProv').innerHTML = '<p class="text-muted">Selecciona un proveedor para añadir más productos</p>';
         renderizarCarritoPedido();
-        
+
         // Volver a la lista y recargar
         mostrarSeccion('lista');
-        
+
         // Forzar recarga de la grid
         if (typeof gridjs !== 'undefined' && document.getElementById("gridPedidos")) {
             document.getElementById("gridPedidos").innerHTML = ''; // Limpiar contenedor
