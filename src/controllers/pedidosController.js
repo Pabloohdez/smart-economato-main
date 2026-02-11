@@ -188,7 +188,46 @@ function agregarItem(prod) {
     renderizarCarritoPedido();
 }
 
-// ... (renderizarCarritoPedido y helpers se mantienen igual, solo mostrados aquí por contexto si fuera replace_file) ...
+
+function renderizarCarritoPedido() {
+    const tbody = document.getElementById('tablaItemsPedido');
+    tbody.innerHTML = '';
+    let total = 0;
+
+    itemsPedido.forEach((item, idx) => {
+        const sub = item.cantidad * item.precio;
+        total += sub;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.nombre}</td>
+            <td>
+                <label for="cant_${idx}" class="sr-only">Cantidad</label>
+                <input type="number" id="cant_${idx}" value="${item.cantidad}" style="width:50px">
+            </td>
+            <td>${item.precio.toFixed(2)}</td>
+            <td>${sub.toFixed(2)}</td>
+            <td><button class="btn-remove" aria-label="Eliminar item">x</button></td>
+        `;
+
+        tr.querySelector('input').onchange = (e) => cambiarCant(idx, e.target.value);
+        tr.querySelector('.btn-remove').onclick = () => borrarItem(idx);
+
+        tbody.appendChild(tr);
+    });
+    document.getElementById('totalPedido').innerText = total.toFixed(2) + ' €';
+}
+
+function cambiarCant(idx, val) {
+    itemsPedido[idx].cantidad = parseInt(val);
+    renderizarCarritoPedido();
+}
+
+function borrarItem(idx) {
+    itemsPedido.splice(idx, 1);
+    renderizarCarritoPedido();
+}
+
 
 async function guardarPedido() {
     console.log('💾 Intentando guardar pedido(s)...');
@@ -271,15 +310,22 @@ async function guardarPedido() {
     }
 
     // 3. Resumen
-    if (exitos > 0 && errores === 0) {
+        if (exitos > 0 && errores === 0) {
         alert(`✅ Se han creado ${exitos} pedido(s) correctamente.`);
         // Limpiar
         itemsPedido = [];
         document.getElementById('selectProveedor').value = "";
         document.getElementById('listaProductosProv').innerHTML = '<p class="text-muted">Selecciona un proveedor para añadir más productos</p>';
         renderizarCarritoPedido();
+        
+        // Volver a la lista y recargar
         mostrarSeccion('lista');
-        await cargarPedidos();
+        
+        // Forzar recarga de la grid
+        if (typeof gridjs !== 'undefined' && document.getElementById("gridPedidos")) {
+            document.getElementById("gridPedidos").innerHTML = ''; // Limpiar contenedor
+        }
+        await cargarPedidos(); // Recargar datos frescos
     } else if (exitos > 0 && errores > 0) {
         alert(`⚠️ Proceso terminado con advertencias.\nCreados: ${exitos}\nFallidos: ${errores}\nRevise la consola.`);
         // No limpiamos el carrito para que pueda reintentar los fallidos (aunque esto requeriría lógica más compleja de filtrado post-éxito)
