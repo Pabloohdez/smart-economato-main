@@ -1,5 +1,6 @@
 import { getProductos, getCategorias, getProveedores, actualizarProducto } from "../services/apiService.js";
 import { navigateTo } from "../router.js";
+import { showNotification, showConfirm } from "../utils/notifications.js";
 
 let todosLosProductos = [];
 let categorias = [];
@@ -28,6 +29,7 @@ async function cargarDatos() {
         cargarFiltros();
     } catch (error) {
         console.error("❌ Error cargando datos:", error);
+        showNotification("Error cargando datos de recepción", 'error');
     }
 }
 
@@ -104,6 +106,7 @@ async function abrirModalPedidos() {
 
         if (!json.success || !json.data) {
             div.innerHTML = 'Error: Respuesta inesperada de API';
+            showNotification("Respuesta inesperada del servidor", 'error');
             return;
         }
 
@@ -120,6 +123,7 @@ async function abrirModalPedidos() {
     } catch (e) {
         console.error(e);
         div.innerHTML = 'Error cargando pedidos: ' + e.message;
+        showNotification("Error cargando pedidos pendientes", 'error');
     }
 }
 // ...
@@ -152,13 +156,13 @@ window.verificarPedido = async (id) => {
         const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         const json = await res.json();
 
-        if (!json.success) return alert("Error cargando detalles");
+        if (!json.success) return showNotification("Error cargando detalles del pedido", 'error');
 
         const pedido = json.data;
         mostrarModalVerificacion(pedido);
 
     } catch (e) {
-        alert("Error de red");
+        showNotification("Error de red al verificar pedido", 'error');
     }
 };
 
@@ -229,7 +233,7 @@ window.confirmarVerificacion = async (pedidoId) => {
         });
     });
 
-    if (!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
+    if (!await showConfirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
 
     try {
         const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
@@ -291,18 +295,18 @@ window.confirmarVerificacion = async (pedidoId) => {
             // Actualizar datos globales
             await cargarDatos();
 
-            alert(json.data.message || "Recepción procesada y agregada a la tabla");
+            showNotification(json.data.message || "Recepción procesada correctamente", 'success');
         } else {
-            alert("Error: " + (json.error?.message || "Desconocido"));
+            showNotification("Error: " + (json.error?.message || "Desconocido"), 'error');
         }
     } catch (e) {
         console.error("Error en confirmarVerificacion:", e);
-        alert("Error de conexión: " + e.message);
+        showNotification("Error de conexión: " + e.message, 'error');
     }
 };
 
 window.rechazarPedido = async (id) => {
-    if (!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
+    if (!await showConfirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
 
     try {
         const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, {
@@ -315,10 +319,12 @@ window.rechazarPedido = async (id) => {
         });
 
         if (res.ok) {
-            alert("Pedido rechazado");
+            showNotification("Pedido rechazado/cancelado correctamente", 'success');
             abrirModalPedidos(); // Volver a lista
+        } else {
+            showNotification("Error al rechazar el pedido", 'error');
         }
-    } catch (e) { alert("Error"); }
+    } catch (e) { showNotification("Error de conexión", 'error'); }
 };
 
 
@@ -445,7 +451,7 @@ function cancelarRecepcion() {
 
 async function confirmarRecepcionManual() {
     if (!productosRecepcion.length) return;
-    if (!confirm("¿Confirmar esta recepción manual?")) return;
+    if (!await showConfirm("¿Confirmar esta recepción manual?")) return;
 
     const obs = document.getElementById("textareaObservaciones").value;
     const payload = {
@@ -469,12 +475,12 @@ async function confirmarRecepcionManual() {
         });
 
         if (res.ok) {
-            alert("Recepción Exitosa ✅");
+            showNotification("Recepción Manual Exitosa ✅", 'success');
             productosRecepcion = [];
             renderizarTablaRecepcion();
             cargarDatos();
         } else {
-            alert("Error al guardar");
+            showNotification("Error al guardar recepción", 'error');
         }
-    } catch (e) { alert("Error red"); }
+    } catch (e) { showNotification("Error de red", 'error'); }
 }

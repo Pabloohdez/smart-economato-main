@@ -1,4 +1,6 @@
 // Controlador de Distribución
+import { showNotification, showConfirm } from "../utils/notifications.js";
+
 const API_URL = 'http://localhost:8080/api';
 let todosLosProductos = [];
 let productoActual = null;
@@ -23,11 +25,11 @@ async function cargarProductos() {
             console.log(`✅ ${todosLosProductos.length} productos cargados`);
         } else {
             console.error('❌ Error en respuesta:', json.error);
-            alert('Error al cargar productos: ' + (json.error || 'Respuesta inválida'));
+            showNotification('Error al cargar productos: ' + (json.error || 'Respuesta inválida'), 'error');
         }
     } catch (error) {
         console.error('❌ Error cargando productos:', error);
-        alert('Error de conexión con el servidor. Verifica que la API esté funcionando.');
+        showNotification('Error de conexión con el servidor.', 'error');
     }
 }
 
@@ -106,7 +108,7 @@ async function realizarBusqueda() {
         if (term.length === 0) {
             return;
         }
-        alert('Por favor, escribe al menos 2 caracteres para buscar');
+        showNotification('Por favor, escribe al menos 2 caracteres para buscar', 'warning');
         return;
     }
 
@@ -232,11 +234,11 @@ window.eliminarDelCarrito = (index) => {
 };
 
 window.confirmarSalida = async () => {
-    if (carrito.length === 0) return alert("El carrito está vacío");
+    if (carrito.length === 0) return showNotification("El carrito está vacío", 'warning');
 
     const motivo = document.getElementById('motivoSalida').value;
 
-    if (!confirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
+    if (!await showConfirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
 
     try {
         let errores = [];
@@ -278,29 +280,29 @@ window.confirmarSalida = async () => {
 
         // Mostrar resultado
         if (errores.length === 0) {
-            alert(`✅ Todos los movimientos registrados correctamente (${exitosos} productos).`);
+            showNotification(`✅ Todos los movimientos registrados correctamente (${exitosos} productos).`, 'success');
             carrito = [];
             renderizarCarrito();
             cargarProductos();
             cargarHistorialMovimientos(); // Actualizar historial
         } else if (exitosos > 0) {
-            alert(`⚠️ Parcialmente completado:\n- Exitosos: ${exitosos}\n- Errores: ${errores.length}\n\n${errores.join('\n')}`);
+            showNotification(`⚠️ Parcialmente completado: ${exitosos} exitosos, ${errores.length} errores.`, 'warning');
             carrito = [];
             renderizarCarrito();
             cargarProductos();
             cargarHistorialMovimientos(); // Actualizar historial
         } else {
-            alert(`❌ Error al registrar salidas:\n${errores.join('\n')}`);
+            showNotification(`❌ Error al registrar salidas.`, 'error');
         }
 
     } catch (error) {
         console.error('❌ Error crítico:', error);
-        alert('Error de red al procesar las salidas');
+        showNotification('Error de red al procesar las salidas', 'error');
     }
 };
 
 // Función de inicialización
-export function initDistribucion() {
+export async function initDistribucion() {
     console.log('🚀 Iniciando módulo de distribución...');
 
     // Obtener elementos del DOM
@@ -366,7 +368,7 @@ export function initDistribucion() {
     console.log('✅ Event listener de autocomplete agregado');
 
     // Cargar productos e historial al inicio
-    cargarProductos();
-    cargarHistorialMovimientos();
+    await cargarProductos();
+    await cargarHistorialMovimientos();
     console.log('✅ Sistema de distribución inicializado');
 }

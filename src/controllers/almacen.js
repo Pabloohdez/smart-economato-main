@@ -1,4 +1,3 @@
-// src/controllers/almacen.js
 import {
     filtrarPorCategoria,
     filtrarPorProveedor,
@@ -10,6 +9,7 @@ import {
 } from '../utils/funciones.js';
 
 import { getProductos, getCategorias, getProveedores } from '../services/apiService.js';
+import { showNotification } from '../utils/notifications.js';
 
 let productos = [];
 let categorias = [];
@@ -333,6 +333,6 @@ export async function inicializarEventos() {
     } catch (error) {
         console.error('❌ Error crítico al inicializar eventos:', error);
         console.error('Stack:', error.stack);
-        alert('Error al inicializar los controles de inventario. Revisa la consola para más detalles.');
+        showNotification('Error al inicializar los controles de inventario', 'error');
     }
 }
