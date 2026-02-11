@@ -22,14 +22,10 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
-<<<<<<< HEAD
 // Helper para normalizar datos (clonar array para no mutar el original en filtros)
 function normalizarDatos(data) {
     return data.map(item => ({ ...item }));
 }
-=======
-// Helper para normalizar datos eliminado (duplicado)
->>>>>>> origin/daniel
 
 // Formateador de caducidad (sin emojis, estilo profesional)
 function procesarCaducidad(fechaStr) {
@@ -97,13 +93,6 @@ const columnasGrid = [
         name: 'Stock',
         formatter: (cell, row) => {
             const stock = Number(cell);
-<<<<<<< HEAD
-=======
-            // El índice de la columna cambió en HEAD vs Sonia? 
-            // HEAD: cells[5] -> Min
-            // Sonia: cells[5] -> Min
-            // Parece que coinciden.
->>>>>>> origin/daniel
             const min = Number(row.cells[5].data);
 
             if (stock <= min) {
@@ -146,15 +135,9 @@ export async function cargarDatos() {
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-<<<<<<< HEAD
         vista = [...productos];
-        actualizarGrid();
-=======
-
         renderizarTabla();
         actualizarResumen();
-
->>>>>>> origin/daniel
     } catch (error) {
         console.error("Error al cargar datos:", error);
     }
@@ -208,9 +191,6 @@ async function renderizarTabla() {
                 if (stock <= min) return 'row-warning';
 
                 return '';
-<<<<<<< HEAD
-            }
-=======
             },
             table: 'tabla-grid-custom',
             td: 'celda-grid'
@@ -226,7 +206,6 @@ async function renderizarTabla() {
                 'results': () => 'resultados'
             },
             'noRecordsFound': 'No hay productos que coincidan'
->>>>>>> origin/daniel
         }
     });
 
@@ -284,7 +263,7 @@ function aplicarFiltros() {
     console.log(`📊 Después de ordenar por precio (${orden}): ${filtrados.length} productos`);
 
     vista = filtrados;
-    actualizarGrid();
+    renderizarTabla();
     actualizarResumen();
 
     console.log(`✅ Filtros aplicados. Total mostrado: ${vista.length} productos`);
@@ -320,7 +299,7 @@ export async function inicializarEventos() {
                 console.log('🔍 Filtrando productos con stock bajo...');
                 try {
                     vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos con stock bajo`);
                 } catch (error) {
@@ -351,7 +330,7 @@ export async function inicializarEventos() {
                         return fechaCad > hoy && fechaCad <= treintaDias;
                     });
 
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos próximos a caducar`);
                 } catch (error) {
@@ -374,7 +353,7 @@ export async function inicializarEventos() {
                     const busquedaInput = document.getElementById('busqueda');
                     if (busquedaInput) busquedaInput.value = '';
                     vista = normalizarDatos(productos);
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtros limpiados: ${vista.length} productos totales`);
                 } catch (error) {
