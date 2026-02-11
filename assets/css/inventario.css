@@ -152,11 +152,13 @@
   color: #c53030;
   border-color: #fc8181;
 }
+
 .btn-caducar {
   background: #fffaf0;
   color: #c05621;
   border-color: #f6ad55;
 }
+
 .btn-limpiar {
   background: #f7fafc;
   color: #4a5568;
@@ -237,10 +239,12 @@
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -262,6 +266,34 @@
   font-size: 18px;
 }
 
+/* Botón Buscar en Inventario */
+/* Botón Buscar en Inventario - High Specificity to ensure style */
+button#btnBuscar.btn-buscar-inventario {
+  padding: 12px 28px !important;
+  background: linear-gradient(135deg, #a52a2a 0%, #8b0000 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2) !important;
+  text-transform: none;
+  min-width: 120px;
+}
+
+button#btnBuscar.btn-buscar-inventario:hover {
+  background: linear-gradient(135deg, #b22222 0%, #800000 100%) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25) !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header-inventario {
@@ -269,15 +301,18 @@
     align-items: flex-start;
     gap: 15px;
   }
+
   .btn-ingresar-header,
   .btn-buscar-inventario,
   .btn-accion-inventario {
     width: 100%;
     justify-content: center;
   }
+
   .controles-filtros {
     grid-template-columns: 1fr;
   }
+
   .resumen-inventario {
     flex-direction: column;
     gap: 10px;
