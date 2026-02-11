@@ -157,7 +157,14 @@ function actualizarGrid() {
         },
         language: {
             'search': { 'placeholder': 'Buscar...' },
-            'pagination': { 'previous': 'Anterior', 'next': 'Siguiente' },
+            'pagination': {
+                'previous': 'Anterior',
+                'next': 'Siguiente',
+                'showing': 'Mostrando',
+                'of': 'de',
+                'to': 'a',
+                'results': () => 'resultados'
+            },
             'noRecordsFound': 'No hay productos que coincidan'
         }
     });
