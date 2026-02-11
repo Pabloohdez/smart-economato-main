@@ -1,16 +1,15 @@
-<link rel="stylesheet" href="assets/css/informes.css">
+<link rel="stylesheet" href="../assets/css/informes.css">
 
 <div class="content-header">
     <h2>Informes y Estadísticas</h2>
     <p>Visión general del rendimiento del economato</p>
 </div>
 
-<!-- Filtros -->
 <div class="filtros-panel">
     <div class="form-group">
         <label for="filtroUsuario">Profesor</label>
         <select id="filtroUsuario" class="select-form">
-            <option value="">Todos los profesores</option>
+            <option value="">Cargando...</option>
         </select>
     </div>
 
@@ -25,23 +24,21 @@
     </div>
 
     <button id="btnFiltrar" class="btn-primary">
-        <i class="fa-solid fa-filter"></i>
-        Aplicar Filtros
+        <i class="fas fa-filter"></i> Aplicar Filtros
     </button>
 </div>
 
-<!-- KPI Cards -->
 <div class="stats-grid">
     <div class="stat-card blue">
-        <h3>Gasto Mensual Actual</h3>
+        <h3>Gasto Mensual (Mes Actual)</h3>
         <div class="value" id="statGasto">0.00 €</div>
-        <p class="desc">En pedidos recibidos este mes</p>
+        <p class="desc">Pedidos recibidos este mes</p>
     </div>
 
     <div class="stat-card green">
-        <h3>Total del Curso</h3>
+        <h3>Total Filtrado / Curso</h3>
         <div class="value" id="statTotalCurso">0.00 €</div>
-        <p class="desc">Todos los pedidos recibidos</p>
+        <p class="desc">Suma total según filtros</p>
     </div>
 
     <div class="stat-card red">
@@ -51,48 +48,47 @@
     </div>
 </div>
 
-<!-- Gráficos -->
 <div class="charts-container">
-    <!-- Gráfico de Gastos Mensuales -->
-    <div class="card chart-card chart-large">
-        <h3>Gastos Mensuales por Profesor</h3>
-        <canvas id="chartGastosMensuales" aria-label="Gráfico de línea mostrando gastos mensuales" role="img"></canvas>
+
+    <div class="card chart-card chart-large" style="min-height: 400px;">
+        <h3>Evolución de Gastos Mensuales</h3>
+        <div style="position: relative; height: 350px;">
+            <canvas id="chartGastosMensuales"></canvas>
+        </div>
     </div>
 
-    <!-- Gráfico de Top Productos -->
-    <div class="card chart-card">
-        <h3>Top Salidas (Distribución)</h3>
-        <canvas id="chartTopProductos" aria-label="Gráfico de barras mostrando los productos más distribuidos"
-            role="img"></canvas>
+    <div class="card chart-card" style="min-height: 400px;">
+        <h3>Top Salidas (Últimos 30 días)</h3>
+        <div style="position: relative; height: 350px;">
+            <canvas id="chartTopProductos"></canvas>
+        </div>
     </div>
 
-    <!-- Tabla de Gastos Mensuales -->
     <div class="card bg-white">
-        <h3>Desglose Mensual</h3>
+        <h3>Desglose de Datos</h3>
         <table class="table-simple" id="tablaGastosMensuales">
             <thead>
                 <tr>
-                    <th scope="col">Mes</th>
-                    <th scope="col">Profesor</th>
-                    <th scope="col">Pedidos</th>
-                    <th scope="col">Total</th>
+                    <th>Mes</th>
+                    <th>Profesor</th>
+                    <th>Pedidos</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <!-- Tabla de Últimos Movimientos -->
     <div class="card bg-white">
-        <h3>Últimos Movimientos</h3>
+        <h3>Últimos Movimientos de Stock</h3>
         <table class="table-simple" id="tablaMovimientos">
             <thead>
                 <tr>
-                    <th scope="col">Fecha</th>
-                    <th scope="col">Producto</th>
-                    <th scope="col">Tipo</th>
-                    <th scope="col">Cant.</th>
-                    <th scope="col">Usuario</th>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Tipo</th>
+                    <th>Cant.</th>
+                    <th>Usuario</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -102,6 +98,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script type="module">
-    import { initInformes } from './src/controllers/informesController.js';
+    // Ajusta la ruta si tu archivo está en src/controllers/
+    import { initInformes } from '../src/controllers/informesController.js';
     initInformes();
 </script>
