@@ -1,8 +1,8 @@
 // src/router.js
 
 // Importamos las funciones necesarias para Inventario
-import { renderizarTabla } from "./utils/funciones.js";
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
+import { initEscandallos } from "./controllers/escandallosController.js";
 
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
@@ -13,9 +13,8 @@ const routes = {
     'inventario': {
         template: 'pages/Inventario.html',
         action: async () => {
-            renderizarTabla([]); // Limpiar tabla visualmente
             await cargarDatos(); // Cargar datos de la API
-            inicializarEventos(); // Activar filtros y botones
+            await inicializarEventos(); // Activar filtros y botones
         }
     },
     'ingresarproductos': {
@@ -40,8 +39,13 @@ const routes = {
     'bajas': {
         template: 'pages/bajas.html',
         action: async () => {
-            const module = await import('./controllers/bajasController.js');
-            if (module.initBajas) module.initBajas();
+            try {
+                // Truco del timestamp para evitar caché en desarrollo
+                const module = await import(`./controllers/bajasController.js?t=${Date.now()}`);
+                if (module.initBajas) await module.initBajas();
+            } catch (e) {
+                console.error("Error loading bajasController:", e);
+            }
         }
     },
     'configuracion': {
@@ -53,7 +57,10 @@ const routes = {
     },
     'distribucion': {
         template: 'pages/distribucion.html',
-        action: () => { /* Lógica autocontenida en el HTML */ }
+        action: async () => {
+            const module = await import('./controllers/distribucionController.js');
+            if (module.initDistribucion) module.initDistribucion();
+        }
     },
 
     // --- AQUÍ ESTÁ EL CAMBIO IMPORTANTE ---
@@ -62,7 +69,7 @@ const routes = {
         action: async () => {
             // Carga dinámica del nuevo controlador
             try {
-                const module = await import('./controllers/proveedorController.js');
+                const module = await import(`./controllers/proveedorController.js?t=${Date.now()}`);
                 if (module.initProveedores) module.initProveedores();
             } catch (error) {
                 console.error("Error cargando el controlador de proveedores:", error);
@@ -74,8 +81,15 @@ const routes = {
     'pedidos': {
         template: 'pages/pedidos.html',
         action: async () => {
-            const module = await import('./controllers/pedidosController.js');
+            const module = await import(`./controllers/pedidosController.js?t=${Date.now()}`);
             if (module.initPedidos) module.initPedidos();
+        }
+    },
+    'escandallos': {
+        template: 'pages/escandallos.html',
+        action: async () => {
+            const module = await import('./controllers/escandallosController.js');
+            if (module.initEscandallos) module.initEscandallos();
         }
     },
     'informes': {

@@ -1,8 +1,11 @@
 <?php
 require_once 'config.php';
-require_once 'utils/response.php';
 
 header('Content-Type: application/json');
+
+// Evitar que warnings de PHP rompan el JSON en cualquier método
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -12,56 +15,149 @@ function clean($conn, $var) {
 
 switch ($method) {
     case 'GET':
-        // SELECT con JOIN a proveedores y usuarios
-        $sql = "SELECT p.*, 
-                       pr.nombre as proveedor_nombre,
-                       u.username as usuario_nombre
-                FROM pedidos p
-                LEFT JOIN proveedores pr ON p.proveedor_id = pr.id
-                LEFT JOIN usuarios u ON p.usuario_id = u.id
-                ORDER BY p.fecha_creacion DESC";
+        $id = $_GET['id'] ?? null;
         
-        $result = pg_query($conn, $sql);
-        if (!$result) sendError("Error", 500, pg_last_error($conn));
+        if ($id) {
+            if (!is_numeric($id)) {
+                sendError("ID inválido", 400);
+            }
+            // GET ONE PEDIDO CON DETALLES
+            // GET ONE PEDIDO CON DETALLES
+            $id = clean($conn, $id);
+            
+            // 1. Datos cabecera
+            $sqlHead = "SELECT p.*, pr.nombre as proveedor_nombre, u.username as usuario_nombre
+                        FROM pedidos p
+                        LEFT JOIN proveedores pr ON p.proveedor_id = pr.id
+                        LEFT JOIN usuarios u ON p.usuario_id = u.id
+                        WHERE p.id = $id";
+            $resHead = pg_query($conn, $sqlHead);
+            
+            if (!$resHead || pg_num_rows($resHead) === 0) {
+                sendError("Pedido no encontrado", 404);
+            }
+            
+            $pedido = pg_fetch_assoc($resHead);
+            
+            // 2. Datos detalles (items)
+            $sqlItems = "SELECT pd.*, p.nombre as producto_nombre 
+                         FROM pedido_detalles pd
+                         LEFT JOIN productos p ON pd.producto_id = p.id
+                         WHERE pd.pedido_id = $id";
+            $resItems = pg_query($conn, $sqlItems);
+            
+            $items = [];
+            if ($resItems) {
+                while($row = pg_fetch_assoc($resItems)) {
+                    $items[] = $row;
+                }
+            } else {
+                // Si falla la query de detalles, no romper todo, devolver items vacios o loguear
+                // error_log(pg_last_error($conn));
+            }
+            
+            $pedido['items'] = $items;
+            
+            // Convert keys if needed
+            $pedido['proveedorId'] = $pedido['proveedor_id'];
+            
+            echo json_encode(["success" => true, "data" => $pedido]);
+            
+        } else {
+            // GET ALL LIST (Resumido)
+            $sql = "SELECT p.*, 
+                           pr.nombre as proveedor_nombre,
+                           u.username as usuario_nombre
+                    FROM pedidos p
+                    LEFT JOIN proveedores pr ON p.proveedor_id = pr.id
+                    LEFT JOIN usuarios u ON p.usuario_id = u.id
+                    ORDER BY p.fecha_creacion DESC";
+            
+            $result = pg_query($conn, $sql);
+            if (!$result) sendError("Error", 500, pg_last_error($conn));
 
-        $data = [];
-        while($row = pg_fetch_assoc($result)) {
-            // Convertir tus columnas snake_case a CamelCase si el frontend lo necesita
-            $row['proveedorId'] = $row['proveedor_id'];
-            $row['usuarioId'] = $row['usuario_id'];
-            $row['fechaCreacion'] = $row['fecha_creacion'];
-            $data[] = $row;
+            $data = [];
+            while($row = pg_fetch_assoc($result)) {
+                $row['proveedorId'] = $row['proveedor_id'];
+                $row['usuarioId'] = $row['usuario_id'];
+                $row['fechaCreacion'] = $row['fecha_creacion'];
+                $data[] = $row;
+            }
+            
+            echo json_encode(["success" => true, "data" => $data]);
         }
-        
-        echo json_encode(["success" => true, "data" => $data]);
         break;
 
     case 'POST':
-        $input = json_decode(file_get_contents("php://input"));
-        
-        if (empty($input->proveedorId)) {
-            sendError("Falta proveedor", 400);
+        // Evitar que warnings de PHP rompan el JSON
+        ini_set('display_errors', 0);
+        error_reporting(E_ALL);
+
+        $rawInput = file_get_contents("php://input");
+        $input = json_decode($rawInput);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            sendError("JSON inválido recibido: " . json_last_error_msg(), 400);
         }
         
-        // Mapeo de datos (Frontend CamelCase -> Backend snake_case)
+        if (!$input || empty($input->proveedorId)) {
+            $debug = print_r($input, true);
+            if (!$input) $debug = "RAW: " . $rawInput;
+            sendError("Falta proveedor. Recibido: " . $debug, 400);
+        }
+        
         $provId = clean($conn, $input->proveedorId);
         $total = (float)($input->total ?? 0);
         $estado = clean($conn, 'PENDIENTE');
         
-        // ID de usuario obligatorio (Usamos 'admin1' si no hay sesión real implementada en frontend)
-        $userId = clean($conn, $input->usuarioId ?? 'admin1'); 
+        $userIdReq = $input->usuarioId ?? 1;
+        
+        $checkUser = pg_query($conn, "SELECT id FROM usuarios WHERE id = " . clean($conn, $userIdReq));
+        if (pg_num_rows($checkUser) > 0) {
+            $userId = clean($conn, $userIdReq);
+        } else {
+            $resUser = pg_query($conn, "SELECT id FROM usuarios LIMIT 1");
+            if (pg_num_rows($resUser) > 0) {
+                $userId = pg_fetch_result($resUser, 0, 0);
+            } else {
+                pg_query($conn, "INSERT INTO usuarios (username, password, rol) VALUES ('admin', 'admin', 'ADMIN')");
+                $resUser = pg_query($conn, "SELECT id FROM usuarios LIMIT 1");
+                $userId = pg_fetch_result($resUser, 0, 0);
+            }
+        }
+        $userId = clean($conn, $userId); 
 
         // Insertar en PEDIDOS
         $query = "INSERT INTO pedidos (proveedor_id, usuario_id, estado, total) 
                   VALUES ($provId, $userId, $estado, $total) RETURNING id";
 
-        $result = pg_query($conn, $query);
+        $result = @pg_query($conn, $query);
 
         if ($result) {
             $row = pg_fetch_assoc($result);
-            echo json_encode(["success" => true, "data" => ["id" => $row['id']]]);
+            $pedidoId = $row['id'];
+            
+            // INSERTAR DETALLES (ITEMS)
+            if (!empty($input->items) && is_array($input->items)) {
+                foreach ($input->items as $item) {
+                    $prodId = clean($conn, $item->producto_id);
+                    $cant = clean($conn, $item->cantidad);
+                    $precio = clean($conn, $item->precio);
+                    
+                    // Asumiendo tabla pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario)
+                    $sqlDet = "INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario) 
+                               VALUES ($pedidoId, $prodId, $cant, $precio)";
+                    
+                    if (!pg_query($conn, $sqlDet)) {
+                        // Si falla un detalle, avisar (aunque el pedido cabecera ya se creó)
+                        sendError("Error al guardar item detalles: " . pg_last_error($conn), 500);
+                    }
+                }
+            }
+            
+            echo json_encode(["success" => true, "data" => ["id" => $pedidoId]]);
         } else {
-            sendError("Error al crear pedido: " . pg_last_error($conn), 500);
+            sendError("Error al crear pedido en BD: " . pg_last_error($conn), 500);
         }
         break;
         

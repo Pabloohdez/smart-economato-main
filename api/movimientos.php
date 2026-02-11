@@ -1,6 +1,5 @@
 <?php
 require_once 'config.php';
-require_once 'utils/response.php';
 
 header('Content-Type: application/json');
 
@@ -93,8 +92,10 @@ switch ($method) {
 
             echo json_encode([
                 "success" => true, 
-                "message" => "Movimiento registrado",
-                "stock_nuevo" => $stockNuevo
+                "data" => [
+                    "message" => "Movimiento registrado",
+                    "stock_nuevo" => $stockNuevo
+                ]
             ]);
         } else {
             sendError("Error al registrar: " . pg_last_error($conn), 500);

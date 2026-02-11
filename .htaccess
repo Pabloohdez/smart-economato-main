@@ -1,6 +1,6 @@
-# Smart Economato - Configuración
-# Habilitar reescritura de URLs
-RewriteEngine On
+<<<<<<< HEAD
+# Smart Economato - Configuración de docker
+RUN a2enmod rewrite
 
 # Páginas de error personalizadas
 ErrorDocument 404 /errors/404.html

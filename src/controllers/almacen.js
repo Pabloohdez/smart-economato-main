@@ -17,6 +17,11 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
+// Helper para normalizar datos (clonar array para no mutar el original en filtros)
+function normalizarDatos(data) {
+    return data.map(item => ({...item}));
+}
+
 // Formateador de fecha y color para la columna Caducidad
 function procesarCaducidad(fechaStr) {
     if (!fechaStr || fechaStr === "NULL" || fechaStr === "Sin fecha") {
@@ -97,12 +102,27 @@ export async function cargarDatos() {
 
 function actualizarGrid() {
     const contenedor = document.getElementById('grid-inventario');
-    if (!contenedor) return;
+    if (!contenedor || !window.gridjs) return;
+
+    console.log('🔄 Actualizando grid con', vista.length, 'productos');
+
+    // IMPORTANTE: Destruir la instancia anterior de Grid.js
+    if (gridInstance) {
+        try {
+            gridInstance.destroy();
+            console.log('🗑️ Grid anterior destruido');
+        } catch (e) {
+            console.warn('⚠️ Error al destruir grid anterior:', e);
+        }
+    }
+
+    // Limpiar el contenedor completamente
     contenedor.innerHTML = '';
 
+    // Crear nueva instancia de Grid.js con los datos filtrados
     gridInstance = new window.gridjs.Grid({
         columns: columnasGrid,
-        data: vista,
+        data: vista,  // Usar vista filtrada, NO productos
         pagination: { limit: 10, summary: true },
         sort: true,
         className: {
@@ -113,25 +133,174 @@ function actualizarGrid() {
                 return stock <= min ? 'fila-alerta' : '';
             }
         }
-    }).render(contenedor);
+    });
+
+    gridInstance.render(contenedor);
+    console.log('✅ Grid actualizado y renderizado con', vista.length, 'productos');
 }
 
-export function inicializarEventos() {
-    // Filtros de búsqueda
-    document.getElementById('busqueda')?.addEventListener('keyup', (e) => {
-        vista = buscarProducto(productos, e.target.value);
-        actualizarGrid();
-    });
+function actualizarResumen() {
+    const resumenDiv = document.getElementById('resumenInventario');
+    if (!resumenDiv) return;
 
-    // Botón Stock Bajo
-    document.getElementById('btnStock')?.addEventListener('click', () => {
-        vista = comprobarStockMinimo(productos);
-        actualizarGrid();
-    });
+    const total = vista.length;
+    const bajos = vista.filter(p => Number(p.stock) <= (Number(p.stockMinimo))).length;
+    const valor = vista.reduce((acc, p) => acc + (Number(p.precio) * Number(p.stock)), 0);
 
-    // Botón Mostrar Todos
-    document.getElementById('btnMostrarTodos')?.addEventListener('click', () => {
-        vista = [...productos];
-        actualizarGrid();
-    });
+    resumenDiv.innerHTML = `
+        <div class="resumen-item">📦 Total: <span class="resumen-valor">${total}</span></div>
+        <div class="resumen-item" style="color: ${bajos > 0 ? '#e53e3e' : 'inherit'}">⚠️ Stock Bajo: <span class="resumen-valor">${bajos}</span></div>
+        <div class="resumen-item">💰 Valor: <span class="resumen-valor">${valor.toFixed(2)} €</span></div>
+    `;
+}
+
+// --- FILTROS Y EVENTOS ---
+
+function aplicarFiltros() {
+    console.log('🔧 Aplicando filtros...');
+    
+    const busq = document.getElementById('busqueda')?.value || '';
+    const cat = document.getElementById('categoriaSelect')?.value || '';
+    const prov = document.getElementById('proveedorSelect')?.value || '';
+    const orden = document.getElementById('ordenSelect')?.value || 'asc';
+
+    console.log('📋 Filtros activos:', { busqueda: busq, categoria: cat, proveedor: prov, orden: orden });
+    console.log(`📦 Productos iniciales: ${productos.length}`);
+
+    let filtrados = normalizarDatos(productos);
+
+    if (busq) {
+        filtrados = buscarProducto(filtrados, busq);
+        console.log(`🔍 Después de buscar "${busq}": ${filtrados.length} productos`);
+    }
+    if (cat) {
+        filtrados = filtrarPorCategoria(filtrados, cat);
+        console.log(`🏷️ Después de filtrar por categoría "${cat}": ${filtrados.length} productos`);
+    }
+    if (prov) {
+        filtrados = filtrarPorProveedor(filtrados, prov);
+        console.log(`🚚 Después de filtrar por proveedor "${prov}": ${filtrados.length} productos`);
+    }
+
+    filtrados = ordenarPorPrecio(filtrados, orden);
+    console.log(`📊 Después de ordenar por precio (${orden}): ${filtrados.length} productos`);
+
+    vista = filtrados;
+    actualizarGrid();
+    actualizarResumen();
+    
+    console.log(`✅ Filtros aplicados. Total mostrado: ${vista.length} productos`);
+}
+
+export async function inicializarEventos() {
+    console.log('🎯 Iniciando eventos de inventario...');
+    
+    // Esperar a que el DOM esté completamente listo
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    try {
+        // Escuchar cambios en todos los controles
+        const controles = ['#busqueda', '#categoriaSelect', '#proveedorSelect', '#ordenSelect'];
+        let controlesConectados = 0;
+        
+        controles.forEach(id => {
+            const el = document.querySelector(id);
+            if (el) {
+                const ev = (id === '#busqueda') ? 'keyup' : 'change';
+                el.addEventListener(ev, aplicarFiltros);
+                console.log(`✅ Event listener agregado a ${id}`);
+                controlesConectados++;
+            } else {
+                console.warn(`⚠️ Elemento ${id} no encontrado en el DOM`);
+            }
+        });
+
+        // Botón de Stock Bajo
+        const btnStock = document.getElementById('btnStock');
+        if (btnStock) {
+            btnStock.addEventListener('click', function() {
+                console.log('🔍 Filtrando productos con stock bajo...');
+                try {
+                    vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
+                    actualizarGrid();
+                    actualizarResumen();
+                    console.log(`✅ Filtro aplicado: ${vista.length} productos con stock bajo`);
+                } catch (error) {
+                    console.error('❌ Error al filtrar stock bajo:', error);
+                }
+            });
+            console.log('✅ Event listener agregado a btnStock');
+        } else {
+            console.error('❌ Botón btnStock NO encontrado en el DOM');
+            console.log('ℹ️ Todos los botones en el DOM:', 
+                Array.from(document.querySelectorAll('button')).map(b => b.id || b.textContent.trim()));
+        }
+
+        // Botón de Próximo a Caducar
+        const btnProximo = document.getElementById('btnProximoCaducar');
+        if (btnProximo) {
+            btnProximo.addEventListener('click', function() {
+                console.log('📅 Filtrando productos próximos a caducar...');
+                try {
+                    const hoy = new Date();
+                    hoy.setHours(0, 0, 0, 0);
+                    const treintaDias = new Date(hoy);
+                    treintaDias.setDate(treintaDias.getDate() + 30);
+                    
+                    vista = normalizarDatos(productos).filter(p => {
+                        if (!p.fechaCaducidad || p.fechaCaducidad === "NULL") return false;
+                        const fechaCad = new Date(p.fechaCaducidad);
+                        return fechaCad > hoy && fechaCad <= treintaDias;
+                    });
+                    
+                    actualizarGrid();
+                    actualizarResumen();
+                    console.log(`✅ Filtro aplicado: ${vista.length} productos próximos a caducar`);
+                } catch (error) {
+                    console.error('❌ Error al filtrar próximos a caducar:', error);
+                }
+            });
+            console.log('✅ Event listener agregado a btnProximoCaducar');
+        } else {
+            console.error('❌ Botón btnProximoCaducar NO encontrado en el DOM');
+        }
+
+        // Botón Mostrar Todos
+        const btnMostrarTodos = document.getElementById('btnMostrarTodos');
+        if (btnMostrarTodos) {
+            btnMostrarTodos.addEventListener('click', function() {
+                console.log('🔄 Limpiando filtros y mostrando todos los productos...');
+                try {
+                    // Reset de selects
+                    document.querySelectorAll('.controles-filtros select').forEach(s => s.selectedIndex = 0);
+                    const busquedaInput = document.getElementById('busqueda');
+                    if (busquedaInput) busquedaInput.value = '';
+                    vista = normalizarDatos(productos);
+                    actualizarGrid();
+                    actualizarResumen();
+                    console.log(`✅ Filtros limpiados: ${vista.length} productos totales`);
+                } catch (error) {
+                    console.error('❌ Error al limpiar filtros:', error);
+                }
+            });
+            console.log('✅ Event listener agregado a btnMostrarTodos');
+        } else {
+            console.error('❌ Botón btnMostrarTodos NO encontrado en el DOM');
+        }
+        
+        console.log(`✅ Eventos inicializados correctamente`);
+        console.log(`📊 Resumen: ${controlesConectados}/4 controles conectados`);
+        
+        // Verificar si tenemos productos cargados
+        if (productos && productos.length > 0) {
+            console.log(`📦 ${productos.length} productos disponibles para filtrar`);
+        } else {
+            console.warn('⚠️ No hay productos cargados aún');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error crítico al inicializar eventos:', error);
+        console.error('Stack:', error.stack);
+        alert('Error al inicializar los controles de inventario. Revisa la consola para más detalles.');
+    }
 }
