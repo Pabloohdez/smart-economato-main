@@ -80,8 +80,8 @@ export function aplicarRestriccionesMenu() {
         if (auditoriaLink) {
             auditoriaLink.style.display = 'none';
         }
-        console.log('🔒 Restricciones de menú aplicadas (usuario no admin)');
+        console.log('Restricciones de menú aplicadas (usuario no admin)');
     } else {
-        console.log('🔓 Acceso completo (usuario admin)');
+        console.log('Acceso completo (usuario admin)');
     }
 }

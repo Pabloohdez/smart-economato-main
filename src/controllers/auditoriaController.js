@@ -15,11 +15,11 @@ let registrosAuditoria = [];
  * Inicializar la página
  */
 export async function init() {
-    console.log('🔍 Inicializando página de Auditoría');
+    console.log('Inicializando página de Auditoría');
 
     // Verificar permisos de administrador
     if (!esAdmin()) {
-        showNotification('❌ Acceso denegado: se requieren permisos de administrador', 'error');
+        showNotification('Acceso denegado: se requieren permisos de administrador', 'error');
         return;
     }
 
@@ -56,13 +56,13 @@ async function cargarAuditoria(filtros = {}) {
         // Manejar error 403 (no es admin)
         if (response.status === 403) {
             const dataError = await response.json();
-            showNotification(`❌ Acceso denegado: ${dataError.error || 'Se requieren permisos de administrador'}`, 'error');
+            showNotification(`Acceso denegado: ${dataError.error || 'Se requieren permisos de administrador'}`, 'error');
             return;
         }
 
         if (!response.ok) {
             console.error('Error al cargar auditoría. Status:', response.status);
-            showNotification('❌ Error del sistema al obtener registros', 'error');
+            showNotification('Error del sistema al obtener registros', 'error');
             return;
         }
 
@@ -74,15 +74,15 @@ async function cargarAuditoria(filtros = {}) {
         if (data.registros) {
             registrosAuditoria = data.registros;
             renderizarTabla();
-            showNotification(`✅ ${data.total} registros encontrados`, 'success');
+            actualizarBarraResumen(data.total, data.registros);
         } else if (result.error) {
-            showNotification(`❌ ${result.error.message || result.error}`, 'error');
+            showNotification(`${result.error.message || result.error}`, 'error');
         } else {
-            showNotification('❌ Error al cargar auditoría', 'error');
+            showNotification('Error al cargar auditoría', 'error');
         }
     } catch (error) {
         console.error('Error al cargar auditoría:', error);
-        showNotification('❌ Error de conexión', 'error');
+        showNotification('Error de conexión', 'error');
     }
 }
 
@@ -122,7 +122,7 @@ function renderizarTabla() {
         },
         language: {
             search: {
-                placeholder: '🔍 Buscar...'
+                placeholder: 'Buscar...'
             },
             pagination: {
                 previous: 'Anterior',
@@ -139,6 +139,48 @@ function renderizarTabla() {
             }
         }
     }).render(container);
+}
+
+/**
+ * Actualizar barra de resumen con estadísticas
+ */
+function actualizarBarraResumen(total, registros) {
+    let barraEl = document.getElementById('barra-resumen');
+    if (!barraEl) {
+        barraEl = document.createElement('div');
+        barraEl.id = 'barra-resumen';
+        barraEl.className = 'barra-resumen';
+        const panelTabla = document.querySelector('.panel-tabla');
+        if (panelTabla) {
+            panelTabla.parentNode.insertBefore(barraEl, panelTabla);
+        }
+    }
+
+    const usuariosUnicos = new Set(registros.map(r => r.usuario_nombre || r.usuario_id)).size;
+
+    let rangoFechas = '';
+    if (registros.length > 0) {
+        const fechas = registros.map(r => new Date(r.fecha)).sort((a, b) => a - b);
+        const formatoCorto = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        const desde = fechas[0].toLocaleDateString('es-ES', formatoCorto);
+        const hasta = fechas[fechas.length - 1].toLocaleDateString('es-ES', formatoCorto);
+        rangoFechas = desde === hasta ? desde : `${desde} — ${hasta}`;
+    }
+
+    barraEl.innerHTML = `
+        <div class="resumen-item">
+            <i class="fa-solid fa-list-ol"></i>
+            <span><strong>${total}</strong> registros</span>
+        </div>
+        <div class="resumen-item">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>${rangoFechas || 'Sin datos'}</span>
+        </div>
+        <div class="resumen-item">
+            <i class="fa-solid fa-users"></i>
+            <span><strong>${usuariosUnicos}</strong> usuario${usuariosUnicos !== 1 ? 's' : ''}</span>
+        </div>
+    `;
 }
 
 /**
@@ -211,55 +253,151 @@ function generarBotonDetalles(registro) {
  * Ver detalles de un registro
  */
 window.verDetallesAuditoria = function (id) {
-    const registro = registrosAuditoria.find(r => r.id === id);
+    const registro = registrosAuditoria.find(r => String(r.id) === String(id));
     if (!registro) return;
 
     const modalBody = document.getElementById('modalDetallesBody');
+    const detalles = registro.detalles || {};
 
-    let detallesHTML = `
-        <div class="detalle-item">
-            <div class="detalle-label">ID de Registro</div>
-            <div class="detalle-valor">#${registro.id}</div>
-        </div>
-        <div class="detalle-item">
-            <div class="detalle-label">Fecha y Hora</div>
-            <div class="detalle-valor">${formatearFecha(registro.fecha)}</div>
-        </div>
-        <div class="detalle-item">
-            <div class="detalle-label">Usuario</div>
-            <div class="detalle-valor">${registro.usuario_nombre || registro.usuario_id}</div>
-        </div>
-        <div class="detalle-item">
-            <div class="detalle-label">Acción</div>
-            <div class="detalle-valor">${registro.accion}</div>
-        </div>
-        <div class="detalle-item">
-            <div class="detalle-label">Entidad Afectada</div>
-            <div class="detalle-valor">${registro.entidad}${registro.entidad_id ? ` (ID: ${registro.entidad_id})` : ''}</div>
+    // -- Sección: Información General --
+    let html = `
+        <div class="detalle-seccion">
+            <div class="detalle-seccion-titulo">
+                <i class="fa-solid fa-circle-info"></i> Información General
+            </div>
+            <div class="detalle-grid">
+                <div class="detalle-item">
+                    <div class="detalle-label">Registro</div>
+                    <div class="detalle-valor">#${registro.id}</div>
+                </div>
+                <div class="detalle-item">
+                    <div class="detalle-label">Fecha y Hora</div>
+                    <div class="detalle-valor">${formatearFecha(registro.fecha)}</div>
+                </div>
+                <div class="detalle-item">
+                    <div class="detalle-label">Usuario</div>
+                    <div class="detalle-valor">${registro.usuario_nombre || registro.usuario_id}</div>
+                </div>
+                <div class="detalle-item">
+                    <div class="detalle-label">Acción</div>
+                    <div class="detalle-valor">${obtenerTextoAccion(registro.accion)}</div>
+                </div>
+            </div>
         </div>
     `;
 
-    if (registro.detalles) {
-        detallesHTML += `
-            <div class="detalle-item">
-                <div class="detalle-label">Información Adicional</div>
-                <div class="detalle-json">${JSON.stringify(registro.detalles, null, 2)}</div>
+    // -- Sección: Detalles específicos según acción --
+    if (Object.keys(detalles).length > 0) {
+        html += `
+            <div class="detalle-seccion">
+                <div class="detalle-seccion-titulo">
+                    <i class="fa-solid ${obtenerIconoAccion(registro.accion)}"></i> Datos de la Operación
+                </div>
+                <div class="detalle-grid">
+        `;
+
+        // Producto (común a casi todas las acciones)
+        if (detalles.producto) {
+            html += crearItemDetalle('Producto', detalles.producto);
+        }
+
+        // Cantidad
+        if (detalles.cantidad !== undefined) {
+            html += crearItemDetalle('Cantidad', `${detalles.cantidad} uds.`);
+        }
+
+        // Campos específicos por tipo de acción
+        switch (registro.accion) {
+            case 'BAJA':
+                if (detalles.tipo) html += crearItemDetalle('Tipo de Baja', detalles.tipo);
+                if (detalles.motivo) html += crearItemDetalle('Motivo', detalles.motivo);
+                break;
+
+            case 'MOVIMIENTO':
+                if (detalles.tipo) html += crearItemDetalle('Tipo', detalles.tipo === 'ENTRADA' ? 'Entrada de stock' : 'Salida de stock');
+                if (detalles.motivo) html += crearItemDetalle('Motivo', detalles.motivo);
+                if (detalles.stock_anterior !== undefined && detalles.stock_nuevo !== undefined) {
+                    html += crearItemDetalle('Stock', `${detalles.stock_anterior} → ${detalles.stock_nuevo}`);
+                }
+                break;
+
+            case 'PEDIDO':
+                if (detalles.proveedor) html += crearItemDetalle('Proveedor', detalles.proveedor);
+                if (detalles.estado) html += crearItemDetalle('Estado', detalles.estado);
+                if (detalles.motivo) html += crearItemDetalle('Motivo', detalles.motivo);
+                break;
+
+            default:
+                // Para CREAR/MODIFICAR/ELIMINAR producto u otros
+                if (detalles.motivo) html += crearItemDetalle('Motivo', detalles.motivo);
+                if (detalles.precio) html += crearItemDetalle('Precio', `${parseFloat(detalles.precio).toFixed(2)} €`);
+                if (detalles.categoria) html += crearItemDetalle('Categoría', detalles.categoria);
+                break;
+        }
+
+        html += `
+                </div>
             </div>
         `;
     }
 
-    if (registro.ip_address) {
-        detallesHTML += `
-            <div class="detalle-item">
-                <div class="detalle-label">Dirección IP</div>
-                <div class="detalle-valor">${registro.ip_address}</div>
+    // -- Sección: Entidad --
+    if (registro.entidad) {
+        const entidadTexto = registro.entidad_id
+            ? `${capitalizar(registro.entidad)} #${registro.entidad_id}`
+            : capitalizar(registro.entidad);
+
+        html += `
+            <div class="detalle-pie">
+                <i class="fa-solid fa-tag"></i>
+                <span>Entidad afectada: <strong>${entidadTexto}</strong></span>
             </div>
         `;
     }
 
-    modalBody.innerHTML = detallesHTML;
+    modalBody.innerHTML = html;
     document.getElementById('modalDetalles').style.display = 'flex';
 };
+
+/**
+ * Helpers para el modal de detalles
+ */
+function crearItemDetalle(label, valor) {
+    return `
+        <div class="detalle-item">
+            <div class="detalle-label">${label}</div>
+            <div class="detalle-valor">${valor}</div>
+        </div>
+    `;
+}
+
+function obtenerTextoAccion(accion) {
+    const textos = {
+        'MOVIMIENTO': 'Movimiento de Stock',
+        'PEDIDO': 'Pedido',
+        'BAJA': 'Baja de Producto',
+        'CREAR_PRODUCTO': 'Creación de Producto',
+        'MODIFICAR_PRODUCTO': 'Modificación de Producto',
+        'ELIMINAR_PRODUCTO': 'Eliminación de Producto'
+    };
+    return textos[accion] || accion;
+}
+
+function obtenerIconoAccion(accion) {
+    const iconos = {
+        'MOVIMIENTO': 'fa-arrows-rotate',
+        'PEDIDO': 'fa-shopping-cart',
+        'BAJA': 'fa-box-archive',
+        'CREAR_PRODUCTO': 'fa-plus-circle',
+        'MODIFICAR_PRODUCTO': 'fa-pen-to-square',
+        'ELIMINAR_PRODUCTO': 'fa-trash-can'
+    };
+    return iconos[accion] || 'fa-file-lines';
+}
+
+function capitalizar(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
 
 /**
  * Cerrar modal de detalles
