@@ -1,9 +1,5 @@
 // src/router.js
 
-// Importamos las funciones necesarias para Inventario
-import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
-import { initEscandallos } from "./controllers/escandallosController.js";
-
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
     'inicio': {
@@ -13,8 +9,10 @@ const routes = {
     'inventario': {
         template: 'pages/Inventario.html',
         action: async () => {
-            await cargarDatos(); // Cargar datos de la API
-            await inicializarEventos(); // Activar filtros y botones
+            // Carga dinámica para evitar errores de importación estática y caché
+            const module = await import(`./controllers/almacen.js?t=${Date.now()}`);
+            if (module.cargarDatos) await module.cargarDatos();
+            if (module.inicializarEventos) await module.inicializarEventos();
         }
     },
     'ingresarproductos': {
