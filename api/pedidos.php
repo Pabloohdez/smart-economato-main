@@ -166,15 +166,66 @@ switch ($method) {
         if (!$id) sendError("Falta ID", 400);
         
         $input = json_decode(file_get_contents("php://input"));
-        $estado = clean($conn, $input->estado); 
+        $accion = $input->accion ?? null;
         $id_safe = clean($conn, $id);
 
-        $query = "UPDATE pedidos SET estado = $estado WHERE id = $id_safe";
-        
-        if (pg_query($conn, $query)) {
-            echo json_encode(["success" => true]);
+        if ($accion === 'RECIBIR') {
+            // Actualizar Stock de productos
+            if (!empty($input->items) && is_array($input->items)) {
+                foreach ($input->items as $item) {
+                    $cant = (float)$item->cantidad_recibida;
+                    if ($cant > 0) {
+                        // OJO: detalle_id viene del frontend, pero necesitamos producto_id
+                        // Podríamos hacer query para sacar producto_id del detalle, 
+                        // pero asumiremos que el frontend manda detalle_id correcto o mejor, 
+                        // hacemos update directo si el frontend mandase producto_id.
+                        // El frontend manda: detalle_id y cantidad_recibida.
+                        // Necesitamos saber qué producto es.
+                        $detId = clean($conn, $item->detalle_id);
+                        $resDet = pg_query($conn, "SELECT producto_id FROM pedido_detalles WHERE id = $detId");
+                        if ($resDet && pg_num_rows($resDet) > 0) {
+                            $prodId = pg_fetch_result($resDet, 0, 0);
+                            // UPDATE STOCK
+                            $sqlStock = "UPDATE productos SET stock = stock + $cant WHERE id = '$prodId'"; // ID es varchar ahora
+                            pg_query($conn, $sqlStock);
+                        }
+                    }
+                }
+            }
+            
+            $newState = clean($conn, 'RECIBIDO');
+            $query = "UPDATE pedidos SET estado = $newState WHERE id = $id_safe";
+            
+            if (pg_query($conn, $query)) {
+                echo json_encode([
+                    "success" => true, 
+                    "data" => ["message" => "Pedido verificado y stock actualizado"]
+                ]);
+            } else {
+                sendError("Error actualizando pedido: " . pg_last_error($conn), 500);
+            }
+
+        } elseif ($accion === 'CANCELAR') {
+            $newState = clean($conn, 'CANCELADO');
+            $query = "UPDATE pedidos SET estado = $newState WHERE id = $id_safe";
+            if (pg_query($conn, $query)) {
+                echo json_encode([
+                    "success" => true,
+                    "data" => ["message" => "Pedido rechazado"]
+                ]);
+            } else {
+                sendError("Error: " . pg_last_error($conn), 500);
+            }
         } else {
-            sendError("Error: " . pg_last_error($conn), 500);
+            // Fallback antiguo o update simple de estado
+            $estado = clean($conn, $input->estado ?? 'PENDIENTE'); 
+            $query = "UPDATE pedidos SET estado = $estado WHERE id = $id_safe";
+            
+            if (pg_query($conn, $query)) {
+                echo json_encode(["success" => true, "data" => ["message" => "Estado actualizado"]]);
+            } else {
+                sendError("Error: " . pg_last_error($conn), 500);
+            }
         }
         break;
 
