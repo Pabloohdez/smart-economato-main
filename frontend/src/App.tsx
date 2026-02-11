@@ -20,6 +20,9 @@ export default function App() {
         >
           <Route index element={<Navigate to="/inicio" replace />} />
           <Route path="inicio" element={<InicioPage />} />
+
+          {/* Las irás creando una por una: */}
+          {/* <Route path="recepcion" element={<RecepcionPage/>} /> */}
         </Route>
 
         <Route path="*" element={<Navigate to="/inicio" replace />} />

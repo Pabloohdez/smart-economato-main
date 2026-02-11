@@ -1,29 +1,78 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import "../styles/dashboard.css";
+
+const navItems = [
+  { to: "/inicio", label: "Inicio", icon: "🏠" },
+  { to: "/recepcion", label: "Recepción", icon: "📦" },
+  { to: "/distribucion", label: "Distribución", icon: "🚚" },
+  { to: "/inventario", label: "Inventario", icon: "🧰" },
+  { to: "/bajas", label: "Bajas", icon: "⛔" },
+  { to: "/proveedores", label: "Proveedores", icon: "🏢" },
+  { to: "/pedidos", label: "Pedidos", icon: "🧾" },
+  { to: "/escandallos", label: "Escandallos", icon: "🍽️" },
+  { to: "/informes", label: "Informes", icon: "📊" },
+  { to: "/configuracion", label: "Configuración", icon: "⚙️" },
+];
 
 export default function AppLayout() {
+  const nav = useNavigate();
+  const userRaw = localStorage.getItem("usuarioActivo");
+  const user = userRaw ? JSON.parse(userRaw) : null;
+
+  function logout() {
+    localStorage.removeItem("usuarioActivo");
+    nav("/login", { replace: true });
+  }
+
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", minHeight: "100vh" }}>
-      <aside style={{ padding: 16, borderRight: "1px solid #eee" }}>
-        <h2 style={{ marginTop: 0 }}>Smart-Economato</h2>
-        <nav style={{ display: "grid", gap: 8 }}>
-          <NavLink to="/inicio">Inicio</NavLink>
-          {/* Luego añadimos: pedidos, recepción, almacén... */}
+    <div className="app-shell">
+      <aside className="sidebar">
+        <div className="brand">
+          <img
+            src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
+            alt="CIFP Virgen de la Candelaria"
+            className="brand-logo"
+          />
+        </div>
+
+        <nav className="nav">
+          {navItems.map((it) => (
+            <NavLink
+              key={it.to}
+              to={it.to}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "active" : ""}`
+              }
+            >
+              <span className="nav-ico" aria-hidden="true">{it.icon}</span>
+              <span>{it.label}</span>
+            </NavLink>
+          ))}
         </nav>
 
-        <button
-          style={{ marginTop: 16 }}
-          onClick={() => {
-            localStorage.removeItem("usuarioActivo");
-            location.href = "/login";
-          }}
-        >
-          Cerrar sesión
+        <button className="logout" onClick={logout}>
+          ⬅ Salir
         </button>
       </aside>
 
-      <main style={{ padding: 16 }}>
-        <Outlet />
-      </main>
+      <div className="main">
+        <header className="topbar">
+          <h1 className="topbar-title">Panel de Control</h1>
+
+          <div className="topbar-user">
+            <span className="topbar-hello">
+              Hola, {user?.nombre ?? "Administrador"}
+            </span>
+            <div className="avatar" title="Usuario">
+              {String(user?.nombre ?? "A").trim().charAt(0).toUpperCase()}
+            </div>
+          </div>
+        </header>
+
+        <main className="content">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

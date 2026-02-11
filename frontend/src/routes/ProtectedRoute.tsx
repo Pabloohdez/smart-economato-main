@@ -5,7 +5,11 @@ function isLoggedIn(): boolean {
   return Boolean(localStorage.getItem("usuarioActivo"));
 }
 
-export default function ProtectedRoute({ children }: { children: ReactNode }) {
+type Props = {
+  children: ReactNode;
+};
+
+export default function ProtectedRoute({ children }: Props) {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
