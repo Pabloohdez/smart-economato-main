@@ -1,5 +1,6 @@
-// src/controllers/avisosController.js
 import { getProductos, getCategorias, getProveedores, registrarBaja, crearPedido } from '../services/apiService.js';
+
+const API_URL = 'http://localhost:8080/api';
 
 let productoSeleccionado = null;
 let accionActual = null; // 'baja' | 'pedido'
@@ -28,6 +29,19 @@ async function cargarDatos() {
     const [productos, categorias, proveedores] = await Promise.all([
         getProductos(), getCategorias(), getProveedores()
     ]);
+
+    // Cargar gastos mensuales
+    try {
+        const resp = await fetch(`${API_URL}/informes.php?tipo=gastos_mensuales`);
+        if (resp.ok) {
+            const data = await resp.json();
+            if (data.success && data.data.gastos_por_mes) {
+                renderizarTablaGastos(data.data.gastos_por_mes);
+            }
+        }
+    } catch (e) {
+        console.error("Error cargando gastos mensuales:", e);
+    }
 
     // Normalizar datos
     const datos = productos.map(p => ({
@@ -354,4 +368,29 @@ function mostrarToast(mensaje, tipo) {
     setTimeout(() => {
         toast.classList.remove('active');
     }, 4000);
+}
+
+function renderizarTablaGastos(gastosPorMes) {
+    const tbody = document.querySelector('#tablaGastosMensuales tbody');
+    if (!tbody) return;
+
+    if (!gastosPorMes || gastosPorMes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay datos de gastos registrados</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = gastosPorMes.map(g => `
+        <tr>
+            <td>${formatearMes(g.mes)}</td>
+            <td>${g.nombre_usuario}</td>
+            <td class="text-center">${g.num_pedidos}</td>
+            <td class="text-right"><strong>${parseFloat(g.total_mes).toFixed(2)} &euro;</strong></td>
+        </tr>
+    `).join('');
+}
+
+function formatearMes(mesStr) {
+    const [year, month] = mesStr.split('-');
+    const fecha = new Date(year, month - 1);
+    return fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
 }

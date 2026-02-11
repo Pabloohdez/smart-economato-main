@@ -100,6 +100,7 @@ function getGastosMensuales($conn) {
     }
     
     $resTotal = pg_query_params($conn, $sqlTotal, $paramsTotal);
+    if (!$resTotal) throw new Exception(pg_last_error($conn));
     $rowTotal = pg_fetch_assoc($resTotal);
 
     echo json_encode([
@@ -119,7 +120,7 @@ function getUsuarios($conn) {
                 COALESCE(SUM(p.total), 0) as total_gastado
             FROM usuarios u
             LEFT JOIN pedidos p ON u.id = p.usuario_id AND p.estado = 'RECIBIDO'
-            WHERE u.rol != 'ADMIN' 
+            WHERE u.role != 'ADMIN' 
             GROUP BY u.id, u.nombre, u.apellidos
             ORDER BY u.nombre ASC";
 
@@ -139,11 +140,13 @@ function getDashboard($conn) {
                  WHERE estado = 'RECIBIDO' 
                  AND TO_CHAR(fecha_creacion, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')";
     $resGasto = pg_query($conn, $sqlGasto);
+    if (!$resGasto) throw new Exception(pg_last_error($conn));
     $gasto = pg_fetch_result($resGasto, 0, 0);
 
     // 2. Alertas Stock
-    $sqlAlertas = "SELECT COUNT(*) FROM productos WHERE stock <= stock_minimo AND activo = true";
+    $sqlAlertas = "SELECT COUNT(*) FROM productos WHERE stock <= stockminimo AND activo = true";
     $resAlertas = pg_query($conn, $sqlAlertas);
+    if (!$resAlertas) throw new Exception(pg_last_error($conn));
     $alertas = pg_fetch_result($resAlertas, 0, 0);
 
     // 3. Últimos Movimientos
@@ -154,6 +157,7 @@ function getDashboard($conn) {
                 LEFT JOIN usuarios u ON m.usuario_id = u.id
                 ORDER BY m.fecha DESC LIMIT 10";
     $resMovs = pg_query($conn, $sqlMovs);
+    if (!$resMovs) throw new Exception(pg_last_error($conn));
     $movimientos = pg_fetch_all($resMovs) ?: [];
 
     // 4. Top Productos (últimos 30 días)
@@ -165,6 +169,7 @@ function getDashboard($conn) {
                GROUP BY p.nombre
                ORDER BY total_salida DESC LIMIT 5";
     $resTop = pg_query($conn, $sqlTop);
+    if (!$resTop) throw new Exception(pg_last_error($conn));
     $top = pg_fetch_all($resTop) ?: [];
 
     echo json_encode([

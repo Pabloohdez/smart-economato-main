@@ -116,10 +116,7 @@ const routes = {
             if (module.initEscandallos) module.initEscandallos();
         }
     },
-    'informes': {
-        template: 'pages/informes.html',
-        action: () => { /* Lógica autocontenida en el HTML */ }
-    },
+
     'usuarios': {
         template: 'pages/construccion.html',
         action: () => setupConstruction('Gestión de Usuarios')
