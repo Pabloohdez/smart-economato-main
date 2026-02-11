@@ -73,6 +73,7 @@ const columnasGrid = [
         formatter: (cell, row) => {
             const stock = Number(cell);
             const min = Number(row.cells[5].data);
+
             if (stock <= min) {
                 return window.gridjs.html(
                     `<span class="col-stock text-status-warning"><span class="status-dot status-dot--warning"></span>${stock}</span>`
@@ -113,26 +114,32 @@ export async function cargarDatos() {
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-        vista = [...productos];
-        actualizarGrid();
+
+        renderizarTabla();
+        actualizarResumen();
     } catch (error) {
         console.error("Error al cargar datos:", error);
     }
 }
 
-function actualizarGrid() {
+async function renderizarTabla() {
     const contenedor = document.getElementById('grid-inventario');
-    if (!contenedor || !window.gridjs) return;
+    if (!contenedor) return;
 
     console.log('🔄 Actualizando grid con', vista.length, 'productos');
 
-    // IMPORTANTE: Destruir la instancia anterior de Grid.js
+    // Si ya existe instancia, actualizar datos o destruir
     if (gridInstance) {
         try {
-            gridInstance.destroy();
-            console.log('🗑️ Grid anterior destruido');
+            gridInstance.updateConfig({
+                data: vista
+            }).forceRender();
+            console.log('🔄 Grid actualizado con', vista.length, 'productos');
+            return;
         } catch (e) {
-            console.warn('⚠️ Error al destruir grid anterior:', e);
+            console.warn('⚠️ Error al actualizar grid existente, intentando destruir y recrear:', e);
+            gridInstance.destroy();
+            gridInstance = null; // Reset instance
         }
     }
 
@@ -163,7 +170,22 @@ function actualizarGrid() {
                 if (stock <= min) return 'row-warning';
 
                 return '';
-            }
+            },
+            table: 'tabla-grid-custom',
+            td: 'celda-grid'
+        },
+        language: {
+            'search': { 'placeholder': 'Buscar...' },
+            'pagination': {
+                'previous': 'Anterior',
+                'next': 'Siguiente',
+                'showing': 'Mostrando',
+                'of': 'de',
+                'to': 'a',
+                'results': () => 'resultados'
+            },
+            'noRecordsFound': 'No hay productos que coincidan'
+
         }
     });
 
@@ -218,7 +240,7 @@ function aplicarFiltros() {
     console.log(`📊 Después de ordenar por precio (${orden}): ${filtrados.length} productos`);
 
     vista = filtrados;
-    actualizarGrid();
+    renderizarTabla();
     actualizarResumen();
 
     console.log(`✅ Filtros aplicados. Total mostrado: ${vista.length} productos`);
@@ -254,7 +276,7 @@ export async function inicializarEventos() {
                 console.log('🔍 Filtrando productos con stock bajo...');
                 try {
                     vista = normalizarDatos(productos).filter(p => Number(p.stock) <= Number(p.stockMinimo));
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos con stock bajo`);
                 } catch (error) {
@@ -285,7 +307,7 @@ export async function inicializarEventos() {
                         return fechaCad > hoy && fechaCad <= treintaDias;
                     });
 
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtro aplicado: ${vista.length} productos próximos a caducar`);
                 } catch (error) {
@@ -308,7 +330,7 @@ export async function inicializarEventos() {
                     const busquedaInput = document.getElementById('busqueda');
                     if (busquedaInput) busquedaInput.value = '';
                     vista = normalizarDatos(productos);
-                    actualizarGrid();
+                    renderizarTabla();
                     actualizarResumen();
                     console.log(`✅ Filtros limpiados: ${vista.length} productos totales`);
                 } catch (error) {

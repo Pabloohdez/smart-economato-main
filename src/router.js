@@ -7,6 +7,7 @@ const APP_VERSION = '1.0.1';
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
 import { initEscandallos } from "./controllers/escandallosController.js";
 
+
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
     'inicio': {
