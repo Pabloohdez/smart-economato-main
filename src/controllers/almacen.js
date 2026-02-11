@@ -115,6 +115,7 @@ export async function cargarDatos() {
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
 
+        vista = [...productos];
         renderizarTabla();
         actualizarResumen();
     } catch (error) {
