@@ -1,5 +1,6 @@
 // src/views/main.js
 import { navigateTo } from "../router.js?v=3"; // <--- Importamos el router
+import { aplicarRestriccionesMenu, cargarRolUsuario, obtenerUsuarioActual } from "../utils/auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -27,6 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Error leyendo usuario:", e);
     }
   }
+
+  // Aplicar restricciones de menú según rol del usuario
+  aplicarRestriccionesMenu();
 
   const sidebar = document.querySelector(".menu");
 

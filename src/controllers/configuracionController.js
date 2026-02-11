@@ -225,12 +225,13 @@ function guardarNotificaciones() {
         alertasProductos: document.getElementById("switchAlertasProductos").checked,
         bloqueoDistribucion: document.getElementById("switchBloqueoDistribucion").checked,
         nuevosProductos: document.getElementById("switchNuevosProductos").checked,
+        filtradoBusqueda: document.getElementById("switchFiltradoBusqueda").checked,
         fechaActualizacion: new Date().toISOString()
     };
 
     localStorage.setItem(`notificaciones_${usuarioActual.id}`, JSON.stringify(preferencias));
 
-    mostrarMensaje("✅ Preferencias de notificaciones guardadas", "green");
+    showNotification("✅ Preferencias de notificaciones guardadas", 'success');
 
     console.log("🔔 Preferencias guardadas:", preferencias);
 }
@@ -245,6 +246,7 @@ function cargarPreferenciasNotificaciones() {
     document.getElementById("switchAlertasProductos").checked = pref.alertasProductos !== false;
     document.getElementById("switchBloqueoDistribucion").checked = pref.bloqueoDistribucion !== false;
     document.getElementById("switchNuevosProductos").checked = pref.nuevosProductos || false;
+    document.getElementById("switchFiltradoBusqueda").checked = pref.filtradoBusqueda || false;
 
     console.log("🔔 Preferencias cargadas:", pref);
 }

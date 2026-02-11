@@ -10,6 +10,11 @@ import {
 
 import { getProductos, getCategorias, getProveedores } from '../services/apiService.js';
 import { showNotification } from '../utils/notifications.js';
+import {
+    productoTieneAlergenos,
+    verificarPreferencias,
+    filtrarListaPorAlergenos
+} from '../utils/alergenosUtils.js';
 
 let productos = [];
 let categorias = [];
@@ -17,10 +22,14 @@ let proveedores = [];
 let vista = [];
 let gridInstance = null;
 
+<<<<<<< HEAD
 // Helper para normalizar datos (clonar array para no mutar el original en filtros)
 function normalizarDatos(data) {
     return data.map(item => ({ ...item }));
 }
+=======
+// Helper para normalizar datos eliminado (duplicado)
+>>>>>>> origin/daniel
 
 // Formateador de caducidad (sin emojis, estilo profesional)
 function procesarCaducidad(fechaStr) {
@@ -59,7 +68,23 @@ const columnasGrid = [
     {
         id: 'nombre',
         name: 'Producto',
-        formatter: (cell) => window.gridjs.html(`<span class="col-name">${cell}</span>`)
+        formatter: (cell, row) => {
+            const id = row.cells[0].data;
+            // Necesitamos el objeto producto completo para la verificación
+            // Como Grid.js trabaja con datos ya normalizados, podemos buscarlo
+            const p = productos.find(prod => prod.id == id) || {};
+            const verificacion = productoTieneAlergenos(p);
+
+            if (verificacion.tiene) {
+                return window.gridjs.html(`
+                    <div class="col-name" title="Contiene: ${verificacion.alergenos.join(', ')}">
+                        <i class="fa-solid fa-triangle-exclamation" style="color: #e53e3e; margin-right: 5px;"></i>
+                        ${cell}
+                    </div>
+                `);
+            }
+            return window.gridjs.html(`<span class="col-name">${cell}</span>`);
+        }
     },
     { id: 'nombreCategoria', name: 'Categoria' },
     {
@@ -72,7 +97,15 @@ const columnasGrid = [
         name: 'Stock',
         formatter: (cell, row) => {
             const stock = Number(cell);
+<<<<<<< HEAD
+=======
+            // El índice de la columna cambió en HEAD vs Sonia? 
+            // HEAD: cells[5] -> Min
+            // Sonia: cells[5] -> Min
+            // Parece que coinciden.
+>>>>>>> origin/daniel
             const min = Number(row.cells[5].data);
+
             if (stock <= min) {
                 return window.gridjs.html(
                     `<span class="col-stock text-status-warning"><span class="status-dot status-dot--warning"></span>${stock}</span>`
@@ -113,26 +146,38 @@ export async function cargarDatos() {
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
+<<<<<<< HEAD
         vista = [...productos];
         actualizarGrid();
+=======
+
+        renderizarTabla();
+        actualizarResumen();
+
+>>>>>>> origin/daniel
     } catch (error) {
         console.error("Error al cargar datos:", error);
     }
 }
 
-function actualizarGrid() {
+async function renderizarTabla() {
     const contenedor = document.getElementById('grid-inventario');
-    if (!contenedor || !window.gridjs) return;
+    if (!contenedor) return;
 
     console.log('🔄 Actualizando grid con', vista.length, 'productos');
 
-    // IMPORTANTE: Destruir la instancia anterior de Grid.js
+    // Si ya existe instancia, actualizar datos o destruir
     if (gridInstance) {
         try {
-            gridInstance.destroy();
-            console.log('🗑️ Grid anterior destruido');
+            gridInstance.updateConfig({
+                data: vista
+            }).forceRender();
+            console.log('🔄 Grid actualizado con', vista.length, 'productos');
+            return;
         } catch (e) {
-            console.warn('⚠️ Error al destruir grid anterior:', e);
+            console.warn('⚠️ Error al actualizar grid existente, intentando destruir y recrear:', e);
+            gridInstance.destroy();
+            gridInstance = null; // Reset instance
         }
     }
 
@@ -163,7 +208,25 @@ function actualizarGrid() {
                 if (stock <= min) return 'row-warning';
 
                 return '';
+<<<<<<< HEAD
             }
+=======
+            },
+            table: 'tabla-grid-custom',
+            td: 'celda-grid'
+        },
+        language: {
+            'search': { 'placeholder': 'Buscar...' },
+            'pagination': {
+                'previous': 'Anterior',
+                'next': 'Siguiente',
+                'showing': 'Mostrando',
+                'of': 'de',
+                'to': 'a',
+                'results': () => 'resultados'
+            },
+            'noRecordsFound': 'No hay productos que coincidan'
+>>>>>>> origin/daniel
         }
     });
 
@@ -200,6 +263,9 @@ function aplicarFiltros() {
     console.log(`📦 Productos iniciales: ${productos.length}`);
 
     let filtrados = normalizarDatos(productos);
+
+    // Aplicar filtrado estricto por alérgenos si está activo
+    filtrados = filtrarListaPorAlergenos(filtrados);
 
     if (busq) {
         filtrados = buscarProducto(filtrados, busq);

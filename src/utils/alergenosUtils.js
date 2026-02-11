@@ -37,12 +37,12 @@ const COLORES_ALERGENOS = {
 export function obtenerAlergiasUsuario() {
     const userStr = localStorage.getItem('usuarioActivo');
     if (!userStr) return [];
-    
+
     const usuario = JSON.parse(userStr);
     const configStr = localStorage.getItem(`alergias_${usuario.id}`);
-    
+
     if (!configStr) return [];
-    
+
     const config = JSON.parse(configStr);
     return config.alergias || [];
 }
@@ -52,20 +52,20 @@ export function obtenerAlergiasUsuario() {
  */
 export function productoTieneAlergenos(producto) {
     const alergiasUsuario = obtenerAlergiasUsuario();
-    
+
     if (alergiasUsuario.length === 0) {
         return { tiene: false, alergenos: [] };
     }
-    
+
     const alergenosProducto = producto.alergenos || [];
-    
+
     const alergenosEncontrados = alergiasUsuario.filter(alergia =>
-        alergenosProducto.some(alergeno => 
+        alergenosProducto.some(alergeno =>
             normalizar(alergeno).includes(normalizar(alergia)) ||
             normalizar(alergia).includes(normalizar(alergeno))
         )
     );
-    
+
     return {
         tiene: alergenosEncontrados.length > 0,
         alergenos: alergenosEncontrados
@@ -87,11 +87,11 @@ function normalizar(texto) {
 export function generarBadgeAlergeno(alergeno, esAlerta = false) {
     const icono = ICONOS_ALERGENOS[alergeno] || 'fa-triangle-exclamation';
     const colores = COLORES_ALERGENOS[alergeno] || { bg: '#fff5f5', color: '#c53030' };
-    
-    const estilo = esAlerta 
+
+    const estilo = esAlerta
         ? `background: #fff5f5; color: #c53030; border: 2px solid #fc8181;`
         : `background: ${colores.bg}; color: ${colores.color};`;
-    
+
     return `
         <span class="badge-alergeno ${esAlerta ? 'badge-alerta' : ''}" 
               style="${estilo} padding: 4px 10px; border-radius: 12px; 
@@ -110,9 +110,9 @@ export function generarBadgesProducto(producto) {
     if (!producto.alergenos || producto.alergenos.length === 0) {
         return '';
     }
-    
+
     const verificacion = productoTieneAlergenos(producto);
-    
+
     return producto.alergenos.map(alergeno => {
         const esAlerta = verificacion.alergenos.includes(alergeno);
         return generarBadgeAlergeno(alergeno, esAlerta);
@@ -124,11 +124,11 @@ export function generarBadgesProducto(producto) {
  */
 export async function mostrarAlertaAlergenos(producto) {
     const verificacion = productoTieneAlergenos(producto);
-    
+
     if (!verificacion.tiene) return false;
-    
+
     const alergenosTexto = verificacion.alergenos.join(', ');
-    
+
     const confirmar = await showConfirm(
         `⚠️ ALERTA DE ALÉRGENOS ⚠️\n\n` +
         `El producto "${producto.nombre}" contiene:\n` +
@@ -136,7 +136,7 @@ export async function mostrarAlertaAlergenos(producto) {
         `Tienes alergia registrada a este/estos alérgeno(s).\n\n` +
         `¿Deseas continuar de todos modos?`
     );
-    
+
     return !confirmar; // Retorna true si se debe bloquear la acción
 }
 
@@ -165,14 +165,14 @@ export function mostrarNotificacionAlergeno(mensaje, tipo = 'warning') {
         max-width: 400px;
         font-weight: 600;
     `;
-    
+
     notif.innerHTML = `
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 20px;"></i>
         <span>${mensaje}</span>
     `;
-    
+
     document.body.appendChild(notif);
-    
+
     // Añadir animación
     const style = document.createElement('style');
     style.textContent = `
@@ -186,7 +186,7 @@ export function mostrarNotificacionAlergeno(mensaje, tipo = 'warning') {
         }
     `;
     document.head.appendChild(style);
-    
+
     // Remover después de 5 segundos
     setTimeout(() => {
         notif.style.animation = 'slideOutRight 0.3s ease';
@@ -203,19 +203,31 @@ export function mostrarNotificacionAlergeno(mensaje, tipo = 'warning') {
 export function verificarPreferencias() {
     const userStr = localStorage.getItem('usuarioActivo');
     if (!userStr) return { alertas: true, bloqueo: true };
-    
+
     const usuario = JSON.parse(userStr);
     const prefStr = localStorage.getItem(`notificaciones_${usuario.id}`);
-    
+
     if (!prefStr) return { alertas: true, bloqueo: true };
-    
+
     const pref = JSON.parse(prefStr);
-    
+
     return {
         alertas: pref.alertasProductos !== false,
         bloqueo: pref.bloqueoDistribucion !== false,
-        nuevos: pref.nuevosProductos || false
+        nuevos: pref.nuevosProductos || false,
+        filtrado: pref.filtradoBusqueda || false
     };
+}
+
+/**
+ * Filtra una lista de productos ocultando los que contienen alérgenos 
+ * si la preferencia de filtrado está activa.
+ */
+export function filtrarListaPorAlergenos(listaProductos) {
+    const pref = verificarPreferencias();
+    if (!pref.filtrado) return listaProductos;
+
+    return listaProductos.filter(p => !productoTieneAlergenos(p).tiene);
 }
 
 /**
@@ -223,9 +235,9 @@ export function verificarPreferencias() {
  */
 export function añadirIndicadorAlergeno(elemento, producto) {
     const verificacion = productoTieneAlergenos(producto);
-    
+
     if (!verificacion.tiene) return;
-    
+
     // Crear indicador
     const indicador = document.createElement('div');
     indicador.className = 'indicador-alergeno-peligro';
@@ -249,7 +261,7 @@ export function añadirIndicadorAlergeno(elemento, producto) {
     `;
     indicador.innerHTML = '<i class="fa-solid fa-exclamation"></i>';
     indicador.title = `ALERTA: Contiene ${verificacion.alergenos.join(', ')}`;
-    
+
     // Añadir animación de pulso
     const style = document.createElement('style');
     style.textContent = `
@@ -262,11 +274,11 @@ export function añadirIndicadorAlergeno(elemento, producto) {
         style.dataset.alergenoAnimation = 'true';
         document.head.appendChild(style);
     }
-    
+
     // Asegurar que el elemento padre tenga position relative
     if (getComputedStyle(elemento).position === 'static') {
         elemento.style.position = 'relative';
     }
-    
+
     elemento.appendChild(indicador);
 }

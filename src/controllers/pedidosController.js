@@ -73,7 +73,7 @@ async function cargarPedidos() {
                 console.error("❌ Elemento #gridPedidos no encontrado en el DOM");
                 return;
             }
-            
+
             // Destruir grid anterior si existe
             if (gridInstance) {
                 try {
@@ -82,7 +82,7 @@ async function cargarPedidos() {
                     console.log('No se pudo destruir grid anterior:', e);
                 }
             }
-            
+
             // Limpiar contenido previo para evitar duplicados
             gridElement.innerHTML = '';
 
@@ -127,7 +127,7 @@ async function cargarPedidos() {
     } catch (e) {
         console.error("❌ Excepción en cargarPedidos:", e);
         const el = document.getElementById("gridPedidos");
-        if(el) el.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
+        if (el) el.innerHTML = '<div style="padding:20px; text-align:center; color:#666">No hay ningún pedido actualmente.</div>';
     }
 }
 
@@ -327,7 +327,12 @@ async function guardarPedido() {
     }
 
     // 3. Resumen
+<<<<<<< HEAD
         if (exitos > 0 && errores === 0) {
+=======
+    // 3. Resumen
+    if (exitos > 0 && errores === 0) {
+>>>>>>> origin/daniel
         showNotification(`✅ Se han creado ${exitos} pedido(s) correctamente.`, 'success');
         // Limpiar
         itemsPedido = [];

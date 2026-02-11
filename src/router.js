@@ -6,7 +6,6 @@ const APP_VERSION = '1.0.1';
 // Importamos las funciones necesarias para Inventario
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
 import { initEscandallos } from "./controllers/escandallosController.js";
-
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
     'inicio': {
@@ -116,7 +115,13 @@ const routes = {
             if (module.initEscandallos) module.initEscandallos();
         }
     },
-
+    'auditoria': {
+        template: 'pages/auditoria.html',
+        action: async () => {
+            const module = await import(`./controllers/auditoriaController.js?t=${Date.now()}`);
+            if (module.init) module.init();
+        }
+    },
     'usuarios': {
         template: 'pages/construccion.html',
         action: () => setupConstruction('Gestión de Usuarios')
