@@ -118,6 +118,14 @@ const routes = {
     'auditoria': {
         template: 'pages/auditoria.html',
         action: async () => {
+            // Verificar permisos antes de cargar
+            const authModule = await import(`./utils/auth.js?t=${Date.now()}`);
+            if (!authModule.esAdmin()) {
+                const notifModule = await import(`./utils/notifications.js?t=${Date.now()}`);
+                notifModule.showNotification('Acceso restringido: se requieren permisos de administrador', 'error');
+                navigateTo('inicio');
+                return;
+            }
             const module = await import(`./controllers/auditoriaController.js?t=${Date.now()}`);
             if (module.init) module.init();
         }
