@@ -1,11 +1,12 @@
 // src/router.js
 
 // Version for cache busting - increment when deploying code changes
-const APP_VERSION = '1.0.1';
+const APP_VERSION = '1.0.2';
 
 // Importamos las funciones necesarias para Inventario
 import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
 import { initEscandallos } from "./controllers/escandallosController.js";
+
 // --- CONFIGURACIÓN DE RUTAS ---
 const routes = {
     'inicio': {

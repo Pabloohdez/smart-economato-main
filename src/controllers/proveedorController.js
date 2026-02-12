@@ -42,7 +42,7 @@ function abrirModalProveedor() {
 function cerrarModalProveedor() {
     const modal = document.getElementById('modalProveedor');
     if (modal) modal.style.display = 'none';
-    
+
     // Resetear formulario y título al cerrar
     document.getElementById('formProveedor').reset();
     document.getElementById('idProveedor').value = '';
@@ -190,6 +190,7 @@ async function guardarProveedor(event) {
     if (!nombre) return showNotification("El nombre del proveedor es obligatorio", 'warning');
 
     const datos = { nombre, contacto, telefono, email };
+
     let url = API_URL;
     let method = 'POST';
 
@@ -213,6 +214,7 @@ async function guardarProveedor(event) {
         if (json.success) {
             showNotification(id ? "Proveedor actualizado correctamente" : "Proveedor creado correctamente", 'success');
             cerrarModalProveedor();
+
             // INVALIDAR CACHÉ y recargar tabla con datos frescos
             await cargarTablaProveedores(true);
         } else {
