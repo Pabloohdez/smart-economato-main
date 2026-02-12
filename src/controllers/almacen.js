@@ -135,10 +135,6 @@ export async function cargarDatos() {
 
         renderizarCategorias(categorias);
         renderizarProveedores(proveedores);
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/sonia
         vista = [...productos];
         renderizarTabla();
         actualizarResumen();
@@ -210,10 +206,6 @@ async function renderizarTabla() {
                 'results': () => 'resultados'
             },
             'noRecordsFound': 'No hay productos que coincidan'
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/sonia
         }
     });
 

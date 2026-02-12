@@ -327,11 +327,7 @@ async function guardarPedido() {
     }
 
     // 3. Resumen
-<<<<<<< HEAD
     // 3. Resumen
-=======
-
->>>>>>> origin/sonia
     if (exitos > 0 && errores === 0) {
         showNotification(`✅ Se han creado ${exitos} pedido(s) correctamente.`, 'success');
         // Limpiar
