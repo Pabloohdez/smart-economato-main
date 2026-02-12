@@ -194,11 +194,12 @@ body {
     background-color: #edf2f7 !important;
 }
 
-.gridjs-pagination .gridjs-pages button.gridjs-currentPage {
-    background-color: #3182ce !important;
-    border-color: #2b6cb0 !important;
-    color: white !important;
-    box-shadow: 0 2px 4px rgba(49, 130, 206, 0.2);
+#gridProveedores .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: black !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
 /* --- Action Buttons --- */

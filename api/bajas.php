@@ -12,11 +12,11 @@ function clean($conn, $var) {
 
 switch ($method) {
     case 'GET':
-        // Obtener parámetros de filtro
+        
         $mes = isset($_GET['mes']) ? (int)$_GET['mes'] : date('n');
         $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : date('Y');
         
-        // Query con filtro de mes y año
+        
         $sql = "SELECT 
                 b.id,
                 b.fecha_baja as \"fechaBaja\",
@@ -32,7 +32,7 @@ switch ($method) {
             LEFT JOIN productos p ON b.producto_id = p.id
             LEFT JOIN usuarios u ON b.usuario_id = u.id";
         
-        // Agregar filtro WHERE si se especifica mes/año
+        
         if (isset($_GET['mes']) || isset($_GET['anio'])) {
             $sql .= " WHERE EXTRACT(MONTH FROM b.fecha_baja) = $mes 
                       AND EXTRACT(YEAR FROM b.fecha_baja) = $anio";
