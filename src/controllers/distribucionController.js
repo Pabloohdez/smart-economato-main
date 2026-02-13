@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-=======
-import { mostrarAlertaAlergenos } from "../utils/alergenosUtils.js";
 
-// Controlador de Distribución
->>>>>>> origin/sonia
 import { showNotification, showConfirm } from "../utils/notifications.js";
 import {
     productoTieneAlergenos,

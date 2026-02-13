@@ -1,5 +1,5 @@
 // src/views/main.js
-import { navigateTo } from "../router.js?v=3"; // <--- Importamos el router
+import { navigateTo } from "../router.js?v=4"; // <--- Importamos el router
 import { aplicarRestriccionesMenu, cargarRolUsuario, obtenerUsuarioActual } from "../utils/auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const activeMenuLink = Array.from(menuLinks).find(
-      link => link.dataset.page.toLowerCase() === pageKeyForMenu
+      link => link.dataset.page.toLowerCase() === pageKeyForMenu && !link.classList.contains('logo-link')
     );
     if (activeMenuLink) {
       activeMenuLink.classList.add("activo");

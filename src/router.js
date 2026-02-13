@@ -1,13 +1,10 @@
 // src/router.js
 
 // Version for cache busting - increment when deploying code changes
-const APP_VERSION = '1.0.2';
-
-// Importamos las funciones necesarias para Inventario
-import { cargarDatos, inicializarEventos } from "./controllers/almacen.js";
-import { initEscandallos } from "./controllers/escandallosController.js";
+const APP_VERSION = '1.0.3';
 
 // --- CONFIGURACIÓN DE RUTAS ---
+
 const routes = {
     'inicio': {
         template: 'pages/inicio.html',
@@ -35,17 +32,24 @@ const routes = {
     'inventario': {
         template: 'pages/Inventario.html',
         action: async () => {
-            // Carga dinámica para evitar errores de importación estática y caché
-            const module = await import(`./controllers/almacen.js?v=${APP_VERSION}`);
-            if (module.cargarDatos) await module.cargarDatos();
-            if (module.inicializarEventos) await module.inicializarEventos();
+            try {
+                const module = await import(`./controllers/almacen.js?v=${APP_VERSION}`);
+                if (module.cargarDatos) await module.cargarDatos();
+                if (module.inicializarEventos) await module.inicializarEventos();
+            } catch (e) {
+                console.error('Error loading almacen:', e);
+            }
         }
     },
     'ingresarproductos': {
         template: 'pages/ingresarProductos.html',
         action: async () => {
-            const module = await import(`./controllers/ingresoController.js?v=${APP_VERSION}`);
-            if (module.initIngreso) module.initIngreso();
+            try {
+                const module = await import(`./controllers/ingresoController.js?v=${APP_VERSION}`);
+                if (module.initIngreso) module.initIngreso();
+            } catch (e) {
+                console.error('Error loading ingresoController:', e);
+            }
         }
     },
     'recepcion': {
@@ -75,15 +79,23 @@ const routes = {
     'configuracion': {
         template: 'pages/configuracion.html',
         action: async () => {
-            const module = await import(`./controllers/configuracionController.js?v=${APP_VERSION}`);
-            if (module.initConfiguracion) module.initConfiguracion();
+            try {
+                const module = await import(`./controllers/configuracionController.js?v=${APP_VERSION}`);
+                if (module.initConfiguracion) module.initConfiguracion();
+            } catch (e) {
+                console.error('Error loading configuracionController:', e);
+            }
         }
     },
     'distribucion': {
         template: 'pages/distribucion.html',
         action: async () => {
-            const module = await import(`./controllers/distribucionController.js?v=${APP_VERSION}`);
-            if (module.initDistribucion) module.initDistribucion();
+            try {
+                const module = await import(`./controllers/distribucionController.js?v=${APP_VERSION}`);
+                if (module.initDistribucion) module.initDistribucion();
+            } catch (e) {
+                console.error('Error loading distribucionController:', e);
+            }
         }
     },
 
@@ -105,15 +117,34 @@ const routes = {
     'pedidos': {
         template: 'pages/pedidos.html',
         action: async () => {
-            const module = await import(`./controllers/pedidosController.js?v=${APP_VERSION}`);
-            if (module.initPedidos) module.initPedidos();
+            try {
+                const module = await import(`./controllers/pedidosController.js?v=${APP_VERSION}`);
+                if (module.initPedidos) module.initPedidos();
+            } catch (e) {
+                console.error('Error loading pedidosController:', e);
+            }
         }
     },
     'escandallos': {
         template: 'pages/escandallos.html',
         action: async () => {
-            const module = await import(`./controllers/escandallosController.js?v=${APP_VERSION}`);
-            if (module.initEscandallos) module.initEscandallos();
+            try {
+                const module = await import(`./controllers/escandallosController.js?v=${APP_VERSION}`);
+                if (module.initEscandallos) module.initEscandallos();
+            } catch (e) {
+                console.error('Error loading escandallosController:', e);
+            }
+        }
+    },
+    'rendimiento': {
+        template: 'pages/rendimiento.html',
+        action: async () => {
+            try {
+                const module = await import(`./controllers/rendimientoController.js?v=${APP_VERSION}`);
+                if (module.initRendimiento) module.initRendimiento();
+            } catch (e) {
+                console.error('Error loading rendimientoController:', e);
+            }
         }
     },
     'auditoria': {
