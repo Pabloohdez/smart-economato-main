@@ -1,4 +1,5 @@
 import { getCategorias, getProveedores, crearProducto } from "../services/apiService.js";
+import { showNotification, showConfirm } from "../utils/notifications.js";
 
 let listaProductosTemporal = []; // Aquí guardamos los datos antes de enviarlos
 
@@ -32,6 +33,7 @@ async function cargarSelects() {
         });
     } catch (error) {
         console.error("Error cargando selects:", error);
+        showNotification("Error cargando categorías/proveedores", 'error');
     }
 }
 
@@ -46,7 +48,7 @@ function agregarALista() {
 
     // Validaciones simples
     if (!nombre || !categoriaId || !proveedorId || isNaN(precio)) {
-        alert("Por favor completa todos los campos obligatorios.");
+        showNotification("Por favor completa todos los campos obligatorios.", 'warning');
         return;
     }
 
@@ -82,6 +84,7 @@ function agregarALista() {
     // Renderizar y Limpiar
     renderizarTablaTemporal();
     limpiarInputs();
+    showNotification("Producto agregado a la lista temporal", 'success');
 }
 
 function generarCodigoBarras() {
@@ -149,10 +152,11 @@ function limpiarInputs() {
     document.getElementById("inputNombre").focus();
 }
 
-function limpiarLista() {
-    if(confirm("¿Estás seguro de descartar toda la lista?")) {
+async function limpiarLista() {
+    if(await showConfirm("¿Estás seguro de descartar toda la lista?")) {
         listaProductosTemporal = [];
         renderizarTablaTemporal();
+        showNotification("Lista limpiada", 'info');
     }
 }
 
@@ -160,7 +164,7 @@ async function guardarEnBaseDeDatos() {
     const btnGuardar = document.getElementById("btnGuardarTodo");
     const mensaje = document.getElementById("mensajeEstado");
 
-    if(!confirm(`¿Confirmas importar ${listaProductosTemporal.length} productos al inventario?`)) return;
+    if(!await showConfirm(`¿Confirmas importar ${listaProductosTemporal.length} productos al inventario?`)) return;
 
     btnGuardar.disabled = true;
     btnGuardar.textContent = "Guardando...";
@@ -212,11 +216,10 @@ async function guardarEnBaseDeDatos() {
         renderizarTablaTemporal();
         
         // Mensaje adicional
-        setTimeout(() => {
-            alert("Productos importados exitosamente. Puedes volver al inventario para verlos.");
-        }, 500);
+        showNotification("Productos importados exitosamente. Puedes volver al inventario para verlos.", 'success');
     } else {
         mensaje.textContent = `Se guardaron ${guardados}, pero fallaron ${errores}. Revisa la consola.`;
         mensaje.style.color = "orange";
+        showNotification(`Se guardaron ${guardados}, pero fallaron ${errores}.`, 'warning');
     }
 }

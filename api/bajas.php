@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/utils/auditoria.php';
 
 header('Content-Type: application/json');
 
@@ -11,11 +12,11 @@ function clean($conn, $var) {
 
 switch ($method) {
     case 'GET':
-        // Obtener parámetros de filtro
+        
         $mes = isset($_GET['mes']) ? (int)$_GET['mes'] : date('n');
         $anio = isset($_GET['anio']) ? (int)$_GET['anio'] : date('Y');
         
-        // Query con filtro de mes y año
+        
         $sql = "SELECT 
                 b.id,
                 b.fecha_baja as \"fechaBaja\",
@@ -31,7 +32,7 @@ switch ($method) {
             LEFT JOIN productos p ON b.producto_id = p.id
             LEFT JOIN usuarios u ON b.usuario_id = u.id";
         
-        // Agregar filtro WHERE si se especifica mes/año
+        
         if (isset($_GET['mes']) || isset($_GET['anio'])) {
             $sql .= " WHERE EXTRACT(MONTH FROM b.fecha_baja) = $mes 
                       AND EXTRACT(YEAR FROM b.fecha_baja) = $anio";
@@ -106,6 +107,30 @@ switch ($method) {
             $nuevoStock = $stockActual - $cantidad;
             $queryUpdate = "UPDATE productos SET stock = $nuevoStock WHERE id = $prodId";
             pg_query($conn, $queryUpdate);
+            
+            // Registrar en auditoría
+            $resProducto = pg_query($conn, "SELECT nombre FROM productos WHERE id = $prodId");
+            $producto = pg_fetch_assoc($resProducto);
+            
+            // Extraer valores sin comillas para auditoría
+            $tipoBajaRaw = str_replace("'", "", $tipoBaja);
+            $motivoRaw = str_replace("'", "", $motivo);
+            $userIdRaw = str_replace("'", "", $usuarioId);
+            
+            registrarAuditoria(
+                $conn,
+                $userIdRaw,
+                null,
+                ACCION_BAJA,
+                ENTIDAD_BAJA,
+                null,
+                [
+                    'tipo' => $tipoBajaRaw,
+                    'producto' => $producto['nombre'],
+                    'cantidad' => $cantidad,
+                    'motivo' => $motivoRaw
+                ]
+            );
             
             echo json_encode([
                 "success" => true,

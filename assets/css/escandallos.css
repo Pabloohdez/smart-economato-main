@@ -85,6 +85,15 @@
     box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
 
+/* --- Centrado de Columna de Acciones --- */
+.action-cell {
+    text-align: center !important;
+}
+
+table th:last-child {
+    text-align: center !important;
+}
+
 /* --- BOTONES --- */
 .btn-accion {
     height: 44px;
@@ -455,6 +464,21 @@ tr:hover td {
     background: #bee3f8;
     color: #2c5282;
 }
+
+.btn-danger {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+}
+
+.btn-danger:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #7f1d1d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
+}
+
 
 /* --- FOOTER & UTILIDADES --- */
 .form-footer {

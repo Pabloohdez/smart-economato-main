@@ -1,0 +1,80 @@
+<link rel="stylesheet" href="assets/css/auditoria.css">
+
+<div class="header-auditoria">
+    <h1 class="titulo-auditoria">
+        <i class="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
+    </h1>
+    <p class="subtitulo">Historial completo de actividades del sistema</p>
+</div>
+
+<!-- Filtros -->
+<div class="panel-filtros">
+    <div class="filtros-container">
+        <div class="filtro-item">
+            <label for="filtroAccion">
+                <i class="fa-solid fa-filter"></i> Tipo de Acción
+            </label>
+            <select id="filtroAccion" class="select-filtro">
+                <option value="">Todas las acciones</option>
+                <option value="MOVIMIENTO">Movimientos de Stock</option>
+                <option value="PEDIDO">Pedidos</option>
+                <option value="BAJA">Bajas de Producto</option>
+                <option value="CREAR_PRODUCTO">Crear Producto</option>
+                <option value="MODIFICAR_PRODUCTO">Modificar Producto</option>
+                <option value="ELIMINAR_PRODUCTO">Eliminar Producto</option>
+            </select>
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtroUsuario">
+                <i class="fa-solid fa-user"></i> Usuario
+            </label>
+            <select id="filtroUsuario" class="select-filtro">
+                <option value="">Todos los usuarios</option>
+            </select>
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtroFechaDesde">
+                <i class="fa-solid fa-calendar"></i> Desde
+            </label>
+            <input type="date" id="filtroFechaDesde" class="input-fecha">
+        </div>
+
+        <div class="filtro-item">
+            <label for="filtroFechaHasta">
+                <i class="fa-solid fa-calendar"></i> Hasta
+            </label>
+            <input type="date" id="filtroFechaHasta" class="input-fecha">
+        </div>
+
+        <div class="filtro-acciones">
+            <button id="btnAplicarFiltros" class="btn-aplicar">
+                <i class="fa-solid fa-search"></i> Aplicar
+            </button>
+            <button id="btnLimpiarFiltros" class="btn-limpiar">
+                <i class="fa-solid fa-eraser"></i> Limpiar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de Auditoría -->
+<div class="panel-tabla">
+    <div id="grid-auditoria"></div>
+</div>
+
+<!-- Modal de Detalles -->
+<div id="modalDetalles" class="modal-detalles" style="display: none;">
+    <div class="modal-contenido">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-info-circle"></i> Detalles de la Acción</h3>
+            <button id="btnCerrarModal" class="btn-cerrar-modal">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="modalDetallesBody">
+            <!-- Contenido dinámico -->
+        </div>
+    </div>
+</div>

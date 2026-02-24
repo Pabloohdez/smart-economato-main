@@ -1,5 +1,6 @@
 <?php
 require_once 'config.php';
+require_once __DIR__ . '/utils/auditoria.php';
 
 header('Content-Type: application/json');
 
@@ -89,6 +90,27 @@ switch ($method) {
             // 5. Actualizar la tabla PRODUCTOS
             $queryUpd = "UPDATE productos SET stock = $stockNuevo WHERE id = $prodId";
             pg_query($conn, $queryUpd);
+
+            // 6. Registrar en auditoría
+            $resProducto = pg_query($conn, "SELECT nombre FROM productos WHERE id = $prodId");
+            $producto = pg_fetch_assoc($resProducto);
+            
+            registrarAuditoria(
+                $conn,
+                $userIdRaw,
+                null,
+                ACCION_MOVIMIENTO,
+                ENTIDAD_MOVIMIENTO,
+                null,
+                [
+                    'tipo' => $tipoRaw,
+                    'producto' => $producto['nombre'],
+                    'cantidad' => $cantidad,
+                    'motivo' => $motivoRaw,
+                    'stock_anterior' => $stockActual,
+                    'stock_nuevo' => $stockNuevo
+                ]
+            );
 
             echo json_encode([
                 "success" => true, 

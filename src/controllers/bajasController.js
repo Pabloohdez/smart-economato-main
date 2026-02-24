@@ -1,4 +1,5 @@
 import { getProductos, getCategorias, actualizarProducto } from "../services/apiService.js";
+import { showNotification, showConfirm } from "../utils/notifications.js";
 
 let todosLosProductos = [];
 let categorias = [];
@@ -371,13 +372,13 @@ function seleccionarProducto(productoId) {
     // Verificar si ya está en la baja
     const yaExiste = productosBaja.find(p => p.id === productoId);
     if (yaExiste) {
-        alert("Este producto ya está en el registro de bajas. Puedes modificar los datos en la tabla.");
+        showNotification("Este producto ya está en el registro de bajas. Puedes modificar los datos en la tabla.", 'warning');
         return;
     }
     
     // Verificar stock disponible
     if (producto.stock <= 0) {
-        alert("Este producto no tiene stock disponible para dar de baja.");
+        showNotification("Este producto no tiene stock disponible para dar de baja.", 'warning');
         return;
     }
     
@@ -461,7 +462,7 @@ function validarCantidadModal() {
     
     if (cantidad > stockDisponible) {
         input.value = stockDisponible;
-        alert(`La cantidad no puede superar el stock disponible (${stockDisponible})`);
+        showNotification(`La cantidad no puede superar el stock disponible (${stockDisponible})`, 'warning');
     }
     
     if (cantidad < 1) {
@@ -474,12 +475,12 @@ function confirmarBajaModal() {
     const cantidad = parseInt(document.getElementById("modalInputCantidadBaja").value);
     
     if (!cantidad || cantidad <= 0) {
-        alert("Por favor, ingresa una cantidad válida.");
+        showNotification("Por favor, ingresa una cantidad válida.", 'warning');
         return;
     }
     
     if (cantidad > productoSeleccionado.stock) {
-        alert("La cantidad no puede superar el stock disponible.");
+        showNotification("La cantidad no puede superar el stock disponible.", 'warning');
         return;
     }
     
@@ -563,8 +564,8 @@ function renderizarTablaBajas() {
     });
 }
 
-function eliminarProductoBaja(index) {
-    if (confirm("¿Eliminar este producto del registro de bajas?")) {
+async function eliminarProductoBaja(index) {
+    if (await showConfirm("¿Eliminar este producto del registro de bajas?")) {
         productosBaja.splice(index, 1);
         renderizarTablaBajas();
         
@@ -589,8 +590,8 @@ function ocultarBotones() {
     document.getElementById("btnConfirmarBaja").classList.add("oculto");
 }
 
-function cancelarBaja() {
-    if (confirm("¿Estás seguro de cancelar este registro de bajas? Se perderán todos los datos.")) {
+async function cancelarBaja() {
+    if (await showConfirm("¿Estás seguro de cancelar este registro de bajas? Se perderán todos los datos.")) {
         productosBaja = [];
         document.getElementById("textareaMotivoBaja").value = "";
         renderizarTablaBajas();
@@ -601,14 +602,14 @@ function cancelarBaja() {
 
 async function confirmarBaja() {
     if (productosBaja.length === 0) {
-        alert("No hay productos para dar de baja");
+        showNotification("No hay productos para dar de baja", 'warning');
         return;
     }
     
     const motivo = document.getElementById("textareaMotivoBaja").value.trim();
     const totalValor = productosBaja.reduce((sum, p) => sum + p.valorPerdido, 0);
     
-    const confirmacion = confirm(
+    const confirmacion = await showConfirm(
         `¿Confirmar bajas de ${productosBaja.length} productos con un valor total de ${totalValor.toFixed(2)} €?\n\n` +
         `Esta acción reducirá el stock de los productos seleccionados.`
     );
@@ -683,11 +684,9 @@ async function confirmarBaja() {
         await cargarHistorialBajas(); // Actualizar historial
         
         setTimeout(() => {
-            alert(
-                `Bajas registradas exitosamente.\n\n` +
-                `• Productos afectados: ${exitosos}\n` +
-                `• Valor total: ${totalValor.toFixed(2)} €\n\n` +
-                `Los stocks han sido actualizados.`
+            showNotification(
+                `Bajas registradas exitosamente. Productos afectados: ${exitosos}. Valor total: ${totalValor.toFixed(2)} €.`,
+                'success'
             );
         }, 500);
     } else if (exitosos > 0) {
@@ -705,17 +704,14 @@ async function confirmarBaja() {
         await cargarDatos();
         await actualizarEstadisticas();
         
-        alert(`⚠️ Resultado mixto:\n\n` +
-              `Exitosos: ${exitosos}\n` +
-              `Errores: ${errores.length}\n\n` +
-              `Detalles:\n${errores.join('\n')}`);
+        showNotification(`⚠️ Resultado mixto: Exitosos: ${exitosos}, Errores: ${errores.length}`, 'warning');
     } else {
         mostrarMensaje(
             `❌ Error al registrar bajas: ${errores.length} errores`,
             "red"
         );
         
-        alert(`❌ Error al registrar bajas:\n\n${errores.join('\n')}`);
+        showNotification(`❌ Error al registrar bajas: ${errores.length} errores`, 'error');
     }
 }
 

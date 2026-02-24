@@ -114,18 +114,18 @@ switch ($method) {
         
         $checkUser = pg_query($conn, "SELECT id FROM usuarios WHERE id = " . clean($conn, $userIdReq));
         if (pg_num_rows($checkUser) > 0) {
-            $userId = clean($conn, $userIdReq);
+            $userIdValue = $userIdReq;
         } else {
             $resUser = pg_query($conn, "SELECT id FROM usuarios LIMIT 1");
             if (pg_num_rows($resUser) > 0) {
-                $userId = pg_fetch_result($resUser, 0, 0);
+                $userIdValue = pg_fetch_result($resUser, 0, 0);
             } else {
                 pg_query($conn, "INSERT INTO usuarios (username, password, rol) VALUES ('admin', 'admin', 'ADMIN')");
                 $resUser = pg_query($conn, "SELECT id FROM usuarios LIMIT 1");
-                $userId = pg_fetch_result($resUser, 0, 0);
+                $userIdValue = pg_fetch_result($resUser, 0, 0);
             }
         }
-        $userId = clean($conn, $userId); 
+        $userId = clean($conn, $userIdValue); 
 
         // Insertar en PEDIDOS
         $query = "INSERT INTO pedidos (proveedor_id, usuario_id, estado, total) 

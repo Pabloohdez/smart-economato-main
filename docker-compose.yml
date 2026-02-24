@@ -1,15 +1,9 @@
 services:
   app:
-    image: php:8.2-apache
+    build: .
     container_name: smart-economato-app
     restart: always
     volumes:
       - .:/var/www/html
     ports:
       - "8080:80"
-    command: >
-      sh -c "echo 'ServerName localhost' >> /etc/apache2/apache2.conf 
-      && apt-get update && apt-get install -y libpq-dev 
-      && docker-php-ext-install pdo pdo_pgsql pgsql
-      && a2enmod rewrite
-      && apache2-foreground"

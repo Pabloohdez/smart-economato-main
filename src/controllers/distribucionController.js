@@ -1,4 +1,12 @@
-// Controlador de Distribución
+import { showNotification, showConfirm } from "../utils/notifications.js";
+import {
+    productoTieneAlergenos,
+    verificarPreferencias,
+    mostrarAlertaAlergenos,
+    filtrarListaPorAlergenos,
+    generarBadgesProducto
+} from "../utils/alergenosUtils.js";
+
 const API_URL = 'http://localhost:8080/api';
 let todosLosProductos = [];
 let productoActual = null;
@@ -23,32 +31,27 @@ async function cargarProductos() {
             console.log(`✅ ${todosLosProductos.length} productos cargados`);
         } else {
             console.error('❌ Error en respuesta:', json.error);
-            alert('Error al cargar productos: ' + (json.error || 'Respuesta inválida'));
+            showNotification('Error al cargar productos: ' + (json.error || 'Respuesta inválida'), 'error');
         }
     } catch (error) {
         console.error('❌ Error cargando productos:', error);
-        alert('Error de conexión con el servidor. Verifica que la API esté funcionando.');
+        showNotification('Error de conexión con el servidor.', 'error');
     }
 }
 
+// Función para cargar el historial de movimientos
 async function cargarHistorialMovimientos() {
     try {
-        console.log('📜 Cargando historial de movimientos...');
         const res = await fetch(`${API_URL}/movimientos.php`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
         const json = await res.json();
         console.log('✅ Historial recibido:', json);
 
         const tbody = document.getElementById('tbodyHistorialMovimientos');
-        
+
         if (!json.success || !json.data || json.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #666;">No hay movimientos registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #666;">No hay movimientos registrados</td></tr>';
             return;
         }
 
@@ -56,31 +59,56 @@ async function cargarHistorialMovimientos() {
         const salidas = json.data.filter(m => m.tipo === 'SALIDA');
 
         if (salidas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: #666;">No hay salidas registradas</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: #666;">No hay salidas registradas</td></tr>';
             return;
         }
 
         tbody.innerHTML = '';
-        
+
         salidas.forEach(mov => {
             const fecha = new Date(mov.fecha);
-            const fechaFormateada = fecha.toLocaleDateString('es-ES', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric' 
+            const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
             });
-            const horaFormateada = fecha.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const horaFormateada = fecha.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
+
+            // Determinar clase de badge según el destino/motivo
+            const motivo = mov.motivo || 'Sin especificar';
+            let badgeClass = 'badge-default';
+
+            if (motivo.toLowerCase().includes('cocina')) {
+                badgeClass = 'badge-cocina';
+            } else if (motivo.toLowerCase().includes('bar') || motivo.toLowerCase().includes('cafetería')) {
+                badgeClass = 'badge-bar';
+            } else if (motivo.toLowerCase().includes('eventos')) {
+                badgeClass = 'badge-eventos';
+            } else if (motivo.toLowerCase().includes('caducidad') || motivo.toLowerCase().includes('merma')) {
+                badgeClass = 'badge-merma';
+            } else if (motivo.toLowerCase().includes('donación')) {
+                badgeClass = 'badge-donacion';
+            }
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td>${fechaFormateada} ${horaFormateada}</td>
-                <td><strong>${mov.producto_nombre || 'Producto desconocido'}</strong></td>
-                <td>${mov.cantidad}</td>
-                <td>${mov.motivo || 'Sin especificar'}</td>
-                <td>${mov.usuario_nombre || 'Desconocido'}</td>
+                <td data-label="Fecha">${fechaFormateada}</td>
+                <td data-label="Hora">${horaFormateada}</td>
+                <td data-label="Producto">${mov.producto_nombre || 'Producto desconocido'}</td>
+                <td data-label="Cantidad">${mov.cantidad}</td>
+                <td data-label="Destino">
+                    <span class="badge-destino ${badgeClass}">
+                        ${motivo}
+                    </span>
+                </td>
+                <td data-label="Usuario">
+                    <span class="usuario-badge">
+                        ${mov.usuario_nombre || 'Desconocido'}
+                    </span>
+                </td>
             `;
             tbody.appendChild(tr);
         });
@@ -89,15 +117,16 @@ async function cargarHistorialMovimientos() {
     } catch (error) {
         console.error('❌ Error cargando historial:', error);
         const tbody = document.getElementById('tbodyHistorialMovimientos');
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 20px; color: red;">Error al cargar el historial</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 20px; color: red;">Error al cargar el historial</td></tr>';
     }
 }
+
 
 // Función para realizar la búsqueda en la base de datos
 async function realizarBusqueda() {
     const input = document.getElementById('buscadorProd');
     const lista = document.getElementById('listaResultados');
-    
+
     const term = input.value.toLowerCase().trim();
     console.log('🔍 Buscando en la base de datos:', term);
 
@@ -106,7 +135,7 @@ async function realizarBusqueda() {
         if (term.length === 0) {
             return;
         }
-        alert('Por favor, escribe al menos 2 caracteres para buscar');
+        showNotification('Por favor, escribe al menos 2 caracteres para buscar', 'warning');
         return;
     }
 
@@ -130,8 +159,12 @@ async function realizarBusqueda() {
 
         let matches = [];
         if (json.success && json.data) {
+            let data = json.data;
+            // Aplicar filtrado por preferencias (si está activo)
+            data = filtrarListaPorAlergenos(data);
+
             // Filtrar por el término de búsqueda en el cliente también
-            matches = json.data.filter(p =>
+            matches = data.filter(p =>
                 p.nombre.toLowerCase().includes(term) ||
                 (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term))
             );
@@ -167,8 +200,18 @@ async function realizarBusqueda() {
 }
 
 function seleccionarProducto(p) {
+    const verificacion = productoTieneAlergenos(p);
+    const pref = verificarPreferencias();
+
+    if (verificacion.tiene && pref.alertas) {
+        showNotification(`⚠️ ATENCIÓN: "${p.nombre}" contiene alérgenos: ${verificacion.alergenos.join(', ')}`, 'warning');
+    }
+
     productoActual = p;
-    document.getElementById('nombreSeleccionado').innerText = p.nombre;
+    document.getElementById('nombreSeleccionado').innerHTML = `
+        ${p.nombre} 
+        <div style="margin-top: 5px;">${generarBadgesProducto(p)}</div>
+    `;
     document.getElementById('stockSeleccionado').innerText = p.stock;
     document.getElementById('detalleProducto').style.display = 'block';
     document.getElementById('listaResultados').style.display = 'none';
@@ -183,9 +226,35 @@ window.ajustarCant = (delta) => {
     inp.value = val;
 };
 
-window.agregarAlCarrito = () => {
+window.agregarAlCarrito = async () => {
     if (!productoActual) return;
+
+    const verificacion = productoTieneAlergenos(productoActual);
+    const pref = verificarPreferencias();
+
+    // Bloqueo estricto
+    if (verificacion.tiene && pref.bloqueo) {
+        showNotification(`❌ ACCIÓN BLOQUEADA: No puedes distribuir este producto debido a tu alergia a: ${verificacion.alergenos.join(', ')}`, 'error');
+        return;
+    }
+
+    // Alerta de confirmación
+    if (verificacion.tiene && pref.alertas) {
+        const confirmar = await showConfirm(
+            `⚠️ ADVERTENCIA DE SEGURIDAD\n\n` +
+            `Vas a distribuir "${productoActual.nombre}", que contiene: ${verificacion.alergenos.join(', ')}.\n\n` +
+            `¿Estás seguro de que deseas continuar?`
+        );
+        if (!confirmar) return;
+    }
+
     const cant = parseInt(document.getElementById('cantidadSalida').value);
+
+    // VERIFICACIÓN DE ALÉRGENOS
+    // Si el usuario tiene alertas activas y el producto contiene alérgenos peligrosos
+    // mostrarAlertaAlergenos devolverá true si el usuario CANCELA la operación.
+    const debeBloquear = await mostrarAlertaAlergenos(productoActual);
+    if (debeBloquear) return;
 
     const existente = carrito.find(i => i.productoId == productoActual.id);
     if (existente) {
@@ -232,11 +301,11 @@ window.eliminarDelCarrito = (index) => {
 };
 
 window.confirmarSalida = async () => {
-    if (carrito.length === 0) return alert("El carrito está vacío");
+    if (carrito.length === 0) return showNotification("El carrito está vacío", 'warning');
 
     const motivo = document.getElementById('motivoSalida').value;
 
-    if (!confirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
+    if (!await showConfirm(`¿Confirmar salida de ${carrito.length} productos para ${motivo}?`)) return;
 
     try {
         let errores = [];
@@ -278,29 +347,29 @@ window.confirmarSalida = async () => {
 
         // Mostrar resultado
         if (errores.length === 0) {
-            alert(`✅ Todos los movimientos registrados correctamente (${exitosos} productos).`);
+            showNotification(`✅ Todos los movimientos registrados correctamente (${exitosos} productos).`, 'success');
             carrito = [];
             renderizarCarrito();
             cargarProductos();
             cargarHistorialMovimientos(); // Actualizar historial
         } else if (exitosos > 0) {
-            alert(`⚠️ Parcialmente completado:\n- Exitosos: ${exitosos}\n- Errores: ${errores.length}\n\n${errores.join('\n')}`);
+            showNotification(`⚠️ Parcialmente completado: ${exitosos} exitosos, ${errores.length} errores.`, 'warning');
             carrito = [];
             renderizarCarrito();
             cargarProductos();
             cargarHistorialMovimientos(); // Actualizar historial
         } else {
-            alert(`❌ Error al registrar salidas:\n${errores.join('\n')}`);
+            showNotification(`❌ Error al registrar salidas.`, 'error');
         }
 
     } catch (error) {
         console.error('❌ Error crítico:', error);
-        alert('Error de red al procesar las salidas');
+        showNotification('Error de red al procesar las salidas', 'error');
     }
 };
 
 // Función de inicialización
-export function initDistribucion() {
+export async function initDistribucion() {
     console.log('🚀 Iniciando módulo de distribución...');
 
     // Obtener elementos del DOM
@@ -320,7 +389,7 @@ export function initDistribucion() {
     console.log('✅ Elementos del buscador encontrados');
 
     // Event listener para el botón de búsqueda
-    btnBuscar.addEventListener('click', function() {
+    btnBuscar.addEventListener('click', function () {
         console.log('👆 ¡CLICK EN BOTÓN DE BÚSQUEDA DETECTADO!');
         realizarBusqueda();
     });
@@ -344,7 +413,11 @@ export function initDistribucion() {
             return;
         }
 
-        const matches = todosLosProductos.filter(p =>
+        let data = todosLosProductos;
+        // Aplicar filtrado por preferencias (si está activo)
+        data = filtrarListaPorAlergenos(data);
+
+        const matches = data.filter(p =>
             p.nombre.toLowerCase().includes(term) ||
             (p.codigoBarras && p.codigoBarras.includes(term))
         );
@@ -366,7 +439,7 @@ export function initDistribucion() {
     console.log('✅ Event listener de autocomplete agregado');
 
     // Cargar productos e historial al inicio
-    cargarProductos();
-    cargarHistorialMovimientos();
+    await cargarProductos();
+    await cargarHistorialMovimientos();
     console.log('✅ Sistema de distribución inicializado');
 }
