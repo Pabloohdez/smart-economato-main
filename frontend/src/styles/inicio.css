@@ -125,6 +125,9 @@
 
 .content{
   padding: 22px;
+  width: 100%;
+  max-width: 1200px; /* más aire */
+  margin: 0 auto;    /* centra todo el contenido */
 }
 
 .dashboard-grid{
@@ -132,6 +135,7 @@
   grid-template-columns: repeat(3, minmax(220px, 1fr));
   gap: 22px;
   max-width: 980px;
+  margin: 0 auto;    /* ✅ esto centra las tarjetas */
 }
 
 .card{
@@ -185,4 +189,109 @@
   .app-shell{ grid-template-columns: 1fr; }
   .sidebar{ position: sticky; top: 0; z-index: 5; }
   .dashboard-grid{ grid-template-columns: 1fr; }
+}
+
+/* ===== User dropdown (Topbar) ===== */
+.userMenu{
+  position: relative;
+}
+
+.userButton{
+  border: 1px solid rgba(229,231,235,.9);
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(17,24,39,.08);
+}
+
+.userButton:hover{
+  background: #fbfbfd;
+}
+
+.userText{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+}
+
+.userName{
+  font-weight: 800;
+  color: var(--text);
+}
+
+.userRole{
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.chev{
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.userDropdown{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 260px;
+  background: #fff;
+  border: 1px solid rgba(229,231,235,.9);
+  border-radius: 16px;
+  box-shadow: 0 18px 40px rgba(17,24,39,.12);
+  overflow: hidden;
+  z-index: 50;
+}
+
+.ddItem{
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ddItem:hover{
+  background: #f6f7fb;
+}
+
+.ddMeta{
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ddMuted{
+  color: var(--muted);
+}
+
+.ddSep{
+  height: 1px;
+  background: var(--line);
+}
+
+.ddDanger{
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--brand);
+}
+
+.ddDanger:hover{
+  background: #fff5f5;
 }

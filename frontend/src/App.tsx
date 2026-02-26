@@ -3,6 +3,8 @@ import IngresarProductoPage from "./pages/IngresarProductoPage";
 import InventarioPage from "./pages/InventarioPage";
 import LoginPage from "./pages/LoginPage";
 import InicioPage from "./pages/InicioPage";
+import Recepcion from "./pages/RecepcionPage";
+import DistribucionPage from "./pages/DistribucionPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -10,8 +12,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Login libre */}
         <Route path="/login" element={<LoginPage />} />
 
+        {/* Rutas protegidas */}
         <Route
           path="/"
           element={
@@ -20,12 +24,18 @@ export default function App() {
             </ProtectedRoute>
           }
         >
+          {/* Redirección por defecto */}
           <Route index element={<Navigate to="/inicio" replace />} />
+
+          {/* Páginas */}
           <Route path="inicio" element={<InicioPage />} />
+          <Route path="recepcion" element={<Recepcion />} />
+          <Route path="distribucion" element={<DistribucionPage />} />
           <Route path="inventario" element={<InventarioPage />} />
           <Route path="inventario/nuevo" element={<IngresarProductoPage />} />
         </Route>
 
+        {/* Cualquier otra ruta */}
         <Route path="*" element={<Navigate to="/inicio" replace />} />
       </Routes>
     </BrowserRouter>
