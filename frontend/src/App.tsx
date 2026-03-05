@@ -7,6 +7,8 @@ import Recepcion from "./pages/RecepcionPage";
 import DistribucionPage from "./pages/DistribucionPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import BajasPage from "./pages/BajasPage";
+import ProveedoresPage from "./pages/ProveedoresPage";
 
 export default function App() {
   return (
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="distribucion" element={<DistribucionPage />} />
           <Route path="inventario" element={<InventarioPage />} />
           <Route path="inventario/nuevo" element={<IngresarProductoPage />} />
+          <Route path="bajas" element={<BajasPage />} />
+          <Route path="proveedores" element={<ProveedoresPage />} />
         </Route>
 
         {/* Cualquier otra ruta */}

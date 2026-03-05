@@ -56,7 +56,7 @@ export default function InventarioToolbar({
           aria-label="Buscar producto por nombre o código"
         />
 
-        <button className="btn-buscar-inventario" type="button">
+        <button id="btnBuscar" className="btn-buscar-inventario" type="button">
           Buscar
         </button>
       </div>
@@ -124,7 +124,11 @@ export default function InventarioToolbar({
           ⏰ Próximo a Caducar
         </button>
 
-        <button className="btn-accion-inventario btn-limpiar" type="button" onClick={limpiarFiltros}>
+        <button
+          className="btn-accion-inventario btn-limpiar"
+          type="button"
+          onClick={limpiarFiltros}
+        >
           🧹 Limpiar Filtros
         </button>
       </div>
