@@ -18,6 +18,44 @@ export type Producto = {
   proveedor?: Proveedor | null;
 };
 
+export type CrearProductoPayload = {
+  nombre: string;
+  precio: number;
+  precioUnitario: string;
+  stock: number;
+  stockMinimo: number;
+  categoriaId: number | string;
+  proveedorId: number | string;
+  unidadMedida: string;
+  marca: string;
+  codigoBarras: string;
+  fechaCaducidad: string;
+  alergenos: string[];
+  descripcion: string;
+  imagen: string;
+  activo: boolean;
+};
+
+export type RegistrarBajaPayload = {
+  productoId: number | string;
+  cantidad: number;
+  tipoBaja: string;
+  motivo: string;
+  usuarioId: string;
+};
+
+export type CrearPedidoPayload = {
+  proveedorId: number | string | null | undefined;
+  total: number;
+  usuarioId: string;
+  items: Array<{
+    producto_id: number | string;
+    cantidad: number;
+    precio: number;
+    nombre: string;
+  }>;
+};
+
 async function getJSON<T>(path: string): Promise<T> {
   const res = await fetch(`${API_URL}${path}`);
   if (!res.ok) throw new Error(`HTTP ${res.status} en ${path}`);
@@ -30,7 +68,6 @@ export async function getProductos(): Promise<Producto[]> {
   return data as Producto[];
 }
 
-/** Opcional: si no existen endpoints, puedes no usarlos */
 export async function getCategorias(): Promise<Categoria[]> {
   const json = await getJSON<any>("/categorias.php");
   const data = Array.isArray(json) ? json : (json?.data ?? []);
@@ -41,4 +78,58 @@ export async function getProveedores(): Promise<Proveedor[]> {
   const json = await getJSON<any>("/proveedores.php");
   const data = Array.isArray(json) ? json : (json?.data ?? []);
   return data as Proveedor[];
+}
+
+export async function crearProducto(payload: CrearProductoPayload): Promise<any> {
+  const res = await fetch(`${API_URL}/productos.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status} en /productos.php: ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function registrarBaja(payload: RegistrarBajaPayload): Promise<any> {
+  const res = await fetch(`${API_URL}/bajas.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status} en /bajas.php: ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function crearPedido(payload: CrearPedidoPayload): Promise<any> {
+  const res = await fetch(`${API_URL}/pedidos.php`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status} en /pedidos.php: ${text}`);
+  }
+
+  return res.json();
 }

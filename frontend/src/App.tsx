@@ -9,6 +9,12 @@ import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import BajasPage from "./pages/BajasPage";
 import ProveedoresPage from "./pages/ProveedoresPage";
+import PedidosPage from "./pages/PedidosPage";
+import EscandallosPage from "./pages/EscandallosPage";
+import RendimientoPage from "./pages/RendimientoPage";
+import AvisosPage from "./pages/AvisosPage";
+import ConfiguracionPage from "./pages/ConfiguracionPage";
+import AuditoriaPage from "./pages/AuditoriaPage";
 
 export default function App() {
   return (
@@ -37,6 +43,12 @@ export default function App() {
           <Route path="inventario/nuevo" element={<IngresarProductoPage />} />
           <Route path="bajas" element={<BajasPage />} />
           <Route path="proveedores" element={<ProveedoresPage />} />
+          <Route path="pedidos" element={<PedidosPage />} />
+          <Route path="escandallos" element={<EscandallosPage />} />
+          <Route path="rendimiento" element={<RendimientoPage />} />
+          <Route path="avisos" element={<AvisosPage />} />
+          <Route path="configuracion" element={<ConfiguracionPage />} />
+          <Route path="auditoria" element={<AuditoriaPage />} />
         </Route>
 
         {/* Cualquier otra ruta */}

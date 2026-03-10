@@ -1,16 +1,59 @@
-# React + Vite
+# Smart Economato – Frontend (React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend del proyecto **Smart Economato** hecho con **React + Vite + TypeScript**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Cómo ejecutarlo
 
-## React Compiler
+1. Actualizar el repositorio
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+git pull
+```
 
-## Expanding the ESLint configuration
+2. Entrar en la carpeta del frontend
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+cd frontend
+```
+
+3. Instalar dependencias (solo la primera vez)
+
+```
+npm install
+```
+
+4. Crear el archivo `.env` si no existe
+
+Copiar el archivo de ejemplo:
+
+```
+.env.example
+```
+
+y crear un archivo `.env` con el mismo contenido:
+
+```
+VITE_API_URL=http://localhost:8080/api
+```
+
+5. Ejecutar el proyecto
+
+```
+npm run dev
+```
+
+6. Abrir en el navegador
+
+```
+http://localhost:5173
+```
+
+---
+
+## Notas
+
+* Asegurarse de que **Docker y el backend estén ejecutándose**.
+* Si es la primera vez que se descarga el proyecto hay que ejecutar `npm install`.
+* Si hay cambios en dependencias puede ser necesario volver a ejecutar `npm install`.
