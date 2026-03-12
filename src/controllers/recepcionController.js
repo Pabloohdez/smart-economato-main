@@ -9,7 +9,7 @@ let productosRecepcion = [];
 let productoSeleccionado = null;
 let pedidosPendientes = [];
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 
 export async function initRecepcion() {
     console.log("🚚 Iniciando módulo de recepción...");
@@ -99,7 +99,7 @@ async function abrirModalPedidos() {
     div.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...';
 
     try {
-        const res = await fetch(`${API_URL}/pedidos.php`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const res = await fetch(`${API_URL}/pedidos`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         if (!res.ok) throw new Error("Error HTTP " + res.status);
 
         const json = await res.json();
@@ -153,7 +153,7 @@ function renderTablaPedidos(lista, container) {
 window.verificarPedido = async (id) => {
     // Obtener detalles del pedido
     try {
-        const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const res = await fetch(`${API_URL}/pedidos/${id}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         const json = await res.json();
 
         if (!json.success) return showNotification("Error cargando detalles del pedido", 'error');
@@ -236,7 +236,7 @@ window.confirmarVerificacion = async (pedidoId) => {
     if (!await showConfirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
 
     try {
-        const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+        const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -256,7 +256,7 @@ window.confirmarVerificacion = async (pedidoId) => {
 
             // Obtener info completa del pedido para agregar a la tabla
             try {
-                const pedidoRes = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+                const pedidoRes = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
                 const pedidoData = await pedidoRes.json();
@@ -309,7 +309,7 @@ window.rechazarPedido = async (id) => {
     if (!await showConfirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
 
     try {
-        const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, {
+        const res = await fetch(`${API_URL}/pedidos/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -465,7 +465,7 @@ async function confirmarRecepcionManual() {
     };
 
     try {
-        const res = await fetch(`${API_URL}/movimientos.php`, {
+        const res = await fetch(`${API_URL}/movimientos`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

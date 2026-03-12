@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 // Cache in-memory
 let _cacheProductos = null;
 let _cacheCategorias = null;
@@ -7,7 +7,7 @@ let _cacheProveedores = null;
 async function getProductos(forceReload = false) {
     if (_cacheProductos && !forceReload) return _cacheProductos;
     try {
-        const url = forceReload ? `${API_URL}/productos.php?t=${Date.now()}` : `${API_URL}/productos.php`;
+        const url = forceReload ? `${API_URL}/productos?t=${Date.now()}` : `${API_URL}/productos`;
         const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
@@ -24,7 +24,7 @@ async function getProductos(forceReload = false) {
 async function getCategorias(forceReload = false) {
     if (_cacheCategorias && !forceReload) return _cacheCategorias;
     try {
-        const url = forceReload ? `${API_URL}/categorias.php?t=${Date.now()}` : `${API_URL}/categorias.php`;
+        const url = forceReload ? `${API_URL}/categorias?t=${Date.now()}` : `${API_URL}/categorias`;
         const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
@@ -41,7 +41,7 @@ async function getCategorias(forceReload = false) {
 async function getProveedores(forceReload = false) {
     if (_cacheProveedores && !forceReload) return _cacheProveedores;
     try {
-        const url = forceReload ? `${API_URL}/proveedores.php?t=${Date.now()}` : `${API_URL}/proveedores.php`;
+        const url = forceReload ? `${API_URL}/proveedores?t=${Date.now()}` : `${API_URL}/proveedores`;
         const response = await fetch(url, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
@@ -59,7 +59,7 @@ export async function crearProducto(producto) {
     try {
         console.log("📤 Enviando producto:", producto);
 
-        const response = await fetch(`${API_URL}/productos.php`, {
+        const response = await fetch(`${API_URL}/productos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -91,7 +91,7 @@ export async function actualizarProducto(id, producto) {
         console.log(`📤 Actualizando producto ${id}:`, producto);
 
         // Enviamos el ID como query param o en el cuerpo, pero mi PHP soporta query param para PUT
-        const response = await fetch(`${API_URL}/productos.php?id=${id}`, {
+        const response = await fetch(`${API_URL}/productos/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -121,7 +121,7 @@ export async function actualizarProducto(id, producto) {
 async function registrarBaja(bajaData) {
     try {
         console.log("📤 Registrando baja:", bajaData);
-        const response = await fetch(`${API_URL}/bajas.php`, {
+        const response = await fetch(`${API_URL}/bajas`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -143,7 +143,7 @@ async function registrarBaja(bajaData) {
 async function crearPedido(pedidoData) {
     try {
         console.log("📤 Creando pedido:", pedidoData);
-        const response = await fetch(`${API_URL}/pedidos.php`, {
+        const response = await fetch(`${API_URL}/pedidos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

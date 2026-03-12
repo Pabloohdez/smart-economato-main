@@ -6,7 +6,7 @@
 import { showNotification } from '../utils/notifications.js';
 import { esAdmin, obtenerUsuarioActual, obtenerUsuarioId } from '../utils/auth.js';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 
 let gridAuditoria;
 let registrosAuditoria = [];
@@ -46,7 +46,7 @@ async function cargarAuditoria(filtros = {}) {
         params.append('limite', '200');
         params.append('usuario_actual', obtenerUsuarioId());
 
-        const url = `${API_URL}/auditoria.php?${params.toString()}`;
+        const url = `${API_URL}/auditoria?${params.toString()}`;
         const response = await fetch(url, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'

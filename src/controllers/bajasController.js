@@ -86,7 +86,7 @@ async function cargarEstadisticasMes() {
         console.log(`📊 Cargando estadísticas de bajas para ${mes}/${anio}...`);
         
         // Fetch bajas del mes actual
-        const res = await fetch(`http://localhost:8080/api/bajas.php?mes=${mes}&anio=${anio}`, {
+        const res = await fetch(`http://localhost:3000/api/bajas?mes=${mes}&anio=${anio}`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         
@@ -149,7 +149,7 @@ async function cargarHistorialBajas() {
         console.log(`📜 Cargando historial de bajas para ${mes}/${anio}...`);
         
         // Fetch bajas del mes actual
-        const res = await fetch(`http://localhost:8080/api/bajas.php?mes=${mes}&anio=${anio}`, {
+        const res = await fetch(`http://localhost:3000/api/bajas?mes=${mes}&anio=${anio}`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         
@@ -637,7 +637,7 @@ async function confirmarBaja() {
             
             console.log('📤 Enviando baja:', payload);
             
-            const res = await fetch('http://localhost:8080/api/bajas.php', {
+            const res = await fetch('http://localhost:3000/api/bajas', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',

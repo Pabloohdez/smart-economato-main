@@ -1,7 +1,7 @@
 import { getProveedores } from "../services/apiService.js";
 import { showNotification } from "../utils/notifications.js";
 
-const API_URL = 'http://localhost:8080/api/proveedores.php';
+const API_URL = 'http://localhost:3000/api/proveedores';
 
 let listaProveedores = []; // Almacenar datos cargados para edición
 let gridInstance = null; // Almacenar instancia de GridJS para poder destruirla
@@ -82,7 +82,7 @@ async function eliminarProveedor(id) {
     if (!confirmado) return;
 
     try {
-        const res = await fetch(`${API_URL}?id=${id}`, {
+        const res = await fetch(`${API_URL}/${id}`, {
             method: 'DELETE',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
@@ -196,7 +196,7 @@ async function guardarProveedor(event) {
 
     // Si hay ID, es una edición (PUT)
     if (id) {
-        url += `?id=${id}`;
+        url += `/${id}`;
         method = 'PUT';
     }
 

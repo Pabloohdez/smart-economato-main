@@ -2,7 +2,7 @@ import { getProductos, getProveedores } from "../services/apiService.js";
 import { navigateTo } from "../router.js";
 import { showNotification, showConfirm } from "../utils/notifications.js";
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 let itemsPedido = [];
 let productosCache = [];
 let gridInstance = null; // Almacenar instancia de GridJS para poder destruirla
@@ -55,7 +55,7 @@ async function cargarPedidos() {
 
     try {
         // AÑADIDO: Cache buster ?t=... para evitar caché del navegador
-        const res = await fetch(`${API_URL}/pedidos.php?t=${Date.now()}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+        const res = await fetch(`${API_URL}/pedidos?t=${Date.now()}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
         console.log("📡 Respuesta API status:", res.status);
 
         if (!res.ok) {
@@ -302,7 +302,7 @@ async function guardarPedido() {
         };
 
         try {
-            const res = await fetch(`${API_URL}/pedidos.php`, {
+            const res = await fetch(`${API_URL}/pedidos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

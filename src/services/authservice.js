@@ -1,10 +1,10 @@
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 
 export const AuthService = {
     async login(username, password) {
         try {
             // Hacer petición POST a login.php (API PHP)
-            const res = await fetch(`${API_URL}/login.php`, {
+            const res = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -7,7 +7,7 @@ import {
     generarBadgesProducto
 } from "../utils/alergenosUtils.js";
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 let todosLosProductos = [];
 let productoActual = null;
 let carrito = [];
@@ -15,7 +15,7 @@ let carrito = [];
 async function cargarProductos() {
     try {
         console.log('📦 Cargando productos para distribución...');
-        const res = await fetch(`${API_URL}/productos.php`, {
+        const res = await fetch(`${API_URL}/productos`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
@@ -42,7 +42,7 @@ async function cargarProductos() {
 // Función para cargar el historial de movimientos
 async function cargarHistorialMovimientos() {
     try {
-        const res = await fetch(`${API_URL}/movimientos.php`, {
+        const res = await fetch(`${API_URL}/movimientos`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const json = await res.json();
@@ -146,7 +146,7 @@ async function realizarBusqueda() {
     try {
         // Hacer petición a la API con el término de búsqueda
         console.log('📡 Consultando API para buscar productos...');
-        const res = await fetch(`${API_URL}/productos.php?buscar=${encodeURIComponent(term)}`, {
+        const res = await fetch(`${API_URL}/productos?buscar=${encodeURIComponent(term)}`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
@@ -324,7 +324,7 @@ window.confirmarSalida = async () => {
             console.log('📤 Enviando movimiento:', payload);
 
             try {
-                const res = await fetch(`${API_URL}/movimientos.php`, {
+                const res = await fetch(`${API_URL}/movimientos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                     body: JSON.stringify(payload)

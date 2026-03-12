@@ -7,3 +7,20 @@ services:
       - .:/var/www/html
     ports:
       - "8080:80"
+    depends_on:
+      - api
+
+  api:
+    build: ./backend
+    container_name: smart-economato-api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      # Supabase (crea .env en la raíz con DB_USER y DB_PASS si usas otros valores)
+      - DB_HOST=${DB_HOST:-aws-1-eu-west-1.pooler.supabase.com}
+      - DB_PORT=${DB_PORT:-6543}
+      - DB_NAME=${DB_NAME:-postgres}
+      - DB_USER=${DB_USER:-postgres.tolmfuusklacewxcvwqj}
+      - DB_PASS=${DB_PASS:-dfbZGsDR0LVppIPZ}

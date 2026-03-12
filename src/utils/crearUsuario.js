@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 
 
 
-                const response = await fetch("http://localhost:4000/usuarios", {
+                const response = await fetch("http://localhost:3000/api/usuarios", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(nuevoUsuario)
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             } catch (error) {
                 console.error("Error detectado:", error);
-                mostrarMensaje("Error de conexión. Asegúrate de que el servidor json-server está corriendo en el puerto 4000.", "red");
+                mostrarMensaje("Error de conexión. Asegúrate de que la API está corriendo en http://localhost:3000.", "red");
             }
         });
     } else {

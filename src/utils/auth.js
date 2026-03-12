@@ -3,7 +3,7 @@
  * Gestiona el usuario actual y verificación de roles
  */
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = 'http://localhost:3000/api';
 
 /**
  * Obtener el usuario actual desde localStorage
@@ -53,7 +53,7 @@ export function obtenerUsuarioId() {
  */
 export async function cargarRolUsuario(usuarioId) {
     try {
-        const response = await fetch(`${API_URL}/usuarios.php?id=${usuarioId}`);
+        const response = await fetch(`${API_URL}/usuarios?id=${usuarioId}`);
         const result = await response.json();
 
         if (result.success && result.data) {
