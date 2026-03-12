@@ -15,6 +15,7 @@ import RendimientoPage from "./pages/RendimientoPage";
 import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
+import CrearUsuarioPage from "./pages/CrearUsuarioPage";
 
 export default function App() {
   return (
@@ -22,7 +23,7 @@ export default function App() {
       <Routes>
         {/* Login libre */}
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/registro" element={<CrearUsuarioPage />} />
         {/* Rutas protegidas */}
         <Route
           path="/"
