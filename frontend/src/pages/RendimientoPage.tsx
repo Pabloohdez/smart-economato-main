@@ -23,7 +23,7 @@ type RegistroHistorial = RegistroRendimiento & {
   categoria?: string;
 };
 
-const API_ENDPOINT = `${import.meta.env.VITE_API_URL as string}/rendimientos.php`;
+const API_ENDPOINT = `${import.meta.env.VITE_API_URL as string}/rendimientos`;
 
 export default function RendimientoPage() {
   const [fechaActual, setFechaActual] = useState("");

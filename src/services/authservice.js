@@ -3,7 +3,7 @@ const API_URL = 'http://localhost:3000/api';
 export const AuthService = {
     async login(username, password) {
         try {
-            // Hacer petición POST a login.php (API PHP)
+            // Hacer petición POST al backend NestJS /api/login
             const res = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: {

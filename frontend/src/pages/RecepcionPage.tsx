@@ -39,7 +39,7 @@ type RecepcionRow = {
   precio: number;
 };
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 function formatEUR(n: number) {
   return `${n.toFixed(2)} €`;
@@ -92,9 +92,9 @@ export default function Recepcion() {
     setLoading(true);
     try {
       const [pRes, cRes, prRes] = await Promise.all([
-        fetch(`${API_URL}/productos.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/categorias.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/proveedores.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        fetch(`${API_URL}/productos`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        fetch(`${API_URL}/categorias`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        fetch(`${API_URL}/proveedores`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
       ]);
 
       const [pJson, cJson, prJson] = await Promise.all([pRes.json(), cRes.json(), prRes.json()]);
@@ -184,7 +184,7 @@ export default function Recepcion() {
       })),
     };
 
-    const res = await fetch(`${API_URL}/movimientos.php`, {
+    const res = await fetch(`${API_URL}/movimientos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -210,7 +210,7 @@ export default function Recepcion() {
     setVerificandoPedido(null);
 
     try {
-      const res = await fetch(`${API_URL}/pedidos.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+      const res = await fetch(`${API_URL}/pedidos`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
       const json = await res.json();
 
       if (!json?.success || !json?.data) throw new Error("Respuesta inesperada");
@@ -229,7 +229,7 @@ export default function Recepcion() {
 
   async function verificarPedido(id: number | string) {
     try {
-      const res = await fetch(`${API_URL}/pedidos.php?id=${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+      const res = await fetch(`${API_URL}/pedidos/${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
       const json = await res.json();
       if (!json?.success) throw new Error("Error cargando detalles");
 
@@ -258,7 +258,7 @@ export default function Recepcion() {
     }));
 
     try {
-      const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+      const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -318,7 +318,7 @@ export default function Recepcion() {
     if (!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
 
     try {
-      const res = await fetch(`${API_URL}/pedidos.php?id=${pedidoId}`, {
+      const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -4,7 +4,7 @@ export type UsuarioActivo = Record<string, unknown>;
 
 export async function login(username: string, password: string): Promise<UsuarioActivo | null> {
   try {
-    const res = await fetch(`${API_URL}/login.php`, {
+    const res = await fetch(`${API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

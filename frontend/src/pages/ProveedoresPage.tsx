@@ -5,7 +5,7 @@ import "../styles/proveedores.css";
 
 import { showNotification, showConfirm } from "../utils/notifications";
 
-const API_URL = "http://localhost:8080/api/proveedores.php";
+const API_URL = `${import.meta.env.VITE_API_URL as string}/proveedores`;
 
 type Proveedor = {
   id: string;
@@ -151,7 +151,7 @@ export default function ProveedoresPage() {
     }
 
     const method = form.id ? "PUT" : "POST";
-    const url = form.id ? `${API_URL}?id=${form.id}` : API_URL;
+    const url = form.id ? `${API_URL}/${form.id}` : API_URL;
 
     try {
       const res = await fetch(url, {
@@ -201,7 +201,7 @@ export default function ProveedoresPage() {
     if (!ok) return;
 
     try {
-      const res = await fetch(`${API_URL}?id=${id}`, {
+      const res = await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });

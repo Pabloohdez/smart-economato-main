@@ -163,8 +163,7 @@
 
 <body>
     <h1>🛠️ Verificador de Errores API</h1>
-    <p>Esta herramienta ejecuta pruebas automáticas contra el Backend PHP para verificar que las mejoras de seguridad y
-        manejo de errores funcionan correctamente.</p>
+    <p>Esta herramienta ejecuta pruebas contra el backend NestJS (carpeta backend/). Base URL: <code>http://localhost:3000/api</code>.</p>
 
     <button onclick="runTests()">▶️ Ejecutar Pruebas</button>
 
@@ -246,7 +245,7 @@
             // TEST 1: Verificar Login Incorrecto (Debe dar 401)
             const status1 = createResultCard("Login: Credenciales Incorrectas", "res1");
             try {
-                const res = await fetch(`${API_URL}/login.php`, {
+                const res = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: "usuario_falso_123", password: "badpassword" })
@@ -266,7 +265,7 @@
             // TEST 2: Verificar Inyección SQL en Login (Debe ser bloqueado y NO dar error SQL)
             const status2 = createResultCard("Seguridad: Intento SQL Injection", "res2");
             try {
-                const res = await fetch(`${API_URL}/login.php`, {
+                const res = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: "' OR '1'='1", password: "' OR '1'='1" })
@@ -289,7 +288,7 @@
             // TEST 3: Obtener Productos (Formato Estandarizado)
             const status3 = createResultCard("Estandarización: GET Productos", "res3");
             try {
-                const res = await fetch(`${API_URL}/productos.php`);
+                const res = await fetch(`${API_URL}/productos`);
                 const json = await res.json();
                 log(`Test 3 Response: ${JSON.stringify(json).substring(0, 100)}...`);
 
@@ -306,11 +305,11 @@
             const status4 = createResultCard("Validación: Datos faltantes", "res4");
             try {
                 // Intentar crear producto vacío
-                const res = await fetch(`${API_URL}/productos.php`, {
+                const res = await fetch(`${API_URL}/productos`, {
                     method: 'POST',
                     body: JSON.stringify({})
                 });
-                // Nota: api/productos.php actual podría no tener validación estricta aún, pero verificamos que no crashee
+                // Nota: api/productos actual podría no tener validación estricta aún, pero verificamos que no crashee
                 const json = await res.json();
                 log(`Test 4 Response: ${res.status} ${JSON.stringify(json)}`);
 
@@ -398,7 +397,7 @@
             const start = Date.now();
 
             try {
-                const res = await fetch(`${API_URL}/productos.php`, {
+                const res = await fetch(`${API_URL}/productos`, {
                     method: 'GET',
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest' // Asegurar que reciba JSON

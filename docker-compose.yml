@@ -1,10 +1,14 @@
+# Frontend: React + TypeScript (Vite). Backend: NestJS. Base de datos: Supabase (remoto).
+# Sin PHP. Todo dockerizado.
+
 services:
-  app:
-    build: .
-    container_name: smart-economato-app
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    container_name: smart-economato-frontend
     restart: always
-    volumes:
-      - .:/var/www/html
     ports:
       - "8080:80"
     depends_on:
@@ -18,7 +22,6 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      # Supabase (crea .env en la raíz con DB_USER y DB_PASS si usas otros valores)
       - DB_HOST=${DB_HOST:-aws-1-eu-west-1.pooler.supabase.com}
       - DB_PORT=${DB_PORT:-6543}
       - DB_NAME=${DB_NAME:-postgres}

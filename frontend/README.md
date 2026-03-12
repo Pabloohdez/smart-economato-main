@@ -32,11 +32,10 @@ Copiar el archivo de ejemplo:
 .env.example
 ```
 
-y crear un archivo `.env` con el mismo contenido:
+y crear un archivo `.env`:
 
-```
-VITE_API_URL=http://localhost:8080/api
-```
+- **Con Docker:** `VITE_API_URL=/api` (el compose ya construye con esto).
+- **En local (npm run dev):** `VITE_API_URL=http://localhost:3000/api`.
 
 5. Ejecutar el proyecto
 
@@ -54,6 +53,6 @@ http://localhost:5173
 
 ## Notas
 
-* Asegurarse de que **Docker y el backend estén ejecutándose**.
+* Asegurarse de que el **backend NestJS** esté ejecutándose en el puerto 3000 (o Docker con el servicio `api`).
 * Si es la primera vez que se descarga el proyecto hay que ejecutar `npm install`.
 * Si hay cambios en dependencias puede ser necesario volver a ejecutar `npm install`.

@@ -201,7 +201,7 @@
                 <div class="error-title-demo">Solicitud Incorrecta</div>
                 <div class="error-desc">Se activa cuando los datos enviados no son válidos o faltan campos obligatorios.
                 </div>
-                <a href="api/test_error.php?code=400" class="btn-test">
+                <a href="#" class="btn-test">
                     <i class="fa-solid fa-flask"></i> Probar Error 400
                 </a>
             </div>
@@ -212,7 +212,7 @@
                 <div class="error-code-demo code-401">401</div>
                 <div class="error-title-demo">No Autorizado</div>
                 <div class="error-desc">Ocurre cuando intentas acceder sin credenciales válidas o sesión activa.</div>
-                <a href="api/test_error.php?code=401" class="btn-test">
+                <a href="#" class="btn-test">
                     <i class="fa-solid fa-flask"></i> Probar Error 401
                 </a>
             </div>
@@ -223,7 +223,7 @@
                 <div class="error-code-demo code-403">403</div>
                 <div class="error-title-demo">Acceso Prohibido</div>
                 <div class="error-desc">Se muestra cuando no tienes permisos para acceder a un recurso.</div>
-                <a href="api/test_error.php?code=403" class="btn-test">
+                <a href="#" class="btn-test">
                     <i class="fa-solid fa-flask"></i> Probar Error 403
                 </a>
             </div>
@@ -246,7 +246,7 @@
                 <div class="error-title-demo">Error del Servidor</div>
                 <div class="error-desc">Sucede cuando hay un error crítico en el backend (BD caída, error PHP, etc.).
                 </div>
-                <a href="api/test_error.php?code=500" class="btn-test">
+                <a href="#" class="btn-test">
                     <i class="fa-solid fa-flask"></i> Probar Error 500
                 </a>
             </div>
@@ -257,7 +257,7 @@
                 <div class="error-code-demo code-503">503</div>
                 <div class="error-title-demo">Servicio No Disponible</div>
                 <div class="error-desc">Se activa cuando el servidor está en mantenimiento o sobrecargado.</div>
-                <a href="api/test_error.php?code=503" class="btn-test">
+                <a href="#" class="btn-test">
                     <i class="fa-solid fa-flask"></i> Probar Error 503
                 </a>
             </div>
@@ -267,24 +267,22 @@
             <h2><i class="fa-solid fa-lightbulb"></i> Cómo Provocar Errores Reales</h2>
             <ul>
                 <li>
-                    <strong>400 (Datos Inválidos):</strong> Envía un POST a <code>/api/login.php</code> sin username o
+                    <strong>400 (Datos Inválidos):</strong> Envía un POST a <code>/api/login</code> sin username o
                     password
                 </li>
                 <li>
                     <strong>401 (No Autorizado):</strong> Intenta login con credenciales incorrectas en
-                    <code>/api/login.php</code>
+                    <code>/api/login</code>
                 </li>
                 <li>
-                    <strong>403 (Prohibido):</strong> Intenta acceder a <code>/api/config.php</code> directamente desde
-                    el navegador
+                    <strong>403 (Prohibido):</strong> Accede a <code>/api/auditoria</code> sin ser admin (sin usuario_actual o sin permisos)
                 </li>
                 <li>
                     <strong>404 (No Encontrado):</strong> Navega a cualquier URL que no exista, ej:
                     <code>/cualquier-cosa.html</code>
                 </li>
                 <li>
-                    <strong>500 (Error Servidor):</strong> Detén MySQL en XAMPP y recarga
-                    <code>/api/productos.php</code> desde el navegador
+                    <strong>500 (Error Servidor):</strong> Si la base de datos (Supabase) no está disponible, <code>/api/productos</code> devolverá error
                 </li>
                 <li>
                     <strong>503 (Mantenimiento):</strong> Edita <code>.htaccess</code> y añade
@@ -294,8 +292,7 @@
 
             <div class="note">
                 <strong><i class="fa-solid fa-info-circle"></i> Nota Importante:</strong>
-                Las peticiones desde el navegador (Accept: text/html) muestran páginas bonitas. Las peticiones AJAX
-                siguen recibiendo JSON. Esto se detecta automáticamente en <code>response.php</code>.
+                El backend NestJS devuelve siempre JSON con formato <code>{ success, error: { message, code } }</code>.
             </div>
         </div>
     </div>

@@ -4,7 +4,7 @@ import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import "../styles/pedidos.css";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 type Proveedor = {
   id: number | string;
@@ -66,7 +66,7 @@ export default function PedidosPage() {
       setErr("");
       setLoadingPedidos(true);
 
-      const res = await fetch(`${API_URL}/pedidos.php?t=${Date.now()}`, {
+      const res = await fetch(`${API_URL}/pedidos?t=${Date.now()}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
 
@@ -246,7 +246,7 @@ export default function PedidosPage() {
         };
 
         try {
-          const res = await fetch(`${API_URL}/pedidos.php`, {
+          const res = await fetch(`${API_URL}/pedidos`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

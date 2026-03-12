@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 type Categoria = {
   id: string | number;
@@ -115,8 +115,8 @@ export default function BajasPage() {
     setLoadingDatos(true);
     try {
       const [pRes, cRes] = await Promise.all([
-        fetch(`${API_URL}/productos.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/categorias.php`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        fetch(`${API_URL}/productos`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        fetch(`${API_URL}/categorias`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
       ]);
 
       const pJson = await pRes.json();
@@ -158,7 +158,7 @@ export default function BajasPage() {
       const mes = hoy.getMonth() + 1;
       const anio = hoy.getFullYear();
 
-      const res = await fetch(`${API_URL}/bajas.php?mes=${mes}&anio=${anio}`, {
+      const res = await fetch(`${API_URL}/bajas?mes=${mes}&anio=${anio}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
       const json = await res.json();
@@ -194,7 +194,7 @@ export default function BajasPage() {
       const mes = hoy.getMonth() + 1;
       const anio = hoy.getFullYear();
 
-      const res = await fetch(`${API_URL}/bajas.php?mes=${mes}&anio=${anio}`, {
+      const res = await fetch(`${API_URL}/bajas?mes=${mes}&anio=${anio}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
       const json = await res.json();
@@ -378,7 +378,7 @@ export default function BajasPage() {
           usuarioId: "admin1",
         };
 
-        const res = await fetch(`${API_URL}/bajas.php`, {
+        const res = await fetch(`${API_URL}/bajas`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify(payload),

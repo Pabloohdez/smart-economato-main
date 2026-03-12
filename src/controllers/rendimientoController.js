@@ -59,7 +59,8 @@ async function cargarDatos() {
     }
 }
 
-const API_ENDPOINT = 'api/rendimientos.php';
+const API_BASE = 'http://localhost:3000/api';
+const API_ENDPOINT = `${API_BASE}/rendimientos`;
 
 async function cargarDatosLocales() {
     try {

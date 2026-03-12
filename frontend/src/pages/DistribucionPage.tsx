@@ -34,7 +34,7 @@ type Movimiento = {
   usuario_nombre?: string;
 };
 
-const API_URL = "http://localhost:8080/api";
+const API_URL = import.meta.env.VITE_API_URL as string;
 
 function formatFechaHora(iso: string) {
   const d = new Date(iso);
@@ -79,7 +79,7 @@ export default function DistribucionPage() {
   async function cargarProductos() {
     setLoadingProductos(true);
     try {
-      const res = await fetch(`${API_URL}/productos.php`, {
+      const res = await fetch(`${API_URL}/productos`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
       const json = await res.json();
@@ -110,7 +110,7 @@ export default function DistribucionPage() {
   async function cargarHistorial() {
     setLoadingHistorial(true);
     try {
-      const res = await fetch(`${API_URL}/movimientos.php`, {
+      const res = await fetch(`${API_URL}/movimientos`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
       const json = await res.json();
@@ -183,7 +183,7 @@ export default function DistribucionPage() {
     setProductosBusqueda(null);
 
     try {
-      const res = await fetch(`${API_URL}/productos.php?buscar=${encodeURIComponent(t)}`, {
+      const res = await fetch(`${API_URL}/productos?buscar=${encodeURIComponent(t)}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
 
@@ -306,7 +306,7 @@ export default function DistribucionPage() {
       };
 
       try {
-        const res = await fetch(`${API_URL}/movimientos.php`, {
+        const res = await fetch(`${API_URL}/movimientos`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

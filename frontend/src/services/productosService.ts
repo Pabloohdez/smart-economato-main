@@ -63,25 +63,25 @@ async function getJSON<T>(path: string): Promise<T> {
 }
 
 export async function getProductos(): Promise<Producto[]> {
-  const json = await getJSON<any>("/productos.php");
+  const json = await getJSON<any>("/productos");
   const data = Array.isArray(json) ? json : (json?.data ?? []);
   return data as Producto[];
 }
 
 export async function getCategorias(): Promise<Categoria[]> {
-  const json = await getJSON<any>("/categorias.php");
+  const json = await getJSON<any>("/categorias");
   const data = Array.isArray(json) ? json : (json?.data ?? []);
   return data as Categoria[];
 }
 
 export async function getProveedores(): Promise<Proveedor[]> {
-  const json = await getJSON<any>("/proveedores.php");
+  const json = await getJSON<any>("/proveedores");
   const data = Array.isArray(json) ? json : (json?.data ?? []);
   return data as Proveedor[];
 }
 
 export async function crearProducto(payload: CrearProductoPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/productos.php`, {
+  const res = await fetch(`${API_URL}/productos`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -92,14 +92,14 @@ export async function crearProducto(payload: CrearProductoPayload): Promise<any>
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /productos.php: ${text}`);
+    throw new Error(`HTTP ${res.status} en /productos: ${text}`);
   }
 
   return res.json();
 }
 
 export async function registrarBaja(payload: RegistrarBajaPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/bajas.php`, {
+  const res = await fetch(`${API_URL}/bajas`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -110,14 +110,14 @@ export async function registrarBaja(payload: RegistrarBajaPayload): Promise<any>
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /bajas.php: ${text}`);
+    throw new Error(`HTTP ${res.status} en /bajas: ${text}`);
   }
 
   return res.json();
 }
 
 export async function crearPedido(payload: CrearPedidoPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/pedidos.php`, {
+  const res = await fetch(`${API_URL}/pedidos`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export async function crearPedido(payload: CrearPedidoPayload): Promise<any> {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /pedidos.php: ${text}`);
+    throw new Error(`HTTP ${res.status} en /pedidos: ${text}`);
   }
 
   return res.json();

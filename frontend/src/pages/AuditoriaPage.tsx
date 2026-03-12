@@ -153,7 +153,7 @@ export default function AuditoriaPage() {
       params.append("limite", "200");
       params.append("usuario_actual", usuarioId);
 
-      const url = `${API_URL}/auditoria.php?${params.toString()}`;
+      const url = `${API_URL}/auditoria?${params.toString()}`;
       const response = await fetch(url, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",

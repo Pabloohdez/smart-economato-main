@@ -1,6 +1,6 @@
-# API NestJS - Smart Economato
+# Backend NestJS - Smart Economato
 
-Réplica del backend PHP (carpeta `api`) en NestJS. **Base de datos: PostgreSQL en Supabase** (remoto). No se usa ninguna base de datos en local.
+API REST del proyecto. **Frontend:** React + TypeScript. **Base de datos:** PostgreSQL en Supabase (remoto). Sin PHP.
 
 ## Instalación
 
@@ -11,9 +11,9 @@ npm install
 
 ## Base de datos (Supabase)
 
-Toda la persistencia está en **PostgreSQL en Supabase**. No hace falta instalar ni ejecutar PostgreSQL en tu máquina.
+Toda la persistencia está en **PostgreSQL en Supabase**. No se usa base de datos local.
 
-La conexión usa el **connection pooler** de Supabase (puerto 6543). Por defecto se usan las mismas credenciales que en `api/config.php`. Para cambiarlas, variables de entorno (o `.env` en `backend/`):
+Variables de entorno (o `.env` en `backend/`):
 
 - `DB_HOST` – host del pooler (ej. `aws-1-eu-west-1.pooler.supabase.com`)
 - `DB_PORT` – `6543`
@@ -27,38 +27,42 @@ La conexión usa el **connection pooler** de Supabase (puerto 6543). Por defecto
 npm run start:dev
 ```
 
-La API queda en **http://localhost:3000/api** (puerto configurable con la variable de entorno `PORT`).
+La API queda en **http://localhost:3000/api** (variable `PORT`).
 
-## Rutas (sin `.php`)
+## Con Docker
 
-| PHP (antes)     | NestJS (ahora)   |
-|-----------------|------------------|
-| `/api/login.php` | `POST /api/login` |
-| `/api/usuarios.php` | `GET /api/usuarios?id=`, `POST /api/usuarios` |
-| `/api/categorias.php` | `GET/POST /api/categorias` |
-| `/api/proveedores.php` | `GET/POST/PUT/DELETE /api/proveedores` |
-| `/api/productos.php` | `GET/POST/PUT /api/productos` |
-| `/api/pedidos.php` | `GET/POST/PUT /api/pedidos` |
-| `/api/bajas.php` | `GET/POST /api/bajas` |
-| `/api/movimientos.php` | `GET/POST /api/movimientos` |
-| `/api/auditoria.php` | `GET/POST /api/auditoria` |
-| `/api/informes.php` | `GET /api/informes?tipo=dashboard|gastos_mensuales|usuarios` |
+El `docker-compose` de la raíz levanta el backend en el contenedor `api` (puerto 3000). El frontend (React) se sirve en el puerto 8080 y hace proxy de `/api` a este backend.
 
-## Cambios en el frontend
+## Rutas principales
 
-Sustituir las URLs que usan `.php` por la misma ruta sin extensión:
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/login` | Login |
+| GET/POST | `/api/usuarios` | Usuarios |
+| GET/POST | `/api/categorias` | Categorías |
+| GET/POST/PUT/DELETE | `/api/proveedores` | Proveedores |
+| GET/POST/PUT | `/api/productos` | Productos |
+| GET/POST/PUT | `/api/pedidos` | Pedidos |
+| GET/POST | `/api/bajas` | Bajas |
+| GET/POST | `/api/movimientos` | Movimientos |
+| GET/POST | `/api/auditoria` | Auditoría |
+| GET | `/api/informes?tipo=...` | Informes |
+| GET/POST/DELETE | `/api/rendimientos` | Rendimientos |
 
-- `http://localhost:8080/api/login.php` → `http://localhost:3000/api/login`
-- `http://localhost:8080/api/productos.php` → `http://localhost:3000/api/productos`
-- Y así con el resto de recursos.
+Si en Supabase no existe la tabla `rendimientos`, créala desde el SQL Editor:
 
-Puedes definir una base URL y reutilizarla:
-
-```js
-const API_URL = 'http://localhost:3000/api';
-fetch(`${API_URL}/productos`)   // en lugar de /productos.php
-fetch(`${API_URL}/pedidos?id=1`)
+```sql
+CREATE TABLE IF NOT EXISTS rendimientos (
+    id SERIAL PRIMARY KEY,
+    fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+    ingrediente TEXT NOT NULL,
+    peso_bruto DECIMAL(10,3) NOT NULL,
+    peso_neto DECIMAL(10,3) NOT NULL,
+    desperdicio DECIMAL(10,3) NOT NULL,
+    rendimiento DECIMAL(5,2) NOT NULL,
+    merma DECIMAL(5,2) NOT NULL,
+    observaciones TEXT,
+    usuario_id INT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
 ```
-
-Para **crear usuario**, el frontend puede apuntar a la misma API:  
-`POST http://localhost:3000/api/usuarios` (en lugar de `http://localhost:4000/usuarios`).

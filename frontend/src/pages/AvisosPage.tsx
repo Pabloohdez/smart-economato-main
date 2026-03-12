@@ -67,7 +67,7 @@ export default function AvisosPage() {
 
       let gastos: GastoMensual[] = [];
       try {
-        const resp = await fetch(`${API_URL}/informes.php?tipo=gastos_mensuales`);
+        const resp = await fetch(`${API_URL}/informes?tipo=gastos_mensuales`);
         if (resp.ok) {
           const data = await resp.json();
           if (data.success && data.data?.gastos_por_mes) {
