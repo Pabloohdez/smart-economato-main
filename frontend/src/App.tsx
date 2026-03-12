@@ -15,13 +15,15 @@ import RendimientoPage from "./pages/RendimientoPage";
 import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
+import RegistroPage from "./pages/RegistroPage";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Login libre */}
+        {/* Login y registro libres */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/registro" element={<RegistroPage />} />
 
         {/* Rutas protegidas */}
         <Route
