@@ -1,0 +1,244 @@
+<link rel="stylesheet" href="assets/css/rendimiento.css">
+
+<div style="max-width: 1400px; margin: 0 auto; width: 100%;">
+    <div class="header-rendimiento">
+        <div>
+            <h1 class="titulo-rendimiento">
+                <i class="fa-solid fa-chart-pie"></i> RENDIMIENTO
+            </h1>
+            <p class="subtitulo">Toda materia prima susceptible de manipulación o preelaboración tendrá una merma y un
+                rendimiento real</p>
+        </div>
+        <div class="acciones-header" style="display: flex; gap: 15px; align-items: center;">
+            <div class="info-fecha">
+                <i class="fa-solid fa-calendar"></i>
+                <span id="fechaActualRendimiento"></span>
+            </div>
+            <button id="btnImprimirRendimiento" class="btn-nuevo-rend"
+                style="background: #2d3748; padding: 8px 15px; font-size: 14px;">
+                <i class="fa-solid fa-print"></i> Imprimir / PDF
+            </button>
+        </div>
+
+        <!-- Estadísticas Rápidas -->
+        <div class="stats-container-rend">
+            <div class="stat-card-rend stat-ingredientes">
+                <div class="stat-icon-rend">
+                    <i class="fa-solid fa-carrot"></i>
+                </div>
+                <div class="stat-info-rend">
+                    <span class="stat-label-rend">Ingredientes Analizados</span>
+                    <span class="stat-valor-rend" id="statIngredientes">0</span>
+                </div>
+            </div>
+
+            <div class="stat-card-rend stat-rendimiento-avg">
+                <div class="stat-icon-rend">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
+                <div class="stat-info-rend">
+                    <span class="stat-label-rend">Rendimiento Medio</span>
+                    <span class="stat-valor-rend" id="statRendimientoMedio">0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card-rend stat-merma-avg">
+                <div class="stat-icon-rend">
+                    <i class="fa-solid fa-arrow-trend-down"></i>
+                </div>
+                <div class="stat-info-rend">
+                    <span class="stat-label-rend">Merma Media</span>
+                    <span class="stat-valor-rend" id="statMermaMedia">0%</span>
+                </div>
+            </div>
+
+            <div class="stat-card-rend stat-desperdicio-total">
+                <div class="stat-icon-rend">
+                    <i class="fa-solid fa-trash-can"></i>
+                </div>
+                <div class="stat-info-rend">
+                    <span class="stat-label-rend">Desperdicio Total</span>
+                    <span class="stat-valor-rend" id="statDesperdicioTotal">0.00 kg</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel de Registro -->
+        <!-- Barra de Herramientas (Búsqueda y Filtros) -->
+        <div class="panel-registro-rend">
+            <div class="controles-registro-rend">
+
+                <!-- Grupo Izquierda: Búsqueda y Filtro -->
+                <div class="grupo-herramientas-izq">
+                    <div class="campo-busqueda-rend">
+                        <i class="fa-solid fa-search icono-busqueda"></i>
+                        <input type="text" id="inputBusquedaRendimiento" class="input-busqueda-rend"
+                            placeholder="Buscar ingrediente..." aria-label="Buscar ingrediente">
+                    </div>
+
+                    <select id="selectCategoriaRend" class="select-filtro-rend" aria-label="Filtrar por categoría">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+
+                <!-- Grupo Derecha: Nuevo Análisis -->
+                <div class="filtros-rend">
+                    <button id="btnNuevoRendimiento" class="btn-nuevo-rend">
+                        <i class="fa-solid fa-plus"></i> Nuevo Análisis
+                    </button>
+                </div>
+            </div>
+            <!-- Resultados de búsqueda (oculto por defecto) -->
+            <div id="resultadosBusquedaRend" class="resultados-busqueda-rend oculto"></div>
+        </div>
+
+        <!-- Tabla de Rendimiento -->
+        <div class="panel-tabla-rend">
+            <h3 class="titulo-seccion-rend">
+                <i class="fa-solid fa-table"></i> Registro de Rendimiento Actual
+            </h3>
+
+            <div class="tabla-wrapper-rend">
+                <table id="tablaRendimiento" class="tabla-rendimiento">
+                    <caption class="visually-hidden">Tabla de análisis de rendimiento de ingredientes</caption>
+                    <thead>
+                        <tr>
+                            <th>Ingrediente</th>
+                            <th>Peso Bruto (kg)</th>
+                            <th>Peso Neto (kg)</th>
+                            <th>Desperdicio (kg)</th>
+                            <th>% Total</th>
+                            <th>% Rendimiento</th>
+                            <th>% Merma</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyRendimiento">
+                        <tr class="fila-vacia-rend">
+                            <td colspan="8">
+                                <div class="mensaje-vacio-rend">
+                                    <i class="fa-solid fa-inbox"></i>
+                                    <p>No hay registros de rendimiento</p>
+                                    <small>Haz clic en "Nuevo Análisis" para comenzar</small>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="tfootRendimiento" class="oculto">
+                        <tr class="fila-total-rend">
+                            <td><strong>TOTALES</strong></td>
+                            <td id="totalPesoBruto" class="total-valor-rend">0.00</td>
+                            <td id="totalPesoNeto" class="total-valor-rend">0.00</td>
+                            <td id="totalDesperdicio" class="total-valor-rend">0.00</td>
+                            <td id="totalPorcTotal" class="total-valor-rend">-</td>
+                            <td id="totalRendimiento" class="total-valor-rend">0%</td>
+                            <td id="totalMerma" class="total-valor-rend">0%</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel de Acciones Finales -->
+        <div class="panel-acciones-rend">
+            <div class="campo-observaciones-rend">
+                <label class="label-observaciones-rend" for="textareaObservacionesRend">
+                    <i class="fa-solid fa-note-sticky"></i> Observaciones
+                </label>
+                <textarea id="textareaObservacionesRend" class="textarea-observaciones-rend"
+                    placeholder="Añade notas sobre este análisis de rendimiento (opcional)..." rows="3"
+                    aria-label="Observaciones del análisis"></textarea>
+            </div>
+
+            <div class="botones-finales-rend">
+                <button id="btnLimpiarRendimiento" class="btn-accion-rend btn-cancelar-rend oculto">
+                    <i class="fa-solid fa-xmark"></i> Limpiar Todo
+                </button>
+                <button id="btnGuardarRendimiento" class="btn-accion-rend btn-guardar-rend oculto">
+                    <i class="fa-solid fa-save"></i> GUARDAR ANÁLISIS
+                </button>
+            </div>
+        </div>
+
+        <!-- Mensaje de estado -->
+        <div id="mensajeEstadoRendimiento" class="mensaje-estado-rend"></div>
+
+        <!-- Historial de Rendimientos -->
+        <div class="panel-historial-rend">
+            <div class="header-historial-rend">
+                <h3 class="titulo-seccion-rend">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Historial de Análisis
+                </h3>
+                <div class="filtros-historial-rend">
+                    <select id="selectFiltroCategoria" class="select-filtro-historial-rend"
+                        aria-label="Filtrar historial por categoría">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="contenedorHistorialRend" class="contenedor-historial-rend">
+                <p style="text-align: center; color: black; padding: 20px;">
+                    El historial de análisis aparecerá aquí
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal para Nuevo Análisis -->
+    <div id="modalRendimiento" class="modal-overlay-rend oculto">
+        <div class="modal-contenido-rend">
+            <h3>
+                <i class="fa-solid fa-chart-pie"></i>
+                Análisis de Rendimiento
+            </h3>
+            <p id="modalNombreIngrediente" class="modal-ingrediente-nombre"></p>
+
+            <div class="modal-campos-rend">
+                <div class="modal-campo-rend">
+                    <label for="modalInputIngrediente">Ingrediente:</label>
+                    <input type="text" id="modalInputIngrediente" class="modal-input-rend"
+                        placeholder="Nombre del ingrediente...">
+                </div>
+
+                <div class="modal-campo-rend">
+                    <label for="modalInputPesoBruto">Peso Bruto (kg):</label>
+                    <input type="number" id="modalInputPesoBruto" class="modal-input-rend" min="0.001" step="0.001"
+                        value="" placeholder="0.000">
+                </div>
+
+                <div class="modal-campo-rend">
+                    <label for="modalInputPesoNeto">Peso Neto (kg):</label>
+                    <input type="number" id="modalInputPesoNeto" class="modal-input-rend" min="0" step="0.001" value=""
+                        placeholder="0.000">
+                </div>
+
+                <!-- Resultados calculados automáticamente -->
+                <div class="modal-resultados-rend">
+                    <div class="modal-resultado-item">
+                        <span class="resultado-label">Desperdicio:</span>
+                        <span id="modalDesperdicio" class="resultado-valor">0.000 kg</span>
+                    </div>
+                    <div class="modal-resultado-item">
+                        <span class="resultado-label">% Rendimiento:</span>
+                        <span id="modalPorcRendimiento" class="resultado-valor resultado-ok">0%</span>
+                    </div>
+                    <div class="modal-resultado-item">
+                        <span class="resultado-label">% Merma:</span>
+                        <span id="modalPorcMerma" class="resultado-valor resultado-merma">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-botones-rend">
+                <button id="btnModalCancelarRend" class="btn-modal-rend btn-modal-cancelar-rend">
+                    Cancelar
+                </button>
+                <button id="btnModalConfirmarRend" class="btn-modal-rend btn-modal-confirmar-rend">
+                    Añadir Registro
+                </button>
+            </div>
+        </div>
+    </div>
