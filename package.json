@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build",
-        "preview": "vite preview",
-        "type-check": "tsc --noEmit",
+        "dev": "npm run dev --prefix frontend",
+        "build": "npm run build --prefix frontend",
+        "preview": "npm run preview --prefix frontend",
+        "type-check": "npm run type-check --prefix frontend",
         "start": "json-server assets/data/db.json --port 4000 --static ./",
         "server": "json-server --watch assets/data/db.json --port 4000"
     }

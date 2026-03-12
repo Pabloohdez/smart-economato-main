@@ -11,7 +11,7 @@ import {
 } from "../services/productosService";
 import "../styles/avisos.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;

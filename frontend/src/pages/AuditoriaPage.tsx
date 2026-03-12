@@ -3,7 +3,7 @@ import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
 import "../styles/auditoria.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 type RegistroAuditoria = {
   id: number | string;

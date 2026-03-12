@@ -4,7 +4,7 @@ import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import "../styles/pedidos.css";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 type Proveedor = {
   id: number | string;

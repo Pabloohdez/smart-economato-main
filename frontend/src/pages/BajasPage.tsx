@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 type Categoria = {
   id: string | number;

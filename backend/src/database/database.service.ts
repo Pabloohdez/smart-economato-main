@@ -17,6 +17,8 @@ export class DatabaseService implements OnModuleDestroy {
       user: process.env.DB_USER || 'postgres.tolmfuusklacewxcvwqj',
       password: process.env.DB_PASS || 'dfbZGsDR0LVppIPZ',
       max: 10,
+      // Supabase exige SSL para el pooler (puerto 6543)
+      ssl: process.env.DB_SSL !== 'false' ? { rejectUnauthorized: false } : undefined,
     });
   }
 

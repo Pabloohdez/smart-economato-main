@@ -34,7 +34,7 @@ type Movimiento = {
   usuario_nombre?: string;
 };
 
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 function formatFechaHora(iso: string) {
   const d = new Date(iso);

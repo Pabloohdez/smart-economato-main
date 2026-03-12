@@ -10,8 +10,8 @@
         "moduleResolution": "bundler",
         "allowJs": true,
         "checkJs": false,
-        "outDir": "./dist",
-        "rootDir": "./src",
+        "outDir": "./frontend/dist",
+        "rootDir": "./frontend/src",
         "strict": false,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -22,8 +22,8 @@
         "allowSyntheticDefaultImports": true
     },
     "include": [
-        "src/**/*.ts",
-        "src/**/*.js"
+        "frontend/src/**/*.ts",
+        "frontend/src/**/*.tsx"
     ],
     "exclude": [
         "node_modules",

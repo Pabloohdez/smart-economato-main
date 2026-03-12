@@ -5,7 +5,7 @@ import "../styles/proveedores.css";
 
 import { showNotification, showConfirm } from "../utils/notifications";
 
-const API_URL = `${import.meta.env.VITE_API_URL as string}/proveedores`;
+const API_URL = `${(import.meta.env.VITE_API_URL as string) || "/api"}/proveedores`;
 
 type Proveedor = {
   id: string;

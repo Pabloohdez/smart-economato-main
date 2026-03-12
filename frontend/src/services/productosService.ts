@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL as string;
+const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 export type Categoria = { id: number | string; nombre: string };
 export type Proveedor = { id: number | string; nombre: string };

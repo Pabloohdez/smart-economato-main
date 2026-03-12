@@ -13,13 +13,15 @@ npm install
 
 Toda la persistencia está en **PostgreSQL en Supabase**. No se usa base de datos local.
 
-Variables de entorno (o `.env` en `backend/`):
+Variables de entorno: crea un archivo `.env` en `backend/` (copia de `.env.example`) con:
 
-- `DB_HOST` – host del pooler (ej. `aws-1-eu-west-1.pooler.supabase.com`)
+- `DB_HOST` – host del pooler (ej. `aws-0-eu-central-1.pooler.supabase.com`; en Supabase: Project Settings → Database → Connection pooling)
 - `DB_PORT` – `6543`
 - `DB_NAME` – `postgres`
-- `DB_USER` – usuario del proyecto Supabase
-- `DB_PASS` – contraseña
+- `DB_USER` – usuario (ej. `postgres.TU_PROJECT_REF`)
+- `DB_PASS` – contraseña de la base de datos
+
+La conexión usa **SSL** por defecto (obligatorio en Supabase). Si falla la conexión, comprueba usuario/contraseña y que el proyecto Supabase no esté pausado.
 
 ## Ejecución
 

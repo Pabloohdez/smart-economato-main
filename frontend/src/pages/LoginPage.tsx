@@ -40,7 +40,7 @@ export default function LoginPage() {
       <div className="container">
         <h2 className="form-title">Bienvenido</h2>
 
-        <form className="formulario" onSubmit={onSubmit}>
+        <form className="formulario" onSubmit={onSubmit} action="#" method="post">
           <input
             type="text"
             value={username}

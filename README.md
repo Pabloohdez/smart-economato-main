@@ -2,13 +2,17 @@
 
 **Frontend:** React + TypeScript (Vite)  
 **Backend:** NestJS  
-**Base de datos:** PostgreSQL en Supabase (remoto). Sin PHP.
+**Base de datos:** PostgreSQL en Supabase (remoto).  
+
+**No se usa XAMPP, PHP ni Apache.** Todo corre en Docker; la base de datos está en Supabase.
 
 ---
 
 ## Con Docker (recomendado)
 
 Todo está dockerizado: frontend (React) y backend (NestJS). Un solo punto de entrada.
+
+Si tienes XAMPP u otro servidor en el puerto 8080, deténlo antes de levantar Docker (o cambia el puerto en `docker-compose.yml`).
 
 ```bash
 docker-compose up --build
@@ -30,14 +34,17 @@ Variables de entorno (opcional, en un `.env` en la raíz):
    cd backend && npm install && npm run start:dev
    ```
 
-2. **Frontend (React)** — puerto 5173:
+2. **Frontend (React)** — puerto 8080 (desde la raíz o desde frontend):
    ```bash
+   # Desde la raíz (recomendado): arranca la app React en 8080
+   npm run dev
+
+   # O desde frontend:
    cd frontend
    cp .env.example .env
-   # Editar .env: VITE_API_URL=http://localhost:3000/api
    npm install && npm run dev
    ```
-   Abrir [http://localhost:5173](http://localhost:5173).
+   Abrir **http://localhost:8080** — verás la app React+TypeScript (no la antigua).
 
 ---
 
@@ -45,4 +52,4 @@ Variables de entorno (opcional, en un `.env` en la raíz):
 
 - `frontend/` — React + TypeScript (Vite). Se sirve con nginx en Docker.
 - `backend/` — NestJS. API REST, conexión a Supabase.
-- Base de datos solo en **Supabase** (PostgreSQL); no hay BD local ni PHP.
+- Base de datos solo en **Supabase** (PostgreSQL); no hay BD local, PHP ni XAMPP.

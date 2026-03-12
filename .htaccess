@@ -1,4 +1,5 @@
-# Smart Economato - Configuración
+# Smart Economato - Configuración (solo para Apache; NO se usa con Docker)
+# Con Docker se usa nginx en el contenedor frontend; este archivo se ignora.
 # Habilitar reescritura de URLs
 RewriteEngine On
 
