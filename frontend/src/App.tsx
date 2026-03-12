@@ -17,6 +17,7 @@ import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
 import RegistroPage from "./pages/RegistroPage";
+import CrearUsuarioPage from "./pages/CrearUsuarioPage";
 
 const APP_PORT = "8081";
 
@@ -44,8 +45,7 @@ export default function App() {
       <Routes>
         {/* Login y registro libres */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/registro" element={<RegistroPage />} />
-
+        <Route path="/registro" element={<CrearUsuarioPage />} />
         {/* Rutas protegidas */}
         <Route
           path="/"

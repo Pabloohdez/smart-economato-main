@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import { login } from "../services/authService";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -73,11 +73,18 @@ export default function LoginPage() {
         </form>
 
         <div style={{ marginTop: 20 }}>
-          <Link to="/registro" style={{ fontWeight: 600 }}>Crear Cuenta Nueva</Link>
+          <Link to="/recuperar-password">¿Olvidaste tu contraseña?</Link>
+          <br />
+          <Link to="/registro" style={{ fontWeight: 600 }}>
+            Crear Cuenta Nueva
+          </Link>
         </div>
       </div>
 
-      <footer className="login-footer" aria-label="2025 Pablo Hdez. Todos los derechos reservados.">
+      <footer
+        className="login-footer"
+        aria-label="2025 Pablo Hdez. Todos los derechos reservados."
+      >
         © 2025 Pablo Hdez. Todos los derechos reservados.
       </footer>
     </div>
