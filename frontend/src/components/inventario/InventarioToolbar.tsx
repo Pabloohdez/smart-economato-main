@@ -45,7 +45,7 @@ export default function InventarioToolbar({
     <div className="panel-controles">
       <div className="campo-busqueda-inventario">
         <span className="icono-busqueda" aria-hidden="true">
-          🔎
+          <i className="fa-solid fa-magnifying-glass" />
         </span>
 
         <input
@@ -57,13 +57,13 @@ export default function InventarioToolbar({
         />
 
         <button id="btnBuscar" className="btn-buscar-inventario" type="button">
-          Buscar
+          <i className="fa-solid fa-search" /> Buscar
         </button>
       </div>
 
       <div className="controles-filtros">
         <div className="grupo-filtro">
-          <label className="label-filtro">🏷️ Categoría</label>
+          <label className="label-filtro"><i className="fa-solid fa-tag" /> Categoría</label>
           <select
             className="select-filtro-inventario"
             value={catId}
@@ -79,7 +79,7 @@ export default function InventarioToolbar({
         </div>
 
         <div className="grupo-filtro">
-          <label className="label-filtro">🚚 Proveedor</label>
+          <label className="label-filtro"><i className="fa-solid fa-truck" /> Proveedor</label>
           <select
             className="select-filtro-inventario"
             value={provId}
@@ -95,7 +95,7 @@ export default function InventarioToolbar({
         </div>
 
         <div className="grupo-filtro">
-          <label className="label-filtro">↕️ Ordenar</label>
+          <label className="label-filtro"><i className="fa-solid fa-arrow-up-short-wide" /> Ordenar</label>
           <select
             className="select-filtro-inventario"
             value={orden}
@@ -113,7 +113,7 @@ export default function InventarioToolbar({
           type="button"
           onClick={() => setOnlyStockBajo(!onlyStockBajo)}
         >
-          ⚠️ Stock Bajo
+          <i className="fa-solid fa-triangle-exclamation" /> Stock Bajo
         </button>
 
         <button
@@ -121,7 +121,7 @@ export default function InventarioToolbar({
           type="button"
           onClick={() => setOnlyProximoCaducar(!onlyProximoCaducar)}
         >
-          ⏰ Próximo a Caducar
+          <i className="fa-solid fa-clock" /> Próximo a Caducar
         </button>
 
         <button
@@ -129,7 +129,7 @@ export default function InventarioToolbar({
           type="button"
           onClick={limpiarFiltros}
         >
-          🧹 Limpiar Filtros
+          <i className="fa-solid fa-filter-circle-xmark" /> Limpiar Filtros
         </button>
       </div>
     </div>

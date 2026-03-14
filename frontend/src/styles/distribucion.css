@@ -225,6 +225,47 @@ h3 {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* --- Detalle del producto seleccionado --- */
+.detalle-producto {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid #edf2f7;
+    text-align: center;
+}
+
+.detalle-producto h4 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0 0 12px 0;
+}
+
+.detalle-producto p {
+    font-size: 15px;
+    color: #4a5568;
+    margin: 0 0 8px 0;
+}
+
+.detalle-producto .form-group {
+    margin-top: 16px;
+}
+
+.detalle-producto .form-group label {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.detalle-producto .input-cantidad {
+    justify-content: center;
+}
+
+.detalle-producto .btn-primary.btn-block {
+    margin-top: 20px;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* --- Historial de Movimientos --- */
 .card {
     background: var(--bg-card);
