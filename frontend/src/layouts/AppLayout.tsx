@@ -28,6 +28,7 @@ export default function AppLayout() {
   const user = userRaw ? JSON.parse(userRaw) : null;
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -51,14 +52,20 @@ export default function AppLayout() {
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
+      {/* Overlay for mobile sidebar */}
+      <div
+        className={`menu-overlay ${sidebarOpen ? "active" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+        <NavLink to="/inicio" className="brand">
           <img
             src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
             alt="CIFP Virgen de la Candelaria"
             className="brand-logo"
           />
-        </div>
+        </NavLink>
 
         <nav className="nav">
           {navItems.map((it) => (
@@ -68,8 +75,9 @@ export default function AppLayout() {
               className={({ isActive }) =>
                 `nav-item ${isActive ? "active" : ""} ${it.separated ? "nav-item-separated" : ""}`
               }
+              onClick={() => setSidebarOpen(false)}
             >
-              <span className="nav-ico" aria-hidden="true" style={{color: "var(--brand)"}}>
+              <span className="nav-ico" aria-hidden="true">
                 <i className={it.icon} />
               </span>
               <span>{it.label}</span>
@@ -84,7 +92,17 @@ export default function AppLayout() {
 
       <div className="main">
         <header className="topbar">
-          <h1 className="topbar-title">Panel de Control</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              className="menu-toggle"
+              type="button"
+              onClick={() => setSidebarOpen((v) => !v)}
+              aria-label="Abrir menú"
+            >
+              <i className="fa-solid fa-bars" />
+            </button>
+            <h1 className="topbar-title">Panel de Control</h1>
+          </div>
 
           <div className="userMenu" ref={menuRef}>
             <button
