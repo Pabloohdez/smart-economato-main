@@ -69,7 +69,7 @@ export default function AppLayout() {
                 `nav-item ${isActive ? "active" : ""} ${it.separated ? "nav-item-separated" : ""}`
               }
             >
-              <span className="nav-ico" aria-hidden="true">
+              <span className="nav-ico" aria-hidden="true" style={{color: "var(--brand)"}}>
                 <i className={it.icon} />
               </span>
               <span>{it.label}</span>

@@ -1,4 +1,4 @@
-/* basado en assets/css/login.css */
+/* --- ESTILOS CLÁSICOS DE LOGIN (cd5579d) --- */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
 
 :root {
@@ -13,7 +13,6 @@
   --text-light: #666;
 }
 
-/* ANTES: body */
 .login-page {
   margin: 0;
   font-family: "Poppins", sans-serif;
@@ -28,7 +27,6 @@
   position: relative;
 }
 
-/* ANTES: body::before */
 .login-page::before {
   content: '';
   position: absolute;
@@ -41,7 +39,6 @@
   opacity: 0.6;
 }
 
-/* ANTES: body::after */
 .login-page::after {
   content: '';
   position: absolute;
@@ -98,6 +95,7 @@
   font-weight: 600;
   color: var(--primary-color);
   margin-bottom: 20px;
+  margin-top: 0;
 }
 
 .user {
@@ -157,6 +155,7 @@ p:hover, a:hover { color: var(--primary-color); }
   margin-top: 10px;
   min-height: 20px;
   font-size: 14px;
+  color: #b33131;
 }
 
 .login-footer {
