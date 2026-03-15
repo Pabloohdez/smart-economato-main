@@ -106,16 +106,27 @@ h3 {
 }
 
 /* Ghost suggestion text (behind the actual input) */
+/* Ghost suggestion text (behind the actual input) */
 .busq-ghost {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    color: #cbd5e0 !important;
+    height: 48px;
+    padding: 0 16px;
+    border: 2px solid transparent;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
     pointer-events: none;
-    z-index: 0;
-    background: transparent !important;
-    border-color: transparent !important;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    white-space: pre;
+    overflow: hidden;
+}
+
+.busq-ghost span {
+    line-height: normal;
 }
 
 .busq-input {
@@ -123,7 +134,8 @@ h3 {
     z-index: 1;
     flex: 1;
     width: 100%;
-    padding: 12px;
+    height: 48px;
+    padding: 0 16px;
     border: 2px solid var(--border-color);
     border-radius: 10px;
     font-size: 15px;
@@ -154,7 +166,7 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 11px 14px;
+    padding: 11px 16px;
     border-bottom: 1px solid #edf2f7;
     cursor: pointer;
     transition: background 0.15s;
@@ -168,7 +180,7 @@ h3 {
 .item-resultado:hover {
     background-color: #fff5f5;
     border-left: 3px solid var(--primary-color);
-    padding-left: 11px;
+    padding-left: 13px;
 }
 
 .item-resultado__nombre {
@@ -388,21 +400,22 @@ h3 {
     display: flex;
     align-items: center;
     gap: 0;
-    border: 2px solid #e2e8f0;
-    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
     overflow: hidden;
     width: fit-content;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
 }
 
 .prod-card__cant-btn {
-    width: 46px;
-    height: 46px;
-    background: #f8fafc;
+    width: 44px;
+    height: 44px;
+    background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 14px;
-    color: #4a5568;
+    font-size: 16px;
+    color: #2b4c7e;
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -410,22 +423,23 @@ h3 {
 }
 
 .prod-card__cant-btn:hover {
-    background: #edf2f7;
+    background: #f8fafc;
     color: var(--primary-color);
 }
 
 .prod-card__cant-input {
-    width: 60px;
-    height: 46px;
+    width: 65px;
+    height: 44px;
     text-align: center;
     border: none;
-    border-left: 2px solid #e2e8f0;
-    border-right: 2px solid #e2e8f0;
+    border-left: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
     font-size: 18px;
-    font-weight: 700;
-    color: #2d3748;
+    font-weight: 800;
+    color: #1a365d;
     font-family: 'Poppins', sans-serif;
     outline: none;
+    background: transparent;
 }
 
 .prod-card__add-btn {

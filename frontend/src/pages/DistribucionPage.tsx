@@ -362,14 +362,12 @@ export default function DistribucionPage() {
               {resultadosAutocomplete.length > 0 &&
                 term.length >= 2 &&
                 resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) && (
-                  <input
-                    type="text"
-                    className="busq-input busq-ghost"
-                    value={term + resultadosAutocomplete[0].nombre.slice(term.length)}
-                    readOnly
-                    tabIndex={-1}
-                    aria-hidden="true"
-                  />
+                  <div className="busq-ghost" aria-hidden="true">
+                    <span style={{ visibility: "hidden" }}>{term}</span>
+                    <span style={{ color: "#a0aec0" }}>
+                      {resultadosAutocomplete[0].nombre.slice(term.length)}
+                    </span>
+                  </div>
                 )}
               <input
                 type="text"
