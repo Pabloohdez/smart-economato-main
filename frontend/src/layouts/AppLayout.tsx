@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "../styles/inicio.css";
 
@@ -24,12 +24,19 @@ const navItems = [
 
 export default function AppLayout() {
   const nav = useNavigate();
+  const location = useLocation();
   const userRaw = localStorage.getItem("usuarioActivo");
   const user = userRaw ? JSON.parse(userRaw) : null;
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Encontrar sección actual para el título
+  const currentItem = navItems.find((it) => it.to === location.pathname) || {
+    label: "Panel de Control",
+    icon: "fa-solid fa-chart-line",
+  };
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -101,7 +108,18 @@ export default function AppLayout() {
             >
               <i className="fa-solid fa-bars" />
             </button>
-            <h1 className="topbar-title">Panel de Control</h1>
+            <h1 className="topbar-title">
+              <i
+                className={currentItem.icon}
+                style={{
+                  marginRight: "10px",
+                  fontSize: "0.9em",
+                  color: "var(--brand)",
+                  opacity: 0.8,
+                }}
+              />
+              {currentItem.label}
+            </h1>
           </div>
 
           <div className="userMenu" ref={menuRef}>

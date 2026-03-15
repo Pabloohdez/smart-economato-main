@@ -51,6 +51,10 @@ export default function AvisosPage() {
   const [toastMensaje, setToastMensaje] = useState("");
   const [toastTipo, setToastTipo] = useState<"success" | "error">("success");
 
+  // Obtener usuario activo
+  const userRaw = localStorage.getItem("usuarioActivo");
+  const user = userRaw ? JSON.parse(userRaw) : null;
+
   useEffect(() => {
     void cargarDatos();
   }, []);
@@ -206,7 +210,7 @@ export default function AvisosPage() {
           cantidad: cantidadModal,
           tipoBaja: "Caducado",
           motivo: "Caducidad registrada desde Centro de Avisos",
-          usuarioId: "admin1",
+          usuarioId: user?.id || "admin",
         });
 
         mostrarToast("Baja registrada correctamente", "success");
@@ -215,7 +219,7 @@ export default function AvisosPage() {
           proveedorId:
             productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,
           total: cantidadModal * productoSeleccionado.precioNum,
-          usuarioId: "admin1",
+          usuarioId: user?.id || "admin",
           items: [
             {
               producto_id: productoSeleccionado.id,

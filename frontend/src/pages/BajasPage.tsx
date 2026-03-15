@@ -111,6 +111,10 @@ export default function BajasPage() {
 
   const [confirmando, setConfirmando] = useState(false);
 
+  // Obtener usuario activo para auditoría
+  const userRaw = localStorage.getItem("usuarioActivo");
+  const user = userRaw ? JSON.parse(userRaw) : null;
+
   async function cargarDatos() {
     setLoadingDatos(true);
     try {
@@ -375,7 +379,7 @@ export default function BajasPage() {
           cantidad: pb.cantidadBaja,
           tipoBaja: pb.tipoBaja,
           motivo: motivo.trim() || "Sin especificar",
-          usuarioId: "admin1",
+          usuarioId: user?.id || "admin",
         };
 
         const res = await fetch(`${API_URL}/bajas`, {

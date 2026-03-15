@@ -86,7 +86,12 @@ export default function Recepcion() {
   const [verificandoPedido, setVerificandoPedido] = useState<Pedido | null>(null);
   const verifQtyRef = useRef<Record<string, number>>({}); // detalle_id -> qty
 
-  const usuarioId = 1; // TODO: sacarlo del usuario logeado si lo tenéis en localStorage
+  const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
+
+  // Obtener usuario activo para auditoría
+  const userRaw = localStorage.getItem("usuarioActivo");
+  const user = userRaw ? JSON.parse(userRaw) : null;
+  const usuarioLogueadoId = user?.id || 1;
 
   async function cargarDatos() {
     setLoading(true);
@@ -122,15 +127,34 @@ export default function Recepcion() {
     cargarDatos().catch((e) => console.error(e));
   }, []);
 
-  const resultados = useMemo(() => {
+  // cerrar dropdown si clic fuera
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      const target = e.target;
+      if (!(target instanceof Node)) return;
+      if (buscadorWrapRef.current && !buscadorWrapRef.current.contains(target)) {
+        setResultadosOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const resultadosAutocomplete = useMemo(() => {
     const t = term.trim().toLowerCase();
+    if (!t) return [];
     return productos.filter((p) => {
-      const matchText = !t || String(p.nombre ?? "").toLowerCase().includes(t);
+      const matchText = String(p.nombre ?? "").toLowerCase().includes(t);
       const matchProv = !provFiltro || String(p.proveedorId ?? "") === String(provFiltro);
       const matchCat = !catFiltro || String(p.categoriaId ?? "") === String(catFiltro);
       return matchText && matchProv && matchCat;
     });
   }, [productos, term, provFiltro, catFiltro]);
+
+  const resultadosRender = useMemo(() => {
+    if (!resultadosOpen) return [];
+    return resultadosAutocomplete.slice(0, 30);
+  }, [resultadosOpen, resultadosAutocomplete]);
 
   function proveedorNombreDeProducto(p: Producto) {
     const prov = proveedores.find((x) => String(x.id) === String(p.proveedorId));
@@ -177,7 +201,7 @@ export default function Recepcion() {
     const payload = {
       tipo: "ENTRADA",
       motivo: obs || "Recepción Manual",
-      usuario_id: usuarioId,
+      usuario_id: usuarioLogueadoId,
       items: recepcion.map((r) => ({
         producto_id: r.producto_id,
         cantidad: r.cantidadRecibida,
@@ -363,41 +387,108 @@ export default function Recepcion() {
       </div>
 
       {/* Panel búsqueda */}
-      <div className="panel-busqueda">
+      <div className="panel-busqueda" ref={buscadorWrapRef}>
         <h2 className="titulo-seccion">
           <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
         </h2>
 
         <div className="controles-busqueda">
-          <div className="campo-busqueda">
-            <input
-              className="input-busqueda"
-              value={term}
-              onChange={(e) => setTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setResultadosOpen(true);
-              }}
-              placeholder="Escribe el nombre del producto o escanea código de barras..."
-              aria-label="Buscar producto por nombre o código"
-            />
+          <div className="campo-busqueda" style={{ position: "relative" }}>
+            <div className="busq-wrap">
+              <div className="busq-input-wrap">
+                {/* Ghost suggestion */}
+                {resultadosAutocomplete.length > 0 &&
+                  term.length >= 2 &&
+                  resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) && 
+                  resultadosAutocomplete[0].nombre.toLowerCase() !== term.toLowerCase() && (
+                    <div className="busq-ghost" aria-hidden="true">
+                      <span style={{ visibility: "hidden" }}>{term}</span>
+                      <span style={{ color: "#a0aec0" }}>
+                        {resultadosAutocomplete[0].nombre.slice(term.length)}
+                      </span>
+                    </div>
+                  )}
+                <input
+                  id="inputRecepcion"
+                  className="busq-input"
+                  value={term}
+                  autoComplete="off"
+                  onChange={(e) => {
+                    setTerm(e.target.value);
+                    setResultadosOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (
+                      (e.key === "Tab" || e.key === "ArrowRight") &&
+                      resultadosAutocomplete.length > 0 &&
+                      term.length >= 2
+                    ) {
+                      const firstMatch = resultadosAutocomplete[0];
+                      if (firstMatch.nombre.toLowerCase().startsWith(term.toLowerCase())) {
+                        e.preventDefault();
+                        setTerm(firstMatch.nombre);
+                        return;
+                      }
+                    }
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      if (resultadosAutocomplete.length > 0) {
+                        abrirModalCantidad(resultadosAutocomplete[0]);
+                        setResultadosOpen(false);
+                      } else {
+                        setResultadosOpen(true);
+                      }
+                    }
+                  }}
+                  onFocus={() => setResultadosOpen(true)}
+                  placeholder="Escribe nombre o código de barras..."
+                  aria-label="Buscar producto por nombre o código"
+                />
+              </div>
 
-            <button
-              className="btn-buscar-producto"
-              onClick={() => setResultadosOpen(true)}
-              style={{
-                background: "linear-gradient(135deg, #b33131 0%, #9c2b2b 100%)",
-                color: "white",
-                border: "none",
-                boxShadow: "0 4px 6px rgba(179, 49, 49, 0.3)",
-                minWidth: 150,
-                width: "auto",
-                padding: "12px 30px",
-                borderRadius: 12,
-                fontWeight: "bold",
-              }}
-            >
-              <i className="fa-solid fa-search" /> Buscar
-            </button>
+              <button
+                className="btn-buscar-producto"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setResultadosOpen(true);
+                }}
+              >
+                <i className="fa-solid fa-search" /> Buscar
+              </button>
+            </div>
+
+            {/* Dropdown de resultados */}
+            {resultadosOpen && (
+              <div id="listaResultados" className="resultados-busqueda">
+                {loading ? (
+                  <div className="item-resultado" style={{ color: "#718096", fontStyle: "italic", justifyContent: "center" }}>
+                    <i className="fa-solid fa-spinner fa-spin" /> Cargando...
+                  </div>
+                ) : resultadosRender.length === 0 ? (
+                  term.trim().length >= 2 ? (
+                    <div className="item-resultado" style={{ color: "#718096", fontStyle: "italic", justifyContent: "center" }}>
+                      Sin resultados para «{term.trim()}»
+                    </div>
+                  ) : null
+                ) : (
+                  resultadosRender.map((p) => (
+                    <div 
+                      key={String(p.id)} 
+                      className="item-resultado" 
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        abrirModalCantidad(p);
+                        setResultadosOpen(false);
+                      }}
+                    >
+                      <span className="nombre-producto-resultado" style={{ fontWeight: 600, fontSize: "14px", color: "#2d3748" }}>{p.nombre}</span>
+                      <span className="detalles-producto-resultado" style={{ fontSize: "12px", color: "#718096", background: "#f7fafc", padding: "2px 8px", borderRadius: "20px" }}>Stock: {p.stock}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
           <div className="filtros-rapidos">
@@ -420,31 +511,6 @@ export default function Recepcion() {
             </select>
           </div>
         </div>
-
-        {/* Resultados */}
-        {resultadosOpen && (
-          <div className="resultados-busqueda">
-            {loading ? (
-              <div style={{ padding: 20 }}>Cargando...</div>
-            ) : resultados.length ? (
-              resultados.map((p) => (
-                <div key={String(p.id)} className="item-resultado" onClick={() => abrirModalCantidad(p)}>
-                  <div className="info-producto-resultado">
-                    <div className="nombre-producto-resultado">{p.nombre}</div>
-                    <div className="detalles-producto-resultado">
-                      Stock: {p.stock} | {formatEUR(Number(p.precio ?? 0))}
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div style={{ textAlign: "center", padding: 20 }}>
-                No se encontraron productos.
-              </div>
-            )}
-          </div>
-        )}
-
         <div style={{ textAlign: "right", marginTop: 15 }}>
           <button
             className="btn-buscar-producto"

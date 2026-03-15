@@ -16,30 +16,9 @@ import RendimientoPage from "./pages/RendimientoPage";
 import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
-import RegistroPage from "./pages/RegistroPage";
 import CrearUsuarioPage from "./pages/CrearUsuarioPage";
 
-const APP_PORT = "8081";
-
 export default function App() {
-  // Si se abre en puerto 80 (XAMPP), redirigir a la app en 8081 para no acabar en el dashboard de XAMPP
-  const port = typeof window !== "undefined" ? window.location.port : "";
-  const needRedirect = port === "80" || port === "";
-
-  useEffect(() => {
-    if (!needRedirect) return;
-    const target = `${window.location.protocol}//${window.location.hostname}:${APP_PORT}${window.location.pathname}${window.location.search}`;
-    window.location.replace(target);
-  }, [needRedirect]);
-
-  if (needRedirect) {
-    return (
-      <div style={{ padding: "2rem", fontFamily: "system-ui", textAlign: "center" }}>
-        Redirigiendo a la aplicación en el puerto {APP_PORT}…
-      </div>
-    );
-  }
-
   return (
     <BrowserRouter>
       <Routes>

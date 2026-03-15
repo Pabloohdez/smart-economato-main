@@ -56,6 +56,10 @@ function badgeDestinoClass(motivoRaw?: string) {
 export default function DistribucionPage() {
   const pref = verificarPreferencias();
 
+  // Obtener usuario activo para auditoría de movimientos
+  const userRaw = localStorage.getItem("usuarioActivo");
+  const user = userRaw ? JSON.parse(userRaw) : null;
+
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosBase, setProductosBase] = useState<Producto[]>([]);
 
@@ -302,7 +306,7 @@ export default function DistribucionPage() {
         cantidad: item.cantidad,
         tipo: "SALIDA",
         motivo: motivo,
-        usuarioId: "admin1",
+        usuarioId: user?.id || "admin",
       };
 
       try {
