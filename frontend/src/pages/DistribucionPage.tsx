@@ -179,36 +179,36 @@ export default function DistribucionPage() {
       return;
     }
 
-    setResultadosOpen(true);
-    setProductosBusqueda(null);
+    // Filter locally from already loaded products
+    let matchList = productosBase.filter((p) => {
+      const nom = (p.nombre || "").toLowerCase();
+      const cb = (p.codigoBarras || "").toLowerCase();
+      return nom.includes(t) || cb.includes(t);
+    });
+    matchList = filtrarListaPorAlergenos(matchList);
 
-    try {
-      const res = await fetch(`${API_URL}/productos?buscar=${encodeURIComponent(t)}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
+    // If exactly one match, auto-select it
+    if (matchList.length === 1) {
+      seleccionarProducto(matchList[0]);
+      return;
+    }
 
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    // If there's an exact name match, select it directly
+    const exactMatch = matchList.find(
+      (p) => (p.nombre || "").toLowerCase() === t
+    );
+    if (exactMatch) {
+      seleccionarProducto(exactMatch);
+      return;
+    }
 
-      const json = await res.json();
-      if (!json?.success || !Array.isArray(json.data)) {
-        setProductosBusqueda([]);
-        return;
-      }
-
-      let list: Producto[] = json.data.map((p: any) => ({
-        id: p.id,
-        nombre: p.nombre,
-        stock: Number(p.stock ?? 0),
-        codigoBarras: p.codigoBarras,
-        alergenos: p.alergenos || [],
-      }));
-
-      list = filtrarListaPorAlergenos(list);
-      setProductosBusqueda(list);
-    } catch (e) {
-      console.error(e);
-      showNotification("Error al buscar en la base de datos", "error");
+    // Otherwise show the results dropdown
+    if (matchList.length > 0) {
+      setProductosBusqueda(matchList.slice(0, 30));
+      setResultadosOpen(true);
+    } else {
       setProductosBusqueda([]);
+      setResultadosOpen(true);
     }
   }
 
@@ -355,18 +355,21 @@ export default function DistribucionPage() {
             <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
           </h3>
 
-          <div className="form-group">
-            <label htmlFor="buscadorProd" className="sr-only">
-              Buscar Producto
-            </label>
-
-            <div style={{ display: "flex", gap: 8, alignItems: "stretch" }}>
+          {/* Buscador con ghost text */}
+          <div className="busq-wrap">
+            <div className="busq-input-wrap">
+              {/* Ghost suggestion behind input */}
+              {resultadosAutocomplete.length > 0 && term.length >= 2 && (
+                <span className="busq-ghost" aria-hidden="true">
+                  {term}{resultadosAutocomplete[0].nombre.slice(term.length)}
+                </span>
+              )}
               <input
                 type="text"
                 id="buscadorProd"
-                className="form-control"
+                className="busq-input"
                 placeholder="Escribe nombre o código de barras..."
-                style={{ flex: 1 }}
+                autoComplete="off"
                 value={term}
                 onChange={(e) => {
                   setTerm(e.target.value);
@@ -374,51 +377,49 @@ export default function DistribucionPage() {
                   setProductosBusqueda(null);
                 }}
                 onKeyDown={(e) => {
+                  // Tab or ArrowRight → accept ghost suggestion
+                  if ((e.key === "Tab" || e.key === "ArrowRight") && resultadosAutocomplete.length > 0 && term.length >= 2) {
+                    e.preventDefault();
+                    setTerm(resultadosAutocomplete[0].nombre);
+                    setResultadosOpen(false);
+                    return;
+                  }
+                  // Enter → select first match directly
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    buscarEnAPI();
+                    if (resultadosAutocomplete.length > 0) {
+                      seleccionarProducto(resultadosAutocomplete[0]);
+                    } else {
+                      buscarEnAPI();
+                    }
                   }
                 }}
               />
-
-              <button
-                id="btnBuscarDistribucion"
-                className="btn btn-primary"
-                style={{
-                  background: "linear-gradient(135deg, #b33131 0%, #9c2b2b 100%)",
-                  color: "white",
-                  border: "none",
-                  boxShadow: "0 4px 6px rgba(179, 49, 49, 0.3)",
-                  minWidth: 150,
-                  width: "auto",
-                  padding: "12px 30px",
-                  borderRadius: 12,
-                  fontWeight: "bold",
-                }}
-                onClick={buscarEnAPI}
-              >
-                <i className="fa-solid fa-search" /> Buscar
-              </button>
             </div>
 
-            {/* Lista resultados */}
-            <div
-              id="listaResultados"
-              className="lista-resultados"
-              style={{ display: resultadosOpen ? "block" : "none" }}
+            <button
+              id="btnBuscarDistribucion"
+              className="btn-buscar-dist"
+              type="button"
+              onClick={buscarEnAPI}
             >
+              <i className="fa-solid fa-search" /> Buscar
+            </button>
+          </div>
+
+          {/* Dropdown de resultados */}
+          {resultadosOpen && (
+            <div id="listaResultados" className="lista-resultados">
               {loadingProductos ? (
-                <div className="item-resultado" style={{ color: "#666", fontStyle: "italic", cursor: "default" }}>
+                <div className="item-resultado item-resultado--muted">
                   <i className="fa-solid fa-spinner fa-spin" /> Cargando...
                 </div>
               ) : resultadosRender.length === 0 ? (
                 term.trim().length >= 2 ? (
-                  <div className="item-resultado" style={{ color: "#666", fontStyle: "italic", cursor: "default" }}>
-                    No se encontraron productos
+                  <div className="item-resultado item-resultado--muted">
+                    Sin resultados para «{term.trim()}»
                   </div>
-                ) : (
-                  <div />
-                )
+                ) : null
               ) : (
                 resultadosRender.map((p) => (
                   <div
@@ -431,49 +432,74 @@ export default function DistribucionPage() {
                       if (e.key === "Enter") seleccionarProducto(p);
                     }}
                   >
-                    <strong>{p.nombre}</strong> <small>(Stock: {p.stock})</small>
+                    <span className="item-resultado__nombre">{p.nombre}</span>
+                    <span className="item-resultado__stock">Stock: {p.stock}</span>
                   </div>
                 ))
               )}
             </div>
-          </div>
+          )}
 
-          {/* Detalle seleccionado */}
-          <div className="detalle-producto" style={{ display: productoActual ? "block" : "none" }}>
-            <h4 id="nombreSeleccionado">
-              {productoActual?.nombre ?? ""}
-              {productoActual ? (
-                <div style={{ marginTop: 6 }} dangerouslySetInnerHTML={{ __html: generarBadgesProducto(productoActual) }} />
-              ) : null}
-            </h4>
-
-            <p>
-              Stock Actual: <strong id="stockSeleccionado">{productoActual?.stock ?? 0}</strong>
-            </p>
-
-            <div className="form-group">
-              <label htmlFor="cantidadSalida">Cantidad a retirar:</label>
-              <div className="input-cantidad">
-                <button type="button" onClick={() => ajustarCant(-1)} aria-label="Disminuir cantidad">
-                  -
-                </button>
-                <input
-                  type="number"
-                  id="cantidadSalida"
-                  value={cantidadSalida}
-                  min={1}
-                  onChange={(e) => setCantidadSalida(Number(e.target.value))}
-                />
-                <button type="button" onClick={() => ajustarCant(1)} aria-label="Aumentar cantidad">
-                  +
-                </button>
+          {/* ── Tarjeta del producto seleccionado ── */}
+          {productoActual && (
+            <div className="prod-card">
+              <div className="prod-card__header">
+                <i className="fa-solid fa-box-open prod-card__ico" />
+                <div>
+                  <p className="prod-card__nombre">{productoActual.nombre}</p>
+                  {productoActual && (
+                    <div
+                      dangerouslySetInnerHTML={{ __html: generarBadgesProducto(productoActual) }}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
 
-            <button className="btn-primary btn-block" type="button" onClick={agregarAlCarrito}>
-              <i className="fa-solid fa-cart-plus" /> Añadir a la Lista
-            </button>
-          </div>
+              <div className="prod-card__stock">
+                <i className="fa-solid fa-cubes" />
+                Stock disponible: <strong>{productoActual.stock}</strong> unidades
+              </div>
+
+              <div className="prod-card__cant-wrap">
+                <label className="prod-card__cant-label">Cantidad a retirar</label>
+                <div className="prod-card__cant">
+                  <button
+                    type="button"
+                    className="prod-card__cant-btn"
+                    onClick={() => ajustarCant(-1)}
+                    aria-label="Disminuir"
+                  >
+                    <i className="fa-solid fa-minus" />
+                  </button>
+                  <input
+                    type="number"
+                    id="cantidadSalida"
+                    className="prod-card__cant-input"
+                    value={cantidadSalida}
+                    min={1}
+                    max={productoActual.stock}
+                    onChange={(e) => setCantidadSalida(Number(e.target.value))}
+                  />
+                  <button
+                    type="button"
+                    className="prod-card__cant-btn"
+                    onClick={() => ajustarCant(1)}
+                    aria-label="Aumentar"
+                  >
+                    <i className="fa-solid fa-plus" />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                className="prod-card__add-btn"
+                type="button"
+                onClick={agregarAlCarrito}
+              >
+                <i className="fa-solid fa-cart-plus" /> Añadir a la Lista
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Panel Der */}
