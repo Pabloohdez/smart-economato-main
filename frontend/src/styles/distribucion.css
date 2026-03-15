@@ -110,18 +110,12 @@ h3 {
     position: absolute;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
-    padding: 12px;
-    font-size: 15px;
-    font-family: 'Poppins', sans-serif;
-    color: #b0b8c8;
+    width: 100%;
+    color: #cbd5e0 !important;
     pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    border: 2px solid transparent;
-    border-radius: 10px;
     z-index: 0;
+    background: transparent !important;
+    border-color: transparent !important;
 }
 
 .busq-input {
@@ -353,11 +347,13 @@ h3 {
 .prod-card__stock {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    padding: 14px 20px;
+    padding: 16px 20px;
     font-size: 14px;
     color: #50596d;
     border-bottom: 1px solid #edf2f7;
+    background: #f8fafc;
 }
 
 .prod-card__stock i {
@@ -372,18 +368,20 @@ h3 {
 }
 
 .prod-card__cant-wrap {
-    padding: 16px 20px;
+    padding: 24px 20px;
     border-bottom: 1px solid #edf2f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
 }
 
 .prod-card__cant-label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
-    color: #718096;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 12px;
+    color: #4a5568;
+    margin-bottom: 16px;
 }
 
 .prod-card__cant {
@@ -391,20 +389,21 @@ h3 {
     align-items: center;
     gap: 0;
     border: 2px solid #e2e8f0;
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
     width: fit-content;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
 }
 
 .prod-card__cant-btn {
-    width: 42px;
-    height: 42px;
-    background: #f7fafc;
+    width: 46px;
+    height: 46px;
+    background: #f8fafc;
     border: none;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     color: #4a5568;
-    transition: background 0.2s;
+    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -416,13 +415,13 @@ h3 {
 }
 
 .prod-card__cant-input {
-    width: 70px;
-    height: 42px;
+    width: 60px;
+    height: 46px;
     text-align: center;
     border: none;
     border-left: 2px solid #e2e8f0;
     border-right: 2px solid #e2e8f0;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 700;
     color: #2d3748;
     font-family: 'Poppins', sans-serif;

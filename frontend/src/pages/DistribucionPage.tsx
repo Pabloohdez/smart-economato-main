@@ -359,11 +359,18 @@ export default function DistribucionPage() {
           <div className="busq-wrap">
             <div className="busq-input-wrap">
               {/* Ghost suggestion behind input */}
-              {resultadosAutocomplete.length > 0 && term.length >= 2 && (
-                <span className="busq-ghost" aria-hidden="true">
-                  {term}{resultadosAutocomplete[0].nombre.slice(term.length)}
-                </span>
-              )}
+              {resultadosAutocomplete.length > 0 &&
+                term.length >= 2 &&
+                resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) && (
+                  <input
+                    type="text"
+                    className="busq-input busq-ghost"
+                    value={term + resultadosAutocomplete[0].nombre.slice(term.length)}
+                    readOnly
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
+                )}
               <input
                 type="text"
                 id="buscadorProd"
@@ -496,7 +503,7 @@ export default function DistribucionPage() {
                 type="button"
                 onClick={agregarAlCarrito}
               >
-                <i className="fa-solid fa-cart-plus" /> Añadir a la Lista
+                <i className="fa-solid fa-cart-plus" /> Añadir a la Lista de Salida
               </button>
             </div>
           )}
