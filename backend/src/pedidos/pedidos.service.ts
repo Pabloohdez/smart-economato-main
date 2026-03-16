@@ -7,13 +7,35 @@ export class PedidosService {
 
   async findAll() {
     const { rows } = await this.db.query(`
-      SELECT p.*, pr.nombre as proveedor_nombre, u.username as usuario_nombre
+      SELECT 
+        p.*, 
+        pr.nombre as proveedor_nombre, 
+        u.username as usuario_nombre,
+        (
+          SELECT COALESCE(
+            json_agg(
+              json_build_object(
+                'id', pd.id,
+                'pedido_id', pd.pedido_id,
+                'producto_id', pd.producto_id,
+                'cantidad', pd.cantidad,
+                'cantidad_recibida', pd.cantidad_recibida,
+                'precio_unitario', pd.precio_unitario,
+                'producto_nombre', prod.nombre
+              )
+            ), 
+            '[]'::json
+          )
+          FROM pedido_detalles pd
+          LEFT JOIN productos prod ON pd.producto_id = prod.id
+          WHERE pd.pedido_id = p.id
+        ) as items
       FROM pedidos p
       LEFT JOIN proveedores pr ON p.proveedor_id = pr.id
       LEFT JOIN usuarios u ON p.usuario_id = u.id
       ORDER BY p.fecha_creacion DESC
     `);
-    return rows.map((r: Record<string, unknown>) => ({
+    return rows.map((r: Record<string, any>) => ({
       ...r,
       proveedorId: r.proveedor_id,
       usuarioId: r.usuario_id,
@@ -95,23 +117,47 @@ export class PedidosService {
             );
             if (rows.length > 0) {
               const prodId = (rows[0] as { producto_id: string }).producto_id;
+              
+              // Update stock
               await this.db.query(
                 'UPDATE productos SET stock = stock + $1 WHERE id = $2',
                 [cant, prodId],
               );
+              
+              // Update cantidad_recibida in pedido_detalles
+              await this.db.query(
+                'UPDATE pedido_detalles SET cantidad_recibida = COALESCE(cantidad_recibida, 0) + $1 WHERE id = $2',
+                [cant, item.detalle_id],
+              );
             }
           }
         }
+        
+        // Check if order is complete
+        const { rows: checkRows } = await this.db.query(
+          'SELECT SUM(cantidad) as total_pedida, SUM(cantidad_recibida) as total_recibida FROM pedido_detalles WHERE pedido_id = $1',
+          [id]
+        );
+        const totalPedida = Number(checkRows[0].total_pedida || 0);
+        const totalRecibida = Number(checkRows[0].total_recibida || 0);
+        
+        const newEstado = totalRecibida >= totalPedida ? 'RECIBIDO' : 'INCOMPLETO';
+        await this.db.query("UPDATE pedidos SET estado = $1 WHERE id = $2", [newEstado, id]);
+        
+        return { message: 'Pedido verificado, stock y estado actualizados' };
       }
-      await this.db.query("UPDATE pedidos SET estado = 'RECIBIDO' WHERE id = $1", [id]);
-      return { message: 'Pedido verificado y stock actualizado' };
+      
+      return { message: 'No se recibieron items válidos' };
     }
+    
     if (body.accion === 'CANCELAR') {
       await this.db.query("UPDATE pedidos SET estado = 'CANCELADO' WHERE id = $1", [id]);
       return { message: 'Pedido rechazado' };
     }
+    
     const estado = body.estado ?? 'PENDIENTE';
     await this.db.query('UPDATE pedidos SET estado = $1 WHERE id = $2', [estado, id]);
     return { message: 'Estado actualizado' };
   }
 }
+

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import "../styles/recepcion.css";
 
 type Producto = {
@@ -25,7 +26,7 @@ type PedidoItem = {
 type Pedido = {
   id: number | string;
   proveedor_nombre: string;
-  estado: "PENDIENTE" | "INCOMPLETO" | string;
+  estado: "PENDIENTE" | "INCOMPLETO" | "COMPLETADO" | string;
   total: number | string;
   items: PedidoItem[];
 };
@@ -83,10 +84,10 @@ export default function Recepcion() {
   // Modal pedidos
   const [modalPedidosOpen, setModalPedidosOpen] = useState(false);
   const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([]);
-  const [verificandoPedido, setVerificandoPedido] = useState<Pedido | null>(null);
-  const verifQtyRef = useRef<Record<string, number>>({}); // detalle_id -> qty
+  const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
+  const skipCloseRef = useRef(false);
 
   // Obtener usuario activo para auditoría
   const userRaw = localStorage.getItem("usuarioActivo");
@@ -130,6 +131,10 @@ export default function Recepcion() {
   // cerrar dropdown si clic fuera
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
+      if (skipCloseRef.current) {
+        skipCloseRef.current = false;
+        return;
+      }
       const target = e.target;
       if (!(target instanceof Node)) return;
       if (buscadorWrapRef.current && !buscadorWrapRef.current.contains(target)) {
@@ -162,9 +167,11 @@ export default function Recepcion() {
   }
 
   function abrirModalCantidad(p: Producto) {
+    console.log("[Recepcion] abrirModalCantidad called for:", p.nombre, "id:", p.id);
     setProductoSel(p);
     setCantidadSel(1);
     setModalCantidadOpen(true);
+    console.log("[Recepcion] modalCantidadOpen set to true");
   }
 
   function cerrarModalCantidad() {
@@ -229,9 +236,10 @@ export default function Recepcion() {
   }
 
   // ===== Pedidos (importación) =====
-  async function abrirModalPedidos() {
+  const abrirModalPedidos = useCallback(async () => {
+    console.log("[Recepcion] abrirModalPedidos called");
     setModalPedidosOpen(true);
-    setVerificandoPedido(null);
+    setVerifQty({}); // Reset quantities for new verification
 
     try {
       const res = await fetch(`${API_URL}/pedidos`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
@@ -244,42 +252,36 @@ export default function Recepcion() {
       );
 
       setPedidosPendientes(pendientes);
+
+      // Initialize verifQty for all items in all pending orders
+      const initialVerifQty: Record<string, number> = {};
+      pendientes.forEach(ped => {
+        (ped.items ?? []).forEach(item => {
+          // Default to remaining quantity. If already fully received, it will be 0
+          initialVerifQty[String(item.id)] = (Number(item.cantidad) || 0) - (Number(item.cantidad_recibida) || 0);
+        });
+      });
+      setVerifQty(initialVerifQty);
+
     } catch (e: any) {
       console.error(e);
       alert("Error cargando pedidos pendientes");
       setPedidosPendientes([]);
     }
-  }
+  }, []);
 
-  async function verificarPedido(id: number | string) {
-    try {
-      const res = await fetch(`${API_URL}/pedidos/${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
-      const json = await res.json();
-      if (!json?.success) throw new Error("Error cargando detalles");
-
-      const pedido: Pedido = json.data;
-      setVerificandoPedido(pedido);
-
-      // inicializa cantidades a lo solicitado
-      const map: Record<string, number> = {};
-      (pedido.items ?? []).forEach((it) => {
-        map[String(it.id)] = Number(it.cantidad ?? 0);
-      });
-      verifQtyRef.current = map;
-    } catch (e) {
-      console.error(e);
-      alert("Error verificando pedido");
-    }
-  }
-
-  async function confirmarVerificacion(pedidoId: number | string) {
-    if (!verificandoPedido) return;
+  const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
     if (!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
 
-    const items = (verificandoPedido.items ?? []).map((it) => ({
+    const itemsToReceive = items.map((it) => ({
       detalle_id: it.id,
-      cantidad_recibida: Number(verifQtyRef.current[String(it.id)] ?? 0),
-    }));
+      cantidad_recibida: Number(verifQty[String(it.id)] ?? 0),
+    })).filter(item => item.cantidad_recibida > 0); // Only send items with received quantity > 0
+
+    if (itemsToReceive.length === 0) {
+      alert("No se ha especificado ninguna cantidad a recibir.");
+      return;
+    }
 
     try {
       const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
@@ -288,7 +290,7 @@ export default function Recepcion() {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
         },
-        body: JSON.stringify({ accion: "RECIBIR", items }),
+        body: JSON.stringify({ accion: "RECIBIR", items: itemsToReceive }),
       });
 
       const json = await res.json().catch(() => null);
@@ -298,21 +300,17 @@ export default function Recepcion() {
         return;
       }
 
-      // Cerrar modal
-      setModalPedidosOpen(false);
-      setVerificandoPedido(null);
-
       // Volver a cargar datos de productos
       await cargarDatos();
 
       // Añadir a la tabla de recepción (solo los recibidos > 0)
       const nuevasFilas: RecepcionRow[] = [];
-      for (const it of verificandoPedido.items ?? []) {
-        const qty = Number(verifQtyRef.current[String(it.id)] ?? 0);
+      for (const it of items) {
+        const qty = Number(verifQty[String(it.id)] ?? 0);
         if (qty <= 0) continue;
 
         const prod = productos.find((p) => String(p.id) === String(it.producto_id));
-        const provNombre = prod ? proveedorNombreDeProducto(prod) : verificandoPedido.proveedor_nombre;
+        const provNombre = prod ? proveedorNombreDeProducto(prod) : proveedor_nombre;
 
         // stock anterior: si tenemos producto, usamos su stock - qty como en vuestro JS
         const stockAnterior = prod ? Number(prod.stock ?? 0) - qty : 0;
@@ -332,37 +330,13 @@ export default function Recepcion() {
       }
 
       alert(json?.data?.message ?? "Recepción procesada correctamente");
+      // Refresh the list of pending orders
+      await abrirModalPedidos();
     } catch (e: any) {
       console.error(e);
       alert("Error de conexión: " + e.message);
     }
-  }
-
-  async function rechazarPedido(pedidoId: number | string) {
-    if (!confirm("¿Seguro que quieres RECHAZAR/CANCELAR este pedido completo?")) return;
-
-    try {
-      const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({ accion: "CANCELAR" }),
-      });
-
-      if (!res.ok) {
-        alert("Error al rechazar el pedido");
-        return;
-      }
-
-      alert("Pedido rechazado/cancelado correctamente");
-      // refrescar lista
-      await abrirModalPedidos();
-    } catch {
-      alert("Error de conexión");
-    }
-  }
+  }, [verifQty, productos, abrirModalPedidos]);
 
   const nombreProveedorActual = useMemo(() => {
     if (!recepcion.length) return "Sin seleccionar";
@@ -399,7 +373,7 @@ export default function Recepcion() {
                 {/* Ghost suggestion */}
                 {resultadosAutocomplete.length > 0 &&
                   term.length >= 2 &&
-                  resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) && 
+                  resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) &&
                   resultadosAutocomplete[0].nombre.toLowerCase() !== term.toLowerCase() && (
                     <div className="busq-ghost" aria-hidden="true">
                       <span style={{ visibility: "hidden" }}>{term}</span>
@@ -473,11 +447,13 @@ export default function Recepcion() {
                   ) : null
                 ) : (
                   resultadosRender.map((p) => (
-                    <div 
-                      key={String(p.id)} 
-                      className="item-resultado" 
+                    <div
+                      key={String(p.id)}
+                      className="item-resultado"
                       onMouseDown={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
+                        skipCloseRef.current = true;
                         abrirModalCantidad(p);
                         setResultadosOpen(false);
                       }}
@@ -522,113 +498,105 @@ export default function Recepcion() {
         </div>
       </div>
 
-      {/* Modal Pedidos */}
-      {modalPedidosOpen && (
-        <div className="modal-overlay">
-          <div className="modal-contenido" style={{ maxWidth: 600 }}>
-            {!verificandoPedido ? (
-              <>
-                <h3>
-                  <i className="fa-solid fa-list-check" /> Pedidos Pendientes
-                </h3>
+      {/* Modal Importar Pedidos (usando Portal para evitar recortes de z-index/overflow) */}
+      {modalPedidosOpen && createPortal(
+        <div className="modal-overlay active">
+          <div className="modal-contenido modal-lg">
+            <h3>
+              <i className="fa-solid fa-cloud-arrow-down" /> Importar Pedido Pendiente
+            </h3>
 
-                <div style={{ maxHeight: 300, overflowY: "auto" }}>
-                  {!pedidosPendientes.length ? (
-                    <div style={{ padding: 10 }}>No hay pedidos pendientes de recepción.</div>
-                  ) : (
-                    <table className="tabla-recepcion" style={{ width: "100%" }}>
-                      <thead style={{ fontSize: "0.8em" }}>
-                        <tr>
-                          <th>ID</th>
-                          <th>Proveedor</th>
-                          <th>Estado</th>
-                          <th>Total</th>
-                          <th>Acción</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pedidosPendientes.map((p) => (
-                          <tr key={String(p.id)}>
-                            <td>#{p.id}</td>
-                            <td>{p.proveedor_nombre}</td>
-                            <td>{p.estado}</td>
-                            <td>{formatEUR(Number(p.total ?? 0))}</td>
-                            <td>
-                              <button className="btn-buscar-producto" style={{ padding: "10px 12px" }} onClick={() => verificarPedido(p.id)}>
-                                <i className="fa-solid fa-clipboard-check" /> Verificar
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-
-                <button className="btn-modal btn-modal-cancelar" style={{ marginTop: 15, width: "100%" }} onClick={() => setModalPedidosOpen(false)}>
-                  Cerrar
-                </button>
-              </>
+            {pedidosPendientes.length === 0 ? (
+              <p style={{ marginTop: 20 }}>No hay pedidos pendientes o incompletos.</p>
             ) : (
-              <>
-                <div className="verificacion-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h4 style={{ margin: 0 }}>
-                    Verificando Pedido #{verificandoPedido.id} - {verificandoPedido.proveedor_nombre}
-                  </h4>
-                  <button className="btn-modal btn-modal-cancelar" onClick={() => setVerificandoPedido(null)}>
-                    Volver
-                  </button>
-                </div>
+              <div style={{ marginTop: 20, maxHeight: 400, overflowY: "auto" }}>
+                {pedidosPendientes.map((ped) => {
+                  const items = Array.isArray(ped.items) ? ped.items : [];
+                  const completado = ped.estado.toUpperCase() === "COMPLETADO";
 
-                <table className="tabla-recepcion" style={{ width: "100%", marginTop: 10 }}>
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Solicitado</th>
-                      <th>Recibido</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(verificandoPedido.items ?? []).map((it) => (
-                      <tr key={String(it.id)}>
-                        <td>{it.producto_nombre}</td>
-                        <td>{it.cantidad}</td>
-                        <td>
-                          <input
-                            type="number"
-                            min={0}
-                            max={it.cantidad}
-                            defaultValue={it.cantidad}
-                            className="input-cantidad-recepcion"
-                            style={{ width: 80 }}
-                            onChange={(e) => {
-                              verifQtyRef.current[String(it.id)] = Number(e.target.value || 0);
-                            }}
-                          />
-                        </td>
-                        <td>
-                          <i className="fa-solid fa-check" style={{ color: "#2f855a" }} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  return (
+                    <div key={String(ped.id)} className="pedido-card">
+                      <div className="pedido-card-header">
+                        <div>
+                          <strong>Pedido #{ped.id}</strong> — Proveedor: {ped.proveedor_nombre}
+                        </div>
+                        <span className={`badge-estado ${ped.estado.toLowerCase()}`}>
+                          {ped.estado}
+                        </span>
+                      </div>
+                      <div className="pedido-card-body">
+                        {items.length === 0 ? (
+                          <p>Sin items</p>
+                        ) : (
+                          <table className="tabla-recepcion" style={{ marginTop: 10 }}>
+                            <thead>
+                              <tr>
+                                <th>Producto</th>
+                                <th>Pedida</th>
+                                <th>Recibida (Antes)</th>
+                                <th>A Recibir Ahora</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {items.map((it) => {
+                                const qtyVerif = verifQty[it.id] ?? 0;
+                                return (
+                                  <tr key={String(it.id)}>
+                                    <td>{it.producto_nombre}</td>
+                                    <td>{it.cantidad}</td>
+                                    <td>{it.cantidad_recibida || 0}</td>
+                                    <td>
+                                      {!completado ? (
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          max={(Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)}
+                                          value={qtyVerif}
+                                          onChange={(e) =>
+                                            setVerifQty({ ...verifQty, [it.id]: Number(e.target.value) })
+                                          }
+                                          style={{ width: 80, padding: 4 }}
+                                        />
+                                      ) : (
+                                        "—"
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        )}
+                      </div>
 
-                <div style={{ marginTop: 20, display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button className="btn-accion btn-cancelar" onClick={() => rechazarPedido(verificandoPedido.id)}>
-                    Rechazar Todo
-                  </button>
-                  <button className="btn-accion btn-guardar-recepcion" onClick={() => confirmarVerificacion(verificandoPedido.id)}>
-                    Confirmar Recepción
-                  </button>
-                </div>
-              </>
+                      {!completado && (
+                        <div style={{ textAlign: "right", marginTop: 15 }}>
+                          <button
+                            className="btn-accion-recepcion"
+                            onClick={() =>
+                              verificarPedidoLocal(Number(ped.id), items, ped.proveedor_nombre)
+                            }
+                            title="Añadir a recepción"
+                          >
+                            <i className="fa-solid fa-check" /> Añadir Verificados
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
-          </div>
-        </div>
-      )}
 
+            <div className="modal-botones" style={{ marginTop: 20 }}>
+              <button className="btn-modal btn-modal-cancelar" onClick={() => setModalPedidosOpen(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
       {/* Panel recepción actual */}
       <div className="panel-recepcion">
         <div className="header-panel-recepcion">
@@ -732,9 +700,9 @@ export default function Recepcion() {
         </div>
       </div>
 
-      {/* Modal Cantidad */}
-      {modalCantidadOpen && (
-        <div className="modal-overlay">
+      {/* Modal Cantidad (usando Portal) */}
+      {modalCantidadOpen && createPortal(
+        <div className="modal-overlay active">
           <div className="modal-contenido">
             <h3>
               <i className="fa-solid fa-box-open" /> Cantidad Recibida
@@ -755,6 +723,7 @@ export default function Recepcion() {
                     cerrarModalCantidad();
                   }
                 }}
+                autoFocus
               />
             </div>
 
@@ -774,7 +743,8 @@ export default function Recepcion() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
