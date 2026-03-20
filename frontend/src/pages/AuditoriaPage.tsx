@@ -3,6 +3,8 @@ import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
 import "../styles/auditoria.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
+import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -347,10 +349,9 @@ export default function AuditoriaPage() {
         </div>
 
         <div className="panel-tabla">
-          <p style={{ color: "#c53030", fontWeight: 600 }}>
-            Acceso denegado:{" "}
+          <Alert type="error" title="Acceso denegado">
             {errorMsg || "Se requieren permisos de administrador"}
-          </p>
+          </Alert>
         </div>
       </div>
     );
@@ -484,11 +485,11 @@ export default function AuditoriaPage() {
       </div>
 
       <div className="panel-tabla">
-        {loading && <p>Cargando auditoría...</p>}
+        {loading && <Spinner label="Cargando auditoría..." />}
         {!loading && errorMsg && (
-          <p style={{ color: "#c53030", fontWeight: 600 }}>{errorMsg}</p>
+          <Alert type="error" title="Error al cargar">{errorMsg}</Alert>
         )}
-        <div id="grid-auditoria" ref={gridRef} />
+        <div id="grid-auditoria" ref={gridRef} style={loading || !!errorMsg ? { display: "none" } : {}} />
       </div>
 
       {modalOpen && registroSeleccionado && (

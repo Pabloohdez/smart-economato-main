@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import 'dotenv/config'; // reload trigger
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';

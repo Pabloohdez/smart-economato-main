@@ -5,62 +5,62 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #edf2f7;
+  margin-bottom: var(--space-7);
+  padding-bottom: var(--space-5);
+  border-bottom: 2px solid var(--color-border-default);
 }
 
 .titulo-inventario {
-  color: #2d3748;
+  color: var(--color-text-strong);
   font-size: 28px;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-2) 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .titulo-inventario i {
-  color: #b33131;
+  color: var(--color-brand-500);
 }
 
 .subtitulo {
-  color: #4a5568;
+  color: var(--color-text-muted);
   font-size: 14px;
   margin: 0;
 }
 
 .btn-ingresar-header {
-  padding: 14px 28px;
+  padding: var(--space-4) var(--space-7);
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), filter var(--motion-fast);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-3);
   text-decoration: none;
   box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
 }
 
 .btn-ingresar-header:hover {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+  filter: brightness(1.08);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
 }
 
 /* Panel de Controles (Filtros y Búsqueda) */
 .panel-controles {
-  background: white;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  margin-bottom: 25px;
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  background: var(--color-bg-surface);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border-default);
 }
 
 .campo-busqueda-inventario {
@@ -74,24 +74,24 @@
 .icono-busqueda {
   position: absolute;
   left: 18px;
-  color: #718096;
+  color: var(--color-text-muted);
   font-size: 16px;
   pointer-events: none;
 }
 
 .input-busqueda-inventario {
   flex: 1;
-  padding: 14px 18px 14px 48px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
+  padding: var(--space-4) 18px var(--space-4) 48px;
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-md);
   font-size: 15px;
-  transition: all 0.3s ease;
-  background: #f7fafc;
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+  background: var(--color-bg-soft);
 }
 
 .input-busqueda-inventario:focus {
-  background: white;
-  border-color: #b33131;
+  background: var(--color-bg-surface);
+  border-color: var(--color-brand-500);
   box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
   outline: none;
 }
@@ -113,7 +113,7 @@
 .label-filtro {
   font-size: 12px;
   font-weight: 600;
-  color: #50596d;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -121,10 +121,10 @@
 }
 
 .select-filtro-inventario {
-  padding: 12px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  background: #f7fafc;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-soft);
   cursor: pointer;
 }
 
@@ -149,7 +149,7 @@
 
 .btn-stock {
   background: #fff5f5;
-  color: #c53030;
+  color: var(--color-danger-500);
   border-color: #fc8181;
 }
 
@@ -160,9 +160,9 @@
 }
 
 .btn-limpiar {
-  background: #f7fafc;
-  color: #4a5568;
-  border-color: #e2e8f0;
+  background: var(--color-bg-soft);
+  color: var(--color-text-muted);
+  border-color: var(--color-border-default);
 }
 
 .btn-accion-inventario:hover {
@@ -172,10 +172,10 @@
 
 /* Panel de Tabla */
 .panel-tabla {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.02);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-default);
   overflow: hidden;
 }
 
@@ -252,9 +252,9 @@
 
 /* Resumen del Inventario (Footer) */
 .resumen-inventario {
-  padding: 20px 25px;
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  border-top: 2px solid #e2e8f0;
+  padding: var(--space-5) var(--space-6);
+  background: linear-gradient(135deg, var(--color-bg-soft) 0%, var(--color-border-default) 100%);
+  border-top: 2px solid var(--color-border-default);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -262,34 +262,34 @@
 }
 
 .resumen-valor {
-  color: #b33131;
+  color: var(--color-brand-500);
   font-size: 18px;
 }
 
 /* Botón Buscar en Inventario */
 /* Botón Buscar en Inventario - High Specificity to ensure style */
 button#btnBuscar.btn-buscar-inventario {
-  padding: 12px 28px !important;
-  background: linear-gradient(135deg, #b33131 0%, #8f2323 100%) !important;
+  padding: var(--space-3) var(--space-7) !important;
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%) !important;
   color: white !important;
   border: none !important;
-  border-radius: 10px !important;
-  font-family: 'Poppins', sans-serif;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-family-base);
   font-weight: 600 !important;
   font-size: 15px !important;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), filter var(--motion-fast);
   display: flex !important;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-3);
   box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3) !important;
   text-transform: none;
   min-width: 120px;
 }
 
 button#btnBuscar.btn-buscar-inventario:hover {
-  background: linear-gradient(135deg, #c93838 0%, #b33131 100%) !important;
+  filter: brightness(1.08);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4) !important;
 }
@@ -319,180 +319,65 @@ button#btnBuscar.btn-buscar-inventario:hover {
     align-items: flex-start;
   }
 }
-/* ===== PATCH: compatibilidad con tus clases .inv-* (React actual) ===== */
+/* ===== Alias .inv-* => tokens ===== */
+.inv-header { display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: var(--space-7); padding-bottom: var(--space-5);
+  border-bottom: 2px solid var(--color-border-default); }
+.inv-title { color: var(--color-text-strong); font-size: 28px; font-weight: 700;
+  margin: 0 0 var(--space-2) 0; display: flex; align-items: center; gap: var(--space-3); }
+.inv-subtitle { color: var(--color-text-muted); font-size: 14px; margin: 0; }
 
-/* Header: tu .inv-header => estilo del header moderno */
-.inv-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #edf2f7;
-}
-.inv-title {
-  color: #2d3748;
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.inv-subtitle {
-  color: #4a5568;
-  font-size: 14px;
-  margin: 0;
-}
+.inv-btn-primary { padding: var(--space-4) var(--space-7);
+  background: linear-gradient(135deg, #48bb78, #38a169); color: #fff;
+  border: none; border-radius: var(--radius-md); font-weight: 600; font-size: 15px;
+  cursor: pointer; transition: transform var(--motion-fast), box-shadow var(--motion-fast), filter var(--motion-fast);
+  display: inline-flex; align-items: center; gap: var(--space-3); text-decoration: none;
+  box-shadow: 0 4px 15px rgba(56,161,105,0.3); }
+.inv-btn-primary:hover { filter: brightness(1.08); transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(56,161,105,0.4); }
 
-/* Botón “Ingresar Producto” de tu React */
-.inv-btn-primary {
-  padding: 14px 28px;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
-}
-.inv-btn-primary:hover {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
-}
+.inv-panel { background: var(--color-bg-surface); padding: var(--space-6);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6); border: 1px solid var(--color-border-default); }
+.inv-row { display: flex; flex-wrap: wrap; gap: var(--space-5); align-items: center; }
 
-/* Panel de controles: tu .inv-panel/.inv-row => look moderno */
-.inv-panel {
-  background: white;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-  margin-bottom: 25px;
-  border: 1px solid rgba(0, 0, 0, 0.02);
-}
-.inv-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  align-items: center;
-}
+.inv-search { display: flex; align-items: center; gap: var(--space-3);
+  position: relative; flex: 1; min-width: 320px; }
+.inv-input { flex: 1; padding: var(--space-4) 18px; border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-md); font-size: 15px;
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+  background: var(--color-bg-soft); }
+.inv-input:focus { background: var(--color-bg-surface); border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 4px rgba(179,49,49,0.1); outline: none; }
 
-/* Search bar de tu React */
-.inv-search {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  flex: 1;
-  min-width: 320px;
-}
-.inv-input {
-  flex: 1;
-  padding: 14px 18px;
-  border: 2px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  background: #f7fafc;
-}
-.inv-input:focus {
-  background: white;
-  border-color: #b33131;
-  box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
-  outline: none;
-}
+.inv-select { padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border-default); border-radius: var(--radius-sm);
+  background: var(--color-bg-soft); cursor: pointer; min-width: 220px; }
 
-/* Selects de tu React */
-.inv-select {
-  padding: 12px 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 10px;
-  background: #f7fafc;
-  cursor: pointer;
-  min-width: 220px;
-}
+.inv-actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.inv-actions .inv-btn { padding: var(--space-3) var(--space-6); border-radius: var(--radius-sm);
+  font-weight: 600; cursor: pointer;
+  transition: transform var(--motion-fast), filter var(--motion-fast);
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  border: 2px solid var(--color-border-default); background: var(--color-bg-soft);
+  color: var(--color-text-muted); }
+.inv-actions .inv-btn:hover { transform: translateY(-2px); filter: brightness(0.95); }
 
-/* Botones (Stock Bajo / Próximo / Limpiar) en tu React */
-.inv-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.inv-actions .inv-btn {
-  padding: 12px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 2px solid transparent;
-  background: #f7fafc;
-  color: #4a5568;
-  border-color: #e2e8f0;
-}
-.inv-actions .inv-btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(0.95);
-}
+.inv-search .inv-btn { padding: var(--space-3) var(--space-7);
+  background: linear-gradient(135deg, var(--color-brand-500), var(--color-brand-600));
+  color: #fff; border: none; border-radius: var(--radius-sm); font-weight: 700;
+  cursor: pointer; transition: transform var(--motion-fast), box-shadow var(--motion-fast), filter var(--motion-fast);
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-3); box-shadow: 0 4px 14px rgba(179,49,49,0.28); min-width: 120px; }
+.inv-search .inv-btn:hover { filter: brightness(1.08); transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(179,49,49,0.38); }
 
-/* Botón “Buscar” de tu React (el que ahora se veía sin estilo) */
-.inv-search .inv-btn {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, #a52a2a 0%, #8b0000 100%);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  min-width: 120px;
-}
-.inv-search .inv-btn:hover {
-  background: linear-gradient(135deg, #b22222 0%, #800000 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
-}
+.inv-muted { padding: var(--space-4) var(--space-5); color: var(--color-text-muted); }
 
-/* Estado loading/error */
-.inv-muted {
-  padding: 16px 20px;
-  color: #4a5568;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .inv-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15px;
-  }
-  .inv-btn-primary,
-  .inv-search .inv-btn,
-  .inv-actions .inv-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  .inv-row {
-    gap: 12px;
-  }
-  .inv-search {
-    min-width: 100%;
-  }
-  .inv-select {
-    min-width: 100%;
-  }
+  .inv-header { flex-direction: column; align-items: flex-start; gap: var(--space-4); }
+  .inv-btn-primary, .inv-search .inv-btn, .inv-actions .inv-btn { width: 100%; justify-content: center; }
+  .inv-row { gap: var(--space-3); }
+  .inv-search { min-width: 100%; }
+  .inv-select { min-width: 100%; }
 }

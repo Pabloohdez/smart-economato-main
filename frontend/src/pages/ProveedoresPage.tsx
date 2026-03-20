@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
 import "../styles/proveedores.css";
+import Spinner from "../components/ui/Spinner";
 
 import { showNotification, showConfirm } from "../utils/notifications";
 import { apiFetch } from "../services/apiClient";
@@ -19,6 +20,7 @@ export default function ProveedoresPage() {
   const gridInstance = useRef<Grid | null>(null);
 
   const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -35,6 +37,7 @@ export default function ProveedoresPage() {
 
   async function cargarProveedores() {
     try {
+      setLoading(true);
       const json = await apiFetch<{ success: boolean; data: Proveedor[] }>("/proveedores", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
@@ -42,6 +45,8 @@ export default function ProveedoresPage() {
     } catch (e) {
       console.error(e);
       showNotification("Error de conexión cargando proveedores", "error");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -54,7 +59,7 @@ export default function ProveedoresPage() {
   // ----------------------------
 
   useEffect(() => {
-    if (!gridRef.current) return;
+    if (!gridRef.current || loading) return;
 
     if (gridInstance.current) {
       gridInstance.current.destroy();
@@ -107,11 +112,7 @@ export default function ProveedoresPage() {
         },
       },
     }).render(gridRef.current);
-  }, [proveedores]);
-
-  // ----------------------------
-  // Modal
-  // ----------------------------
+  }, [proveedores, loading]);
 
   function abrirModal() {
     setForm({
@@ -249,7 +250,8 @@ export default function ProveedoresPage() {
       </div>
 
       <div className="card">
-        <div ref={gridRef}></div>
+        {loading && <Spinner label="Cargando proveedores..." />}
+        <div ref={gridRef} style={loading ? { display: "none" } : {}}></div>
       </div>
 
       {modalOpen && (

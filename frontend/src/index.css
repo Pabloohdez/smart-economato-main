@@ -3,60 +3,64 @@
 * { box-sizing: border-box; }
 html, body { 
   height: 100%; 
-  font-family: 'Poppins', sans-serif;
-  color: #1f2937;
+  font-family: var(--font-family-base);
+  color: var(--color-text-strong);
 }
-body { margin: 0; }
+body {
+  margin: 0;
+  background: var(--color-bg-canvas);
+}
 
 a {
   text-decoration: none;
+  color: inherit;
 }
 
 /* --- BARRA DE CONTROLES Y SUS INPUTS (RESTORED) --- */
 .controless {
-  background-color: #ffffff;
-  padding: 20px 25px;
-  border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  background-color: var(--color-bg-surface);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: var(--space-3);
   align-items: center;
-  margin-bottom: 30px;
-  border: 1px solid rgba(0,0,0,0.03);
+  margin-bottom: var(--space-7);
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .controless input[type="text"], 
 .controless select {
-  padding: 12px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
   font-size: 14px;
-  color: #4a5568;
-  background-color: #f8fafc;
+  color: var(--color-text-default);
+  background-color: var(--color-bg-soft);
   outline: none;
-  transition: all 0.3s ease;
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast), background-color var(--motion-fast);
   min-width: 160px;
   flex-grow: 1;
 }
 
 .controless input[type="text"]:focus, 
 .controless select:focus {
-  border-color: #b33131;
-  background-color: #fff;
-  box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
+  border-color: var(--color-brand-500);
+  background-color: var(--color-bg-surface);
+  box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.12);
 }
 
 .controless button,
 .controless a.btn {
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   border: none;
-  border-radius: 12px;
-  font-family: 'Poppins', sans-serif;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family-base);
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast), background-color var(--motion-fast);
   letter-spacing: 0.3px;
   display: inline-flex;
   align-items: center;
@@ -73,19 +77,19 @@ a {
 }
 
 #btnBuscar, .btn-primary {
-  background: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
 }
 #btnBuscar:hover, .btn-primary:hover {
-  background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+  background: linear-gradient(135deg, #c93838 0%, var(--color-brand-500) 100%);
   box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
   transform: translateY(-2px);
 }
 
 #btnStock, .btn-warning {
   background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
-  color: #c53030;
+  color: var(--color-warning-500);
   border: 2px solid #fc8181;
   box-shadow: 0 4px 12px rgba(197, 48, 48, 0.15);
 }
@@ -99,8 +103,8 @@ a {
 
 #btnMostrarTodos, .btn-secondary {
   background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  color: var(--color-text-default);
+  border: 2px solid var(--color-border-default);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 #btnMostrarTodos:hover, .btn-secondary:hover {
@@ -112,7 +116,7 @@ a {
 }
 
 #btnIngresar, .btn-success {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  background: linear-gradient(135deg, #48bb78 0%, var(--color-success-500) 100%);
   color: white;
   margin-left: auto;
   box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
@@ -122,4 +126,12 @@ a {
   background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
   box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
   transform: translateY(-2px);
+}
+
+.controless button:focus-visible,
+.controless a.btn:focus-visible,
+.controless input:focus-visible,
+.controless select:focus-visible {
+  outline: 3px solid rgba(179, 49, 49, 0.3);
+  outline-offset: 2px;
 }

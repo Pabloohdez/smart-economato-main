@@ -7,7 +7,7 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
 }
 
 .titulo-bajas {
@@ -27,15 +27,15 @@
 }
 
 .info-fecha {
-    background: #f7fafc;
+    background: var(--color-bg-soft);
     padding: 12px 20px;
     border-radius: 10px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
 }
 
 /* Tarjetas de Estadísticas */
@@ -47,15 +47,15 @@
 }
 
 .stat-card {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 20px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     border-left: 4px solid;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .stat-card:hover {
@@ -124,21 +124,21 @@
 .stat-valor {
     font-size: 24px;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-strong);
 }
 
 /* Panel de Registro */
 .panel-registro-baja {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
 
 .titulo-seccion {
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 18px;
     font-weight: 600;
     margin: 0 0 20px 0;
@@ -161,15 +161,15 @@
 .input-busqueda-baja {
     flex: 1;
     padding: 14px 18px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 10px;
     font-size: 15px;
-    transition: all 0.3s ease;
-    background: #f7fafc;
+    transition: all var(--motion-base);
+    background: var(--color-bg-soft);
 }
 
 .input-busqueda-baja:focus {
-    background: white;
+    background: var(--color-bg-surface);
     border-color: #c53030;
     box-shadow: 0 0 0 4px rgba(197, 48, 48, 0.1);
     outline: none;
@@ -178,12 +178,12 @@
 .btn-buscar-baja {
     padding: 14px 28px;
     background: linear-gradient(135deg, #c53030 0%, #9b2c2c 100%);
-    color: white;
+    color: var(--color-bg-surface);
     border: none;
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -204,29 +204,29 @@
 .select-filtro-baja {
     flex: 1;
     padding: 12px 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--color-bg-soft);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .select-filtro-baja:focus {
     border-color: #c53030;
-    background: white;
+    background: var(--color-bg-surface);
     outline: none;
 }
 
 .btn-filtro-especial {
     padding: 12px 20px;
     background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-    color: white;
+    color: var(--color-bg-surface);
     border: none;
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -242,7 +242,7 @@
 /* Resultados de búsqueda */
 .resultados-busqueda-baja {
     margin-top: 20px;
-    border-top: 1px solid #edf2f7;
+    border-top: 1px solid var(--color-border-default);
     padding-top: 20px;
     max-height: 350px;
     overflow-y: auto;
@@ -253,11 +253,11 @@
     justify-content: space-between;
     align-items: center;
     padding: 15px;
-    background: #f8fafc;
+    background: var(--color-bg-soft);
     border-radius: 10px;
     margin-bottom: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     border: 2px solid transparent;
 }
 
@@ -273,7 +273,7 @@
 
 .nombre-producto-baja {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-strong);
     margin-bottom: 5px;
 }
 
@@ -307,10 +307,10 @@
 
 /* Panel de Baja Activa */
 .panel-baja-activa {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
@@ -323,7 +323,7 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    background: white;
+    background: var(--color-bg-surface);
 }
 
 .tabla-bajas th {
@@ -339,8 +339,8 @@
 
 .tabla-bajas td {
     padding: 14px;
-    border-bottom: 1px solid #edf2f7;
-    color: #2d3748;
+    border-bottom: 1px solid var(--color-border-default);
+    color: var(--color-text-strong);
     font-size: 14px;
 }
 
@@ -404,8 +404,8 @@
 }
 
 .tipo-otro {
-    background: #edf2f7;
-    color: #4a5568;
+    background: var(--color-border-default);
+    color: var(--color-text-muted);
 }
 
 .stock-reducido {
@@ -421,7 +421,7 @@
     height: 36px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -445,10 +445,10 @@
 
 /* Panel de Acciones */
 .panel-acciones-baja {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
@@ -461,7 +461,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     margin-bottom: 10px;
     font-size: 14px;
@@ -470,17 +470,17 @@
 .textarea-motivo {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 10px;
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
     resize: vertical;
-    background: #f7fafc;
-    transition: all 0.3s ease;
+    background: var(--color-bg-soft);
+    transition: all var(--motion-base);
 }
 
 .textarea-motivo:focus {
-    background: white;
+    background: var(--color-bg-surface);
     border-color: #c53030;
     outline: none;
 }
@@ -498,27 +498,27 @@
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .btn-cancelar-baja {
-    background: #f7fafc;
-    color: #4a5568;
-    border: 2px solid #e2e8f0;
+    background: var(--color-bg-soft);
+    color: var(--color-text-muted);
+    border: 2px solid var(--color-border-default);
 }
 
 .btn-cancelar-baja:hover {
-    background: #edf2f7;
-    border-color: #cbd5e0;
+    background: var(--color-border-default);
+    border-color: var(--color-border-strong);
     transform: translateY(-2px);
 }
 
 .btn-confirmar-baja {
     background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
-    color: white;
+    color: var(--color-bg-surface);
     box-shadow: 0 4px 15px rgba(197, 48, 48, 0.3);
 }
 
@@ -530,10 +530,10 @@
 
 /* Panel de Historial */
 .panel-historial {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     border: 1px solid rgba(0,0,0,0.02);
 }
 
@@ -551,9 +551,9 @@
 
 .select-filtro-historial {
     padding: 10px 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
     border-radius: 8px;
-    background: #f8fafc;
+    background: var(--color-bg-soft);
     font-size: 13px;
     cursor: pointer;
 }
@@ -578,7 +578,7 @@
 }
 
 .modal-contenido-baja {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 30px;
     border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
@@ -588,7 +588,7 @@
 
 .modal-contenido-baja h3 {
     margin: 0 0 15px 0;
-    color: #2d3748;
+    color: var(--color-text-strong);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -614,7 +614,7 @@
 }
 
 .modal-campo label {
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 14px;
@@ -622,17 +622,17 @@
 
 .modal-select-tipo {
     padding: 12px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 8px;
     font-size: 15px;
     font-weight: 600;
-    background: white;
+    background: var(--color-bg-surface);
     cursor: pointer;
 }
 
 .modal-input-cantidad-baja {
     padding: 12px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 8px;
     font-size: 18px;
     font-weight: 600;
@@ -657,21 +657,21 @@
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .btn-modal-cancelar-baja {
-    background: #edf2f7;
-    color: #4a5568;
+    background: var(--color-border-default);
+    color: var(--color-text-muted);
 }
 
 .btn-modal-cancelar-baja:hover {
-    background: #e2e8f0;
+    background: var(--color-border-default);
 }
 
 .btn-modal-confirmar-baja {
     background: #c53030;
-    color: white;
+    color: var(--color-bg-surface);
 }
 
 .btn-modal-confirmar-baja:hover {

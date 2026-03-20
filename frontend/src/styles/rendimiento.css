@@ -10,7 +10,7 @@
 .titulo-rendimiento {
   font-size: 1.8rem;
   font-weight: 800;
-  color: #1a202c;
+  color: var(--color-text-strong);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -18,12 +18,12 @@
 }
 
 .titulo-rendimiento i {
-  color: #b33131;
+  color: var(--color-brand-500);
   font-size: 1.5rem;
 }
 
 .header-rendimiento .subtitulo {
-  color: #718096;
+  color: var(--color-text-muted);
   font-size: 14px;
   margin: 0;
   font-style: italic;
@@ -33,12 +33,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f7fafc;
+  background: var(--color-bg-soft);
   padding: 8px 16px;
   border-radius: 10px;
-  color: #4a5568;
+  color: var(--color-text-muted);
   font-size: 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
 }
 
 .stats-container-rend {
@@ -49,13 +49,13 @@
 }
 
 .stat-card-rend {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 14px;
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(0, 0, 0, 0.04);
   transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -85,7 +85,7 @@
 .stat-label-rend {
   font-size: 12px;
   font-weight: 600;
-  color: #718096;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -93,7 +93,7 @@
 .stat-valor-rend {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1a202c;
+  color: var(--color-text-strong);
 }
 
 .stat-ingredientes .stat-icon-rend {
@@ -120,11 +120,11 @@
 .panel-tabla-rend,
 .panel-acciones-rend,
 .panel-historial-rend {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   padding: 25px;
   margin-bottom: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(0, 0, 0, 0.04);
   width: 100%;
   box-sizing: border-box;
@@ -133,7 +133,7 @@
 .titulo-seccion-rend {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #2d3748;
+  color: var(--color-text-strong);
   margin: 0 0 20px 0;
   display: flex;
   align-items: center;
@@ -141,7 +141,7 @@
 }
 
 .titulo-seccion-rend i {
-  color: #b33131;
+  color: var(--color-brand-500);
 }
 
 .controles-registro-rend {
@@ -176,18 +176,18 @@
 .input-busqueda-rend {
   flex: 1;
   padding: 12px 18px 12px 35px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 12px;
   font-size: 14px;
-  color: #4a5568;
-  background: #f8fafc;
+  color: var(--color-text-muted);
+  background: var(--color-bg-soft);
   outline: none;
-  transition: all 0.3s ease;
+  transition: all var(--motion-base);
 }
 
 .input-busqueda-rend:focus {
-  border-color: #b33131;
-  background: white;
+  border-color: var(--color-brand-500);
+  background: var(--color-bg-surface);
   box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
 
@@ -201,26 +201,26 @@
 .select-filtro-rend,
 .select-filtro-historial-rend {
   padding: 10px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 10px;
   font-size: 14px;
-  color: #4a5568;
-  background: #f8fafc;
+  color: var(--color-text-muted);
+  background: var(--color-bg-soft);
   outline: none;
-  transition: all 0.3s ease;
+  transition: all var(--motion-base);
   min-width: 180px;
 }
 
 .select-filtro-rend:focus,
 .select-filtro-historial-rend:focus {
-  border-color: #b33131;
-  background: white;
+  border-color: var(--color-brand-500);
+  background: var(--color-bg-surface);
   box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
 
 .btn-nuevo-rend {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   padding: 10px 24px;
   border-radius: 12px;
@@ -228,7 +228,7 @@
   font-size: 14px;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
-  transition: all 0.3s ease;
+  transition: all var(--motion-base);
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -246,9 +246,9 @@
   margin-top: 15px;
   max-height: 200px;
   overflow-y: auto;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 10px;
-  background: white;
+  background: var(--color-bg-surface);
 }
 
 .resultados-busqueda-rend.oculto,
@@ -267,8 +267,8 @@
 }
 
 .resultado-sugerencia-rend:hover {
-  background: #f7fafc;
-  color: #b33131;
+  background: var(--color-bg-soft);
+  color: var(--color-brand-500);
 }
 
 .resultado-sugerencia-rend:last-child {
@@ -282,7 +282,7 @@
 
 .resultado-sugerencia-rend .prod-meta {
   font-size: 11px;
-  color: #718096;
+  color: var(--color-text-muted);
 }
 
 .resultado-sugerencia-rend .prod-tag {
@@ -297,7 +297,7 @@
 .tabla-wrapper-rend {
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid #edf2f7;
+  border: 1px solid var(--color-border-default);
 }
 
 .tabla-rendimiento {
@@ -307,22 +307,22 @@
 }
 
 .tabla-rendimiento thead th {
-  background: #f7fafc;
-  color: #4a5568;
+  background: var(--color-bg-soft);
+  color: var(--color-text-muted);
   padding: 14px 16px;
   text-align: left;
   font-weight: 700;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #edf2f7;
+  border-bottom: 2px solid var(--color-border-default);
   white-space: nowrap;
 }
 
 .tabla-rendimiento tbody td {
   padding: 12px 16px;
-  border-bottom: 1px solid #edf2f7;
-  color: #2d3748;
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-strong);
   font-size: 14px;
   vertical-align: middle;
 }
@@ -363,20 +363,20 @@
 }
 
 .fila-total-rend {
-  background: linear-gradient(to right, #f7fafc, #edf2f7) !important;
+  background: linear-gradient(to right, #f7fafc, var(--color-border-default)) !important;
 }
 
 .fila-total-rend td {
   padding: 14px 16px !important;
   font-weight: 700;
   font-size: 14px;
-  color: #2d3748;
-  border-top: 2px solid #cbd5e0;
+  color: var(--color-text-strong);
+  border-top: 2px solid var(--color-border-strong);
 }
 
 .total-valor-rend {
   font-weight: 800;
-  color: #b33131;
+  color: var(--color-brand-500);
 }
 
 .rendimiento-alto {
@@ -415,7 +415,7 @@
 
 .label-observaciones-rend {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -425,19 +425,19 @@
 .textarea-observaciones-rend {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 10px;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  background: #f8fafc;
+  background: var(--color-bg-soft);
   box-sizing: border-box;
   transition: all 0.3s;
 }
 
 .textarea-observaciones-rend:focus {
-  border-color: #b33131;
-  background: white;
+  border-color: var(--color-brand-500);
+  background: var(--color-bg-surface);
   box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
   outline: none;
 }
@@ -463,18 +463,18 @@
 }
 
 .btn-cancelar-rend {
-  background: #edf2f7;
-  color: #4a5568;
+  background: var(--color-border-default);
+  color: var(--color-text-muted);
 }
 
 .btn-cancelar-rend:hover {
-  background: #e2e8f0;
-  color: #2d3748;
+  background: var(--color-border-default);
+  color: var(--color-text-strong);
 }
 
 .btn-guardar-rend {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  color: var(--color-bg-surface);
   box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
 }
 
@@ -527,12 +527,12 @@
 
 .historial-nombre-rend {
   font-weight: 700;
-  color: #2d3748;
+  color: var(--color-text-strong);
 }
 
 .historial-detalle-rend {
   font-size: 12px;
-  color: #718096;
+  color: var(--color-text-muted);
 }
 
 .historial-valores-rend {
@@ -577,7 +577,7 @@
 }
 
 .modal-contenido-rend {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 16px;
   padding: 30px;
   max-width: 500px;
@@ -599,7 +599,7 @@
 
 .modal-contenido-rend h3 {
   margin: 0 0 20px 0;
-  color: #2d3748;
+  color: var(--color-text-strong);
   font-size: 1.3rem;
   display: flex;
   align-items: center;
@@ -607,17 +607,17 @@
 }
 
 .modal-contenido-rend h3 i {
-  color: #b33131;
+  color: var(--color-brand-500);
 }
 
 .modal-ingrediente-nombre {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-text-muted);
   margin: 0 0 20px 0;
   padding: 10px 15px;
-  background: #f7fafc;
+  background: var(--color-bg-soft);
   border-radius: 8px;
-  border-left: 3px solid #b33131;
+  border-left: 3px solid var(--color-brand-500);
 }
 
 .modal-campos-rend {
@@ -635,33 +635,33 @@
 .modal-campo-rend label {
   font-weight: 600;
   font-size: 13px;
-  color: #4a5568;
+  color: var(--color-text-muted);
 }
 
 .modal-input-rend {
   padding: 10px 14px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   font-size: 14px;
-  background: #f8fafc;
+  background: var(--color-bg-soft);
   transition: all 0.2s;
 }
 
 .modal-input-rend:focus {
-  border-color: #b33131;
-  background: white;
+  border-color: var(--color-brand-500);
+  background: var(--color-bg-surface);
   box-shadow: 0 0 0 3px rgba(179, 49, 49, 0.1);
   outline: none;
 }
 
 .modal-resultados-rend {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  background: linear-gradient(135deg, #f7fafc 0%, var(--color-border-default) 100%);
   padding: 18px;
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   margin-top: 4px;
 }
 
@@ -673,14 +673,14 @@
 
 .resultado-label {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-text-muted);
   font-size: 13px;
 }
 
 .resultado-valor {
   font-weight: 800;
   font-size: 1.1rem;
-  color: #2d3748;
+  color: var(--color-text-strong);
 }
 
 .resultado-ok {
@@ -709,23 +709,23 @@
 }
 
 .btn-modal-cancelar-rend {
-  background: #edf2f7;
-  color: #4a5568;
+  background: var(--color-border-default);
+  color: var(--color-text-muted);
 }
 
 .btn-modal-cancelar-rend:hover {
-  background: #e2e8f0;
-  color: #2d3748;
+  background: var(--color-border-default);
+  color: var(--color-text-strong);
 }
 
 .btn-modal-confirmar-rend {
-  background: linear-gradient(135deg, #b33131 0%, #9c2b2b 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, #9c2b2b 100%);
+  color: var(--color-bg-surface);
   box-shadow: 0 4px 12px rgba(179, 49, 49, 0.3);
 }
 
 .btn-modal-confirmar-rend:hover {
-  background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
   box-shadow: 0 6px 18px rgba(179, 49, 49, 0.4);
   transform: translateY(-1px);
 }
@@ -826,7 +826,7 @@
   .header-rendimiento {
     display: block;
     margin-bottom: 20px;
-    border-bottom: 2px solid #b33131;
+    border-bottom: 2px solid var(--color-brand-500);
     padding-bottom: 10px;
   }
 

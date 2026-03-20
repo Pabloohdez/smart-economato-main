@@ -3,6 +3,8 @@ import { getProductos, type Producto } from "../services/productosService";
 import { useNavigate } from "react-router-dom";
 import InventarioTable from "../components/inventario/InventarioTable";
 import InventarioToolbar from "../components/inventario/InventarioToolbar";
+import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
 import "../styles/inventario.css";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
@@ -166,8 +168,8 @@ export default function InventarioPage() {
         limpiarFiltros={limpiarFiltros}
       />
 
-      {loading && <p className="estado">Cargando productos...</p>}
-      {err && <p className="estado error">Error: {err}</p>}
+      {loading && <Spinner label="Cargando productos..." />}
+      {err && <Alert type="error" title="Error al cargar">{err}</Alert>}
 
       {!loading && !err && <InventarioTable items={filtered} />}
     </div>

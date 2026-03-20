@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/crearusuario.css";
 import { apiFetch } from "../services/apiClient";
+import Alert from "../components/ui/Alert";
 
 type NuevoUsuarioPayload = {
   usuario: string;
@@ -23,6 +24,7 @@ export default function CrearUsuarioPage() {
   const [telefono, setTelefono] = useState("");
 
   const [msg, setMsg] = useState("");
+  const [msgTipo, setMsgTipo] = useState<"success" | "error">("error");
   const [loading, setLoading] = useState(false);
 
   async function crearUsuario(payload: NuevoUsuarioPayload) {
@@ -51,15 +53,18 @@ export default function CrearUsuarioPage() {
       const data = await crearUsuario(payload);
 
       if (data?.success || data?.ok || data?.id) {
+        setMsgTipo("success");
         setMsg("Cuenta creada correctamente");
         setTimeout(() => {
           nav("/login");
         }, 1200);
       } else {
+        setMsgTipo("error");
         setMsg(data?.error?.message || data?.message || "No se pudo crear la cuenta");
       }
     } catch (error) {
       console.error(error);
+      setMsgTipo("error");
       setMsg(error instanceof Error ? error.message : "Error al crear la cuenta");
     } finally {
       setLoading(false);
@@ -146,7 +151,7 @@ export default function CrearUsuarioPage() {
             aria-label="Número de teléfono"
           />
 
-          <p className="registro-msg">{msg}</p>
+          {msg && <Alert type={msgTipo}>{msg}</Alert>}
           <button
             type="submit"
             className="registro-submit"

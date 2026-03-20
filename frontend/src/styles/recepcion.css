@@ -7,11 +7,11 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
 }
 
 .titulo-recepcion {
-    color: #b33131;
+    color: var(--color-brand-500);
     font-size: 28px;
     font-weight: 700;
     margin: 0 0 8px 0;
@@ -27,29 +27,29 @@
 }
 
 .info-fecha {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 12px 20px;
     border-radius: 10px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
 }
 
 /* Panel de Búsqueda */
 .panel-busqueda {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
 
 .titulo-seccion {
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 18px;
     font-weight: 600;
     margin: 0 0 20px 0;
@@ -114,7 +114,7 @@
     width: 100%;
     height: 48px;
     padding: 0 16px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 10px;
     font-size: 15px;
     font-family: 'Poppins', sans-serif;
@@ -124,22 +124,22 @@
 }
 
 .busq-input:focus {
-    border-color: #b33131;
+    border-color: var(--color-brand-500);
     box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
     outline: none;
-    background: white;
+    background: var(--color-bg-surface);
 }
 
 .btn-buscar-producto {
     padding: 0 28px;
     height: 48px;
-    background: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+    color: var(--color-bg-surface);
     border: none;
     border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -147,7 +147,7 @@
 }
 
 .btn-buscar-producto:hover {
-    background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
 }
@@ -164,23 +164,23 @@
 .select-filtro {
     flex: 1;
     padding: 10px 16px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
     border-radius: 10px;
-    background: #f8fafc;
+    background: var(--color-bg-soft);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .select-filtro:focus {
-    border-color: #b33131;
-    background: white;
+    border-color: var(--color-brand-500);
+    background: var(--color-bg-surface);
     outline: none;
 }
 
 /* Resultados de búsqueda */
 .resultados-busqueda {
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-top: none;
     max-height: 220px;
     overflow-y: auto;
@@ -200,7 +200,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 11px 16px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border-default);
     cursor: pointer;
     transition: background 0.15s;
     gap: 12px;
@@ -212,7 +212,7 @@
 
 .item-resultado:hover {
     background-color: #fff5f5;
-    border-left: 3px solid #b33131;
+    border-left: 3px solid var(--color-brand-500);
     padding-left: 13px;
 }
 
@@ -222,7 +222,7 @@
 
 .nombre-producto-resultado {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-strong);
     margin-bottom: 5px;
 }
 
@@ -233,7 +233,7 @@
 
 .stock-producto-resultado {
     padding: 6px 12px;
-    background: white;
+    background: var(--color-bg-surface);
     border-radius: 8px;
     font-weight: 600;
     font-size: 14px;
@@ -251,10 +251,10 @@
 
 /* Panel de Recepción */
 .panel-recepcion {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
@@ -267,10 +267,10 @@
 }
 
 .info-proveedor {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 10px 20px;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
 }
 
 .label-proveedor {
@@ -280,7 +280,7 @@
 }
 
 .nombre-proveedor {
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-weight: 600;
     font-size: 15px;
 }
@@ -294,29 +294,29 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    background: white;
+    background: var(--color-bg-surface);
 }
 
 .tabla-recepcion th {
-    background: white;
-    color: #4a5568;
+    background: var(--color-bg-surface);
+    color: var(--color-text-muted);
     padding: 14px;
     text-align: left;
     font-weight: 600;
     font-size: 13px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
     white-space: nowrap;
 }
 
 .tabla-recepcion td {
     padding: 14px;
-    border-bottom: 1px solid #edf2f7;
-    color: #2d3748;
+    border-bottom: 1px solid var(--color-border-default);
+    color: var(--color-text-strong);
     font-size: 14px;
 }
 
 .tabla-recepcion tbody tr:hover {
-    background: #f8fafc;
+    background: var(--color-bg-soft);
 }
 
 .fila-vacia td {
@@ -351,12 +351,12 @@
 .input-cantidad-recepcion {
     width: 80px;
     padding: 8px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 6px;
     text-align: center;
     font-weight: 600;
     font-size: 14px;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .input-cantidad-recepcion:focus {
@@ -378,7 +378,7 @@
     height: 36px;
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -390,22 +390,22 @@
 }
 
 .fila-total {
-    background: white;
+    background: var(--color-bg-surface);
     font-size: 16px;
 }
 
 .total-valor {
-    color: #b33131;
+    color: var(--color-brand-500);
     font-size: 20px;
     font-weight: 700;
 }
 
 /* Panel de Acciones */
 .panel-acciones {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 25px;
     border: 1px solid rgba(0,0,0,0.02);
 }
@@ -418,7 +418,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     margin-bottom: 10px;
     font-size: 14px;
@@ -427,18 +427,18 @@
 .textarea-observaciones {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 10px;
     font-family: 'Poppins', sans-serif;
     font-size: 14px;
     resize: vertical;
-    background: white;
-    transition: all 0.3s ease;
+    background: var(--color-bg-surface);
+    transition: all var(--motion-base);
 }
 
 .textarea-observaciones:focus {
-    background: white;
-    border-color: #b33131;
+    background: var(--color-bg-surface);
+    border-color: var(--color-brand-500);
     outline: none;
 }
 
@@ -455,27 +455,27 @@
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .btn-cancelar {
-    background: white;
-    color: #4a5568;
-    border: 2px solid #e2e8f0;
+    background: var(--color-bg-surface);
+    color: var(--color-text-muted);
+    border: 2px solid var(--color-border-default);
 }
 
 .btn-cancelar:hover {
-    background: #edf2f7;
-    border-color: #cbd5e0;
+    background: var(--color-border-default);
+    border-color: var(--color-border-strong);
     transform: translateY(-2px);
 }
 
 .btn-guardar-recepcion {
     background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
+    color: var(--color-bg-surface);
     box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
 }
 
@@ -501,7 +501,7 @@
 }
 
 .modal-contenido {
-    background: white;
+    background: var(--color-bg-surface);
     padding: 30px;
     border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
@@ -511,7 +511,7 @@
 
 .modal-contenido h3 {
     margin: 0 0 15px 0;
-    color: #2d3748;
+    color: var(--color-text-strong);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -529,7 +529,7 @@
 
 .modal-input-group label {
     display: block;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 600;
     margin-bottom: 8px;
     font-size: 14px;
@@ -538,7 +538,7 @@
 .modal-input-cantidad {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 8px;
     font-size: 18px;
     font-weight: 600;
@@ -557,21 +557,21 @@
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .btn-modal-cancelar {
-    background: #edf2f7;
-    color: #4a5568;
+    background: var(--color-border-default);
+    color: var(--color-text-muted);
 }
 
 .btn-modal-cancelar:hover {
-    background: #e2e8f0;
+    background: var(--color-border-default);
 }
 
 .btn-modal-confirmar {
-    background: #b33131;
-    color: white;
+    background: var(--color-brand-500);
+    color: var(--color-bg-surface);
 }
 
 .btn-modal-confirmar:hover {

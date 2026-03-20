@@ -1,16 +1,16 @@
 /* assets/css/proveedores.css - Red Theme (Smart Economato) */
 
 :root {
-    --text-primary: #2d3748;
+    --text-primary: var(--color-text-strong);
     --text-secondary: #50596D;
     --bg-page: #f8f9fa;
-    --bg-card: #ffffff;
-    --border-color: #e2e8f0;
+    --bg-card: var(--color-bg-surface);
+    --border-color: var(--color-border-default);
 
     /* Red Theme from Recepcion */
-    --primary-color: #b33131;
-    --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-    --primary-hover: #c93838;
+    --primary-color: var(--color-brand-500);
+    --primary-gradient: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+    --primary-hover: var(--color-brand-500);
     --focus-ring: rgba(179, 49, 49, 0.25);
 
     --error-color: #c53030;
@@ -29,7 +29,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
     padding-bottom: 20px;
 }
 
@@ -44,13 +44,13 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.02);
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
 }
 
 /* --- Buttons --- */
 .btn-primary {
     background: var(--primary-gradient);
-    color: white;
+    color: var(--color-bg-surface);
     border: none;
     padding: 12px 24px;
     border-radius: 10px;
@@ -61,7 +61,7 @@ body {
     align-items: center;
     gap: 8px;
     box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .btn-primary:hover {
@@ -156,11 +156,11 @@ body {
     width: 100%;
     padding: 12px 16px;
     font-size: 15px;
-    border: 2px solid #e2e8f0;
+    border: 2px solid var(--color-border-default);
     border-radius: 10px;
     color: var(--text-primary);
     background-color: #fff;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
 }
 
 .form-control:focus {
@@ -176,10 +176,10 @@ body {
 
 /* --- GridJS Theme Adaptation --- */
 .gridjs-th {
-    color: #4a5568 !important;
+    color: var(--color-text-muted) !important;
     font-weight: 600 !important;
     background-color: #fff !important;
-    border-bottom: 2px solid #edf2f7 !important;
+    border-bottom: 2px solid var(--color-border-default) !important;
 }
 
 .gridjs-tr-selected td {
@@ -191,12 +191,12 @@ body {
 }
 
 .gridjs-pagination .gridjs-pages button:hover {
-    background-color: #edf2f7 !important;
+    background-color: var(--color-border-default) !important;
 }
 
 #gridProveedores .gridjs-pagination .gridjs-pages button.gridjs-currentPage {
-    background-color: #ffffff !important;
-    background: #ffffff !important;
+    background-color: var(--color-bg-surface) !important;
+    background: var(--color-bg-surface) !important;
     color: black !important;
     font-weight: 700 !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;

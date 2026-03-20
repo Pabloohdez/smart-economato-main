@@ -64,9 +64,14 @@ export default function AppLayout() {
       <div
         className={`menu-overlay ${sidebarOpen ? "active" : ""}`}
         onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
       />
 
-      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+      <aside
+        id="app-sidebar"
+        className={`sidebar ${sidebarOpen ? "open" : ""}`}
+        aria-label="Navegacion principal"
+      >
         <NavLink to="/inicio" className="brand">
           <img
             src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
@@ -75,7 +80,7 @@ export default function AppLayout() {
           />
         </NavLink>
 
-        <nav className="nav">
+        <nav className="nav" aria-label="Secciones del sistema">
           {navItems.map((it) => (
             <NavLink
               key={it.to}
@@ -106,6 +111,8 @@ export default function AppLayout() {
               type="button"
               onClick={() => setSidebarOpen((v) => !v)}
               aria-label="Abrir menú"
+              aria-controls="app-sidebar"
+              aria-expanded={sidebarOpen}
             >
               <i className="fa-solid fa-bars" />
             </button>
@@ -128,6 +135,9 @@ export default function AppLayout() {
               type="button"
               className="userButton"
               onClick={() => setMenuOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={menuOpen}
+              aria-controls="user-menu-dropdown"
             >
               <span className="userText">
                 <span className="userName">
@@ -149,7 +159,7 @@ export default function AppLayout() {
             </button>
 
             {menuOpen && (
-              <div className="userDropdown">
+              <div className="userDropdown" id="user-menu-dropdown" role="menu">
                 <div className="userDropdownHeader">
                   <div className="avatar avatar-lg">
                     {String(user?.nombre ?? "A")
@@ -169,6 +179,7 @@ export default function AppLayout() {
                 <button
                   className="ddItem"
                   type="button"
+                  role="menuitem"
                   onClick={() => {
                     setMenuOpen(false);
                     nav("/avisos");
@@ -184,6 +195,7 @@ export default function AppLayout() {
                 <button
                   className="ddItem"
                   type="button"
+                  role="menuitem"
                   onClick={() => {
                     setMenuOpen(false);
                     nav("/configuracion");
@@ -228,7 +240,7 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <main className="content">
+        <main className="content" id="main-content">
           <Outlet />
         </main>
       </div>

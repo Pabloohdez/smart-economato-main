@@ -4,6 +4,10 @@ import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import "../styles/pedidos.css";
 import { apiFetch } from "../services/apiClient";
+import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
+import EmptyState from "../components/ui/EmptyState";
+import { showConfirm, showNotification } from "../utils/notifications";
 
 type Proveedor = {
   id: number | string;
@@ -178,7 +182,7 @@ export default function PedidosPage() {
 
   async function guardarPedido() {
     if (itemsPedido.length === 0) {
-      alert("El pedido está vacío. Agrega al menos un producto.");
+      showNotification("El pedido está vacío. Agrega al menos un producto.", "warning");
       return;
     }
 
@@ -206,13 +210,16 @@ export default function PedidosPage() {
     const proveedoresIds = Object.keys(pedidosPorProveedor);
 
     if (proveedoresIds.length === 0) {
-      alert("No se pudo determinar el proveedor de los productos.");
+      showNotification("No se pudo determinar el proveedor de los productos.", "error");
       return;
     }
 
-    const confirmado = window.confirm(
-      `Se generarán ${proveedoresIds.length} pedido(s) distinto(s) según el proveedor. ¿Continuar?`
-    );
+    const confirmado = await showConfirm({
+      title: "Confirmar pedido",
+      message: `Se generarán ${proveedoresIds.length} pedido(s) distinto(s) según el proveedor. ¿Continuar?`,
+      confirmLabel: "Crear pedidos",
+      icon: "fa-solid fa-cart-plus",
+    });
 
     if (!confirmado) return;
 
@@ -245,17 +252,17 @@ export default function PedidosPage() {
       }
 
       if (exitos > 0 && errores === 0) {
-        alert(`Se han creado ${exitos} pedido(s) correctamente.`);
+        showNotification(`Se han creado ${exitos} pedido(s) correctamente.`, "success");
         setItemsPedido([]);
         setProveedorId("");
         setVista("lista");
         await recargarPedidos();
       } else if (exitos > 0 && errores > 0) {
-        alert(`Proceso terminado con advertencias. Creados: ${exitos}, Fallidos: ${errores}`);
+        showNotification(`Proceso terminado con advertencias. Creados: ${exitos}, Fallidos: ${errores}`, "warning");
         setVista("lista");
         await recargarPedidos();
       } else {
-        alert("No se pudo crear ningún pedido.");
+        showNotification("No se pudo crear ningún pedido.", "error");
       }
     } finally {
       setGuardando(false);
@@ -286,16 +293,20 @@ export default function PedidosPage() {
         </div>
       </div>
 
-      {err && <p className="estado error">Error: {err}</p>}
+      {err && <Alert type="error">{err}</Alert>}
 
       {vista === "lista" && (
         <div className="card">
           <h3>Historial de Pedidos</h3>
 
-          {loadingPedidos && <p className="estado">Cargando pedidos...</p>}
+          {loadingPedidos && <Spinner label="Cargando pedidos..." />}
 
           {!loadingPedidos && pedidos.length === 0 && (
-            <p className="estado">No hay pedidos registrados todavía.</p>
+            <EmptyState
+              icon="fa-solid fa-cart-arrow-down"
+              title="No hay pedidos"
+              description="No hay pedidos registrados todavía."
+            />
           )}
 
           {!loadingPedidos && pedidos.length > 0 && (
@@ -310,7 +321,7 @@ export default function PedidosPage() {
             <i className="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido
           </h3>
 
-          {loadingNuevo && <p className="estado">Cargando datos...</p>}
+          {loadingNuevo && <Spinner label="Cargando datos..." />}
 
           {!loadingNuevo && (
             <>

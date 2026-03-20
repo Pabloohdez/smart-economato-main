@@ -47,7 +47,7 @@
 }
 
 .metrica-card {
-  background: white;
+  background: var(--color-bg-surface);
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 20px;
@@ -107,7 +107,7 @@
 }
 
 .avisos-seccion {
-  background: white;
+  background: var(--color-bg-surface);
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   margin-bottom: 24px;
@@ -166,7 +166,7 @@
 }
 
 .seccion-contador {
-  background: white;
+  background: var(--color-bg-surface);
   color: #374151;
   padding: 4px 12px;
   border-radius: 12px;
@@ -242,7 +242,7 @@
 }
 
 .btn-accion-alert {
-  background: white;
+  background: var(--color-bg-surface);
   border: 1px solid #e5e7eb;
   border-radius: 6px;
   padding: 6px 14px;
@@ -388,7 +388,7 @@
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.2s ease-out;
+  transition: all var(--motion-fast)-out;
 }
 
 .modal-overlay.active {
@@ -397,7 +397,7 @@
 }
 
 .modal-card {
-  background: white;
+  background: var(--color-bg-surface);
   width: 90%;
   max-width: 400px;
   border-radius: 12px;
@@ -543,7 +543,7 @@
 }
 
 .btn-cancelar {
-  background: white;
+  background: var(--color-bg-surface);
   border-color: #d1d5db;
   color: #374151;
 }
@@ -554,7 +554,7 @@
 
 .btn-confirmar {
   background: #111827;
-  color: white;
+  color: var(--color-bg-surface);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -599,7 +599,7 @@
   left: 50%;
   transform: translateX(-50%) translateY(100px);
   background: #111827;
-  color: white;
+  color: var(--color-bg-surface);
   padding: 10px 20px;
   border-radius: 30px;
   display: flex;
@@ -635,7 +635,7 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: 14px;
-  background: white;
+  background: var(--color-bg-surface);
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   overflow: hidden;

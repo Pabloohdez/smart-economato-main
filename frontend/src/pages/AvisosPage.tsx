@@ -11,6 +11,7 @@ import {
 } from "../services/productosService";
 import "../styles/avisos.css";
 import { apiFetch } from "../services/apiClient";
+import Spinner from "../components/ui/Spinner";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -324,7 +325,7 @@ export default function AvisosPage() {
 
         <div className="seccion-body">
           {loading ? (
-            <div className="avisos-vacio">Cargando...</div>
+            <div className="avisos-vacio"><Spinner label="Cargando caducados..." /></div>
           ) : caducados.length === 0 ? (
             <div className="aviso-ok">
               <i className="fa-solid fa-circle-check"></i>
@@ -375,7 +376,7 @@ export default function AvisosPage() {
 
         <div className="seccion-body">
           {loading ? (
-            <div className="avisos-vacio">Cargando...</div>
+            <div className="avisos-vacio"><Spinner label="Cargando stock..." /></div>
           ) : stockBajo.length === 0 ? (
             <div className="aviso-ok">
               <i className="fa-solid fa-circle-check"></i>
@@ -439,7 +440,7 @@ export default function AvisosPage() {
 
         <div className="seccion-body">
           {loading ? (
-            <div className="avisos-vacio">Cargando...</div>
+            <div className="avisos-vacio"><Spinner label="Calculando..." /></div>
           ) : (
             <div className="financiero-grid">
               <div className="financiero-item">
@@ -494,8 +495,8 @@ export default function AvisosPage() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} className="text-center">
-                      Cargando datos financieros...
+                    <td colSpan={4} style={{ padding: "16px 0" }}>
+                      <Spinner size="sm" label="Cargando datos financieros..." />
                     </td>
                   </tr>
                 ) : gastosMensuales.length === 0 ? (

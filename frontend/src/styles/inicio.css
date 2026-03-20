@@ -1,17 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 :root{
-  --bg:#f8fafc;
-  --card:#ffffff;
-  --text:#1f2937;
+  --bg: var(--color-bg-canvas);
+  --card: var(--color-bg-surface);
+  --text: var(--color-text-strong);
   --text-dark: #2d3748;
-  --muted:#6b7280;
-  --brand:#b33131;
-  --brand-hover:#8f2323;
-  --brand-soft:#ffdada;
-  --line:#e2e8f0;
-  --shadow: 0 10px 24px rgba(17,24,39,.04);
-  --shadow-lg: 0 15px 35px rgba(0,0,0,0.08);
+  --muted: var(--color-text-muted);
+  --brand: var(--color-brand-500);
+  --brand-hover: var(--color-brand-600);
+  --brand-soft: var(--color-brand-100);
+  --line: var(--color-border-default);
+  --shadow: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
 }
 
 .app-shell{
@@ -344,106 +344,6 @@
 
 .userMenu{
   position: relative;
-}
-
-.userButton{
-  border: 1px solid rgba(229,231,235,.9);
-  background: #fff;
-  border-radius: 14px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  box-shadow: 0 10px 24px rgba(17,24,39,.08);
-}
-
-.userButton:hover{
-  background: #fbfbfd;
-}
-
-.userText{
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1.1;
-}
-
-.userName{
-  font-weight: 800;
-  color: var(--text);
-}
-
-.userRole{
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.chev{
-  color: var(--muted);
-  margin-left: 2px;
-}
-
-.userDropdown{
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  width: 260px;
-  background: #fff;
-  border: 1px solid rgba(229,231,235,.9);
-  border-radius: 16px;
-  box-shadow: 0 18px 40px rgba(17,24,39,.12);
-  overflow: hidden;
-  z-index: 50;
-}
-
-.ddItem{
-  width: 100%;
-  text-align: left;
-  padding: 12px 14px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.ddItem:hover{
-  background: #f6f7fb;
-}
-
-.ddMeta{
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--muted);
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.ddMuted{
-  color: var(--muted);
-}
-
-.ddSep{
-  height: 1px;
-  background: var(--line);
-}
-
-.ddDanger{
-  width: 100%;
-  text-align: left;
-  padding: 12px 14px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  font-weight: 900;
-  color: var(--brand);
-}
-
-.ddDanger:hover{
-  background: #fff5f5;
 }
 
 .nav-item-separated{

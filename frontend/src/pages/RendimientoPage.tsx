@@ -6,7 +6,9 @@ import {
   type Producto,
 } from "../services/productosService";
 import "../styles/rendimiento.css";
+import "../components/ui/ui.css";
 import { apiFetch } from "../services/apiClient";
+import { showConfirm } from "../utils/notifications";
 
 type RegistroRendimiento = {
   id: number;
@@ -233,9 +235,13 @@ export default function RendimientoPage() {
   }
 
   async function eliminarRegistroHistorial(id: number) {
-    const confirmado = window.confirm(
-      "¿Estás seguro de eliminar este registro del historial?",
-    );
+    const confirmado = await showConfirm({
+      title: "Eliminar registro",
+      message: "¿Estás seguro de eliminar este registro del historial?",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+      icon: "fa-solid fa-trash",
+    });
     if (!confirmado) return;
 
     try {

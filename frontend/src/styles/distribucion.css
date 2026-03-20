@@ -1,17 +1,17 @@
 
 
 :root {
-    --text-primary: #2d3748;
+    --text-primary: var(--color-text-strong);
     --text-secondary: #50596D;
-    --bg-card: #ffffff;
+    --bg-card: var(--color-bg-surface);
 
-    --primary-color: #b33131;
-    --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
+    --primary-color: var(--color-brand-500);
+    --primary-gradient: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
     --focus-ring: rgba(179, 49, 49, 0.25);
 
     --success-color: #38a169;
     --danger-color: #e53e3e;
-    --border-color: #e2e8f0;
+    --border-color: var(--color-border-default);
 }
 
 body {
@@ -24,7 +24,7 @@ body {
     font-weight: 700;
     font-size: 28px;
     margin-bottom: 10px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
     padding-bottom: 20px;
 }
 
@@ -50,7 +50,7 @@ body {
     background: var(--bg-card);
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
     border: 1px solid rgba(0, 0, 0, 0.02);
     min-height: 500px;
     display: flex;
@@ -58,11 +58,11 @@ body {
 }
 
 h3 {
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
     padding-bottom: 15px;
     margin-bottom: 20px;
     font-size: 18px;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-weight: 600;
 }
 
@@ -167,7 +167,7 @@ h3 {
     align-items: center;
     justify-content: space-between;
     padding: 11px 16px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border-default);
     cursor: pointer;
     transition: background 0.15s;
     gap: 12px;
@@ -185,22 +185,22 @@ h3 {
 
 .item-resultado__nombre {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 14px;
 }
 
 .item-resultado__stock {
     font-size: 12px;
-    color: #718096;
+    color: var(--color-text-muted);
     white-space: nowrap;
-    background: #f7fafc;
+    background: var(--color-bg-soft);
     padding: 2px 8px;
     border-radius: 20px;
     font-weight: 500;
 }
 
 .item-resultado--muted {
-    color: #718096;
+    color: var(--color-text-muted);
     font-style: italic;
     cursor: default;
     justify-content: center;
@@ -209,7 +209,7 @@ h3 {
 /* --- Buttons --- */
 .btn-primary {
     background: var(--primary-gradient);
-    color: white;
+    color: var(--color-bg-surface);
     border: none;
     border-radius: 10px;
     /* Styles matching providers */
@@ -226,16 +226,16 @@ h3 {
     width: 40px;
     height: 40px;
     font-weight: bold;
-    background: #edf2f7;
+    background: var(--color-border-default);
     border: none;
     border-radius: 8px;
-    color: #2d3748;
+    color: var(--color-text-strong);
     cursor: pointer;
     transition: 0.2s;
 }
 
 .input-cantidad button:hover {
-    background: #e2e8f0;
+    background: var(--color-border-default);
 }
 
 .input-cantidad input {
@@ -257,14 +257,14 @@ h3 {
     text-align: left;
     background: #fff;
     padding: 12px;
-    border-bottom: 2px solid #edf2f7;
+    border-bottom: 2px solid var(--color-border-default);
     color: var(--text-secondary);
     font-weight: 600;
 }
 
 .table-carrito td {
     padding: 12px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border-default);
     color: var(--text-primary);
 }
 
@@ -287,7 +287,7 @@ h3 {
 .carrito-footer {
     margin-top: auto;
     padding-top: 20px;
-    border-top: 2px solid #edf2f7;
+    border-top: 2px solid var(--color-border-default);
 }
 
 .btn-block {
@@ -303,13 +303,13 @@ h3 {
 
 .btn-success {
     background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
+    color: var(--color-bg-surface);
     box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
 }
 
 .btn-primary {
     background: var(--primary-gradient);
-    color: white;
+    color: var(--color-bg-surface);
     box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
 }
 
@@ -321,7 +321,7 @@ h3 {
 /* --- Tarjeta de producto seleccionado (.prod-card) --- */
 .prod-card {
     margin-top: 20px;
-    border: 2px solid #edf2f7;
+    border: 2px solid var(--color-border-default);
     border-radius: 14px;
     overflow: hidden;
     background: #fff;
@@ -340,7 +340,7 @@ h3 {
     gap: 16px;
     padding: 18px 20px;
     background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border-default);
 }
 
 .prod-card__ico {
@@ -352,7 +352,7 @@ h3 {
 .prod-card__nombre {
     font-size: 18px;
     font-weight: 700;
-    color: #2d3748;
+    color: var(--color-text-strong);
     margin: 0 0 4px 0;
 }
 
@@ -363,9 +363,9 @@ h3 {
     gap: 10px;
     padding: 16px 20px;
     font-size: 14px;
-    color: #50596d;
-    border-bottom: 1px solid #edf2f7;
-    background: #f8fafc;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border-default);
+    background: var(--color-bg-soft);
 }
 
 .prod-card__stock i {
@@ -374,14 +374,14 @@ h3 {
 }
 
 .prod-card__stock strong {
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 16px;
     font-weight: 700;
 }
 
 .prod-card__cant-wrap {
     padding: 24px 20px;
-    border-bottom: 1px solid #edf2f7;
+    border-bottom: 1px solid var(--color-border-default);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -392,7 +392,7 @@ h3 {
     display: block;
     font-size: 13px;
     font-weight: 700;
-    color: #4a5568;
+    color: var(--color-text-muted);
     margin-bottom: 16px;
 }
 
@@ -400,7 +400,7 @@ h3 {
     display: flex;
     align-items: center;
     gap: 0;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
     border-radius: 8px;
     background: #fff;
     overflow: hidden;
@@ -423,7 +423,7 @@ h3 {
 }
 
 .prod-card__cant-btn:hover {
-    background: #f8fafc;
+    background: var(--color-bg-soft);
     color: var(--primary-color);
 }
 
@@ -432,8 +432,8 @@ h3 {
     height: 44px;
     text-align: center;
     border: none;
-    border-left: 1px solid #e2e8f0;
-    border-right: 1px solid #e2e8f0;
+    border-left: 1px solid var(--color-border-default);
+    border-right: 1px solid var(--color-border-default);
     font-size: 18px;
     font-weight: 800;
     color: #1a365d;
@@ -445,8 +445,8 @@ h3 {
 .prod-card__add-btn {
     width: 100%;
     padding: 16px;
-    background: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+    color: var(--color-bg-surface);
     border: none;
     cursor: pointer;
     font-size: 15px;
@@ -460,14 +460,14 @@ h3 {
 }
 
 .prod-card__add-btn:hover {
-    background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
     letter-spacing: 0.3px;
 }
 
 /* --- Botón buscar de Distribución --- */
 .btn-buscar-dist {
-    background: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+    color: var(--color-bg-surface);
     border: none;
     border-radius: 10px;
     padding: 12px 28px;
@@ -475,7 +475,7 @@ h3 {
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--motion-base);
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -485,7 +485,7 @@ h3 {
 }
 
 .btn-buscar-dist:hover {
-    background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+    background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
 }
@@ -495,13 +495,13 @@ h3 {
     background: var(--bg-card);
     border-radius: 12px;
     padding: 25px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
     border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .table-responsive {
     border-radius: 10px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border-default);
 }
 
 #tablaHistorialMovimientos {
@@ -512,23 +512,23 @@ h3 {
 }
 
 #tablaHistorialMovimientos thead {
-    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    background: linear-gradient(135deg, #f7fafc 0%, var(--color-border-default) 100%);
 }
 
 #tablaHistorialMovimientos th {
     padding: 16px 12px;
     text-align: left;
     font-weight: 400;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #cbd5e0;
+    border-bottom: 2px solid var(--color-border-strong);
 }
 
 #tablaHistorialMovimientos tbody tr {
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #e2e8f0;
+    transition: all var(--motion-fast);
+    border-bottom: 1px solid var(--color-border-default);
 }
 
 #tablaHistorialMovimientos tbody tr:hover {
@@ -538,7 +538,7 @@ h3 {
 
 #tablaHistorialMovimientos td {
     padding: 14px 20px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     vertical-align: middle;
     text-align: center;
 }
@@ -552,7 +552,7 @@ h3 {
 #tablaHistorialMovimientos td:first-child,
 #tablaHistorialMovimientos th:first-child {
     font-weight: 400;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 14px;
     width: 12%;
     text-align: center;
@@ -561,7 +561,7 @@ h3 {
 #tablaHistorialMovimientos td:nth-child(2),
 #tablaHistorialMovimientos th:nth-child(2) {
     font-weight: 400;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 14px;
     width: 8%;
     text-align: center;
@@ -578,7 +578,7 @@ h3 {
 #tablaHistorialMovimientos td:nth-child(4),
 #tablaHistorialMovimientos th:nth-child(4) {
     font-weight: 400;
-    color: #2d3748;
+    color: var(--color-text-strong);
     font-size: 14px;
     width: 10%;
     text-align: center;
@@ -633,8 +633,8 @@ h3 {
 }
 
 .badge-default {
-    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
-    color: #2d3748;
+    background: linear-gradient(135deg, var(--color-border-default) 0%, var(--color-border-strong) 100%);
+    color: var(--color-text-strong);
 }
 
 /* Usuario badge */
@@ -643,10 +643,10 @@ h3 {
     align-items: center;
     gap: 6px;
     padding: 4px 10px;
-    background: #edf2f7;
+    background: var(--color-border-default);
     border-radius: 12px;
     font-size: 12px;
-    color: #4a5568;
+    color: var(--color-text-muted);
     font-weight: 400;
 }
 
@@ -671,7 +671,7 @@ h3 {
 }
 
 .table-responsive::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
+    background: var(--color-border-strong);
     border-radius: 10px;
 }
 
@@ -710,9 +710,9 @@ h3 {
     #tablaHistorialMovimientos tbody tr {
         display: block;
         margin-bottom: 15px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--color-border-default);
         border-radius: 8px;
-        background: white;
+        background: var(--color-bg-surface);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         padding: 12px;
     }
@@ -741,7 +741,7 @@ h3 {
         font-weight: 600;
         text-transform: uppercase;
         font-size: 11px;
-        color: #718096;
+        color: var(--color-text-muted);
         letter-spacing: 0.5px;
         flex-shrink: 0;
         width: 100px;

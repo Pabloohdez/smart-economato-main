@@ -9,12 +9,12 @@
 }
 
 .table-header h1 {
-  color: #b33131;
+  color: var(--color-brand-500);
   margin: 0 0 24px;
 }
 
 .escandallo-controls {
-  background-color: #ffffff;
+  background-color: var(--color-bg-surface);
   padding: 20px 25px;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
@@ -49,7 +49,7 @@
 .label-control {
   font-size: 12px;
   font-weight: 600;
-  color: #50596d;
+  color: var(--color-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0;
@@ -57,20 +57,20 @@
 
 .input-control {
   padding: 0 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 10px;
   font-size: 14px;
-  color: #4a5568;
-  background-color: #f8fafc;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-soft);
   outline: none;
-  transition: all 0.3s ease;
+  transition: all var(--motion-base);
   width: 100%;
   box-sizing: border-box;
   height: 44px;
 }
 
 .input-control:focus {
-  border-color: #b33131;
+  border-color: var(--color-brand-500);
   background-color: #fff;
   box-shadow: 0 0 0 4px rgba(179, 49, 49, 0.1);
 }
@@ -93,7 +93,7 @@ table th:last-child {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--motion-base);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -108,20 +108,20 @@ table th:last-child {
 }
 
 .btn-buscar {
-  background: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  color: var(--color-bg-surface);
   box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
 }
 
 .btn-buscar:hover {
-  background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
   box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
   transform: translateY(-2px);
 }
 
 .btn-nuevo {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  color: var(--color-bg-surface);
   box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
   margin-left: auto;
 }
@@ -133,8 +133,8 @@ table th:last-child {
 }
 
 .btn-mostrar-todo {
-  background: #2d3748;
-  color: white;
+  background: var(--color-text-strong);
+  color: var(--color-bg-surface);
 }
 
 .btn-mostrar-todo:hover {
@@ -144,10 +144,10 @@ table th:last-child {
 
 .table-container,
 .table-container-ing {
-  background: white;
+  background: var(--color-bg-surface);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
   border: 1px solid rgba(0, 0, 0, 0.02);
   width: 100%;
   overflow-x: auto;
@@ -160,21 +160,21 @@ table {
 }
 
 th {
-  background: #f7fafc;
-  color: #4a5568;
+  background: var(--color-bg-soft);
+  color: var(--color-text-muted);
   padding: 16px;
   text-align: left;
   font-weight: 600;
   font-size: 13px;
-  border-bottom: 2px solid #edf2f7;
+  border-bottom: 2px solid var(--color-border-default);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 td {
   padding: 14px 16px;
-  border-bottom: 1px solid #edf2f7;
-  color: #2d3748;
+  border-bottom: 1px solid var(--color-border-default);
+  color: var(--color-text-strong);
   font-size: 14px;
   vertical-align: middle;
 }
@@ -206,7 +206,7 @@ tr:hover td {
 }
 
 .modal-content {
-  background: white;
+  background: var(--color-bg-surface);
   max-width: 900px;
   width: 95%;
   border-radius: 16px;
@@ -237,8 +237,8 @@ tr:hover td {
 
 .modal-title {
   margin-top: 0;
-  color: #2d3748;
-  border-bottom: 2px solid #edf2f7;
+  color: var(--color-text-strong);
+  border-bottom: 2px solid var(--color-border-default);
   padding-bottom: 20px;
   margin-bottom: 30px;
   font-size: 1.5rem;
@@ -272,7 +272,7 @@ tr:hover td {
 .label-form {
   font-size: 13px;
   font-weight: 600;
-  color: #4a5568;
+  color: var(--color-text-muted);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -283,10 +283,10 @@ tr:hover td {
 .select-form {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   border-radius: 8px;
   font-size: 14px;
-  background-color: #f7fafc;
+  background-color: var(--color-bg-soft);
   transition: all 0.2s;
   font-family: inherit;
   box-sizing: border-box;
@@ -307,16 +307,16 @@ tr:hover td {
 }
 
 .calculadora-panel {
-  border: 1px solid #edf2f7;
+  border: 1px solid var(--color-border-default);
   padding: 25px;
   border-radius: 12px;
   margin-bottom: 30px;
-  background: #f8fafc;
+  background: var(--color-bg-soft);
 }
 
 .calculadora-title {
   margin-top: 0;
-  color: #2d3748;
+  color: var(--color-text-strong);
   margin-bottom: 20px;
   font-size: 1.1rem;
   display: flex;
@@ -354,7 +354,7 @@ tr:hover td {
 
 .btn-add-ingredient {
   background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   padding: 0 20px;
   border-radius: 8px;
@@ -375,12 +375,12 @@ tr:hover td {
 }
 
 .table-ingredientes {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border-default);
   box-shadow: none;
 }
 
 .table-ingredientes th {
-  background-color: #edf2f7;
+  background-color: var(--color-border-default);
   font-size: 12px;
   padding: 12px;
 }
@@ -493,12 +493,12 @@ tr:hover td {
   justify-content: flex-end;
   gap: 15px;
   padding-top: 20px;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid var(--color-border-default);
 }
 
 .btn-cancel {
-  background: #edf2f7;
-  color: #4a5568;
+  background: var(--color-border-default);
+  color: var(--color-text-muted);
   border: none;
   padding: 12px 24px;
   border-radius: 10px;
@@ -508,13 +508,13 @@ tr:hover td {
 }
 
 .btn-cancel:hover {
-  background: #e2e8f0;
-  color: #2d3748;
+  background: var(--color-border-default);
+  color: var(--color-text-strong);
 }
 
 .btn-save {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   padding: 12px 36px;
   border-radius: 10px;
@@ -546,7 +546,7 @@ tr:hover td {
 }
 
 .text-primary {
-  color: #b33131 !important;
+  color: var(--color-brand-500) !important;
 }
 
 .clickable-name {
@@ -557,13 +557,13 @@ tr:hover td {
 }
 
 .clickable-name:hover {
-  text-decoration-color: #b33131;
+  text-decoration-color: var(--color-brand-500);
   color: #902424 !important;
 }
 
 .estado {
   margin: 12px 0;
-  color: #4a5568;
+  color: var(--color-text-muted);
 }
 
 .warning {
@@ -571,14 +571,14 @@ tr:hover td {
 }
 
 .tfoot-resumen {
-  background-color: #f7fafc;
+  background-color: var(--color-bg-soft);
   font-weight: bold;
 }
 
 .tfoot-label {
   text-align: right;
   padding: 15px;
-  color: #2d3748;
+  color: var(--color-text-strong);
 }
 
 .tfoot-total {

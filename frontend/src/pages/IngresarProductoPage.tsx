@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/ingreso.css";
+import Alert from "../components/ui/Alert";
+import EmptyState from "../components/ui/EmptyState";
+import Button from "../components/ui/Button";
+import { showConfirm } from "../utils/notifications";
 
 // Ajusta esta línea si en tu proyecto real estos métodos están en otro service
 import { getCategorias, getProveedores, crearProducto } from "../services/productosService";
@@ -151,10 +155,16 @@ export default function IngresarProductoPage() {
     setListaTemporal((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function limpiarLista() {
+  async function limpiarLista() {
     if (listaTemporal.length === 0) return;
 
-    const confirmado = window.confirm("¿Estás seguro de descartar toda la lista?");
+    const confirmado = await showConfirm({
+      title: "Descartar lista",
+      message: "¿Estás seguro de descartar toda la lista?",
+      confirmLabel: "Descartar",
+      variant: "danger",
+      icon: "fa-solid fa-trash",
+    });
     if (!confirmado) return;
 
     setListaTemporal([]);
@@ -165,9 +175,12 @@ export default function IngresarProductoPage() {
   async function guardarEnBaseDeDatos() {
     if (listaTemporal.length === 0) return;
 
-    const confirmado = window.confirm(
-      `¿Confirmas importar ${listaTemporal.length} productos al inventario?`
-    );
+    const confirmado = await showConfirm({
+      title: "Confirmar importación",
+      message: `¿Confirmas importar ${listaTemporal.length} producto${listaTemporal.length !== 1 ? "s" : ""} al inventario?`,
+      confirmLabel: "Importar",
+      icon: "fa-solid fa-file-import",
+    });
     if (!confirmado) return;
 
     try {
@@ -222,9 +235,16 @@ export default function IngresarProductoPage() {
   return (
     <div>
       <div style={{ marginBottom: "20px" }}>
-        <button type="button" className="btn-volver" onClick={() => nav("/inventario")}>
-          <i className="fa-solid fa-arrow-left"></i> Volver al Inventario
-        </button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="btn-volver"
+          icon="fa-solid fa-arrow-left"
+          onClick={() => nav("/inventario")}
+        >
+          Volver al Inventario
+        </Button>
       </div>
 
       <h1 className="titulo-ingreso">INGRESO MASIVO DE MERCANCÍA</h1>
@@ -331,9 +351,15 @@ export default function IngresarProductoPage() {
           </select>
         </div>
 
-        <button type="button" className="btn-accion btn-agregar" onClick={agregarALista}>
-          <i className="fa-solid fa-plus"></i> Agregar
-        </button>
+        <Button
+          type="button"
+          variant="success"
+          className="btn-accion btn-agregar"
+          icon="fa-solid fa-plus"
+          onClick={agregarALista}
+        >
+          Agregar
+        </Button>
       </div>
 
       <div className="seccion-tabla">
@@ -356,8 +382,12 @@ export default function IngresarProductoPage() {
           <tbody>
             {listaTemporal.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ textAlign: "center", padding: "30px", color: "#a0aec0" }}>
-                  La lista está vacía.
+                <td colSpan={6} style={{ padding: "20px" }}>
+                  <EmptyState
+                    icon="fa-solid fa-box-open"
+                    title="Lista vacía"
+                    description="Agrega productos para previsualizar antes de confirmar la importación."
+                  />
                 </td>
               </tr>
             ) : (
@@ -385,28 +415,41 @@ export default function IngresarProductoPage() {
       </div>
 
       <div className="acciones-finales">
-        <button
+        <Button
           type="button"
+          variant="secondary"
           className={`btn-accion btn-limpiar ${listaTemporal.length === 0 ? "oculto" : ""}`}
+          icon="fa-solid fa-trash"
           onClick={limpiarLista}
         >
-          <i className="fa-solid fa-trash"></i> Descartar Todo
-        </button>
+          Descartar Todo
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="primary"
           className={`btn-accion btn-guardar ${listaTemporal.length === 0 ? "oculto" : ""}`}
+          icon="fa-solid fa-cloud-arrow-up"
           onClick={guardarEnBaseDeDatos}
-          disabled={guardando}
+          disabled={listaTemporal.length === 0}
+          loading={guardando}
         >
-          <i className="fa-solid fa-cloud-arrow-up"></i>{" "}
-          {guardando ? "Guardando..." : "CONFIRMAR E IMPORTAR"}
-        </button>
+          CONFIRMAR E IMPORTAR
+        </Button>
       </div>
 
-      <p className={`mensaje-estado ${mensajeTipo ? `mensaje-${mensajeTipo}` : ""}`}>
-        {mensajeEstado}
-      </p>
+      {mensajeEstado && (
+        <Alert
+          type={
+            mensajeTipo === "ok" ? "success"
+            : mensajeTipo === "warn" ? "warning"
+            : mensajeTipo === "error" ? "error"
+            : "info"
+          }
+        >
+          {mensajeEstado}
+        </Alert>
+      )}
     </div>
   );
 }

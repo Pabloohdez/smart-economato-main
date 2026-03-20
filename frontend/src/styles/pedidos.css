@@ -1,10 +1,10 @@
 :root {
-  --text-primary: #2d3748;
-  --text-secondary: #50596d;
-  --primary-color: #b33131;
-  --primary-gradient: linear-gradient(135deg, #b33131 0%, #8f2323 100%);
-  --bg-card: #ffffff;
-  --border-color: #e2e8f0;
+  --text-primary: var(--color-text-strong);
+  --text-secondary: var(--color-text-muted);
+  --primary-color: var(--color-brand-500);
+  --primary-gradient: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-600) 100%);
+  --bg-card: var(--color-bg-surface);
+  --border-color: var(--color-border-default);
   --success-color: #38a169;
 }
 
@@ -15,7 +15,7 @@ body {
 
 .content-header {
   margin-bottom: 30px;
-  border-bottom: 2px solid #edf2f7;
+  border-bottom: 2px solid var(--color-border-default);
   padding-bottom: 20px;
   display: flex;
   flex-wrap: wrap;
@@ -39,7 +39,7 @@ body {
 
 .btn-primary {
   background: var(--primary-gradient);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   padding: 12px 24px;
   border-radius: 10px;
@@ -51,13 +51,13 @@ body {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  background: linear-gradient(135deg, #c93838 0%, #b33131 100%);
+  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-500) 100%);
 }
 
 .btn-secondary {
-  background: white;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border-default);
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 600;
@@ -67,13 +67,13 @@ body {
 }
 
 .btn-secondary:hover {
-  background: #edf2f7;
-  border-color: #cbd5e0;
+  background: var(--color-border-default);
+  border-color: var(--color-border-strong);
 }
 
 .btn-success {
   background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   padding: 12px;
   border-radius: 10px;
@@ -91,15 +91,15 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.02);
   border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 25px;
 }
 
 .card h3 {
-  color: #2d3748;
+  color: var(--color-text-strong);
   font-size: 18px;
   margin: 0 0 20px;
-  border-bottom: 2px solid #edf2f7;
+  border-bottom: 2px solid var(--color-border-default);
   padding-bottom: 10px;
 }
 
@@ -139,7 +139,7 @@ body {
   border: 2px solid var(--border-color);
   border-radius: 10px;
   font-size: 15px;
-  color: #2d3748;
+  color: var(--color-text-strong);
   background: #fff;
   box-sizing: border-box;
 }
@@ -170,12 +170,12 @@ label {
   align-items: center;
   gap: 12px;
   padding: 12px 15px;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--color-border-default);
   font-size: 14px;
 }
 
 .item-prov:hover {
-  background-color: #f8fafc;
+  background-color: var(--color-bg-soft);
 }
 
 .item-prov span {
@@ -188,7 +188,7 @@ label {
 
 .item-prov button {
   background: var(--primary-color);
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   width: 32px;
   min-width: 32px;
@@ -209,19 +209,19 @@ label {
   font-weight: 600;
   padding: 12px;
   text-align: left;
-  border-bottom: 2px solid #edf2f7;
+  border-bottom: 2px solid var(--color-border-default);
 }
 
 .table-carrito td {
   padding: 12px;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px solid var(--color-border-default);
   vertical-align: middle;
 }
 
 .table-carrito tfoot td {
   padding: 15px;
-  background: #f8fafc;
-  border-top: 2px solid #edf2f7;
+  background: var(--color-bg-soft);
+  border-top: 2px solid var(--color-border-default);
   font-size: 16px;
   color: var(--primary-color);
   font-weight: 700;
@@ -230,7 +230,7 @@ label {
 .input-cantidad {
   width: 60px;
   padding: 6px 8px;
-  border: 1px solid #cbd5e0;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
 }
 
@@ -241,7 +241,7 @@ label {
 }
 
 .text-muted {
-  color: #718096;
+  color: var(--color-text-muted);
   padding: 12px;
 }
 
@@ -251,7 +251,7 @@ label {
 
 .btn-remove {
   background: #e53e3e;
-  color: white;
+  color: var(--color-bg-surface);
   border: none;
   width: 32px;
   min-width: 32px;
@@ -274,7 +274,7 @@ label {
 
 .estado {
   margin: 12px 0;
-  color: #4a5568;
+  color: var(--color-text-muted);
 }
 
 .estado.error {
@@ -282,9 +282,9 @@ label {
 }
 
 .btn-grid-recepcion {
-  background: white;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: var(--color-bg-surface);
+  color: var(--color-text-muted);
+  border: 2px solid var(--color-border-default);
   padding: 8px 16px;
   border-radius: 10px;
   font-weight: 600;
@@ -295,8 +295,8 @@ label {
 }
 
 .btn-grid-recepcion:hover {
-  background: #edf2f7;
-  border-color: #cbd5e0;
+  background: var(--color-border-default);
+  border-color: var(--color-border-strong);
 }
 
 .gridjs-wrapper {

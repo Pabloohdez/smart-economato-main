@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { apiFetch } from "../services/apiClient";
+import Spinner from "../components/ui/Spinner";
 
 type Categoria = {
   id: string | number;
@@ -576,8 +577,8 @@ export default function BajasPage() {
           className={`resultados-busqueda-baja ${resultadosOpen ? "" : "oculto"}`}
         >
           {loadingDatos ? (
-            <div style={{ textAlign: "center", padding: 20, color: "#666" }}>
-              <i className="fa-solid fa-spinner fa-spin" /> Cargando...
+            <div style={{ padding: "12px 0" }}>
+              <Spinner size="sm" label="Cargando productos..." />
             </div>
           ) : resultados.length === 0 ? (
             <div style={{ textAlign: "center", padding: 20, color: "#a0aec0" }}>
@@ -807,9 +808,9 @@ export default function BajasPage() {
 
         <div id="contenedorHistorial" className="contenedor-historial">
           {loadingHistorial ? (
-            <p style={{ textAlign: "center", color: "#666", padding: 20 }}>
-              <i className="fa-solid fa-spinner fa-spin" /> Cargando historial...
-            </p>
+            <div style={{ padding: "12px 0" }}>
+              <Spinner size="sm" label="Cargando historial..." />
+            </div>
           ) : historialFiltrado.length === 0 ? (
             <p style={{ textAlign: "center", color: "#666", padding: 20 }}>
               No hay bajas registradas este mes

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { getProductos, type Producto } from "../services/productosService";
 import "../styles/escandallos.css";
+import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
+import { showConfirm, showNotification } from "../utils/notifications";
 
 type IngredienteReceta = {
   producto_id: number | string;
@@ -320,20 +323,24 @@ export default function EscandallosPage() {
     alert("Receta guardada correctamente (Local).");
   }
 
-  function eliminarEscandallo(id: number) {
+  async function eliminarEscandallo(id: number) {
     const esc = escandallos.find((x) => x.id === id);
     if (!esc) {
-      alert("Error: Receta no encontrada.");
+      showNotification("Error: Receta no encontrada.", "error");
       return;
     }
 
-    const confirmado = window.confirm(
-      `¿Eliminar la receta "${esc.nombre}"?\n\nEsta acción no se puede deshacer.`,
-    );
+    const confirmado = await showConfirm({
+      title: "Eliminar receta",
+      message: `¿Eliminar la receta "${esc.nombre}"?\n\nEsta acción no se puede deshacer.`,
+      confirmLabel: "Eliminar",
+      variant: "danger",
+      icon: "fa-solid fa-trash",
+    });
     if (!confirmado) return;
 
     setEscandallos((prev) => prev.filter((x) => x.id !== id));
-    alert("Receta eliminada correctamente.");
+    showNotification("Receta eliminada correctamente.", "success");
   }
 
   function aplicarFiltros() {
@@ -434,8 +441,8 @@ export default function EscandallosPage() {
         </div>
       </div>
 
-      {loadingProductos && <p className="estado">Cargando productos...</p>}
-      {err && <p className="estado warning">{err}</p>}
+      {loadingProductos && <Spinner label="Cargando productos..." />}
+      {err && <Alert type="error">{err}</Alert>}
 
       <div className="table-container">
         <table>

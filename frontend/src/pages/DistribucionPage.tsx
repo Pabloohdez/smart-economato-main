@@ -1,6 +1,7 @@
 // frontend/src/pages/Distribucion.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/distribucion.css";
+import Spinner from "../components/ui/Spinner";
 
 import { showConfirm, showNotification } from "../utils/notifications";
 import {
@@ -416,7 +417,7 @@ export default function DistribucionPage() {
             <div id="listaResultados" className="lista-resultados">
               {loadingProductos ? (
                 <div className="item-resultado item-resultado--muted">
-                  <i className="fa-solid fa-spinner fa-spin" /> Cargando...
+                  <Spinner size="sm" label="Cargando productos..." />
                 </div>
               ) : resultadosRender.length === 0 ? (
                 term.trim().length >= 2 ? (
@@ -593,8 +594,8 @@ export default function DistribucionPage() {
             <tbody id="tbodyHistorialMovimientos">
               {loadingHistorial ? (
                 <tr>
-                  <td colSpan={6} className="text-center" style={{ padding: 20, color: "#666" }}>
-                    <i className="fa-solid fa-spinner fa-spin" /> Cargando historial...
+                  <td colSpan={6} style={{ padding: "16px 0" }}>
+                    <Spinner size="sm" label="Cargando historial..." />
                   </td>
                 </tr>
               ) : historial.length === 0 ? (
