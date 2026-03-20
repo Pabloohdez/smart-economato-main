@@ -20,6 +20,7 @@ Variables de entorno: crea un archivo `.env` en `backend/` (copia de `.env.examp
 - `DB_NAME` – `postgres`
 - `DB_USER` – usuario (ej. `postgres.TU_PROJECT_REF`)
 - `DB_PASS` – contraseña de la base de datos
+- `ALLOWED_ORIGINS` – orígenes permitidos para CORS (ej. `http://localhost:8081`)
 
 La conexión usa **SSL** por defecto (obligatorio en Supabase). Si falla la conexión, comprueba usuario/contraseña y que el proyecto Supabase no esté pausado.
 
@@ -31,9 +32,14 @@ npm run start:dev
 
 La API queda en **http://localhost:3000/api** (variable `PORT`).
 
+Health checks disponibles:
+
+- `GET /api/health`
+- `GET /api/ready`
+
 ## Con Docker
 
-El `docker-compose` de la raíz levanta el backend en el contenedor `api` (puerto 3000). El frontend (React) se sirve en el puerto 8080 y hace proxy de `/api` a este backend.
+El `docker-compose` de la raíz levanta el backend en el contenedor `api` (puerto 3000). El frontend (React) se sirve en el puerto 8081 y hace proxy de `/api` a este backend.
 
 ## Rutas principales
 

@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import "../styles/pedidos.css";
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch } from "../services/apiClient";
 
 type Proveedor = {
   id: number | string;
@@ -65,24 +64,12 @@ export default function PedidosPage() {
     try {
       setErr("");
       setLoadingPedidos(true);
-
-      const res = await fetch(`${API_URL}/pedidos?t=${Date.now()}`, {
+      const json = await apiFetch<{ success: boolean; data: PedidoHistorial[]; error?: { message?: string } }>("/pedidos", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status} al cargar pedidos`);
-      }
-
-      const json = await res.json();
       const data = Array.isArray(json?.data) ? json.data : [];
-
-      if (json?.success) {
-        setPedidos(data);
-      } else {
-        setPedidos([]);
-        setErr(json?.error?.message || "Error cargando pedidos");
-      }
+      setPedidos(json?.success ? data : []);
+      if (!json?.success) setErr(json?.error?.message || "Error cargando pedidos");
     } catch (e) {
       setPedidos([]);
       setErr(e instanceof Error ? e.message : "Error desconocido");
@@ -246,22 +233,12 @@ export default function PedidosPage() {
         };
 
         try {
-          const res = await fetch(`${API_URL}/pedidos`, {
+          const data = await apiFetch<{ success: boolean }>("/pedidos", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Requested-With": "XMLHttpRequest",
-            },
+            headers: { "X-Requested-With": "XMLHttpRequest" },
             body: JSON.stringify(payload),
           });
-
-          const data = await res.json();
-
-          if (data?.success) {
-            exitos++;
-          } else {
-            errores++;
-          }
+          if (data?.success) exitos++; else errores++;
         } catch {
           errores++;
         }

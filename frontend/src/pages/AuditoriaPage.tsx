@@ -2,8 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
 import "../styles/auditoria.css";
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch, type ApiRequestError } from "../services/apiClient";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -139,9 +138,6 @@ export default function AuditoriaPage() {
       setLoading(true);
       setErrorMsg("");
 
-      const usuarioActual = obtenerUsuarioActual();
-      const usuarioId = obtenerUsuarioId(usuarioActual);
-
       const params = new URLSearchParams();
       const f = { ...filtros, ...filtrosAplicados };
 
@@ -151,32 +147,13 @@ export default function AuditoriaPage() {
       if (f.fechaHasta) params.append("fecha_hasta", f.fechaHasta);
 
       params.append("limite", "200");
-      params.append("usuario_actual", usuarioId);
 
-      const url = `${API_URL}/auditoria?${params.toString()}`;
-      const response = await fetch(url, {
+      const url = `/auditoria?${params.toString()}`;
+      const result = await apiFetch<any>(url, {
         headers: {
           "X-Requested-With": "XMLHttpRequest",
         },
       });
-
-      if (response.status === 403) {
-        const dataError = await response.json();
-        setAccesoDenegado(true);
-        setErrorMsg(
-          dataError.error || "Se requieren permisos de administrador",
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (!response.ok) {
-        setErrorMsg("Error del sistema al obtener registros");
-        setLoading(false);
-        return;
-      }
-
-      const result = await response.json();
       const data = result.data || result;
 
       if (data.registros) {
@@ -204,7 +181,18 @@ export default function AuditoriaPage() {
       }
     } catch (error) {
       console.error("Error al cargar auditoría:", error);
-      setErrorMsg("Error de conexión");
+      const apiError = error as ApiRequestError;
+
+      if (apiError.status === 403) {
+        const payload =
+          typeof apiError.payload === "object" && apiError.payload !== null
+            ? (apiError.payload as { error?: string })
+            : undefined;
+        setAccesoDenegado(true);
+        setErrorMsg(payload?.error || apiError.message || "Se requieren permisos de administrador");
+      } else {
+        setErrorMsg("Error de conexión");
+      }
     } finally {
       setLoading(false);
     }

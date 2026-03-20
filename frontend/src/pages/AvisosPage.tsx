@@ -10,8 +10,7 @@ import {
   type Proveedor,
 } from "../services/productosService";
 import "../styles/avisos.css";
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch } from "../services/apiClient";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -71,12 +70,9 @@ export default function AvisosPage() {
 
       let gastos: GastoMensual[] = [];
       try {
-        const resp = await fetch(`${API_URL}/informes?tipo=gastos_mensuales`);
-        if (resp.ok) {
-          const data = await resp.json();
-          if (data.success && data.data?.gastos_por_mes) {
-            gastos = data.data.gastos_por_mes;
-          }
+        const data = await apiFetch<{ success: boolean; data?: { gastos_por_mes?: GastoMensual[] } }>("/informes?tipo=gastos_mensuales");
+        if (data.success && data.data?.gastos_por_mes) {
+          gastos = data.data.gastos_por_mes;
         }
       } catch (e) {
         console.error("Error cargando gastos mensuales:", e);

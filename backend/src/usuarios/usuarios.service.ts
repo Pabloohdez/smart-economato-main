@@ -1,4 +1,5 @@
 import { randomBytes } from 'crypto';
+import { hash } from 'bcryptjs';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
@@ -27,13 +28,15 @@ export class UsuariosService {
     rol?: string;
   }) {
     const id = randomBytes(4).toString('hex');
+    const hashedPassword = await hash(dto.password, 10);
+
     await this.db.query(
       `INSERT INTO usuarios (id, username, password, nombre, apellidos, email, telefono, role)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         id,
         dto.usuario,
-        dto.password,
+        hashedPassword,
         dto.nombre ?? null,
         dto.apellidos ?? null,
         dto.email ?? null,
@@ -41,6 +44,15 @@ export class UsuariosService {
         dto.rol ?? 'usuario',
       ],
     );
-    return { id, ...dto };
+
+    return {
+      id,
+      usuario: dto.usuario,
+      nombre: dto.nombre ?? null,
+      apellidos: dto.apellidos ?? null,
+      email: dto.email ?? null,
+      telefono: dto.telefono ?? null,
+      rol: dto.rol ?? 'usuario',
+    };
   }
 }

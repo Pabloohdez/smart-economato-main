@@ -1,18 +1,15 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AuditoriaControllerService } from './auditoria.controller.service';
-import { AuthUtilsService } from '../common/auth-utils.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import { Roles } from '../auth/roles.decorator';
 
+@Roles('admin')
 @Controller('auditoria')
 export class AuditoriaController {
-  constructor(
-    private readonly service: AuditoriaControllerService,
-    private readonly authUtils: AuthUtilsService,
-  ) {}
+  constructor(private readonly service: AuditoriaControllerService) {}
 
   @Get()
   async obtener(
-    @Query('usuario_actual') usuarioActual: string,
     @Query('usuario') usuario: string,
     @Query('accion') accion: string,
     @Query('fecha_desde') fechaDesde: string,
@@ -20,7 +17,6 @@ export class AuditoriaController {
     @Query('limite') limite: string,
     @Query('offset') offset: string,
   ) {
-    await this.authUtils.requireAdmin(usuarioActual ?? undefined);
     return this.service.obtener({
       usuario: usuario || undefined,
       accion: accion || undefined,

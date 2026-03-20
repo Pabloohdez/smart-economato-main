@@ -1,6 +1,8 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "../styles/inicio.css";
+import { getStoredUser } from "../services/sessionService";
+import { logout as logoutSession } from "../services/authService";
 
 const navItems = [
   { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house" },
@@ -25,8 +27,7 @@ const navItems = [
 export default function AppLayout() {
   const nav = useNavigate();
   const location = useLocation();
-  const userRaw = localStorage.getItem("usuarioActivo");
-  const user = userRaw ? JSON.parse(userRaw) : null;
+  const user = getStoredUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -53,7 +54,7 @@ export default function AppLayout() {
   }, []);
 
   function logout() {
-    localStorage.removeItem("usuarioActivo");
+    logoutSession();
     nav("/login", { replace: true });
   }
 

@@ -6,6 +6,7 @@ import {
   type Producto,
 } from "../services/productosService";
 import "../styles/rendimiento.css";
+import { apiFetch } from "../services/apiClient";
 
 type RegistroRendimiento = {
   id: number;
@@ -22,8 +23,6 @@ type RegistroHistorial = RegistroRendimiento & {
   observaciones?: string;
   categoria?: string;
 };
-
-const API_ENDPOINT = `${(import.meta.env.VITE_API_URL as string) || "/api"}/rendimientos`;
 
 export default function RendimientoPage() {
   const [fechaActual, setFechaActual] = useState("");
@@ -124,8 +123,7 @@ export default function RendimientoPage() {
   async function cargarHistorial() {
     try {
       setLoadingHistorial(true);
-      const res = await fetch(`${API_ENDPOINT}?limit=50`);
-      const json = await res.json();
+      const json = await apiFetch<{ success?: boolean; error?: string; data?: RegistroHistorial[] }>("/rendimientos?limit=50");
 
       if (json.success) {
         setHistorialRendimiento(Array.isArray(json.data) ? json.data : []);
@@ -241,8 +239,7 @@ export default function RendimientoPage() {
     if (!confirmado) return;
 
     try {
-      const res = await fetch(`${API_ENDPOINT}?id=${id}`, { method: "DELETE" });
-      const json = await res.json();
+      const json = await apiFetch<{ success?: boolean; error?: string }>(`/rendimientos?id=${id}`, { method: "DELETE" });
 
       if (json.success) {
         mostrarMensaje("Registro eliminado", "exito");
@@ -271,13 +268,11 @@ export default function RendimientoPage() {
     }));
 
     try {
-      const res = await fetch(API_ENDPOINT, {
+      const json = await apiFetch<{ success?: boolean; error?: string }>("/rendimientos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const json = await res.json();
 
       if (!json.success) {
         throw new Error(json.error || "Error desconocido");

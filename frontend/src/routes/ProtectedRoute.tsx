@@ -1,8 +1,9 @@
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { hasActiveSession } from "../services/sessionService";
 
 function isLoggedIn(): boolean {
-  return Boolean(localStorage.getItem("usuarioActivo"));
+  return hasActiveSession();
 }
 
 type Props = {

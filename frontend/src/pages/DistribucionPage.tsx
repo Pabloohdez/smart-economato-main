@@ -10,6 +10,7 @@ import {
   productoTieneAlergenos,
   verificarPreferencias,
 } from "../utils/alergenosUtils";
+import { apiFetch } from "../services/apiClient";
 
 type Producto = {
   id: number | string;
@@ -33,8 +34,6 @@ type Movimiento = {
   motivo?: string;
   usuario_nombre?: string;
 };
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 function formatFechaHora(iso: string) {
   const d = new Date(iso);
@@ -83,10 +82,9 @@ export default function DistribucionPage() {
   async function cargarProductos() {
     setLoadingProductos(true);
     try {
-      const res = await fetch(`${API_URL}/productos`, {
+      const json = await apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-      const json = await res.json();
 
       if (!json?.success) throw new Error(json?.error || "Error cargando productos");
 
@@ -114,10 +112,9 @@ export default function DistribucionPage() {
   async function cargarHistorial() {
     setLoadingHistorial(true);
     try {
-      const res = await fetch(`${API_URL}/movimientos`, {
+      const json = await apiFetch<{ success?: boolean; data?: any[] }>("/movimientos", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-      const json = await res.json();
 
       if (!json?.success || !Array.isArray(json.data)) {
         setHistorial([]);
@@ -310,7 +307,7 @@ export default function DistribucionPage() {
       };
 
       try {
-        const res = await fetch(`${API_URL}/movimientos`, {
+        const data = await apiFetch<{ success?: boolean; error?: string }>("/movimientos", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -318,8 +315,6 @@ export default function DistribucionPage() {
           },
           body: JSON.stringify(payload),
         });
-
-        const data = await res.json().catch(() => null);
 
         if (data?.success) {
           exitosos++;

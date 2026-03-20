@@ -4,8 +4,7 @@ import "gridjs/dist/theme/mermaid.css";
 import "../styles/proveedores.css";
 
 import { showNotification, showConfirm } from "../utils/notifications";
-
-const API_URL = `${(import.meta.env.VITE_API_URL as string) || "/api"}/proveedores`;
+import { apiFetch } from "../services/apiClient";
 
 type Proveedor = {
   id: string;
@@ -36,18 +35,10 @@ export default function ProveedoresPage() {
 
   async function cargarProveedores() {
     try {
-      const res = await fetch(API_URL, {
+      const json = await apiFetch<{ success: boolean; data: Proveedor[] }>("/proveedores", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-
-      const json = await res.json();
-
-      if (!json.success) {
-        showNotification("Error cargando proveedores", "error");
-        return;
-      }
-
-      setProveedores(json.data);
+      setProveedores(json.data ?? []);
     } catch (e) {
       console.error(e);
       showNotification("Error de conexión cargando proveedores", "error");
@@ -151,13 +142,12 @@ export default function ProveedoresPage() {
     }
 
     const method = form.id ? "PUT" : "POST";
-    const url = form.id ? `${API_URL}/${form.id}` : API_URL;
+    const path = form.id ? `/proveedores/${form.id}` : "/proveedores";
 
     try {
-      const res = await fetch(url, {
+      await apiFetch(path, {
         method,
         headers: {
-          "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({
@@ -167,25 +157,15 @@ export default function ProveedoresPage() {
           email: form.email,
         }),
       });
-
-      const json = await res.json();
-
-      if (!json.success) {
-        showNotification("Error guardando proveedor", "error");
-        return;
-      }
-
       showNotification(
         form.id ? "Proveedor actualizado" : "Proveedor creado",
         "success",
       );
-
       cerrarModal();
-
       cargarProveedores();
     } catch (e) {
       console.error(e);
-      showNotification("Error de conexión", "error");
+      showNotification("Error guardando proveedor", "error");
     }
   }
 
@@ -201,24 +181,15 @@ export default function ProveedoresPage() {
     if (!ok) return;
 
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
+      await apiFetch(`/proveedores/${id}`, {
         method: "DELETE",
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-
-      const json = await res.json();
-
-      if (!json.success) {
-        showNotification("Error eliminando proveedor", "error");
-        return;
-      }
-
       showNotification("Proveedor eliminado", "success");
-
       cargarProveedores();
     } catch (e) {
       console.error(e);
-      showNotification("Error de conexión", "error");
+      showNotification("Error eliminando proveedor", "error");
     }
   }
 

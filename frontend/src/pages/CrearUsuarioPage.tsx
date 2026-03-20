@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/crearusuario.css";
-
-const API_URL = import.meta.env.VITE_API_URL as string;
+import { apiFetch } from "../services/apiClient";
 
 type NuevoUsuarioPayload = {
   usuario: string;
@@ -27,21 +26,11 @@ export default function CrearUsuarioPage() {
   const [loading, setLoading] = useState(false);
 
   async function crearUsuario(payload: NuevoUsuarioPayload) {
-    const res = await fetch(`${API_URL}/usuarios.php`, {
+    return apiFetch("/usuarios", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
+      headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify(payload),
     });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`HTTP ${res.status}: ${text}`);
-    }
-
-    return res.json();
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -158,13 +147,14 @@ export default function CrearUsuarioPage() {
           />
 
           <p className="registro-msg">{msg}</p>
-
-          <input
+          <button
             type="submit"
-            value={loading ? "Registrando..." : "Registrarse"}
             className="registro-submit"
             disabled={loading}
-          />
+            aria-busy={loading}
+          >
+            {loading ? "Registrando..." : "Registrarse"}
+          </button>
         </form>
 
         <Link to="/login" className="registro-link">

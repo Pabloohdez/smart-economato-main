@@ -18,12 +18,21 @@ Si tienes XAMPP u otro servidor en el puerto 8080, deténlo antes de levantar Do
 docker-compose up --build
 ```
 
-- **App:** [http://localhost:8080](http://localhost:8080) — React (el navegador llama a `/api`, nginx hace proxy al backend).
+- **App:** [http://localhost:8081](http://localhost:8081) — React (el navegador llama a `/api`, nginx hace proxy al backend).
 - **API:** el backend NestJS corre en el contenedor `api`; las peticiones llegan vía proxy desde el frontend.
 
 Variables de entorno (opcional, en un `.env` en la raíz):
 
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` — conexión a Supabase.
+- `ALLOWED_ORIGINS` — dominios permitidos para CORS del backend (por defecto `http://localhost:8081`).
+- `JWT_SECRET` — secreto obligatorio para firmar tokens de sesión.
+- `JWT_EXPIRES_IN` — duración del token, por ejemplo `8h`.
+
+Verificación rápida de estado:
+
+```bash
+curl http://localhost:3000/api/health
+```
 
 ---
 
@@ -34,7 +43,7 @@ Variables de entorno (opcional, en un `.env` en la raíz):
    cd backend && npm install && npm run start:dev
    ```
 
-2. **Frontend (React)** — puerto 8080 (desde la raíz o desde frontend):
+2. **Frontend (React)** — puerto 8081 (desde la raíz o desde frontend):
    ```bash
    # Desde la raíz (recomendado): arranca la app React en 8080
    npm run dev
@@ -44,7 +53,7 @@ Variables de entorno (opcional, en un `.env` en la raíz):
    cp .env.example .env
    npm install && npm run dev
    ```
-   Abrir **http://localhost:8080** — verás la app React+TypeScript (no la antigua).
+   Abrir **http://localhost:8081** — verás la app React+TypeScript (no la antigua).
 
 ---
 

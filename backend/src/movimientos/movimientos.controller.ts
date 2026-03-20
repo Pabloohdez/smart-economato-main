@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { MovimientosService } from './movimientos.service';
-import { Request } from 'express';
 import { HttpException, HttpStatus } from '@nestjs/common';
+import type { AuthenticatedRequest } from '../auth/auth.types';
 
 @Controller('movimientos')
 export class MovimientosController {
@@ -13,7 +13,7 @@ export class MovimientosController {
   }
 
   @Post()
-  async crear(@Body() body: Record<string, unknown>, @Req() req: Request) {
+  async crear(@Body() body: Record<string, unknown>, @Req() req: AuthenticatedRequest) {
     if (!body?.productoId || body?.cantidad == null) {
       throw new HttpException('Faltan datos (productoId o cantidad)', HttpStatus.BAD_REQUEST);
     }
@@ -24,7 +24,7 @@ export class MovimientosController {
         cantidad: Number(body.cantidad),
         tipo: String(body.tipo ?? 'ENTRADA'),
         motivo: body.motivo as string | undefined,
-        usuarioId: body.usuarioId as string | undefined,
+        usuarioId: req.user?.sub,
       },
       ip,
     );

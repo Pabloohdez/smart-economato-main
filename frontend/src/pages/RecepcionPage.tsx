@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import "../styles/recepcion.css";
+import { apiFetch, type ApiRequestError } from "../services/apiClient";
 
 type Producto = {
   id: number | string;
@@ -39,8 +40,6 @@ type RecepcionRow = {
   cantidadRecibida: number;
   precio: number;
 };
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 function formatEUR(n: number) {
   return `${n.toFixed(2)} €`;
@@ -97,13 +96,11 @@ export default function Recepcion() {
   async function cargarDatos() {
     setLoading(true);
     try {
-      const [pRes, cRes, prRes] = await Promise.all([
-        fetch(`${API_URL}/productos`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/categorias`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/proveedores`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+      const [pJson, cJson, prJson] = await Promise.all([
+        apiFetch<{ success?: boolean; data?: any[] }>("/productos", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        apiFetch<{ success?: boolean; data?: any[] }>("/categorias", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        apiFetch<{ success?: boolean; data?: any[] }>("/proveedores", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
       ]);
-
-      const [pJson, cJson, prJson] = await Promise.all([pRes.json(), cRes.json(), prRes.json()]);
 
       if (!pJson?.success) throw new Error("Error cargando productos");
       if (!cJson?.success) throw new Error("Error cargando categorías");
@@ -215,16 +212,16 @@ export default function Recepcion() {
       })),
     };
 
-    const res = await fetch(`${API_URL}/movimientos`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
+    try {
+      await apiFetch("/movimientos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch {
       alert("Error al guardar recepción");
       return;
     }
@@ -242,8 +239,7 @@ export default function Recepcion() {
     setVerifQty({}); // Reset quantities for new verification
 
     try {
-      const res = await fetch(`${API_URL}/pedidos`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
-      const json = await res.json();
+      const json = await apiFetch<{ success?: boolean; data?: Pedido[] }>("/pedidos", { headers: { "X-Requested-With": "XMLHttpRequest" } });
 
       if (!json?.success || !json?.data) throw new Error("Respuesta inesperada");
 
@@ -284,7 +280,7 @@ export default function Recepcion() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/pedidos/${pedidoId}`, {
+      const json = await apiFetch<{ data?: { message?: string } }>(`/pedidos/${pedidoId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -292,13 +288,6 @@ export default function Recepcion() {
         },
         body: JSON.stringify({ accion: "RECIBIR", items: itemsToReceive }),
       });
-
-      const json = await res.json().catch(() => null);
-
-      if (!res.ok) {
-        alert("Error: " + (json?.error?.message ?? "Desconocido"));
-        return;
-      }
 
       // Volver a cargar datos de productos
       await cargarDatos();
@@ -332,9 +321,10 @@ export default function Recepcion() {
       alert(json?.data?.message ?? "Recepción procesada correctamente");
       // Refresh the list of pending orders
       await abrirModalPedidos();
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
-      alert("Error de conexión: " + e.message);
+      const apiError = e as ApiRequestError;
+      alert("Error de conexión: " + apiError.message);
     }
   }, [verifQty, productos, abrirModalPedidos]);
 

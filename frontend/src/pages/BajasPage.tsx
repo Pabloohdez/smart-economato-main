@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
-
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch } from "../services/apiClient";
 
 type Categoria = {
   id: string | number;
@@ -118,13 +117,10 @@ export default function BajasPage() {
   async function cargarDatos() {
     setLoadingDatos(true);
     try {
-      const [pRes, cRes] = await Promise.all([
-        fetch(`${API_URL}/productos`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        fetch(`${API_URL}/categorias`, { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+      const [pJson, cJson] = await Promise.all([
+        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/categorias", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
       ]);
-
-      const pJson = await pRes.json();
-      const cJson = await cRes.json();
 
       if (!pJson?.success) throw new Error(pJson?.error || "Error cargando productos");
       if (!cJson?.success) throw new Error(cJson?.error || "Error cargando categorías");
@@ -162,10 +158,9 @@ export default function BajasPage() {
       const mes = hoy.getMonth() + 1;
       const anio = hoy.getFullYear();
 
-      const res = await fetch(`${API_URL}/bajas?mes=${mes}&anio=${anio}`, {
+      const json = await apiFetch<{ success?: boolean; data?: BajaHistorialItem[] }>(`/bajas?mes=${mes}&anio=${anio}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-      const json = await res.json();
 
       if (!json?.success || !Array.isArray(json.data)) {
         setStats({ roturas: 0, caducados: 0, mermas: 0, valorPerdido: 0 });
@@ -198,10 +193,9 @@ export default function BajasPage() {
       const mes = hoy.getMonth() + 1;
       const anio = hoy.getFullYear();
 
-      const res = await fetch(`${API_URL}/bajas?mes=${mes}&anio=${anio}`, {
+      const json = await apiFetch<{ success?: boolean; data?: BajaHistorialItem[] }>(`/bajas?mes=${mes}&anio=${anio}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" },
       });
-      const json = await res.json();
 
       if (!json?.success || !Array.isArray(json.data)) {
         setHistorial([]);
@@ -382,13 +376,11 @@ export default function BajasPage() {
           usuarioId: user?.id || "admin",
         };
 
-        const res = await fetch(`${API_URL}/bajas`, {
+        const data = await apiFetch<{ success?: boolean; error?: string }>("/bajas", {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify(payload),
         });
-
-        const data = await res.json().catch(() => null);
 
         if (data?.success) {
           exitosos++;

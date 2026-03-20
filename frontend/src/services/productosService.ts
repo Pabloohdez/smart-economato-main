@@ -1,4 +1,4 @@
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch } from "./apiClient";
 
 export type Categoria = { id: number | string; nombre: string };
 export type Proveedor = { id: number | string; nombre: string };
@@ -56,80 +56,42 @@ export type CrearPedidoPayload = {
   }>;
 };
 
-async function getJSON<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status} en ${path}`);
-  return res.json();
+function unwrap<T>(json: unknown): T[] {
+  return (Array.isArray(json) ? json : ((json as any)?.data ?? [])) as T[];
 }
 
 export async function getProductos(): Promise<Producto[]> {
-  const json = await getJSON<any>("/productos");
-  const data = Array.isArray(json) ? json : (json?.data ?? []);
-  return data as Producto[];
+  return unwrap<Producto>(await apiFetch("/productos"));
 }
 
 export async function getCategorias(): Promise<Categoria[]> {
-  const json = await getJSON<any>("/categorias");
-  const data = Array.isArray(json) ? json : (json?.data ?? []);
-  return data as Categoria[];
+  return unwrap<Categoria>(await apiFetch("/categorias"));
 }
 
 export async function getProveedores(): Promise<Proveedor[]> {
-  const json = await getJSON<any>("/proveedores");
-  const data = Array.isArray(json) ? json : (json?.data ?? []);
-  return data as Proveedor[];
+  return unwrap<Proveedor>(await apiFetch("/proveedores"));
 }
 
-export async function crearProducto(payload: CrearProductoPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/productos`, {
+export async function crearProducto(payload: CrearProductoPayload): Promise<unknown> {
+  return apiFetch("/productos", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
+    headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /productos: ${text}`);
-  }
-
-  return res.json();
 }
 
-export async function registrarBaja(payload: RegistrarBajaPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/bajas`, {
+export async function registrarBaja(payload: RegistrarBajaPayload): Promise<unknown> {
+  return apiFetch("/bajas", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
+    headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /bajas: ${text}`);
-  }
-
-  return res.json();
 }
 
-export async function crearPedido(payload: CrearPedidoPayload): Promise<any> {
-  const res = await fetch(`${API_URL}/pedidos`, {
+export async function crearPedido(payload: CrearPedidoPayload): Promise<unknown> {
+  return apiFetch("/pedidos", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-    },
+    headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status} en /pedidos: ${text}`);
-  }
-
-  return res.json();
 }

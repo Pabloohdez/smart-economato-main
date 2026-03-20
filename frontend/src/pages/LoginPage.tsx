@@ -18,10 +18,9 @@ export default function LoginPage() {
     const user = await login(username.trim(), password.trim());
 
     if (user) {
-      localStorage.setItem("usuarioActivo", JSON.stringify(user));
       nav("/inicio");
     } else {
-      setMsg("Usuario/Contraseña incorrecta");
+      setMsg("Usuario o contraseña incorrectos");
     }
 
     setLoading(false);
@@ -40,36 +39,55 @@ export default function LoginPage() {
       <div className="container">
         <h2 className="form-title">Bienvenido</h2>
 
-        <form className="formulario" onSubmit={onSubmit} action="#" method="post">
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Usuario"
-            className="user"
-            required
-            aria-label="Introduzca su nombre de usuario"
-          />
+        <form className="formulario" onSubmit={onSubmit} noValidate>
+          <div className="field-group">
+            <label htmlFor="username" className="sr-only">Usuario</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Usuario"
+              className="user"
+              required
+              autoComplete="username"
+              aria-describedby={msg ? "login-error" : undefined}
+              aria-invalid={!!msg || undefined}
+            />
+          </div>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"
-            className="user"
-            required
-            aria-label="Introduzca su contraseña"
-          />
+          <div className="field-group">
+            <label htmlFor="password" className="sr-only">Contraseña</label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Contraseña"
+              className="user"
+              required
+              autoComplete="current-password"
+              aria-describedby={msg ? "login-error" : undefined}
+              aria-invalid={!!msg || undefined}
+            />
+          </div>
 
-          <p className="resp">{msg}</p>
+          {msg ? (
+            <p id="login-error" className="resp resp--error" role="alert">
+              {msg}
+            </p>
+          ) : (
+            <p className="resp" aria-hidden="true" />
+          )}
 
-          <input
+          <button
             type="submit"
-            value={loading ? "Entrando..." : "Iniciar Sesión"}
             className="user entrar"
-            aria-label="Inicie Sesión"
             disabled={loading}
-          />
+            aria-busy={loading}
+          >
+            {loading ? "Entrando..." : "Iniciar Sesión"}
+          </button>
         </form>
 
         <div style={{ marginTop: 20 }}>

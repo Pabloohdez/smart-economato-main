@@ -1,25 +1,28 @@
-const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
+import { apiFetch } from "./apiClient";
+import { clearSession, saveSession } from "./sessionService";
 
 export type UsuarioActivo = Record<string, unknown>;
 
+type LoginResponse = { success: boolean; data: { token: string; user: UsuarioActivo } };
+
 export async function login(username: string, password: string): Promise<UsuarioActivo | null> {
   try {
-    const res = await fetch(`${API_URL}/login`, {
+    const response = await apiFetch<LoginResponse>("/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
+      headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify({ username, password }),
     });
-
-    if (!res.ok) return null;
-
-    const response = await res.json();
-    if (response?.success && response?.data) return response.data;
-
+    if (response?.success && response?.data?.token && response?.data?.user) {
+      saveSession(response.data.token, response.data.user);
+      return response.data.user;
+    }
     return null;
   } catch {
+    clearSession();
     return null;
   }
+}
+
+export function logout() {
+  clearSession();
 }
