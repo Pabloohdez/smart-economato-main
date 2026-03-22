@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import "../styles/recepcion.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
+import { showConfirm, showNotification } from "../utils/notifications";
+import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 
 type Producto = {
   id: number | string;
@@ -82,15 +84,22 @@ export default function Recepcion() {
 
   // Modal pedidos
   const [modalPedidosOpen, setModalPedidosOpen] = useState(false);
+  const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
   const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([]);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
+  const drawerPedidosTimerRef = useRef<number | null>(null);
 
   // Obtener usuario activo para auditoría
   const userRaw = localStorage.getItem("usuarioActivo");
-  const user = userRaw ? JSON.parse(userRaw) : null;
+  let user: any = null;
+  try {
+    user = userRaw ? JSON.parse(userRaw) : null;
+  } catch {
+    user = null;
+  }
   const usuarioLogueadoId = user?.id || 1;
 
   async function cargarDatos() {
@@ -123,6 +132,14 @@ export default function Recepcion() {
 
   useEffect(() => {
     cargarDatos().catch((e) => console.error(e));
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (drawerPedidosTimerRef.current) {
+        window.clearTimeout(drawerPedidosTimerRef.current);
+      }
+    };
   }, []);
 
   // cerrar dropdown si clic fuera
@@ -171,6 +188,17 @@ export default function Recepcion() {
     console.log("[Recepcion] modalCantidadOpen set to true");
   }
 
+  async function escanearCodigoBarras() {
+    const code = await scanBarcodeFromCamera();
+    if (!code) {
+      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
+      return;
+    }
+    setTerm(code);
+    setResultadosOpen(true);
+    showNotification(`Codigo leido: ${code}`, "success");
+  }
+
   function cerrarModalCantidad() {
     setModalCantidadOpen(false);
     setProductoSel(null);
@@ -193,6 +221,11 @@ export default function Recepcion() {
 
     setTerm("");
     setResultadosOpen(false);
+  }
+
+  function actualizarCantidadVerificada(detalleId: string, siguiente: number, maximo: number) {
+    const safe = Math.max(0, Math.min(maximo, siguiente));
+    setVerifQty((prev) => ({ ...prev, [detalleId]: safe }));
   }
 
   function eliminarFila(idx: number) {
@@ -222,11 +255,11 @@ export default function Recepcion() {
         body: JSON.stringify(payload),
       });
     } catch {
-      alert("Error al guardar recepción");
+      showNotification("Error al guardar recepción", "error");
       return;
     }
 
-    alert("Recepción Manual Exitosa ✅");
+    showNotification("Recepción manual guardada correctamente.", "success");
     setRecepcion([]);
     setObs("");
     await cargarDatos();
@@ -235,6 +268,7 @@ export default function Recepcion() {
   // ===== Pedidos (importación) =====
   const abrirModalPedidos = useCallback(async () => {
     console.log("[Recepcion] abrirModalPedidos called");
+    setCerrandoDrawerPedidos(false);
     setModalPedidosOpen(true);
     setVerifQty({}); // Reset quantities for new verification
 
@@ -261,13 +295,32 @@ export default function Recepcion() {
 
     } catch (e: any) {
       console.error(e);
-      alert("Error cargando pedidos pendientes");
+      showNotification("Error cargando pedidos pendientes", "error");
       setPedidosPendientes([]);
     }
   }, []);
 
+  const cerrarDrawerPedidos = useCallback(() => {
+    if (!modalPedidosOpen || cerrandoDrawerPedidos) return;
+    setCerrandoDrawerPedidos(true);
+    if (drawerPedidosTimerRef.current) {
+      window.clearTimeout(drawerPedidosTimerRef.current);
+    }
+    drawerPedidosTimerRef.current = window.setTimeout(() => {
+      setModalPedidosOpen(false);
+      setCerrandoDrawerPedidos(false);
+      drawerPedidosTimerRef.current = null;
+    }, 220);
+  }, [cerrandoDrawerPedidos, modalPedidosOpen]);
+
   const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
-    if (!confirm("¿Confirmar entrada de stock y actualizar pedido?")) return;
+    const confirmado = await showConfirm({
+      title: "Confirmar recepción",
+      message: "¿Confirmar entrada de stock y actualizar pedido?",
+      confirmLabel: "Sí, actualizar",
+      icon: "fa-solid fa-boxes-stacked",
+    });
+    if (!confirmado) return;
 
     const itemsToReceive = items.map((it) => ({
       detalle_id: it.id,
@@ -275,7 +328,7 @@ export default function Recepcion() {
     })).filter(item => item.cantidad_recibida > 0); // Only send items with received quantity > 0
 
     if (itemsToReceive.length === 0) {
-      alert("No se ha especificado ninguna cantidad a recibir.");
+      showNotification("No se ha especificado ninguna cantidad a recibir.", "warning");
       return;
     }
 
@@ -318,13 +371,13 @@ export default function Recepcion() {
         setRecepcion((prev) => [...prev, ...nuevasFilas]);
       }
 
-      alert(json?.data?.message ?? "Recepción procesada correctamente");
+      showNotification(json?.data?.message ?? "Recepción procesada correctamente", "success");
       // Refresh the list of pending orders
       await abrirModalPedidos();
     } catch (e) {
       console.error(e);
       const apiError = e as ApiRequestError;
-      alert("Error de conexión: " + apiError.message);
+      showNotification("Error de conexión: " + apiError.message, "error");
     }
   }, [verifQty, productos, abrirModalPedidos]);
 
@@ -420,6 +473,16 @@ export default function Recepcion() {
               >
                 <i className="fa-solid fa-search" /> Buscar
               </button>
+
+              <button
+                className="btn-scan-recepcion"
+                type="button"
+                onClick={escanearCodigoBarras}
+                aria-label="Escanear codigo de barras"
+                title="Escanear codigo"
+              >
+                <i className="fa-solid fa-camera" />
+              </button>
             </div>
 
             {/* Dropdown de resultados */}
@@ -488,24 +551,41 @@ export default function Recepcion() {
         </div>
       </div>
 
-      {/* Modal Importar Pedidos (usando Portal para evitar recortes de z-index/overflow) */}
+      {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
-        <div className="modal-overlay active">
-          <div className="modal-contenido modal-lg">
-            <h3>
-              <i className="fa-solid fa-cloud-arrow-down" /> Importar Pedido Pendiente
-            </h3>
+        <div
+          className={`modal-overlay-recepcion active recepcion-overlay-drawer ${cerrandoDrawerPedidos ? "is-closing" : ""}`}
+          onClick={cerrarDrawerPedidos}
+        >
+          <aside className="recepcion-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="recepcion-drawer-header">
+              <h3>
+                <i className="fa-solid fa-cloud-arrow-down" /> Importar Pedido Pendiente
+              </h3>
+              <button
+                type="button"
+                className="recepcion-drawer-close"
+                aria-label="Cerrar importacion de pedidos"
+                onClick={cerrarDrawerPedidos}
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+
+            <div className="recepcion-drawer-body">
 
             {pedidosPendientes.length === 0 ? (
-              <p style={{ marginTop: 20 }}>No hay pedidos pendientes o incompletos.</p>
+              <div className="recepcion-pedidos-vacio">
+                <p>No hay pedidos pendientes o incompletos.</p>
+              </div>
             ) : (
-              <div style={{ marginTop: 20, maxHeight: 400, overflowY: "auto" }}>
+              <div className="recepcion-pedidos-lista">
                 {pedidosPendientes.map((ped) => {
                   const items = Array.isArray(ped.items) ? ped.items : [];
                   const completado = ped.estado.toUpperCase() === "COMPLETADO";
 
                   return (
-                    <div key={String(ped.id)} className="pedido-card">
+                    <div key={String(ped.id)} className="pedido-card recepcion-pedido-card">
                       <div className="pedido-card-header">
                         <div>
                           <strong>Pedido #{ped.id}</strong> — Proveedor: {ped.proveedor_nombre}
@@ -518,35 +598,66 @@ export default function Recepcion() {
                         {items.length === 0 ? (
                           <p>Sin items</p>
                         ) : (
-                          <table className="tabla-recepcion" style={{ marginTop: 10 }}>
+                          <table className="tabla-recepcion recepcion-tabla-pedidos" style={{ marginTop: 10 }}>
                             <thead>
                               <tr>
                                 <th>Producto</th>
                                 <th>Pedida</th>
                                 <th>Recibida (Antes)</th>
-                                <th>A Recibir Ahora</th>
+                                <th className="recepcion-col-recibir">A Recibir Ahora</th>
                               </tr>
                             </thead>
                             <tbody>
                               {items.map((it) => {
                                 const qtyVerif = verifQty[it.id] ?? 0;
+                                const maxRecibir = Math.max(
+                                  0,
+                                  (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)
+                                );
                                 return (
                                   <tr key={String(it.id)}>
                                     <td>{it.producto_nombre}</td>
                                     <td>{it.cantidad}</td>
                                     <td>{it.cantidad_recibida || 0}</td>
-                                    <td>
+                                    <td className="recepcion-col-recibir">
                                       {!completado ? (
-                                        <input
-                                          type="number"
-                                          min={0}
-                                          max={(Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)}
-                                          value={qtyVerif}
-                                          onChange={(e) =>
-                                            setVerifQty({ ...verifQty, [it.id]: Number(e.target.value) })
-                                          }
-                                          style={{ width: 80, padding: 4 }}
-                                        />
+                                        <div className="recepcion-stepper-inline">
+                                          <button
+                                            type="button"
+                                            className="recepcion-stepper-btn"
+                                            aria-label={`Reducir cantidad de ${it.producto_nombre}`}
+                                            onClick={() =>
+                                              actualizarCantidadVerificada(String(it.id), Number(qtyVerif || 0) - 1, maxRecibir)
+                                            }
+                                          >
+                                            -
+                                          </button>
+                                          <input
+                                            type="number"
+                                            min={0}
+                                            max={maxRecibir}
+                                            value={qtyVerif}
+                                            onChange={(e) =>
+                                              actualizarCantidadVerificada(
+                                                String(it.id),
+                                                Number(e.target.value || 0),
+                                                maxRecibir
+                                              )
+                                            }
+                                            className="recepcion-stepper-input"
+                                            inputMode="numeric"
+                                          />
+                                          <button
+                                            type="button"
+                                            className="recepcion-stepper-btn"
+                                            aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
+                                            onClick={() =>
+                                              actualizarCantidadVerificada(String(it.id), Number(qtyVerif || 0) + 1, maxRecibir)
+                                            }
+                                          >
+                                            +
+                                          </button>
+                                        </div>
                                       ) : (
                                         "—"
                                       )}
@@ -563,6 +674,7 @@ export default function Recepcion() {
                         <div style={{ textAlign: "right", marginTop: 15 }}>
                           <button
                             className="btn-accion-recepcion"
+                            type="button"
                             onClick={() =>
                               verificarPedidoLocal(Number(ped.id), items, ped.proveedor_nombre)
                             }
@@ -577,13 +689,14 @@ export default function Recepcion() {
                 })}
               </div>
             )}
+            </div>
 
-            <div className="modal-botones" style={{ marginTop: 20 }}>
-              <button className="btn-modal btn-modal-cancelar" onClick={() => setModalPedidosOpen(false)}>
+            <div className="recepcion-drawer-footer">
+              <button className="recepcion-btn-modal recepcion-btn-modal-cancelar" onClick={cerrarDrawerPedidos}>
                 Cerrar
               </button>
             </div>
-          </div>
+          </aside>
         </div>,
         document.body
       )}
@@ -605,11 +718,11 @@ export default function Recepcion() {
             <thead>
               <tr>
                 <th>Producto</th>
-                <th>Proveedor</th>
+                <th className="recepcion-col-proveedor">Proveedor</th>
                 <th>Stock Actual</th>
                 <th>Cantidad Recibida</th>
                 <th>Nuevo Stock</th>
-                <th>Precio</th>
+                <th className="recepcion-col-precio">Precio</th>
                 <th>Subtotal</th>
                 <th>Acción</th>
               </tr>
@@ -630,11 +743,11 @@ export default function Recepcion() {
                 recepcion.map((r, idx) => (
                   <tr key={`${String(r.producto_id)}-${idx}`}>
                     <td>{r.nombre}</td>
-                    <td>{r.proveedor}</td>
+                    <td className="recepcion-col-proveedor">{r.proveedor}</td>
                     <td>{r.stock}</td>
                     <td>{r.cantidadRecibida}</td>
                     <td className="stock-nuevo">{r.stock + r.cantidadRecibida}</td>
-                    <td>{formatEUR(r.precio)}</td>
+                    <td className="recepcion-col-precio">{formatEUR(r.precio)}</td>
                     <td>{formatEUR(r.precio * r.cantidadRecibida)}</td>
                     <td>
                       <button className="btn-eliminar-item" onClick={() => eliminarFila(idx)} title="Eliminar">
@@ -692,37 +805,56 @@ export default function Recepcion() {
 
       {/* Modal Cantidad (usando Portal) */}
       {modalCantidadOpen && createPortal(
-        <div className="modal-overlay active">
-          <div className="modal-contenido">
+        <div className="modal-overlay-recepcion active">
+          <div className="recepcion-modal-contenido">
             <h3>
               <i className="fa-solid fa-box-open" /> Cantidad Recibida
             </h3>
-            <p className="modal-producto-nombre">{productoSel?.nombre ?? ""}</p>
+            <p className="recepcion-modal-producto-nombre">{productoSel?.nombre ?? ""}</p>
 
-            <div className="modal-input-group">
+            <div className="recepcion-modal-input-group">
               <label>Cantidad:</label>
-              <input
-                type="number"
-                className="modal-input-cantidad"
-                min={1}
-                value={cantidadSel}
-                onChange={(e) => setCantidadSel(Number(e.target.value))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && productoSel) {
-                    agregarProducto(productoSel, Math.max(1, Number(cantidadSel || 1)));
-                    cerrarModalCantidad();
-                  }
-                }}
-                autoFocus
-              />
+              <div className="recepcion-stepper-modal">
+                <button
+                  type="button"
+                  className="recepcion-stepper-btn"
+                  aria-label="Reducir cantidad"
+                  onClick={() => setCantidadSel((prev) => Math.max(1, Number(prev || 1) - 1))}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  className="recepcion-modal-input-cantidad"
+                  min={1}
+                  value={cantidadSel}
+                  onChange={(e) => setCantidadSel(Math.max(1, Number(e.target.value || 1)))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && productoSel) {
+                      agregarProducto(productoSel, Math.max(1, Number(cantidadSel || 1)));
+                      cerrarModalCantidad();
+                    }
+                  }}
+                  inputMode="numeric"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="recepcion-stepper-btn"
+                  aria-label="Aumentar cantidad"
+                  onClick={() => setCantidadSel((prev) => Math.max(1, Number(prev || 1) + 1))}
+                >
+                  +
+                </button>
+              </div>
             </div>
 
-            <div className="modal-botones">
-              <button className="btn-modal btn-modal-cancelar" onClick={cerrarModalCantidad}>
+            <div className="recepcion-modal-botones">
+              <button className="recepcion-btn-modal recepcion-btn-modal-cancelar" onClick={cerrarModalCantidad}>
                 Cancelar
               </button>
               <button
-                className="btn-modal btn-modal-confirmar"
+                className="recepcion-btn-modal recepcion-btn-modal-confirmar"
                 onClick={() => {
                   if (!productoSel) return;
                   agregarProducto(productoSel, Math.max(1, Number(cantidadSel || 1)));

@@ -519,7 +519,7 @@ export default function EscandallosPage() {
       </div>
 
       {modalOpen && (
-        <div className="modal-overlay modal-open">
+        <div className="modal-overlay-escandallos modal-open-escandallos">
           <div className="modal-content">
             <button
               type="button"

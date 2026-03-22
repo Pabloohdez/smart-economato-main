@@ -21,6 +21,8 @@ type Props = {
   onlyProximoCaducar: boolean;
   setOnlyProximoCaducar: (v: boolean) => void;
 
+  onScanBarcode: () => void;
+
   limpiarFiltros: () => void;
 };
 
@@ -39,6 +41,7 @@ export default function InventarioToolbar({
   setOnlyStockBajo,
   onlyProximoCaducar,
   setOnlyProximoCaducar,
+  onScanBarcode,
   limpiarFiltros,
 }: Props) {
   return (
@@ -58,6 +61,17 @@ export default function InventarioToolbar({
 
         <button id="btnBuscar" className="btn-buscar-inventario" type="button">
           <i className="fa-solid fa-search" /> Buscar
+        </button>
+
+        <button
+          id="btnEscanearInventario"
+          className="btn-scan-inventario"
+          type="button"
+          onClick={onScanBarcode}
+          aria-label="Escanear codigo de barras"
+          title="Escanear codigo"
+        >
+          <i className="fa-solid fa-camera" />
         </button>
       </div>
 

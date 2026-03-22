@@ -169,13 +169,15 @@ label {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 12px 15px;
+  padding: 16px 15px;
   border-bottom: 1px solid var(--color-border-default);
   font-size: 14px;
 }
 
-.item-prov:hover {
-  background-color: var(--color-bg-soft);
+@media (hover: hover) and (pointer: fine) {
+  .item-prov:hover {
+    background-color: var(--color-bg-soft);
+  }
 }
 
 .item-prov span {
@@ -190,9 +192,9 @@ label {
   background: var(--primary-color);
   color: var(--color-bg-surface);
   border: none;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
@@ -207,13 +209,13 @@ label {
   background: #fff;
   color: var(--text-secondary);
   font-weight: 600;
-  padding: 12px;
+  padding: 14px 12px;
   text-align: left;
   border-bottom: 2px solid var(--color-border-default);
 }
 
 .table-carrito td {
-  padding: 12px;
+  padding: 16px 12px;
   border-bottom: 1px solid var(--color-border-default);
   vertical-align: middle;
 }
@@ -253,9 +255,9 @@ label {
   background: #e53e3e;
   color: var(--color-bg-surface);
   border: none;
-  width: 32px;
-  min-width: 32px;
-  height: 32px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
   border-radius: 8px;
   cursor: pointer;
   font-weight: 700;
@@ -285,18 +287,21 @@ label {
   background: var(--color-bg-surface);
   color: var(--color-text-muted);
   border: 2px solid var(--color-border-default);
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
   white-space: nowrap;
   min-width: 140px;
+  min-height: 44px;
 }
 
-.btn-grid-recepcion:hover {
-  background: var(--color-border-default);
-  border-color: var(--color-border-strong);
+@media (hover: hover) and (pointer: fine) {
+  .btn-grid-recepcion:hover {
+    background: var(--color-border-default);
+    border-color: var(--color-border-strong);
+  }
 }
 
 .gridjs-wrapper {
@@ -310,6 +315,16 @@ label {
 .gridjs-th,
 .gridjs-td {
   vertical-align: middle !important;
+}
+
+.gridjs-th {
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+.gridjs-td {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
 }
 
 .gridjs-footer {

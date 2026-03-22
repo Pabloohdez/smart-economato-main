@@ -190,6 +190,32 @@
     box-shadow: 0 4px 15px rgba(197, 48, 48, 0.3);
 }
 
+.btn-scan-baja {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 12px;
+    background: var(--color-bg-surface);
+    color: var(--color-brand-500);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-default);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.btn-scan-baja:active {
+    transform: scale(0.97);
+}
+
+.btn-scan-baja:focus-visible {
+    outline: 3px solid rgba(179, 49, 49, 0.35);
+    outline-offset: 2px;
+}
+
 .btn-buscar-baja:hover {
     background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
     transform: translateY(-2px);
@@ -252,6 +278,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
+    min-height: 56px;
     padding: 15px;
     background: var(--color-bg-soft);
     border-radius: 10px;
@@ -259,12 +287,26 @@
     cursor: pointer;
     transition: all var(--motion-base);
     border: 2px solid transparent;
+    text-align: left;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.item-resultado-baja:hover {
-    background: #fff5f5;
-    border-color: #fc8181;
-    transform: translateX(5px);
+@media (hover: hover) and (pointer: fine) {
+    .item-resultado-baja:hover {
+        background: #fff5f5;
+        border-color: #fc8181;
+        transform: translateX(5px);
+    }
+}
+
+.item-resultado-baja:active {
+    transform: scale(0.99);
+}
+
+.item-resultado-baja:focus-visible {
+    outline: 3px solid rgba(179, 49, 49, 0.35);
+    outline-offset: 2px;
 }
 
 .info-producto-baja {
@@ -329,7 +371,7 @@
 .tabla-bajas th {
     background: #fff5f5;
     color: #742a2a;
-    padding: 14px;
+    padding: 16px 14px;
     text-align: left;
     font-weight: 600;
     font-size: 13px;
@@ -338,14 +380,16 @@
 }
 
 .tabla-bajas td {
-    padding: 14px;
+    padding: 18px 14px;
     border-bottom: 1px solid var(--color-border-default);
     color: var(--color-text-strong);
     font-size: 14px;
 }
 
-.tabla-bajas tbody tr:hover {
-    background: #fffaf0;
+@media (hover: hover) and (pointer: fine) {
+    .tabla-bajas tbody tr:hover {
+        background: #fffaf0;
+    }
 }
 
 .fila-vacia td {
@@ -417,9 +461,12 @@
     background: #fff5f5;
     color: #e53e3e;
     border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border-radius: 12px;
     cursor: pointer;
     transition: all var(--motion-base);
     display: flex;
@@ -427,9 +474,19 @@
     justify-content: center;
 }
 
-.btn-eliminar-baja:hover {
-    background: #fed7d7;
-    transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+    .btn-eliminar-baja:hover {
+        background: #fed7d7;
+    }
+}
+
+.btn-eliminar-baja:active {
+    transform: scale(0.97);
+}
+
+.btn-eliminar-baja:focus-visible {
+    outline: 3px solid rgba(179, 49, 49, 0.35);
+    outline-offset: 2px;
 }
 
 .fila-total-baja {
@@ -563,7 +620,7 @@
 }
 
 /* Modal */
-.modal-overlay {
+.modal-overlay-baja {
     position: fixed;
     top: 0;
     left: 0;
@@ -631,12 +688,58 @@
 }
 
 .modal-input-cantidad-baja {
+    width: 84px;
+    min-height: 44px;
     padding: 12px;
     border: 2px solid var(--color-border-default);
     border-radius: 8px;
     font-size: 18px;
     font-weight: 600;
     text-align: center;
+}
+
+.bajas-stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bajas-stepper-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border: 1px solid var(--color-border-default);
+    border-radius: 10px;
+    background: var(--color-bg-soft);
+    color: var(--color-text-strong);
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.bajas-stepper-btn:active {
+    transform: scale(0.97);
+}
+
+.bajas-stepper-btn:focus-visible {
+    outline: 3px solid rgba(179, 49, 49, 0.35);
+    outline-offset: 2px;
+}
+
+.modal-input-cantidad-baja::-webkit-outer-spin-button,
+.modal-input-cantidad-baja::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.modal-input-cantidad-baja {
+    -moz-appearance: textfield;
 }
 
 .stock-disponible-info {

@@ -5,6 +5,8 @@ import InventarioTable from "../components/inventario/InventarioTable";
 import InventarioToolbar from "../components/inventario/InventarioToolbar";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
+import { showNotification } from "../utils/notifications";
+import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import "../styles/inventario.css";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
@@ -134,6 +136,16 @@ export default function InventarioPage() {
     setOnlyProximoCaducar(false);
   }
 
+  async function escanearCodigoBarras() {
+    const code = await scanBarcodeFromCamera();
+    if (!code) {
+      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
+      return;
+    }
+    setQ(code);
+    showNotification(`Codigo leido: ${code}`, "success");
+  }
+
   return (
     <div>
       {/* Header como el compi */}
@@ -165,6 +177,7 @@ export default function InventarioPage() {
         setOnlyStockBajo={setOnlyStockBajo}
         onlyProximoCaducar={onlyProximoCaducar}
         setOnlyProximoCaducar={setOnlyProximoCaducar}
+        onScanBarcode={escanearCodigoBarras}
         limpiarFiltros={limpiarFiltros}
       />
 

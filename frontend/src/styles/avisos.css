@@ -374,7 +374,7 @@
   display: block;
 }
 
-.modal-overlay {
+.modal-overlay-avisos {
   position: fixed;
   top: 0;
   left: 0;
@@ -391,12 +391,12 @@
   transition: all var(--motion-fast)-out;
 }
 
-.modal-overlay.active {
+.modal-overlay-avisos.active {
   opacity: 1;
   visibility: visible;
 }
 
-.modal-card {
+.avisos-modal-card {
   background: var(--color-bg-surface);
   width: 90%;
   max-width: 400px;
@@ -409,11 +409,11 @@
   border: 1px solid #e5e7eb;
 }
 
-.modal-overlay.active .modal-card {
+.modal-overlay-avisos.active .avisos-modal-card {
   transform: translateY(0) scale(1);
 }
 
-.modal-header {
+.avisos-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -421,14 +421,14 @@
   border-bottom: 1px solid #f3f4f6;
 }
 
-.modal-header h3 {
+.avisos-modal-header h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
 }
 
-.modal-close {
+.avisos-modal-close {
   background: transparent;
   border: none;
   color: #9ca3af;
@@ -438,23 +438,23 @@
   border-radius: 4px;
 }
 
-.modal-close:hover {
+.avisos-modal-close:hover {
   background: #f3f4f6;
   color: #374151;
 }
 
-.modal-body {
+.avisos-modal-body {
   padding: 20px;
 }
 
-.modal-texto {
+.avisos-modal-texto {
   margin: 0 0 20px 0;
   color: #4b5563;
   font-size: 14px;
   line-height: 1.5;
 }
 
-.input-grupo label {
+.avisos-input-grupo label {
   display: block;
   font-size: 12px;
   font-weight: 500;
@@ -462,7 +462,7 @@
   margin-bottom: 6px;
 }
 
-.input-wrapper {
+.avisos-input-wrapper {
   display: flex;
   align-items: center;
   border: 1px solid #d1d5db;
@@ -470,7 +470,7 @@
   overflow: hidden;
 }
 
-.input-wrapper input {
+.avisos-input-wrapper input {
   flex: 1;
   border: none;
   text-align: center;
@@ -482,8 +482,8 @@
   -moz-appearance: textfield;
 }
 
-.input-wrapper input::-webkit-outer-spin-button,
-.input-wrapper input::-webkit-inner-spin-button {
+.avisos-input-wrapper input::-webkit-outer-spin-button,
+.avisos-input-wrapper input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
@@ -514,14 +514,14 @@
   color: #111827;
 }
 
-.modal-hint {
+.avisos-modal-hint {
   display: block;
   margin-top: 6px;
   font-size: 11px;
   color: #6b7280;
 }
 
-.modal-footer {
+.avisos-modal-footer {
   padding: 16px 20px;
   background: #f9fafb;
   border-top: 1px solid #f3f4f6;
@@ -532,7 +532,7 @@
   border-bottom-right-radius: 12px;
 }
 
-.btn-modal {
+.avisos-btn-modal {
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 13px;
@@ -542,17 +542,17 @@
   transition: all 0.15s ease;
 }
 
-.btn-cancelar {
+.avisos-btn-cancelar {
   background: var(--color-bg-surface);
   border-color: #d1d5db;
   color: #374151;
 }
 
-.btn-cancelar:hover {
+.avisos-btn-cancelar:hover {
   background: #f3f4f6;
 }
 
-.btn-confirmar {
+.avisos-btn-confirmar {
   background: #111827;
   color: var(--color-bg-surface);
   display: flex;
@@ -560,36 +560,36 @@
   gap: 8px;
 }
 
-.btn-confirmar:disabled {
+.avisos-btn-confirmar:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.modo-danger .btn-confirmar {
+.modo-danger .avisos-btn-confirmar {
   background: #dc2626;
 }
 
-.modo-danger .btn-confirmar:hover {
+.modo-danger .avisos-btn-confirmar:hover {
   background: #b91c1c;
 }
 
-.modo-success .btn-confirmar {
+.modo-success .avisos-btn-confirmar {
   background: #2563eb;
 }
 
-.modo-success .btn-confirmar:hover {
+.modo-success .avisos-btn-confirmar:hover {
   background: #1d4ed8;
 }
 
-.btn-loader {
+.avisos-btn-loader {
   display: none;
 }
 
-.btn-confirmar.loading .btn-loader {
+.avisos-btn-confirmar.loading .avisos-btn-loader {
   display: inline-block;
 }
 
-.btn-confirmar.loading .btn-texto {
+.avisos-btn-confirmar.loading .avisos-btn-texto {
   display: none;
 }
 

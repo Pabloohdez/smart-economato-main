@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
+import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 
@@ -111,9 +112,14 @@ export default function BajasPage() {
 
   const [confirmando, setConfirmando] = useState(false);
 
-  // Obtener usuario activo para auditoría
+  // Obtener usuario activo para auditoría (sin romper la página si el JSON está corrupto)
   const userRaw = localStorage.getItem("usuarioActivo");
-  const user = userRaw ? JSON.parse(userRaw) : null;
+  let user: any = null;
+  try {
+    user = userRaw ? JSON.parse(userRaw) : null;
+  } catch {
+    user = null;
+  }
 
   async function cargarDatos() {
     setLoadingDatos(true);
@@ -256,6 +262,18 @@ export default function BajasPage() {
   function buscarProductos() {
     // en el JS antiguo buscaba también sin mínimo, aquí lo dejamos simple:
     setResultadosOpen(true);
+  }
+
+  async function escanearCodigoBarras() {
+    const code = await scanBarcodeFromCamera();
+    if (!code) {
+      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
+      return;
+    }
+    setQ(code);
+    setModoCaducados(false);
+    setResultadosOpen(true);
+    showNotification(`Codigo leido: ${code}`, "success");
   }
 
   function mostrarProductosCaducados() {
@@ -543,6 +561,17 @@ export default function BajasPage() {
             >
               <i className="fa-solid fa-search" /> Buscar
             </button>
+
+            <button
+              id="btnEscanearBaja"
+              className="btn-scan-baja"
+              type="button"
+              onClick={escanearCodigoBarras}
+              aria-label="Escanear codigo de barras"
+              title="Escanear codigo"
+            >
+              <i className="fa-solid fa-camera" />
+            </button>
           </div>
 
           <div className="filtros-baja">
@@ -591,19 +620,12 @@ export default function BajasPage() {
               const cad = modoCaducados ? badgeCaducidad(p.fechaCaducidad) : null;
 
               return (
-                <div
+                <button
                   key={String(p.id)}
+                  type="button"
                   className="item-resultado-baja"
-                  role="button"
-                  tabIndex={0}
                   aria-label={`Seleccionar ${p.nombre}`}
                   onClick={() => seleccionarProducto(p)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      seleccionarProducto(p);
-                    }
-                  }}
                 >
                   <div className="info-producto-baja">
                     <div className="nombre-producto-baja">{p.nombre}</div>
@@ -612,7 +634,7 @@ export default function BajasPage() {
                       {cad ? <span className={cad.className}>{cad.text}</span> : null}
                     </div>
                   </div>
-                </div>
+                </button>
               );
             })
           )}
@@ -882,7 +904,7 @@ export default function BajasPage() {
       </div>
 
       {/* MODAL */}
-      <div id="modalDetalleBaja" className={`modal-overlay ${modalOpen ? "" : "oculto"}`}>
+      <div id="modalDetalleBaja" className={`modal-overlay-baja ${modalOpen ? "" : "oculto"}`}>
         <div className="modal-contenido-baja" role="dialog" aria-modal="true" aria-label="Detalles de la baja">
           <h3>
             <i className="fa-solid fa-circle-minus" />
@@ -912,29 +934,51 @@ export default function BajasPage() {
 
             <div className="modal-campo">
               <label htmlFor="modalInputCantidadBaja">Cantidad:</label>
-              <input
-                type="number"
-                id="modalInputCantidadBaja"
-                className="modal-input-cantidad-baja"
-                min={1}
-                max={productoSeleccionado?.stock ?? 1}
-                value={modalCantidad}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  const max = Number(productoSeleccionado?.stock ?? 1);
+              <div className="bajas-stepper">
+                <button
+                  type="button"
+                  className="bajas-stepper-btn"
+                  aria-label="Reducir cantidad"
+                  onClick={() => setModalCantidad((prev) => Math.max(1, Number(prev || 1) - 1))}
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  id="modalInputCantidadBaja"
+                  className="modal-input-cantidad-baja"
+                  min={1}
+                  max={productoSeleccionado?.stock ?? 1}
+                  value={modalCantidad}
+                  inputMode="numeric"
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    const max = Number(productoSeleccionado?.stock ?? 1);
 
-                  if (v > max) {
-                    setModalCantidad(max);
-                    showNotification(`La cantidad no puede superar el stock disponible (${max})`, "warning");
-                    return;
-                  }
-                  if (v < 1) {
-                    setModalCantidad(1);
-                    return;
-                  }
-                  setModalCantidad(v);
-                }}
-              />
+                    if (v > max) {
+                      setModalCantidad(max);
+                      showNotification(`La cantidad no puede superar el stock disponible (${max})`, "warning");
+                      return;
+                    }
+                    if (v < 1) {
+                      setModalCantidad(1);
+                      return;
+                    }
+                    setModalCantidad(v);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="bajas-stepper-btn"
+                  aria-label="Aumentar cantidad"
+                  onClick={() => {
+                    const max = Number(productoSeleccionado?.stock ?? 1);
+                    setModalCantidad((prev) => Math.min(max, Number(prev || 1) + 1));
+                  }}
+                >
+                  +
+                </button>
+              </div>
               <small id="modalStockDisponible" className="stock-disponible-info">
                 Stock disponible: {productoSeleccionado?.stock ?? 0} unidades
               </small>

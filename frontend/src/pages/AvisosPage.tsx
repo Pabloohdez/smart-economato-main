@@ -523,19 +523,19 @@ export default function AvisosPage() {
         </div>
       </section>
 
-      <div className={`modal-overlay ${modalOpen ? "active" : ""}`}>
-        <div className={`modal-card ${accionActual === "baja" ? "modo-danger" : "modo-success"}`}>
-          <div className="modal-header">
+      <div className={`modal-overlay-avisos ${modalOpen ? "active" : ""}`}>
+        <div className={`avisos-modal-card ${accionActual === "baja" ? "modo-danger" : "modo-success"}`}>
+          <div className="avisos-modal-header">
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
             </h3>
-            <button type="button" className="modal-close" onClick={cerrarModal}>
+            <button type="button" className="avisos-modal-close" onClick={cerrarModal}>
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
 
-          <div className="modal-body">
-            <p className="modal-texto">
+          <div className="avisos-modal-body">
+            <p className="avisos-modal-texto">
               {accionActual === "baja" && productoSeleccionado && (
                 <>
                   Vas a dar de baja <strong>{productoSeleccionado.nombre}</strong> por caducidad.
@@ -553,9 +553,9 @@ export default function AvisosPage() {
               )}
             </p>
 
-            <div className="input-grupo">
+            <div className="avisos-input-grupo">
               <label htmlFor="modal-cantidad">Cantidad</label>
-              <div className="input-wrapper">
+              <div className="avisos-input-wrapper">
                 <button
                   type="button"
                   className="btn-cantidad"
@@ -588,7 +588,7 @@ export default function AvisosPage() {
                 </button>
               </div>
 
-              <span className="modal-hint">
+              <span className="avisos-modal-hint">
                 {accionActual === "baja" && productoSeleccionado
                   ? `Stock actual: ${productoSeleccionado.stockNum} unidades`
                   : accionActual === "pedido" && productoSeleccionado
@@ -598,19 +598,19 @@ export default function AvisosPage() {
             </div>
           </div>
 
-          <div className="modal-footer">
-            <button type="button" className="btn-modal btn-cancelar" onClick={cerrarModal}>
+          <div className="avisos-modal-footer">
+            <button type="button" className="avisos-btn-modal avisos-btn-cancelar" onClick={cerrarModal}>
               Cancelar
             </button>
 
             <button
               type="button"
-              className={`btn-modal btn-confirmar ${confirmando ? "loading" : ""}`}
+              className={`avisos-btn-modal avisos-btn-confirmar ${confirmando ? "loading" : ""}`}
               onClick={confirmarAccion}
               disabled={confirmando}
             >
-              <span className="btn-texto">Confirmar</span>
-              <span className="btn-loader">
+              <span className="avisos-btn-texto">Confirmar</span>
+              <span className="avisos-btn-loader">
                 <i className="fa-solid fa-circle-notch fa-spin"></i>
               </span>
             </button>
