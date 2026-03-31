@@ -15,8 +15,26 @@ export class AuthService {
   private readonly jwtSecret: string;
   private readonly expiresIn: SignOptions['expiresIn'];
 
+  private static readonly INSECURE_DEFAULTS = [
+    'cambia_esto_por_un_secreto_largo_y_aleatorio',
+    'changeme',
+    'secret',
+    'jwt_secret',
+  ];
+
   constructor() {
-    this.jwtSecret = this.requiredEnv('JWT_SECRET');
+    const secret = this.requiredEnv('JWT_SECRET');
+    if (secret.length < 32) {
+      throw new Error(
+        'JWT_SECRET demasiado corto (mínimo 32 caracteres). Genera uno seguro con: node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"',
+      );
+    }
+    if (AuthService.INSECURE_DEFAULTS.includes(secret.toLowerCase())) {
+      throw new Error(
+        'JWT_SECRET tiene un valor por defecto inseguro. Cámbialo por un secreto único y aleatorio.',
+      );
+    }
+    this.jwtSecret = secret;
     this.expiresIn = (process.env.JWT_EXPIRES_IN || '8h') as SignOptions['expiresIn'];
   }
 

@@ -43,29 +43,34 @@ export class MovimientosService {
     const motivo = body.motivo ?? 'Ajuste manual';
     const usuarioId = body.usuarioId ?? 'admin1';
 
-    const { rows: stockRow } = await this.db.query<{ stock: number }>(
-      'SELECT stock FROM productos WHERE id = $1',
-      [productoId],
-    );
-    if (stockRow.length === 0) throw new Error('Producto no encontrado');
-    const stockActual = Number(stockRow[0].stock);
-    const stockNuevo =
-      tipo === 'ENTRADA' ? stockActual + cantidad : stockActual - cantidad;
+    const result = await this.db.transaction(async (client) => {
+      const { rows: stockRow } = await client.query(
+        'SELECT stock FROM productos WHERE id = $1 FOR UPDATE',
+        [productoId],
+      );
+      if (stockRow.length === 0) throw new Error('Producto no encontrado');
+      const stockActual = Number(stockRow[0].stock);
+      const stockNuevo =
+        tipo === 'ENTRADA' ? stockActual + cantidad : stockActual - cantidad;
 
-    await this.db.query(
-      `INSERT INTO movimientos (producto_id, usuario_id, tipo, cantidad, stock_anterior, stock_nuevo, motivo)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [productoId, usuarioId, tipo, cantidad, stockActual, stockNuevo, motivo],
-    );
-    await this.db.query('UPDATE productos SET stock = $1 WHERE id = $2', [
-      stockNuevo,
-      productoId,
-    ]);
+      await client.query(
+        `INSERT INTO movimientos (producto_id, usuario_id, tipo, cantidad, stock_anterior, stock_nuevo, motivo)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [productoId, usuarioId, tipo, cantidad, stockActual, stockNuevo, motivo],
+      );
+      await client.query('UPDATE productos SET stock = $1 WHERE id = $2', [
+        stockNuevo,
+        productoId,
+      ]);
 
-    const { rows: prod } = await this.db.query<{ nombre: string }>(
-      'SELECT nombre FROM productos WHERE id = $1',
-      [productoId],
-    );
+      const { rows: prod } = await client.query(
+        'SELECT nombre FROM productos WHERE id = $1',
+        [productoId],
+      );
+
+      return { stockActual, stockNuevo, productoNombre: prod[0]?.nombre };
+    });
+
     await this.auditoria.registrar(
       usuarioId,
       null,
@@ -74,15 +79,15 @@ export class MovimientosService {
       null,
       {
         tipo,
-        producto: prod[0]?.nombre,
+        producto: result.productoNombre,
         cantidad,
         motivo,
-        stock_anterior: stockActual,
-        stock_nuevo: stockNuevo,
+        stock_anterior: result.stockActual,
+        stock_nuevo: result.stockNuevo,
       },
       ip,
     );
 
-    return { message: 'Movimiento registrado', stock_nuevo: stockNuevo };
+    return { message: 'Movimiento registrado', stock_nuevo: result.stockNuevo };
   }
 }

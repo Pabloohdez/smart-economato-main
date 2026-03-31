@@ -53,24 +53,28 @@ export class BajasService {
     const usuarioId = body.usuarioId ?? 'admin1';
     const fechaBaja = body.fechaBaja ?? new Date().toISOString();
 
-    const { rows: prod } = await this.db.query<{ stock: number; precio: number; nombre: string }>(
-      'SELECT stock, precio, nombre FROM productos WHERE id = $1',
-      [productoId],
-    );
-    if (prod.length === 0) throw new Error('Producto no encontrado');
-    const stockActual = Number(prod[0].stock);
-    if (stockActual < cantidad) {
-      throw new Error(`Stock insuficiente (disponible: ${stockActual}, solicitado: ${cantidad})`);
-    }
-    const nuevoStock = stockActual - cantidad;
-    const bajaId = randomBytes(4).toString('hex');
+    const result = await this.db.transaction(async (client) => {
+      const { rows: prod } = await client.query(
+        'SELECT stock, precio, nombre FROM productos WHERE id = $1 FOR UPDATE',
+        [productoId],
+      );
+      if (prod.length === 0) throw new Error('Producto no encontrado');
+      const stockActual = Number(prod[0].stock);
+      if (stockActual < cantidad) {
+        throw new Error(`Stock insuficiente (disponible: ${stockActual}, solicitado: ${cantidad})`);
+      }
+      const nuevoStock = stockActual - cantidad;
+      const bajaId = randomBytes(4).toString('hex');
 
-    await this.db.query(
-      `INSERT INTO bajas (id, producto_id, usuario_id, tipo_baja, cantidad, motivo, fecha_baja)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [bajaId, productoId, usuarioId, tipoBaja, cantidad, motivo, fechaBaja],
-    );
-    await this.db.query('UPDATE productos SET stock = $1 WHERE id = $2', [nuevoStock, productoId]);
+      await client.query(
+        `INSERT INTO bajas (id, producto_id, usuario_id, tipo_baja, cantidad, motivo, fecha_baja)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [bajaId, productoId, usuarioId, tipoBaja, cantidad, motivo, fechaBaja],
+      );
+      await client.query('UPDATE productos SET stock = $1 WHERE id = $2', [nuevoStock, productoId]);
+
+      return { bajaId, nuevoStock, productoNombre: prod[0].nombre };
+    });
 
     await this.auditoria.registrar(
       usuarioId,
@@ -80,13 +84,13 @@ export class BajasService {
       null,
       {
         tipo: tipoBaja,
-        producto: prod[0].nombre,
+        producto: result.productoNombre,
         cantidad,
         motivo,
       },
       ip,
     );
 
-    return { id: bajaId, stockNuevo: nuevoStock, message: 'Baja registrada correctamente' };
+    return { id: result.bajaId, stockNuevo: result.nuevoStock, message: 'Baja registrada correctamente' };
   }
 }

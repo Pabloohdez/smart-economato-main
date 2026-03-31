@@ -246,7 +246,7 @@ export default function EscandallosPage() {
     const cantidad = Number.parseFloat(cantidadIngrediente);
 
     if (!prodId || Number.isNaN(cantidad) || cantidad <= 0) {
-      alert("Selecciona un producto y una cantidad válida.");
+      showNotification("Selecciona un producto y una cantidad válida.", "warning");
       return;
     }
 
@@ -290,7 +290,7 @@ export default function EscandallosPage() {
     e.preventDefault();
 
     if (ingredientesReceta.length === 0) {
-      alert("La receta debe tener al menos un ingrediente.");
+      showNotification("La receta debe tener al menos un ingrediente.", "warning");
       return;
     }
 
@@ -305,7 +305,7 @@ export default function EscandallosPage() {
     };
 
     if (!nuevoEscandallo.nombre) {
-      alert("El nombre del plato es obligatorio.");
+      showNotification("El nombre del plato es obligatorio.", "warning");
       return;
     }
 
@@ -320,7 +320,7 @@ export default function EscandallosPage() {
 
     cerrarModal();
     limpiarFormulario();
-    alert("Receta guardada correctamente (Local).");
+    showNotification("Receta guardada correctamente.", "success");
   }
 
   async function eliminarEscandallo(id: number) {

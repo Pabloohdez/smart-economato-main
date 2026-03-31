@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { showAlert, showNotification } from "../utils/notifications";
 import "../styles/configuracion.css";
 
 type UsuarioActivo = {
@@ -283,10 +284,12 @@ export default function ConfiguracionPage() {
 
     if (alergiasSeleccionadas.length > 0) {
       window.setTimeout(() => {
-        alert(
-          `⚠️ IMPORTANTE\n\nHas registrado ${alergiasSeleccionadas.length} alergia(s):\n${alergiasSeleccionadas.join(
+        showAlert(
+          `Has registrado ${alergiasSeleccionadas.length} alergia(s): ${alergiasSeleccionadas.join(
             ", ",
-          )}\n\nRecibirás alertas automáticas cuando busques o intentes distribuir productos que contengan estos alérgenos.`,
+          )}. Recibirás alertas automáticas cuando busques o intentes distribuir productos que contengan estos alérgenos.`,
+          "warning",
+          "Importante",
         );
       }, 500);
     }
@@ -572,8 +575,10 @@ export default function ConfiguracionPage() {
                     onChange={(e) => {
                       setAlertasProductos(e.target.checked);
                       if (e.target.checked) {
-                        alert(
-                          "⚠️ HAS ACTIVADO LAS ALERTAS DE ALÉRGENOS\n\nEl sistema te avisará automáticamente cuando intentes distribuir un producto que contenga tus alérgenos registrados.",
+                        showAlert(
+                          "Has activado las alertas de alérgenos. El sistema te avisará automáticamente cuando intentes distribuir un producto que contenga tus alérgenos registrados.",
+                          "warning",
+                          "Alertas de Alérgenos Activadas",
                         );
                       }
                     }}
