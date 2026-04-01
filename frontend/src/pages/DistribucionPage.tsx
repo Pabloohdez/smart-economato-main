@@ -12,28 +12,13 @@ import {
   verificarPreferencias,
 } from "../utils/alergenosUtils";
 import { apiFetch } from "../services/apiClient";
-
-type Producto = {
-  id: number | string;
-  nombre: string;
-  stock: number;
-  codigoBarras?: string;
-  alergenos?: string[];
-};
+import type { Producto, Movimiento } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 type CarritoItem = {
   productoId: number | string;
   nombre: string;
   cantidad: number;
-};
-
-type Movimiento = {
-  fecha: string;
-  tipo: string;
-  producto_nombre?: string;
-  cantidad: number;
-  motivo?: string;
-  usuario_nombre?: string;
 };
 
 function formatFechaHora(iso: string) {
@@ -57,8 +42,7 @@ export default function DistribucionPage() {
   const pref = verificarPreferencias();
 
   // Obtener usuario activo para auditoría de movimientos
-  const userRaw = localStorage.getItem("usuarioActivo");
-  const user = userRaw ? JSON.parse(userRaw) : null;
+  const { user } = useAuth();
 
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosBase, setProductosBase] = useState<Producto[]>([]);

@@ -12,6 +12,7 @@ import {
 import "../styles/avisos.css";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
+import { useAuth } from "../contexts/AuthContext";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -52,8 +53,7 @@ export default function AvisosPage() {
   const [toastTipo, setToastTipo] = useState<"success" | "error">("success");
 
   // Obtener usuario activo
-  const userRaw = localStorage.getItem("usuarioActivo");
-  const user = userRaw ? JSON.parse(userRaw) : null;
+  const { user } = useAuth();
 
   useEffect(() => {
     void cargarDatos();

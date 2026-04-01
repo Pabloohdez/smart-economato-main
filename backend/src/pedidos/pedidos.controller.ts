@@ -1,15 +1,21 @@
-import { Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { PedidosService } from './pedidos.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/auth.types';
+import { CreatePedidoDto, UpdatePedidoDto } from './dto/pedido.dto';
 
 @Controller('pedidos')
 export class PedidosController {
   constructor(private readonly pedidosService: PedidosService) {}
 
   @Get()
-  async listar() {
-    return this.pedidosService.findAll();
+  async listar(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = page ? parseInt(page, 10) : undefined;
+    const l = limit ? parseInt(limit, 10) : undefined;
+    return this.pedidosService.findAll(p, l);
   }
 
   @Get(':id')
@@ -22,28 +28,17 @@ export class PedidosController {
   }
 
   @Post()
-  async crear(@Body() body: Record<string, unknown>, @Req() req: AuthenticatedRequest) {
-    if (!body?.proveedorId) {
-      throw new HttpException('Falta proveedor', HttpStatus.BAD_REQUEST);
-    }
+  async crear(@Body() body: CreatePedidoDto, @Req() req: AuthenticatedRequest) {
     return this.pedidosService.crear({
-      proveedorId: Number(body.proveedorId),
-      total: Number(body.total ?? 0),
+      proveedorId: body.proveedorId,
+      total: body.total ?? 0,
       usuarioId: req.user?.sub,
-      items: body.items as Array<{ producto_id: string; cantidad: number; precio: number }> | undefined,
+      items: body.items,
     });
   }
 
   @Put(':id')
-  async actualizar(
-    @Param('id') id: string,
-    @Body()
-    body: {
-      accion?: string;
-      estado?: string;
-      items?: Array<{ detalle_id: number; cantidad_recibida: number }>;
-    },
-  ) {
+  async actualizar(@Param('id') id: string, @Body() body: UpdatePedidoDto) {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) throw new HttpException('Falta ID', HttpStatus.BAD_REQUEST);
     return this.pedidosService.actualizar(numId, body);

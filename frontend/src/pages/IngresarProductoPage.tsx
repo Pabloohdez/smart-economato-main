@@ -7,17 +7,8 @@ import Button from "../components/ui/Button";
 import { showConfirm } from "../utils/notifications";
 
 // Ajusta esta línea si en tu proyecto real estos métodos están en otro service
-import { getCategorias, getProveedores, crearProducto } from "../services/productosService";
-
-type Categoria = {
-  id: number | string;
-  nombre: string;
-};
-
-type Proveedor = {
-  id: number | string;
-  nombre: string;
-};
+import { getCategorias, getProveedores, crearProductosBatch } from "../services/productosService";
+import type { Categoria, Proveedor } from "../types";
 
 type ProductoTemporal = {
   nombre: string;
@@ -188,12 +179,7 @@ export default function IngresarProductoPage() {
       setMensajeEstado("Procesando...");
       setMensajeTipo("info");
 
-      let guardados = 0;
-      let errores = 0;
-
-      for (const producto of listaTemporal) {
-        try {
-          const productoLimpio = {
+      const productosLimpios = listaTemporal.map((producto) => ({
             nombre: producto.nombre,
             precio: producto.precio,
             precioUnitario: producto.precioUnitario,
@@ -209,23 +195,17 @@ export default function IngresarProductoPage() {
             descripcion: producto.descripcion,
             imagen: producto.imagen,
             activo: producto.activo,
-          };
+      }));
 
-          await crearProducto(productoLimpio);
-          guardados++;
-        } catch (error) {
-          console.error(`Error guardando ${producto.nombre}:`, error);
-          errores++;
-        }
-      }
-
-      if (errores === 0) {
-        setMensajeEstado(`¡Éxito! Se guardaron ${guardados} productos correctamente.`);
+      try {
+        await crearProductosBatch(productosLimpios);
+        setMensajeEstado(`¡Éxito! Se guardaron ${productosLimpios.length} productos correctamente.`);
         setMensajeTipo("ok");
         setListaTemporal([]);
-      } else {
-        setMensajeEstado(`Se guardaron ${guardados}, pero fallaron ${errores}.`);
-        setMensajeTipo("warn");
+      } catch (error) {
+        console.error("Error guardando productos en lote:", error);
+        setMensajeEstado("Error al guardar los productos. Inténtalo de nuevo.");
+        setMensajeTipo("error");
       }
     } finally {
       setGuardando(false);

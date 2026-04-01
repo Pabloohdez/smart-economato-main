@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ProductosService } from './productos.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
@@ -11,14 +11,31 @@ export class ProductosController {
 
   @Public()
   @Get()
-  async listar() {
-    return this.productosService.findAll();
+  async listar(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = page ? parseInt(page, 10) : undefined;
+    const l = limit ? parseInt(limit, 10) : undefined;
+    return this.productosService.findAll(p, l);
   }
 
   @Roles('admin')
   @Post()
   async crear(@Body() body: CreateProductoDto) {
     return this.productosService.crear(body as any);
+  }
+
+  @Roles('admin')
+  @Post('batch')
+  async crearBatch(@Body() body: CreateProductoDto[]) {
+    if (!Array.isArray(body) || body.length === 0) {
+      throw new HttpException('Se requiere un array de productos', HttpStatus.BAD_REQUEST);
+    }
+    if (body.length > 100) {
+      throw new HttpException('Máximo 100 productos por lote', HttpStatus.BAD_REQUEST);
+    }
+    return this.productosService.crearBatch(body as any[]);
   }
 
   @Roles('admin')

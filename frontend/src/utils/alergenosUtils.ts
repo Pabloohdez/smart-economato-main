@@ -1,16 +1,12 @@
 // frontend/src/utils/alergenosUtils.ts
 import { showConfirm } from "./notifications";
+import type { UsuarioActivo } from "../types";
 
 type Prefs = {
   alertas: boolean;
   bloqueo: boolean;
   nuevos?: boolean;
   filtrado?: boolean;
-};
-
-type UsuarioActivo = {
-  id: number | string;
-  nombre?: string;
 };
 
 type Producto = {

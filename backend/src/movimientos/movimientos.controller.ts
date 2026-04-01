@@ -1,29 +1,31 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { MovimientosService } from './movimientos.service';
-import { HttpException, HttpStatus } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/auth.types';
+import { CreateMovimientoDto } from './dto/create-movimiento.dto';
 
 @Controller('movimientos')
 export class MovimientosController {
   constructor(private readonly movimientosService: MovimientosService) {}
 
   @Get()
-  async listar() {
-    return this.movimientosService.findAll();
+  async listar(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = page ? parseInt(page, 10) : undefined;
+    const l = limit ? parseInt(limit, 10) : undefined;
+    return this.movimientosService.findAll(p, l);
   }
 
   @Post()
-  async crear(@Body() body: Record<string, unknown>, @Req() req: AuthenticatedRequest) {
-    if (!body?.productoId || body?.cantidad == null) {
-      throw new HttpException('Faltan datos (productoId o cantidad)', HttpStatus.BAD_REQUEST);
-    }
+  async crear(@Body() body: CreateMovimientoDto, @Req() req: AuthenticatedRequest) {
     const ip = req.socket?.remoteAddress;
     return this.movimientosService.crear(
       {
-        productoId: String(body.productoId),
-        cantidad: Number(body.cantidad),
-        tipo: String(body.tipo ?? 'ENTRADA'),
-        motivo: body.motivo as string | undefined,
+        productoId: body.productoId,
+        cantidad: body.cantidad,
+        tipo: body.tipo ?? 'ENTRADA',
+        motivo: body.motivo,
         usuarioId: req.user?.sub,
       },
       ip,

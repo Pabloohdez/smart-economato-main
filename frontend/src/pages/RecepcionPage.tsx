@@ -4,35 +4,8 @@ import "../styles/recepcion.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
-
-type Producto = {
-  id: number | string;
-  nombre: string;
-  stock: number;
-  precio: number;
-  proveedorId?: number | string;
-  categoriaId?: number | string;
-};
-
-type Categoria = { id: number | string; nombre: string };
-type Proveedor = { id: number | string; nombre: string };
-
-type PedidoItem = {
-  id: number | string; // id del detalle
-  producto_id: number | string;
-  producto_nombre: string;
-  cantidad: number;
-  cantidad_recibida?: number;
-  precio_unitario?: number;
-};
-
-type Pedido = {
-  id: number | string;
-  proveedor_nombre: string;
-  estado: "PENDIENTE" | "INCOMPLETO" | "COMPLETADO" | string;
-  total: number | string;
-  items: PedidoItem[];
-};
+import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -93,13 +66,7 @@ export default function Recepcion() {
   const drawerPedidosTimerRef = useRef<number | null>(null);
 
   // Obtener usuario activo para auditoría
-  const userRaw = localStorage.getItem("usuarioActivo");
-  let user: any = null;
-  try {
-    user = userRaw ? JSON.parse(userRaw) : null;
-  } catch {
-    user = null;
-  }
+  const { user } = useAuth();
   const usuarioLogueadoId = user?.id || 1;
 
   async function cargarDatos() {

@@ -2,9 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getCategorias,
   getProductos,
-  type Categoria,
-  type Producto,
 } from "../services/productosService";
+import type { Categoria, Producto } from "../types";
 import "../styles/rendimiento.css";
 import "../components/ui/ui.css";
 import { apiFetch } from "../services/apiClient";

@@ -5,6 +5,8 @@ import "../styles/auditoria.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
+import type { UsuarioActivo } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -24,16 +26,8 @@ type FiltrosAuditoria = {
   fechaHasta: string;
 };
 
-type UsuarioActivo = {
-  id?: string | number;
-  nombre?: string;
-  rol?: string;
-  role?: string;
-  usuario?: string;
-  username?: string;
-};
-
 export default function AuditoriaPage() {
+  const { user: authUser } = useAuth();
   const gridRef = useRef<HTMLDivElement | null>(null);
   const gridInstance = useRef<Grid | null>(null);
 
@@ -59,8 +53,7 @@ export default function AuditoriaPage() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    const usuario = obtenerUsuarioActual();
-    if (!esAdmin(usuario)) {
+    if (!esAdmin(authUser)) {
       setAccesoDenegado(true);
       setLoading(false);
       return;
@@ -706,16 +699,6 @@ function obtenerIconoAccion(accion: string) {
 
 function capitalizar(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-}
-
-function obtenerUsuarioActual(): UsuarioActivo | null {
-  const userStr = localStorage.getItem("usuarioActivo");
-  if (!userStr) return null;
-  try {
-    return JSON.parse(userStr);
-  } catch {
-    return null;
-  }
 }
 
 function obtenerUsuarioId(usuario: UsuarioActivo | null) {

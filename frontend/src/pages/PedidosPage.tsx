@@ -8,31 +8,7 @@ import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
 import { showConfirm, showNotification } from "../utils/notifications";
-
-type Proveedor = {
-  id: number | string;
-  nombre: string;
-};
-
-type Producto = {
-  id: number | string;
-  nombre: string;
-  precio: number;
-  stock: number;
-  stockMinimo?: number | null;
-  fechaCaducidad?: string | null;
-  categoriaId?: number | null;
-  proveedorId?: number | null;
-  categoria?: { id: number | string; nombre: string } | null;
-  proveedor?: { id: number | string; nombre: string } | null;
-};
-
-type PedidoHistorial = {
-  id: number | string;
-  proveedor_nombre: string;
-  estado: string;
-  total: number | string;
-};
+import type { Proveedor, Producto, PedidoHistorial } from "../types";
 
 type ItemPedido = {
   producto_id: number | string;

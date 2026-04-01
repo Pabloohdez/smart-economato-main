@@ -4,37 +4,14 @@ import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
-
-type Categoria = {
-  id: string | number;
-  nombre: string;
-};
-
-type Producto = {
-  id: string | number;
-  nombre: string;
-  codigoBarras?: string;
-  stock: number;
-  precio: number;
-  categoriaId?: string | number;
-  fechaCaducidad?: string | null;
-};
+import type { Producto, Categoria, BajaHistorialItem } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 type ProductoBaja = Producto & {
   tipoBaja: "Rotura" | "Caducado" | "Merma" | "Ajuste" | "Otro";
   cantidadBaja: number;
   valorPerdido: number;
   nombreCategoria: string;
-};
-
-type BajaHistorialItem = {
-  fechaBaja: string;
-  tipoBaja: string;
-  cantidad: number | string;
-  motivo?: string;
-  usuario_nombre?: string;
-  producto_nombre?: string;
-  producto_precio?: string | number;
 };
 
 function formatFechaLargaES(d: Date) {
@@ -112,14 +89,8 @@ export default function BajasPage() {
 
   const [confirmando, setConfirmando] = useState(false);
 
-  // Obtener usuario activo para auditoría (sin romper la página si el JSON está corrupto)
-  const userRaw = localStorage.getItem("usuarioActivo");
-  let user: any = null;
-  try {
-    user = userRaw ? JSON.parse(userRaw) : null;
-  } catch {
-    user = null;
-  }
+  // Obtener usuario activo para auditoría
+  const { user } = useAuth();
 
   async function cargarDatos() {
     setLoadingDatos(true);

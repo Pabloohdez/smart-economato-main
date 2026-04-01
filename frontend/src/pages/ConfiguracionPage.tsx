@@ -1,19 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { showAlert, showNotification } from "../utils/notifications";
 import "../styles/configuracion.css";
-
-type UsuarioActivo = {
-  id?: number | string;
-  nombre?: string;
-  apellidos?: string;
-  usuario?: string;
-  username?: string;
-  email?: string;
-  telefono?: string;
-  rol?: string;
-  role?: string;
-  alergias?: string[];
-};
+import type { UsuarioActivo } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -160,6 +149,7 @@ const ALERGENOS_DISPONIBLES = [
 ] as const;
 
 export default function ConfiguracionPage() {
+  const { user: authUser, updateUser } = useAuth();
   const [tabActiva, setTabActiva] = useState<TabKey>("perfil");
   const [usuarioActual, setUsuarioActual] = useState<UsuarioActivo | null>(
     null,
@@ -190,13 +180,12 @@ export default function ConfiguracionPage() {
   }, []);
 
   function cargarDatosUsuario() {
-    const userStr = localStorage.getItem("usuarioActivo");
-    if (!userStr) {
+    if (!authUser) {
       mostrarMensaje("No se encontró información del usuario", "red");
       return;
     }
 
-    const user: UsuarioActivo = JSON.parse(userStr);
+    const user = authUser;
     setUsuarioActual(user);
 
     setNombreCompleto(`${user.nombre || ""} ${user.apellidos || ""}`.trim());
@@ -244,6 +233,7 @@ export default function ConfiguracionPage() {
     };
 
     localStorage.setItem("usuarioActivo", JSON.stringify(actualizado));
+    updateUser(actualizado);
     setUsuarioActual(actualizado);
     mostrarMensaje("✅ Perfil actualizado correctamente", "green");
   }
@@ -274,7 +264,7 @@ export default function ConfiguracionPage() {
       alergias: alergiasSeleccionadas,
     };
 
-    localStorage.setItem("usuarioActivo", JSON.stringify(actualizado));
+    updateUser(actualizado);
     setUsuarioActual(actualizado);
 
     mostrarMensaje(

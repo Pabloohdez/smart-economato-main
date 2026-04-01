@@ -1,13 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
-
-type PedidoHistorial = {
-  id: number | string;
-  proveedor_nombre: string;
-  estado: string;
-  total: number | string;
-};
+import type { PedidoHistorial } from "../../types";
 
 type Props = {
   pedidos: PedidoHistorial[];

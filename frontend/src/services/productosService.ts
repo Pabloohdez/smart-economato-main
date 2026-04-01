@@ -1,22 +1,7 @@
 import { apiFetch } from "./apiClient";
 
-export type Categoria = { id: number | string; nombre: string };
-export type Proveedor = { id: number | string; nombre: string };
-
-export type Producto = {
-  id: string;
-  nombre: string;
-  precio: number;
-  stock: number;
-  stockMinimo?: number | null;
-  fechaCaducidad?: string | null;
-
-  categoriaId?: number | null;
-  proveedorId?: number | null;
-
-  categoria?: Categoria | null;
-  proveedor?: Proveedor | null;
-};
+export type { Categoria, Proveedor, Producto } from "../types";
+import type { Categoria, Proveedor, Producto } from "../types";
 
 export type CrearProductoPayload = {
   nombre: string;
@@ -77,6 +62,14 @@ export async function crearProducto(payload: CrearProductoPayload): Promise<unkn
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
+  });
+}
+
+export async function crearProductosBatch(items: CrearProductoPayload[]): Promise<unknown> {
+  return apiFetch("/productos/batch", {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: JSON.stringify(items),
   });
 }
 

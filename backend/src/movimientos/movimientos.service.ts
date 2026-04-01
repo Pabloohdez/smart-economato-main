@@ -11,7 +11,9 @@ export class MovimientosService {
     private readonly auditoria: AuditoriaService,
   ) {}
 
-  async findAll() {
+  async findAll(page?: number, limit?: number) {
+    const safeLimit = limit && limit > 0 ? Math.min(limit, 200) : 50;
+    const offset = page && page > 1 ? (page - 1) * safeLimit : 0;
     const { rows } = await this.db.query(`
       SELECT m.id, m.fecha, m.tipo, m.cantidad, m.motivo,
              m.stock_anterior as "stockAnterior", m.stock_nuevo as "stockNuevo",
@@ -19,8 +21,8 @@ export class MovimientosService {
       FROM movimientos m
       LEFT JOIN productos p ON m.producto_id = p.id
       LEFT JOIN usuarios u ON m.usuario_id = u.id
-      ORDER BY m.fecha DESC LIMIT 50
-    `);
+      ORDER BY m.fecha DESC LIMIT $1 OFFSET $2
+    `, [safeLimit, offset]);
     return rows.map((r: Record<string, unknown>) => ({
       ...r,
       cantidad: Number(r.cantidad),

@@ -5,8 +5,9 @@ import { DatabaseService } from '../database/database.service';
 export class PedidosService {
   constructor(private readonly db: DatabaseService) {}
 
-  async findAll() {
-    const { rows } = await this.db.query(`
+  async findAll(page?: number, limit?: number) {
+    const safeLimit = limit && limit > 0 ? Math.min(limit, 200) : undefined;
+    let sql = `
       SELECT 
         p.*, 
         pr.nombre as proveedor_nombre, 
@@ -34,7 +35,14 @@ export class PedidosService {
       LEFT JOIN proveedores pr ON p.proveedor_id = pr.id
       LEFT JOIN usuarios u ON p.usuario_id = u.id
       ORDER BY p.fecha_creacion DESC
-    `);
+    `;
+    const params: unknown[] = [];
+    if (safeLimit) {
+      const offset = page && page > 1 ? (page - 1) * safeLimit : 0;
+      sql += ` LIMIT $1 OFFSET $2`;
+      params.push(safeLimit, offset);
+    }
+    const { rows } = await this.db.query(sql, params.length ? params : undefined);
     return rows.map((r: Record<string, any>) => ({
       ...r,
       proveedorId: r.proveedor_id,
