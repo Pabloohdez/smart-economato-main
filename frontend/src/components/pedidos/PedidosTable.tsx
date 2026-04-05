@@ -11,14 +11,12 @@ type Props = {
 export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<Grid | null>(null);
+  const onIrARecepcionRef = useRef(onIrARecepcion);
+
+  onIrARecepcionRef.current = onIrARecepcion;
 
   useEffect(() => {
-    if (!wrapperRef.current) return;
-
-    if (gridRef.current) {
-      gridRef.current.destroy();
-      gridRef.current = null;
-    }
+    if (!wrapperRef.current || gridRef.current) return;
 
     const grid = new Grid({
       columns: [
@@ -42,13 +40,7 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
           },
         },
       ],
-      data: pedidos.map((p) => [
-        p.id,
-        p.proveedor_nombre,
-        p.estado,
-        `${Number(p.total).toFixed(2)} €`,
-        null,
-      ]),
+      data: [],
       pagination: {
         limit: 5,
       },
@@ -78,7 +70,7 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
       const btn = target.closest(".btn-grid-recepcion") as HTMLButtonElement | null;
       if (!btn) return;
       const id = btn.dataset.id;
-      if (id) onIrARecepcion(id);
+      if (id) onIrARecepcionRef.current(id);
     };
 
     wrapperRef.current.addEventListener("click", handleClick);
@@ -90,7 +82,23 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
         gridRef.current = null;
       }
     };
-  }, [pedidos, onIrARecepcion]);
+  }, []);
+
+  useEffect(() => {
+    if (!gridRef.current) return;
+
+    gridRef.current
+      .updateConfig({
+        data: pedidos.map((p) => [
+          p.id,
+          p.proveedor_nombre,
+          p.estado,
+          `${Number(p.total).toFixed(2)} €`,
+          null,
+        ]),
+      })
+      .forceRender();
+  }, [pedidos]);
 
   return <div ref={wrapperRef} />;
 }

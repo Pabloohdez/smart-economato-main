@@ -1,6 +1,20 @@
 export type Categoria = { id: number | string; nombre: string };
 
-export type Proveedor = { id: number | string; nombre: string };
+export type Proveedor = {
+  id: number | string;
+  nombre: string;
+  contacto?: string;
+  telefono?: string;
+  email?: string;
+};
+
+export type AlergenoCatalogo = {
+  id?: number;
+  nombre: string;
+  icono?: string | null;
+  colorBg?: string | null;
+  colorTexto?: string | null;
+};
 
 export type Producto = {
   id: number | string;
@@ -77,4 +91,21 @@ export type UsuarioActivo = {
   rol?: string;
   role?: string;
   alergias?: string[];
+};
+
+export type EscandalloItem = {
+  producto_id: number | string;
+  nombre: string;
+  cantidad: number;
+  precio: number;
+};
+
+export type Escandallo = {
+  id: number;
+  nombre: string;
+  autor: string;
+  coste: number;
+  pvp: number;
+  items: EscandalloItem[];
+  elaboracion: string;
 };

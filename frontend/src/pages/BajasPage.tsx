@@ -6,6 +6,7 @@ import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 type ProductoBaja = Producto & {
   tipoBaja: "Rotura" | "Caducado" | "Merma" | "Ajuste" | "Otro";
@@ -75,6 +76,7 @@ export default function BajasPage() {
   const [catId, setCatId] = useState("");
   const [resultadosOpen, setResultadosOpen] = useState(false);
   const [modoCaducados, setModoCaducados] = useState(false);
+  const debouncedQ = useDebouncedValue(q, 250);
 
   // baja actual
   const [productosBaja, setProductosBaja] = useState<ProductoBaja[]>([]);
@@ -200,7 +202,7 @@ export default function BajasPage() {
   const resultados = useMemo(() => {
     let list = [...productos];
 
-    const texto = q.trim().toLowerCase();
+    const texto = debouncedQ.trim().toLowerCase();
     const categoria = catId;
 
     if (texto) {
@@ -228,7 +230,7 @@ export default function BajasPage() {
     }
 
     return list;
-  }, [productos, q, catId, modoCaducados]);
+  }, [productos, debouncedQ, catId, modoCaducados]);
 
   function buscarProductos() {
     // en el JS antiguo buscaba también sin mínimo, aquí lo dejamos simple:

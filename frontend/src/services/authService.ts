@@ -3,7 +3,14 @@ import { clearSession, saveSession } from "./sessionService";
 
 export type UsuarioActivo = Record<string, unknown>;
 
-type LoginResponse = { success: boolean; data: { token: string; user: UsuarioActivo } };
+type LoginResponse = {
+  success: boolean;
+  data: {
+    token: string;
+    refreshToken?: string;
+    user: UsuarioActivo;
+  };
+};
 
 export async function login(username: string, password: string): Promise<UsuarioActivo | null> {
   try {
@@ -13,7 +20,7 @@ export async function login(username: string, password: string): Promise<Usuario
       body: JSON.stringify({ username, password }),
     });
     if (response?.success && response?.data?.token && response?.data?.user) {
-      saveSession(response.data.token, response.data.user);
+      saveSession(response.data.token, response.data.user, response.data.refreshToken);
       return response.data.user;
     }
     return null;

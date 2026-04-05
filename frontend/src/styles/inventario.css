@@ -187,13 +187,13 @@ button#btnBuscar.btn-buscar-inventario {
 
 /* --- ESTILOS ESPECÍFICOS PARA GRID.JS --- */
 
-/* Fila de alerta (Stock Bajo o Caducado) */
-.gridjs-tr.alerta td {
+/* Celdas de alerta (Stock Bajo o Caducado) */
+.gridjs-td.alerta-cell {
   background-color: #fff5f5 !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .gridjs-tr.alerta:hover td {
+  .gridjs-tr:hover .gridjs-td.alerta-cell {
     background-color: #fed7d7 !important;
   }
 }

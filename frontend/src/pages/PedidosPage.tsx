@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import "../styles/pedidos.css";
-import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
 import { showConfirm, showNotification } from "../utils/notifications";
 import type { Proveedor, Producto, PedidoHistorial } from "../types";
+import { queryKeys } from "../lib/queryClient";
+import { crearPedidoHistorial, getPedidos } from "../services/pedidosService";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -20,19 +23,14 @@ type ItemPedido = {
 
 export default function PedidosPage() {
   const nav = useNavigate();
+  const queryClient = useQueryClient();
 
   const [vista, setVista] = useState<"lista" | "nuevo">("lista");
   const [fechaPedido, setFechaPedido] = useState("");
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [pedidos, setPedidos] = useState<PedidoHistorial[]>([]);
 
   const [proveedorId, setProveedorId] = useState("");
   const [itemsPedido, setItemsPedido] = useState<ItemPedido[]>([]);
 
-  const [loadingPedidos, setLoadingPedidos] = useState(true);
-  const [loadingNuevo, setLoadingNuevo] = useState(false);
-  const [guardando, setGuardando] = useState(false);
   const [err, setErr] = useState("");
 
   useEffect(() => {
@@ -40,61 +38,76 @@ export default function PedidosPage() {
     setFechaPedido(today);
   }, []);
 
-  const recargarPedidos = useCallback(async () => {
-    try {
-      setErr("");
-      setLoadingPedidos(true);
-      const json = await apiFetch<{ success: boolean; data: PedidoHistorial[]; error?: { message?: string } }>("/pedidos", {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-      const data = Array.isArray(json?.data) ? json.data : [];
-      setPedidos(json?.success ? data : []);
-      if (!json?.success) setErr(json?.error?.message || "Error cargando pedidos");
-    } catch (e) {
-      setPedidos([]);
-      setErr(e instanceof Error ? e.message : "Error desconocido");
-    } finally {
-      setLoadingPedidos(false);
-    }
-  }, []);
+  const pedidosQuery = useQuery<PedidoHistorial[]>({
+    queryKey: queryKeys.pedidos,
+    queryFn: getPedidos,
+    refetchInterval: 45_000,
+  });
 
-  useEffect(() => {
-    void recargarPedidos();
-  }, [recargarPedidos]);
+  const proveedoresQuery = useQuery<Proveedor[]>({
+    queryKey: queryKeys.proveedores,
+    queryFn: getProveedores,
+    enabled: vista === "nuevo",
+  });
 
-  useEffect(() => {
-    if (vista !== "nuevo") return;
+  const productosQuery = useQuery<Producto[]>({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    enabled: vista === "nuevo",
+  });
 
-    let alive = true;
+  const guardarPedidosMutation = useMutation({
+    mutationFn: async (
+      pedidosPorProveedor: Record<string, { proveedorId: string; items: ItemPedido[]; total: number }>,
+    ) => {
+      let exitos = 0;
+      let errores = 0;
 
-    (async () => {
-      try {
-        setLoadingNuevo(true);
-        setErr("");
+      for (const pid of Object.keys(pedidosPorProveedor)) {
+        const pedidoData = pedidosPorProveedor[pid];
 
-        const [provs, prods] = await Promise.all([
-          getProveedores(),
-          getProductos(),
-        ]);
+        const ok = await crearPedidoHistorial({
+          proveedorId: pedidoData.proveedorId,
+          items: pedidoData.items,
+          usuarioId: "1",
+          total: pedidoData.total,
+        });
 
-        if (!alive) return;
-
-        setProveedores(Array.isArray(provs) ? provs : []);
-        setProductos(Array.isArray(prods) ? (prods as Producto[]) : []);
-      } catch (e) {
-        if (alive) {
-          console.error(e);
-          setErr("Error cargando proveedores o productos");
+        if (ok) {
+          exitos++;
+        } else {
+          errores++;
         }
-      } finally {
-        if (alive) setLoadingNuevo(false);
       }
-    })();
 
-    return () => {
-      alive = false;
-    };
-  }, [vista]);
+      return { exitos, errores };
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pedidos });
+      broadcastQueryInvalidation(queryKeys.pedidos);
+    },
+  });
+
+  const pedidos = pedidosQuery.data ?? [];
+  const proveedores = proveedoresQuery.data ?? [];
+  const productos = productosQuery.data ?? [];
+  const loadingPedidos = pedidosQuery.isLoading;
+  const loadingNuevo = proveedoresQuery.isLoading || productosQuery.isLoading;
+  const guardando = guardarPedidosMutation.isPending;
+
+  useEffect(() => {
+    if (pedidosQuery.error instanceof Error) {
+      setErr(pedidosQuery.error.message);
+      return;
+    }
+
+    if (vista === "nuevo" && (proveedoresQuery.error || productosQuery.error)) {
+      setErr("Error cargando proveedores o productos");
+      return;
+    }
+
+    setErr("");
+  }, [pedidosQuery.error, productosQuery.error, proveedoresQuery.error, vista]);
 
   const productosFiltrados = useMemo(() => {
     if (!proveedorId) return [];
@@ -200,48 +213,21 @@ export default function PedidosPage() {
     if (!confirmado) return;
 
     try {
-      setGuardando(true);
-
-      let exitos = 0;
-      let errores = 0;
-
-      for (const pid of proveedoresIds) {
-        const pedidoData = pedidosPorProveedor[pid];
-
-        const payload = {
-          proveedorId: pedidoData.proveedorId,
-          items: pedidoData.items,
-          usuarioId: "1",
-          total: pedidoData.total,
-        };
-
-        try {
-          const data = await apiFetch<{ success: boolean }>("/pedidos", {
-            method: "POST",
-            headers: { "X-Requested-With": "XMLHttpRequest" },
-            body: JSON.stringify(payload),
-          });
-          if (data?.success) exitos++; else errores++;
-        } catch {
-          errores++;
-        }
-      }
+      const { exitos, errores } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
 
       if (exitos > 0 && errores === 0) {
         showNotification(`Se han creado ${exitos} pedido(s) correctamente.`, "success");
         setItemsPedido([]);
         setProveedorId("");
         setVista("lista");
-        await recargarPedidos();
       } else if (exitos > 0 && errores > 0) {
         showNotification(`Proceso terminado con advertencias. Creados: ${exitos}, Fallidos: ${errores}`, "warning");
         setVista("lista");
-        await recargarPedidos();
       } else {
         showNotification("No se pudo crear ningún pedido.", "error");
       }
-    } finally {
-      setGuardando(false);
+    } catch {
+      showNotification("No se pudo crear ningún pedido.", "error");
     }
   }
 

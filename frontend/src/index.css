@@ -1,4 +1,3 @@
-* { box-sizing: border-box; }
 html, body { 
   height: 100%; 
   font-family: var(--font-family-base);
@@ -79,10 +78,12 @@ a {
   color: white;
   box-shadow: 0 4px 15px rgba(179, 49, 49, 0.3);
 }
-#btnBuscar:hover, .btn-primary:hover {
-  background: linear-gradient(135deg, #c93838 0%, var(--color-brand-500) 100%);
-  box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  #btnBuscar:hover, .btn-primary:hover {
+    background: linear-gradient(135deg, #c93838 0%, var(--color-brand-500) 100%);
+    box-shadow: 0 6px 20px rgba(179, 49, 49, 0.4);
+    transform: translateY(-2px);
+  }
 }
 
 #btnStock, .btn-warning {
@@ -91,12 +92,14 @@ a {
   border: 2px solid #fc8181;
   box-shadow: 0 4px 12px rgba(197, 48, 48, 0.15);
 }
-#btnStock:hover, .btn-warning:hover {
-  background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
-  color: #9b2c2c;
-  border-color: #f56565;
-  box-shadow: 0 6px 16px rgba(197, 48, 48, 0.25);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  #btnStock:hover, .btn-warning:hover {
+    background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+    color: #9b2c2c;
+    border-color: #f56565;
+    box-shadow: 0 6px 16px rgba(197, 48, 48, 0.25);
+    transform: translateY(-2px);
+  }
 }
 
 #btnMostrarTodos, .btn-secondary {
@@ -105,12 +108,14 @@ a {
   border: 2px solid var(--color-border-default);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-#btnMostrarTodos:hover, .btn-secondary:hover {
-  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
-  color: #2d3748;
-  border-color: #cbd5e0;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  #btnMostrarTodos:hover, .btn-secondary:hover {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+    color: #2d3748;
+    border-color: #cbd5e0;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
 }
 
 #btnIngresar, .btn-success {
@@ -120,10 +125,12 @@ a {
   box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
   font-weight: 700;
 }
-#btnIngresar:hover, .btn-success:hover {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
-  box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  #btnIngresar:hover, .btn-success:hover {
+    background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+    box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
+    transform: translateY(-2px);
+  }
 }
 
 .controless button:focus-visible,

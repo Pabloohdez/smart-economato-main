@@ -60,7 +60,9 @@ export function obtenerAlergiasUsuario(): string[] {
 
   const usuario: UsuarioActivo = JSON.parse(userStr);
   const configStr = localStorage.getItem(`alergias_${usuario.id}`);
-  if (!configStr) return [];
+  if (!configStr) {
+    return Array.isArray(usuario.alergias) ? usuario.alergias : [];
+  }
 
   const config = JSON.parse(configStr);
   return config.alergias || [];

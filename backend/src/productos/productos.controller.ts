@@ -4,10 +4,14 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { CreateProductoDto } from './create-producto.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Controller('productos')
 export class ProductosController {
-  constructor(private readonly productosService: ProductosService) {}
+  constructor(
+    private readonly productosService: ProductosService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   @Public()
   @Get()
@@ -23,7 +27,9 @@ export class ProductosController {
   @Roles('admin')
   @Post()
   async crear(@Body() body: CreateProductoDto) {
-    return this.productosService.crear(body as any);
+    const result = await this.productosService.crear(body as any);
+    this.realtimeService.publish(['productos'], 'productos');
+    return result;
   }
 
   @Roles('admin')
@@ -35,13 +41,17 @@ export class ProductosController {
     if (body.length > 100) {
       throw new HttpException('Máximo 100 productos por lote', HttpStatus.BAD_REQUEST);
     }
-    return this.productosService.crearBatch(body as any[]);
+    const result = await this.productosService.crearBatch(body as any[]);
+    this.realtimeService.publish(['productos'], 'productos');
+    return result;
   }
 
   @Roles('admin')
   @Put(':id')
   async actualizar(@Param('id') id: string, @Body() body: CreateProductoDto) {
     if (!id) throw new HttpException('Falta ID', HttpStatus.BAD_REQUEST);
-    return this.productosService.actualizar(id, body as any);
+    const result = await this.productosService.actualizar(id, body as any);
+    this.realtimeService.publish(['productos'], 'productos');
+    return result;
   }
 }

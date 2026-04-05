@@ -1,8 +1,8 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "../styles/inicio.css";
-import { getStoredUser } from "../services/sessionService";
 import { logout as logoutSession } from "../services/authService";
+import { useAuth } from "../contexts/AuthContext";
 
 const navItems = [
   { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house" },
@@ -27,7 +27,8 @@ const navItems = [
 export default function AppLayout() {
   const nav = useNavigate();
   const location = useLocation();
-  const user = getStoredUser();
+  const { user } = useAuth();
+  const userName = String(user?.nombre ?? "Administrador");
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -141,13 +142,13 @@ export default function AppLayout() {
             >
               <span className="userText">
                 <span className="userName">
-                  {user?.nombre ?? "Administrador"}
+                  {userName}
                 </span>
                 <span className="userRole">Gestor de Economato</span>
               </span>
 
               <div className="avatar" title="Usuario">
-                {String(user?.nombre ?? "A")
+                {userName
                   .trim()
                   .charAt(0)
                   .toUpperCase()}
@@ -162,7 +163,7 @@ export default function AppLayout() {
               <div className="userDropdown" id="user-menu-dropdown" role="menu">
                 <div className="userDropdownHeader">
                   <div className="avatar avatar-lg">
-                    {String(user?.nombre ?? "A")
+                    {userName
                       .trim()
                       .charAt(0)
                       .toUpperCase()}
@@ -170,7 +171,7 @@ export default function AppLayout() {
 
                   <div className="userDropdownInfo">
                     <div className="userDropdownName">
-                      {user?.nombre ?? "Administrador"}
+                      {userName}
                     </div>
                     <div className="userDropdownRole">Gestor de Economato</div>
                   </div>

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import { useNavigate } from "react-router-dom";
 import InventarioTable from "../components/inventario/InventarioTable";
@@ -7,6 +8,7 @@ import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
+import { queryKeys } from "../lib/queryClient";
 import "../styles/inventario.css";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
@@ -27,9 +29,6 @@ function daysUntil(date: Date): number {
 
 export default function InventarioPage() {
   const nav = useNavigate();
-  const [items, setItems] = useState<Producto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
 
   // filtros toolbar
   const [q, setQ] = useState("");
@@ -42,24 +41,15 @@ export default function InventarioPage() {
   const LOW_STOCK_THRESHOLD = 5;
   const EXPIRING_DAYS_THRESHOLD = 30;
 
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setErr("");
-        setLoading(true);
-        const data = await getProductos();
-        if (alive) setItems(data);
-      } catch (e) {
-        if (alive) setErr(e instanceof Error ? e.message : "Error desconocido");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const productosQuery = useQuery({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    refetchInterval: 45_000,
+  });
+
+  const items: Producto[] = productosQuery.data ?? [];
+  const loading = productosQuery.isLoading;
+  const err = productosQuery.error instanceof Error ? productosQuery.error.message : "";
 
   // “cats” y “provs” para el toolbar (con id fake = nombre)
   const cats = useMemo(() => {

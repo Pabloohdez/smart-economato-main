@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
   getProductos,
@@ -8,6 +9,8 @@ import "../styles/rendimiento.css";
 import "../components/ui/ui.css";
 import { apiFetch } from "../services/apiClient";
 import { showConfirm } from "../utils/notifications";
+import { queryKeys } from "../lib/queryClient";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
 type RegistroRendimiento = {
   id: number;
@@ -26,19 +29,11 @@ type RegistroHistorial = RegistroRendimiento & {
 };
 
 export default function RendimientoPage() {
+  const queryClient = useQueryClient();
   const [fechaActual, setFechaActual] = useState("");
-  const [productosDisponibles, setProductosDisponibles] = useState<Producto[]>(
-    [],
-  );
-  const [categoriasDisponibles, setCategoriasDisponibles] = useState<
-    Categoria[]
-  >([]);
 
   const [registrosRendimiento, setRegistrosRendimiento] = useState<
     RegistroRendimiento[]
-  >([]);
-  const [historialRendimiento, setHistorialRendimiento] = useState<
-    RegistroHistorial[]
   >([]);
 
   const [busqueda, setBusqueda] = useState("");
@@ -57,7 +52,73 @@ export default function RendimientoPage() {
   const [modalPesoBruto, setModalPesoBruto] = useState("");
   const [modalPesoNeto, setModalPesoNeto] = useState("");
 
-  const [loadingHistorial, setLoadingHistorial] = useState(false);
+
+  const productosQuery = useQuery<Producto[]>({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    refetchInterval: 45_000,
+  });
+
+  const categoriasQuery = useQuery<Categoria[]>({
+    queryKey: queryKeys.categorias,
+    queryFn: getCategorias,
+    refetchInterval: 60_000,
+  });
+
+  const historialQuery = useQuery<RegistroHistorial[]>({
+    queryKey: queryKeys.rendimientosHistorial,
+    queryFn: async () => {
+      const json = await apiFetch<{ success?: boolean; error?: string; data?: RegistroHistorial[] }>("/rendimientos?limit=50");
+
+      if (!json.success) {
+        throw new Error(json.error || "Error cargando historial");
+      }
+
+      return Array.isArray(json.data) ? json.data : [];
+    },
+    refetchInterval: 60_000,
+  });
+
+  const eliminarHistorialMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const json = await apiFetch<{ success?: boolean; error?: string }>(`/rendimientos?id=${id}`, { method: "DELETE" });
+
+      if (!json.success) {
+        throw new Error(json.error || "Error al eliminar");
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.rendimientosHistorial });
+      broadcastQueryInvalidation(queryKeys.rendimientosHistorial);
+    },
+  });
+
+  const guardarAnalisisMutation = useMutation({
+    mutationFn: async (payload: Array<RegistroRendimiento & { fecha: string; observaciones: string }>) => {
+      const json = await apiFetch<{ success?: boolean; error?: string }>("/rendimientos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        offlineQueue: {
+          enabled: true,
+          queuedMessage: "El análisis queda en cola y se sincronizará cuando vuelva la conexión.",
+        },
+      });
+
+      if (!json.success) {
+        throw new Error(json.error || "Error desconocido");
+      }
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.rendimientosHistorial });
+      broadcastQueryInvalidation(queryKeys.rendimientosHistorial);
+    },
+  });
+
+  const productosDisponibles = productosQuery.data ?? [];
+  const categoriasDisponibles = categoriasQuery.data ?? [];
+  const historialRendimiento = historialQuery.data ?? [];
+  const loadingHistorial = historialQuery.isLoading;
 
   useEffect(() => {
     setFechaActual(
@@ -71,34 +132,11 @@ export default function RendimientoPage() {
   }, []);
 
   useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      try {
-        const [prods, cats] = await Promise.all([
-          getProductos(),
-          getCategorias(),
-        ]);
-        if (!alive) return;
-
-        setProductosDisponibles(Array.isArray(prods) ? prods : []);
-        setCategoriasDisponibles(Array.isArray(cats) ? cats : []);
-      } catch (error) {
-        console.warn("No se pudieron cargar productos/categorías:", error);
-        if (!alive) return;
-        setProductosDisponibles([]);
-        setCategoriasDisponibles([]);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    void cargarHistorial();
-  }, []);
+    if (historialQuery.error instanceof Error) {
+      console.error("Error API historial:", historialQuery.error);
+      mostrarMensaje("Error cargando historial", "error");
+    }
+  }, [historialQuery.error]);
 
   useEffect(() => {
     const texto = busqueda.toLowerCase().trim();
@@ -120,25 +158,6 @@ export default function RendimientoPage() {
 
     setResultadosSugerencias(sugerencias);
   }, [busqueda, productosDisponibles]);
-
-  async function cargarHistorial() {
-    try {
-      setLoadingHistorial(true);
-      const json = await apiFetch<{ success?: boolean; error?: string; data?: RegistroHistorial[] }>("/rendimientos?limit=50");
-
-      if (json.success) {
-        setHistorialRendimiento(Array.isArray(json.data) ? json.data : []);
-      } else {
-        console.error("Error API historial:", json.error);
-        mostrarMensaje("Error cargando historial", "error");
-      }
-    } catch (e) {
-      console.error("Error de red cargando historial:", e);
-      mostrarMensaje("Error de conexión al cargar historial", "error");
-    } finally {
-      setLoadingHistorial(false);
-    }
-  }
 
   function mostrarMensaje(texto: string, tipo: "exito" | "error") {
     setMensajeEstado(texto);
@@ -244,14 +263,8 @@ export default function RendimientoPage() {
     if (!confirmado) return;
 
     try {
-      const json = await apiFetch<{ success?: boolean; error?: string }>(`/rendimientos?id=${id}`, { method: "DELETE" });
-
-      if (json.success) {
-        mostrarMensaje("Registro eliminado", "exito");
-        await cargarHistorial();
-      } else {
-        mostrarMensaje(`Error al eliminar: ${json.error}`, "error");
-      }
+      await eliminarHistorialMutation.mutateAsync(id);
+      mostrarMensaje("Registro eliminado", "exito");
     } catch (e) {
       console.error(e);
       mostrarMensaje("Error de red al eliminar", "error");
@@ -273,20 +286,11 @@ export default function RendimientoPage() {
     }));
 
     try {
-      const json = await apiFetch<{ success?: boolean; error?: string }>("/rendimientos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!json.success) {
-        throw new Error(json.error || "Error desconocido");
-      }
+      await guardarAnalisisMutation.mutateAsync(payload);
 
       mostrarMensaje("✅ Análisis guardado en la nube correctamente", "exito");
       setRegistrosRendimiento([]);
       setObservaciones("");
-      await cargarHistorial();
     } catch (e) {
       console.error("Error guardando:", e);
       mostrarMensaje(

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
   getProductos,
@@ -10,9 +11,11 @@ import {
   type Proveedor,
 } from "../services/productosService";
 import "../styles/avisos.css";
-import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import { useAuth } from "../contexts/AuthContext";
+import { getGastosMensuales, type GastoMensual } from "../services/informesService";
+import { queryKeys } from "../lib/queryClient";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -25,22 +28,10 @@ type ProductoAviso = Producto & {
   diasCaducado?: number;
 };
 
-type GastoMensual = {
-  mes: string;
-  nombre_usuario: string;
-  num_pedidos: number;
-  total_mes: number | string;
-};
-
 type ModalModo = "baja" | "pedido" | null;
 
 export default function AvisosPage() {
-  const [productos, setProductos] = useState<ProductoAviso[]>([]);
-  const [caducados, setCaducados] = useState<ProductoAviso[]>([]);
-  const [stockBajo, setStockBajo] = useState<ProductoAviso[]>([]);
-  const [gastosMensuales, setGastosMensuales] = useState<GastoMensual[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [timestamp, setTimestamp] = useState("");
+  const queryClient = useQueryClient();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [accionActual, setAccionActual] = useState<ModalModo>(null);
@@ -55,108 +46,137 @@ export default function AvisosPage() {
   // Obtener usuario activo
   const { user } = useAuth();
 
-  useEffect(() => {
-    void cargarDatos();
-  }, []);
+  const productosQuery = useQuery({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    refetchInterval: 45_000,
+  });
 
-  async function cargarDatos() {
-    try {
-      setLoading(true);
+  const categoriasQuery = useQuery({
+    queryKey: queryKeys.categorias,
+    queryFn: getCategorias,
+    refetchInterval: 60_000,
+  });
 
-      const [productosRaw, categorias, proveedores] = await Promise.all([
-        getProductos(),
-        getCategorias(),
-        getProveedores(),
+  const proveedoresQuery = useQuery({
+    queryKey: queryKeys.proveedores,
+    queryFn: getProveedores,
+    refetchInterval: 60_000,
+  });
+
+  const gastosMensualesQuery = useQuery({
+    queryKey: queryKeys.informesGastosMensuales,
+    queryFn: getGastosMensuales,
+    refetchInterval: 60_000,
+  });
+
+  const bajaMutation = useMutation({
+    mutationFn: registrarBaja,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.productos }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.informesGastosMensuales }),
       ]);
+      broadcastQueryInvalidation(queryKeys.productos);
+      broadcastQueryInvalidation(queryKeys.informesGastosMensuales);
+    },
+  });
 
-      let gastos: GastoMensual[] = [];
-      try {
-        const data = await apiFetch<{ success: boolean; data?: { gastos_por_mes?: GastoMensual[] } }>("/informes?tipo=gastos_mensuales");
-        if (data.success && data.data?.gastos_por_mes) {
-          gastos = data.data.gastos_por_mes;
+  const pedidoMutation = useMutation({
+    mutationFn: crearPedido,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.pedidos }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.informesGastosMensuales }),
+      ]);
+      broadcastQueryInvalidation(queryKeys.pedidos);
+      broadcastQueryInvalidation(queryKeys.informesGastosMensuales);
+    },
+  });
+
+  const loading =
+    productosQuery.isLoading
+    || categoriasQuery.isLoading
+    || proveedoresQuery.isLoading
+    || gastosMensualesQuery.isLoading;
+
+  const productos = useMemo<ProductoAviso[]>(() => {
+    const productosRaw = productosQuery.data ?? [];
+    const categorias = categoriasQuery.data ?? [];
+    const proveedores = proveedoresQuery.data ?? [];
+
+    return productosRaw.map((p: any) => {
+      const categoriaId = p.categoriaid ?? p.categoriaId ?? p.categoria?.id ?? null;
+      const proveedorId = p.proveedorid ?? p.proveedorId ?? p.proveedor?.id ?? null;
+
+      const proveedorObj =
+        proveedores.find((pr) => String(pr.id) === String(proveedorId)) ?? null;
+
+      const nombreCategoria =
+        categorias.find((c) => String(c.id) === String(categoriaId))?.nombre || "General";
+
+      const nombreProveedor = proveedorObj?.nombre || "N/A";
+
+      return {
+        ...p,
+        nombreCategoria,
+        proveedorObj,
+        nombreProveedor,
+        fechaCaducidadNormalizada: p.fechacaducidad || p.fechaCaducidad || null,
+        stockMinimoNum: Number(p.stockminimo || p.stockMinimo || 0),
+        stockNum: Number(p.stock || 0),
+        precioNum: Number(p.precio || 0),
+      };
+    });
+  }, [categoriasQuery.data, productosQuery.data, proveedoresQuery.data]);
+
+  const caducados = useMemo<ProductoAviso[]>(() => {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const listaCaducados = productos
+      .filter((p) =>
+        p.fechaCaducidadNormalizada
+        && p.fechaCaducidadNormalizada !== "NULL"
+        && p.fechaCaducidadNormalizada !== "Sin fecha",
+      )
+      .map((p) => {
+        const fecha = new Date(p.fechaCaducidadNormalizada as string);
+        if (Number.isNaN(fecha.getTime()) || fecha >= hoy) {
+          return null;
         }
-      } catch (e) {
-        console.error("Error cargando gastos mensuales:", e);
-      }
+        const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
+        return { ...p, diasCaducado };
+      })
+      .filter(Boolean) as ProductoAviso[];
 
-      const datosNormalizados: ProductoAviso[] = (productosRaw || []).map((p: any) => {
-        const categoriaId = p.categoriaid ?? p.categoriaId ?? p.categoria?.id ?? null;
-        const proveedorId = p.proveedorid ?? p.proveedorId ?? p.proveedor?.id ?? null;
+    return listaCaducados.sort((a, b) => (b.diasCaducado ?? 0) - (a.diasCaducado ?? 0));
+  }, [productos]);
 
-        const proveedorObj =
-          proveedores.find((pr) => String(pr.id) === String(proveedorId)) ?? null;
+  const stockBajo = useMemo<ProductoAviso[]>(() => {
+    return productos
+      .filter((p) => p.stockMinimoNum > 0 && p.stockNum <= p.stockMinimoNum)
+      .sort((a, b) => a.stockNum / a.stockMinimoNum - b.stockNum / b.stockMinimoNum);
+  }, [productos]);
 
-        const nombreCategoria =
-          categorias.find((c) => String(c.id) === String(categoriaId))?.nombre || "General";
-
-        const nombreProveedor = proveedorObj?.nombre || "N/A";
-
-        return {
-          ...p,
-          nombreCategoria,
-          proveedorObj,
-          nombreProveedor,
-          fechaCaducidadNormalizada: p.fechacaducidad || p.fechaCaducidad || null,
-          stockMinimoNum: Number(p.stockminimo || p.stockMinimo || 0),
-          stockNum: Number(p.stock || 0),
-          precioNum: Number(p.precio || 0),
-        };
-      });
-
-      const hoy = new Date();
-      hoy.setHours(0, 0, 0, 0);
-
-      const listaCaducados: ProductoAviso[] = [];
-      const listaStockBajo: ProductoAviso[] = [];
-
-      datosNormalizados.forEach((p) => {
-        if (
-          p.fechaCaducidadNormalizada &&
-          p.fechaCaducidadNormalizada !== "NULL" &&
-          p.fechaCaducidadNormalizada !== "Sin fecha"
-        ) {
-          const fecha = new Date(p.fechaCaducidadNormalizada);
-          if (!Number.isNaN(fecha.getTime()) && fecha < hoy) {
-            const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
-            listaCaducados.push({ ...p, diasCaducado });
-          }
-        }
-
-        if (p.stockMinimoNum > 0 && p.stockNum <= p.stockMinimoNum) {
-          listaStockBajo.push(p);
-        }
-      });
-
-      listaCaducados.sort((a, b) => (b.diasCaducado ?? 0) - (a.diasCaducado ?? 0));
-      listaStockBajo.sort(
-        (a, b) => a.stockNum / a.stockMinimoNum - b.stockNum / b.stockMinimoNum
-      );
-
-      setProductos(datosNormalizados);
-      setCaducados(listaCaducados);
-      setStockBajo(listaStockBajo);
-      setGastosMensuales(gastos);
-
-      setTimestamp(
-        "Actualizado: " +
-          new Date().toLocaleString("es-ES", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-      );
-    } catch (error) {
-      console.error("Error cargando avisos:", error);
-      mostrarToast(
-        `Error cargando avisos: ${error instanceof Error ? error.message : "desconocido"}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
+  const gastosMensuales = gastosMensualesQuery.data ?? [];
+  const timestamp = useMemo(() => {
+    if (!productosQuery.dataUpdatedAt && !gastosMensualesQuery.dataUpdatedAt) {
+      return "";
     }
-  }
+
+    const updatedAt = Math.max(productosQuery.dataUpdatedAt, gastosMensualesQuery.dataUpdatedAt);
+    return (
+      "Actualizado: "
+      + new Date(updatedAt).toLocaleString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    );
+  }, [gastosMensualesQuery.dataUpdatedAt, productosQuery.dataUpdatedAt]);
 
   const valorRiesgo = useMemo(() => {
     return caducados.reduce((sum, p) => sum + p.precioNum * p.stockNum, 0);
@@ -202,21 +222,21 @@ export default function AvisosPage() {
       setConfirmando(true);
 
       if (accionActual === "baja") {
-        await registrarBaja({
+        await bajaMutation.mutateAsync({
           productoId: productoSeleccionado.id,
           cantidad: cantidadModal,
           tipoBaja: "Caducado",
           motivo: "Caducidad registrada desde Centro de Avisos",
-          usuarioId: user?.id || "admin",
+          usuarioId: String(user?.id ?? "admin"),
         });
 
         mostrarToast("Baja registrada correctamente", "success");
       } else if (accionActual === "pedido") {
-        await crearPedido({
+        await pedidoMutation.mutateAsync({
           proveedorId:
             productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,
           total: cantidadModal * productoSeleccionado.precioNum,
-          usuarioId: user?.id || "admin",
+          usuarioId: String(user?.id ?? "admin"),
           items: [
             {
               producto_id: productoSeleccionado.id,
@@ -231,7 +251,6 @@ export default function AvisosPage() {
       }
 
       cerrarModal();
-      await cargarDatos();
     } catch (error) {
       console.error(error);
       mostrarToast("Error al realizar la acción", "error");

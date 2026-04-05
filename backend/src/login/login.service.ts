@@ -7,10 +7,7 @@ export class LoginService {
   constructor(private readonly db: DatabaseService) {}
 
   async login(username: string, password: string) {
-    const { rows } = await this.db.query(
-      `SELECT * FROM usuarios WHERE username = $1 LIMIT 1`,
-      [username],
-    );
+    const rows = await this.findSessionUsers('u.username = $1', [username]);
 
     if (rows.length === 0) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos');
@@ -39,5 +36,38 @@ export class LoginService {
 
     delete row.password;
     return row;
+  }
+
+  async findSessionUserById(id: string) {
+    const rows = await this.findSessionUsers('u.id = $1', [id]);
+    if (rows.length === 0) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+    const row = { ...(rows[0] as Record<string, unknown>) };
+    delete row.password;
+    return row;
+  }
+
+  private async findSessionUsers(whereClause: string, params: unknown[]) {
+    const { rows } = await this.db.query(
+      `SELECT
+         u.id,
+         u.username,
+         u.password,
+         u.nombre,
+         u.apellidos,
+         u.email,
+         u.telefono,
+         u.role,
+         COALESCE(array_remove(array_agg(a.nombre ORDER BY a.nombre), NULL), '{}') as alergias
+       FROM usuarios u
+       LEFT JOIN usuario_alergenos ua ON ua.usuario_id = u.id
+       LEFT JOIN alergenos a ON a.id = ua.alergeno_id
+       WHERE ${whereClause}
+       GROUP BY u.id, u.username, u.password, u.nombre, u.apellidos, u.email, u.telefono, u.role
+       LIMIT 1`,
+      params,
+    );
+    return rows;
   }
 }

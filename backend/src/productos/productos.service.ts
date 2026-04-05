@@ -2,6 +2,10 @@ import { randomBytes } from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
+type QueryRunner = {
+  query: (text: string, params?: unknown[]) => Promise<{ rows: Array<Record<string, unknown>> }>;
+};
+
 @Injectable()
 export class ProductosService {
   constructor(private readonly db: DatabaseService) {}
@@ -32,6 +36,10 @@ export class ProductosService {
       params.push(safeLimit, offset);
     }
     const { rows } = await this.db.query(sql, params.length ? params : undefined);
+    const alergenosByProducto = await this.getAlergenosPorProducto(
+      rows.map((row) => String((row as Record<string, unknown>).id ?? '')),
+    );
+
     return rows.map((row: Record<string, unknown>) => {
       const r = { ...row };
       r.categoria = { id: r.categoriaId, nombre: r.categoria_nombre };
@@ -39,6 +47,7 @@ export class ProductosService {
       r.precio = Number(r.precio);
       r.stock = Number(r.stock);
       r.stockMinimo = Number(r.stockMinimo);
+      r.alergenos = alergenosByProducto.get(String(r.id ?? '')) ?? [];
       r.activo = r.activo === true || r.activo === 't' || r.activo === 1 || r.activo === '1';
       delete r.categoria_nombre;
       delete r.proveedor_nombre;
@@ -73,6 +82,7 @@ export class ProductosService {
         activo,
       ],
     );
+    await this.syncProductoAlergenos(this.db as unknown as QueryRunner, id, dto.alergenos);
     return { ...dto, id };
   }
 
@@ -106,6 +116,7 @@ export class ProductosService {
             activo,
           ],
         );
+        await this.syncProductoAlergenos(client as unknown as QueryRunner, id, dto.alergenos);
         results.push({ ...dto, id });
       }
       return { message: `${results.length} producto(s) creado(s)`, items: results };
@@ -138,6 +149,72 @@ export class ProductosService {
         id,
       ],
     );
+    await this.syncProductoAlergenos(this.db as unknown as QueryRunner, id, dto.alergenos);
     return {};
+  }
+
+  private async getAlergenosPorProducto(productIds: string[]) {
+    const ids = [...new Set(productIds.filter(Boolean))];
+    const result = new Map<string, string[]>();
+
+    if (ids.length === 0) return result;
+
+    const { rows } = await this.db.query<{
+      productoId: string;
+      nombre: string;
+    }>(
+      `SELECT pa.producto_id as "productoId", a.nombre
+       FROM producto_alergenos pa
+       INNER JOIN alergenos a ON a.id = pa.alergeno_id
+       WHERE pa.producto_id = ANY($1::varchar[])
+       ORDER BY a.nombre ASC`,
+      [ids],
+    );
+
+    rows.forEach((row) => {
+      const current = result.get(row.productoId) ?? [];
+      current.push(row.nombre);
+      result.set(row.productoId, current);
+    });
+
+    return result;
+  }
+
+  private async syncProductoAlergenos(
+    runner: QueryRunner,
+    productId: string,
+    allergenNames?: unknown,
+  ) {
+    const nombres = [...new Set(
+      Array.isArray(allergenNames)
+        ? allergenNames.map((item) => String(item).trim()).filter(Boolean)
+        : [],
+    )];
+
+    await runner.query('DELETE FROM producto_alergenos WHERE producto_id = $1', [productId]);
+    if (nombres.length === 0) return;
+
+    for (const nombre of nombres) {
+      await runner.query(
+        `INSERT INTO alergenos (nombre)
+         VALUES ($1)
+         ON CONFLICT (nombre) DO NOTHING`,
+        [nombre],
+      );
+    }
+
+    const result = await runner.query(
+      'SELECT id FROM alergenos WHERE nombre = ANY($1::varchar[])',
+      [nombres],
+    );
+
+    for (const row of result.rows) {
+      await runner.query(
+        `INSERT INTO producto_alergenos (producto_id, alergeno_id)
+         VALUES ($1, $2)
+         ON CONFLICT DO NOTHING`,
+        [productId, row.id],
+      );
+    }
   }
 }

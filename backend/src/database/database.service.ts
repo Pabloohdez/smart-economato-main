@@ -42,6 +42,10 @@ export class DatabaseService implements OnModuleDestroy {
     return this.pool.connect();
   }
 
+  getPool(): Pool {
+    return this.pool;
+  }
+
   async query<T = Record<string, unknown>>(
     text: string,
     params?: unknown[],

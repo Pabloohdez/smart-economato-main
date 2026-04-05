@@ -2,10 +2,14 @@ import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { MovimientosService } from './movimientos.service';
 import type { AuthenticatedRequest } from '../auth/auth.types';
 import { CreateMovimientoDto } from './dto/create-movimiento.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Controller('movimientos')
 export class MovimientosController {
-  constructor(private readonly movimientosService: MovimientosService) {}
+  constructor(
+    private readonly movimientosService: MovimientosService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   @Get()
   async listar(
@@ -20,7 +24,7 @@ export class MovimientosController {
   @Post()
   async crear(@Body() body: CreateMovimientoDto, @Req() req: AuthenticatedRequest) {
     const ip = req.socket?.remoteAddress;
-    return this.movimientosService.crear(
+    const result = await this.movimientosService.crear(
       {
         productoId: body.productoId,
         cantidad: body.cantidad,
@@ -30,5 +34,7 @@ export class MovimientosController {
       },
       ip,
     );
+    this.realtimeService.publish(['productos'], 'movimientos');
+    return result;
   }
 }

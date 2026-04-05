@@ -14,6 +14,7 @@ import {
 import { apiFetch } from "../services/apiClient";
 import type { Producto, Movimiento } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 type CarritoItem = {
   productoId: number | string;
@@ -52,6 +53,7 @@ export default function DistribucionPage() {
 
   const [term, setTerm] = useState("");
   const [resultadosOpen, setResultadosOpen] = useState(false);
+  const debouncedTerm = useDebouncedValue(term, 250);
 
   const [productoActual, setProductoActual] = useState<Producto | null>(null);
   const [cantidadSalida, setCantidadSalida] = useState<number>(1);
@@ -76,6 +78,7 @@ export default function DistribucionPage() {
       let list: Producto[] = (json.data ?? []).map((p: any) => ({
         id: p.id,
         nombre: p.nombre,
+        precio: Number(p.precio ?? 0),
         stock: Number(p.stock ?? 0),
         codigoBarras: p.codigoBarras,
         alergenos: p.alergenos || [],
@@ -135,7 +138,7 @@ export default function DistribucionPage() {
   }, []);
 
   const resultadosAutocomplete = useMemo(() => {
-    const t = term.trim().toLowerCase();
+    const t = debouncedTerm.trim().toLowerCase();
     if (!t || t.length < 2) return [];
 
     let list = productosBase.filter((p) => {
@@ -148,7 +151,7 @@ export default function DistribucionPage() {
     list = filtrarListaPorAlergenos(list);
 
     return list.slice(0, 30);
-  }, [productosBase, term]);
+  }, [productosBase, debouncedTerm]);
 
   const resultadosRender = useMemo(() => {
     if (!resultadosOpen) return [];

@@ -17,61 +17,52 @@ function formatShortDate(d: Date): string {
   return new Intl.DateTimeFormat("es-ES").format(d);
 }
 
+function buildGridData(items: Producto[]) {
+  return items.map((p) => {
+    const stock = Number(p.stock ?? 0);
+    const min = Number((p as any).stockMinimo ?? 0);
+    const cad = parseDate((p as any).fechaCaducidad);
+    const cadDias = cad ? daysFromNow(cad) : 999999;
+    const alertaFlag = stock <= min || cadDias < 0 ? 1 : 0;
+
+    return [
+      String(p.id ?? ""),
+      String(p.nombre ?? "—"),
+      String(p.categoria?.nombre ?? "—"),
+      Number(p.precio ?? 0),
+      stock,
+      min,
+      cadDias,
+      String(p.proveedor?.nombre ?? "—"),
+      alertaFlag,
+    ];
+  });
+}
+
 export default function InventarioTable({ items }: { items: Producto[] }) {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const gridInstance = useRef<Grid | null>(null);
 
+  function getAlertCellAttributes(_cell: unknown, row: any) {
+    const isAlertRow = Number(row?.cells?.[8]?.data ?? 0) === 1;
+    return isAlertRow ? { className: "alerta-cell" } : {};
+  }
+
   useEffect(() => {
-    if (!gridRef.current) return;
-
-    // destruir grid anterior
-    if (gridInstance.current) {
-      try {
-        gridInstance.current.destroy();
-      } catch {
-        // ignore
-      }
-      gridInstance.current = null;
-    }
-
-    // ✅ IMPORTANTE: Data con números puros, y el HTML lo metemos en formatter
-    // Estructura de cada fila:
-    // [id, nombre, categoria, precioNum, stockNum, stockMinNum, cadDiasNum(999999 si no hay), proveedor, alertaFlag]
-    const data = items.map((p) => {
-      const stock = Number(p.stock ?? 0);
-      const min = Number((p as any).stockMinimo ?? 0);
-
-      const cad = parseDate((p as any).fechaCaducidad);
-      const cadDias = cad ? daysFromNow(cad) : 999999; // sin fecha -> al final al ordenar
-
-      const caducado = cadDias < 0;
-      const stockBajo = stock <= min;
-      const alertaFlag = stockBajo || caducado ? 1 : 0;
-
-      return [
-        String(p.id ?? ""),
-        String(p.nombre ?? "—"),
-        String(p.categoria?.nombre ?? "—"),
-        Number(p.precio ?? 0),
-        stock,
-        min,
-        cadDias,
-        String(p.proveedor?.nombre ?? "—"),
-        alertaFlag,
-      ];
-    });
+    if (!gridRef.current || gridInstance.current) return;
 
     gridInstance.current = new Grid({
       columns: [
-        { name: "ID", sort: true },
+        { name: "ID", sort: true, attributes: getAlertCellAttributes },
 
-        { name: "Producto", sort: true },
+        { name: "Producto", sort: true, attributes: getAlertCellAttributes },
 
-        { name: "Categoría", sort: true },
+        { name: "Categoría", sort: true, attributes: getAlertCellAttributes },
 
         {
           name: "Precio",
           sort: true,
+          attributes: getAlertCellAttributes,
           formatter: (precio) => {
             const n = Number(precio ?? 0);
             return html(`<span class="precio">${n.toFixed(2)} €</span>`);
@@ -81,6 +72,7 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
         {
           name: "Stock",
           sort: true,
+          attributes: getAlertCellAttributes,
           formatter: (stockCell, row) => {
             const stock = Number(stockCell ?? 0);
             const min = Number(row.cells[5].data ?? 0); // stockMin
@@ -97,6 +89,7 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
         {
           name: "Caducidad",
           sort: true,
+          attributes: getAlertCellAttributes,
           formatter: (_cadDiasCell, row) => {
             const cadDias = Number(row.cells[6].data ?? 999999);
 
@@ -124,13 +117,13 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
           },
         },
 
-        { name: "Proveedor", sort: true },
+        { name: "Proveedor", sort: true, attributes: getAlertCellAttributes },
 
         // Columna oculta: alertaFlag (para pintar fila)
         { name: "alerta", hidden: true },
       ],
 
-      data,
+      data: [],
 
       search: true,
       sort: true,
@@ -149,31 +142,7 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
 
     gridInstance.current.render(gridRef.current);
 
-    // Pintar filas alerta (según alertaFlag oculto)
-    const paintAlertRows = () => {
-      const root = gridRef.current;
-      if (!root) return;
-      const trs = root.querySelectorAll("tbody tr");
-
-      trs.forEach((tr) => {
-        // la columna oculta sigue existiendo en row.cells, pero en DOM no hay td.
-        // así que detectamos alerta leyendo la fila GridJS (más robusto con dataset):
-        // ✅ truco: si badge caducado o stock-bajo existe, marcamos alerta.
-        const isAlert =
-          tr.querySelector(".badge-caducado") ||
-          tr.querySelector(".badge-stock-bajo");
-
-        if (isAlert) tr.classList.add("alerta");
-        else tr.classList.remove("alerta");
-      });
-    };
-
-    const obs = new MutationObserver(() => paintAlertRows());
-    obs.observe(gridRef.current, { childList: true, subtree: true });
-    paintAlertRows();
-
     return () => {
-      obs.disconnect();
       if (gridInstance.current) {
         try {
           gridInstance.current.destroy();
@@ -183,6 +152,12 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
         gridInstance.current = null;
       }
     };
+  }, []);
+
+  useEffect(() => {
+    if (!gridInstance.current) return;
+
+    gridInstance.current.updateConfig({ data: buildGridData(items) }).forceRender();
   }, [items]);
 
   return (

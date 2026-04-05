@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showAlert, showNotification } from "../utils/notifications";
 import "../styles/configuracion.css";
-import type { UsuarioActivo } from "../types";
+import type { AlergenoCatalogo, UsuarioActivo } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../services/alergenosService";
+import { queryKeys } from "../lib/queryClient";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -150,6 +153,7 @@ const ALERGENOS_DISPONIBLES = [
 
 export default function ConfiguracionPage() {
   const { user: authUser, updateUser } = useAuth();
+  const queryClient = useQueryClient();
   const [tabActiva, setTabActiva] = useState<TabKey>("perfil");
   const [usuarioActual, setUsuarioActual] = useState<UsuarioActivo | null>(
     null,
@@ -175,9 +179,52 @@ export default function ConfiguracionPage() {
     "green" | "orange" | "red" | ""
   >("");
 
+  const catalogoQuery = useQuery({
+    queryKey: queryKeys.alergenosCatalogo,
+    queryFn: getAlergenosCatalogo,
+    staleTime: 5 * 60_000,
+  });
+
+  const misAlergiasQuery = useQuery({
+    queryKey: queryKeys.misAlergias,
+    queryFn: getMisAlergias,
+    enabled: Boolean(authUser?.id),
+  });
+
+  const guardarAlergiasMutation = useMutation({
+    mutationFn: saveMisAlergias,
+    onSuccess: (alergiasGuardadas) => {
+      queryClient.setQueryData(queryKeys.misAlergias, alergiasGuardadas);
+    },
+  });
+
+  const catalogoAlergenos: AlergenoCatalogo[] =
+    catalogoQuery.data && catalogoQuery.data.length > 0
+      ? catalogoQuery.data
+      : [...ALERGENOS_DISPONIBLES];
+
   useEffect(() => {
     cargarDatosUsuario();
-  }, []);
+  }, [authUser]);
+
+  useEffect(() => {
+    if (misAlergiasQuery.data) {
+      setAlergiasSeleccionadas(misAlergiasQuery.data);
+      return;
+    }
+
+    if (Array.isArray(authUser?.alergias)) {
+      setAlergiasSeleccionadas(authUser.alergias);
+      return;
+    }
+
+    const userId = String(authUser?.id ?? "");
+    if (!userId) return;
+    const configStr = localStorage.getItem(`alergias_${userId}`);
+    if (!configStr) return;
+    const config: ConfigAlergias = JSON.parse(configStr);
+    setAlergiasSeleccionadas(config.alergias || []);
+  }, [authUser?.alergias, authUser?.id, misAlergiasQuery.data]);
 
   function cargarDatosUsuario() {
     if (!authUser) {
@@ -196,12 +243,6 @@ export default function ConfiguracionPage() {
 
     const userId = String(user.id ?? "");
     if (userId) {
-      const configStr = localStorage.getItem(`alergias_${userId}`);
-      if (configStr) {
-        const config: ConfigAlergias = JSON.parse(configStr);
-        setAlergiasSeleccionadas(config.alergias || []);
-      }
-
       const prefStr = localStorage.getItem(`notificaciones_${userId}`);
       if (prefStr) {
         const pref: PreferenciasNotificaciones = JSON.parse(prefStr);
@@ -246,11 +287,13 @@ export default function ConfiguracionPage() {
     );
   }
 
-  function guardarAlergias() {
+  async function guardarAlergias() {
     if (!usuarioActual?.id) return;
 
+    const alergiasGuardadas = await guardarAlergiasMutation.mutateAsync(alergiasSeleccionadas);
+
     const configAlergias: ConfigAlergias = {
-      alergias: alergiasSeleccionadas,
+      alergias: alergiasGuardadas,
       fechaActualizacion: new Date().toISOString(),
     };
 
@@ -261,21 +304,22 @@ export default function ConfiguracionPage() {
 
     const actualizado: UsuarioActivo = {
       ...usuarioActual,
-      alergias: alergiasSeleccionadas,
+      alergias: alergiasGuardadas,
     };
 
     updateUser(actualizado);
     setUsuarioActual(actualizado);
+    setAlergiasSeleccionadas(alergiasGuardadas);
 
     mostrarMensaje(
       `✅ Configuración guardada: ${alergiasSeleccionadas.length} alergia(s) registrada(s)`,
       "green",
     );
 
-    if (alergiasSeleccionadas.length > 0) {
+    if (alergiasGuardadas.length > 0) {
       window.setTimeout(() => {
         showAlert(
-          `Has registrado ${alergiasSeleccionadas.length} alergia(s): ${alergiasSeleccionadas.join(
+          `Has registrado ${alergiasGuardadas.length} alergia(s): ${alergiasGuardadas.join(
             ", ",
           )}. Recibirás alertas automáticas cuando busques o intentes distribuir productos que contengan estos alérgenos.`,
           "warning",
@@ -457,8 +501,11 @@ export default function ConfiguracionPage() {
               </h3>
 
               <div className="grid-alergenos">
-                {ALERGENOS_DISPONIBLES.map((item) => {
+                {catalogoAlergenos.map((item) => {
                   const checked = alergiasSeleccionadas.includes(item.nombre);
+                  const backgroundColor = item.colorBg ?? (item as AlergenoCatalogo & { bg?: string }).bg ?? "#eef2f7";
+                  const textColor = item.colorTexto ?? (item as AlergenoCatalogo & { color?: string }).color ?? "#1f2937";
+                  const iconClass = item.icono ?? "fa-solid fa-triangle-exclamation";
                   const inputId = `check-${item.nombre
                     .toLowerCase()
                     .normalize("NFD")
@@ -482,9 +529,9 @@ export default function ConfiguracionPage() {
                       <label htmlFor={inputId} className="label-alergeno">
                         <div
                           className="icono-alergeno"
-                          style={{ background: item.bg, color: item.color }}
+                          style={{ background: backgroundColor, color: textColor }}
                         >
-                          <i className={item.icono}></i>
+                          <i className={iconClass}></i>
                         </div>
                         <span className="nombre-alergeno">{item.nombre}</span>
                       </label>

@@ -1,26 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Grid, html } from "gridjs";
 import "gridjs/dist/theme/mermaid.css";
 import "../styles/proveedores.css";
 import Spinner from "../components/ui/Spinner";
 
 import { showNotification, showConfirm } from "../utils/notifications";
-import { apiFetch } from "../services/apiClient";
-
-type Proveedor = {
-  id: string;
-  nombre: string;
-  contacto?: string;
-  telefono?: string;
-  email?: string;
-};
+import { deleteProveedor, getProveedoresLista, saveProveedor } from "../services/proveedoresService";
+import { queryKeys } from "../lib/queryClient";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+import type { Proveedor } from "../types";
 
 export default function ProveedoresPage() {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const gridInstance = useRef<Grid | null>(null);
+  const queryClient = useQueryClient();
 
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   const [form, setForm] = useState({
@@ -31,39 +26,45 @@ export default function ProveedoresPage() {
     email: "",
   });
 
-  // ----------------------------
-  // Cargar proveedores
-  // ----------------------------
+  const proveedoresQuery = useQuery({
+    queryKey: queryKeys.proveedores,
+    queryFn: getProveedoresLista,
+    refetchInterval: 60_000,
+  });
 
-  async function cargarProveedores() {
-    try {
-      setLoading(true);
-      const json = await apiFetch<{ success: boolean; data: Proveedor[] }>("/proveedores", {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
-      setProveedores(json.data ?? []);
-    } catch (e) {
-      console.error(e);
-      showNotification("Error de conexión cargando proveedores", "error");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const saveProveedorMutation = useMutation({
+    mutationFn: ({ id, payload }: { id?: number | string; payload: Omit<Proveedor, "id"> }) =>
+      saveProveedor(payload, id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.proveedores });
+      broadcastQueryInvalidation(queryKeys.proveedores);
+    },
+  });
+
+  const deleteProveedorMutation = useMutation({
+    mutationFn: deleteProveedor,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.proveedores });
+      broadcastQueryInvalidation(queryKeys.proveedores);
+    },
+  });
+
+  const proveedores = proveedoresQuery.data ?? [];
+  const loading = proveedoresQuery.isLoading;
 
   useEffect(() => {
-    cargarProveedores();
-  }, []);
+    if (proveedoresQuery.error) {
+      console.error(proveedoresQuery.error);
+      showNotification("Error de conexión cargando proveedores", "error");
+    }
+  }, [proveedoresQuery.error]);
 
   // ----------------------------
   // Crear / refrescar GRID
   // ----------------------------
 
   useEffect(() => {
-    if (!gridRef.current || loading) return;
-
-    if (gridInstance.current) {
-      gridInstance.current.destroy();
-    }
+    if (!gridRef.current || loading || gridInstance.current) return;
 
     gridInstance.current = new Grid({
       columns: [
@@ -88,13 +89,7 @@ export default function ProveedoresPage() {
         },
       ],
 
-      data: proveedores.map((p) => [
-        p.id, //columna oculta
-        p.nombre,
-        p.contacto || "-",
-        p.telefono || "-",
-        p.email || "-",
-      ]),
+      data: [],
 
       search: true,
 
@@ -112,6 +107,29 @@ export default function ProveedoresPage() {
         },
       },
     }).render(gridRef.current);
+
+    return () => {
+      if (gridInstance.current) {
+        gridInstance.current.destroy();
+        gridInstance.current = null;
+      }
+    };
+  }, [loading]);
+
+  useEffect(() => {
+    if (!gridInstance.current || loading) return;
+
+    gridInstance.current
+      .updateConfig({
+        data: proveedores.map((p) => [
+          p.id,
+          p.nombre,
+          p.contacto || "-",
+          p.telefono || "-",
+          p.email || "-",
+        ]),
+      })
+      .forceRender();
   }, [proveedores, loading]);
 
   function abrirModal() {
@@ -142,28 +160,21 @@ export default function ProveedoresPage() {
       return;
     }
 
-    const method = form.id ? "PUT" : "POST";
-    const path = form.id ? `/proveedores/${form.id}` : "/proveedores";
-
     try {
-      await apiFetch(path, {
-        method,
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({
+      await saveProveedorMutation.mutateAsync({
+        id: form.id || undefined,
+        payload: {
           nombre: form.nombre,
           contacto: form.contacto,
           telefono: form.telefono,
           email: form.email,
-        }),
+        },
       });
       showNotification(
         form.id ? "Proveedor actualizado" : "Proveedor creado",
         "success",
       );
       cerrarModal();
-      cargarProveedores();
     } catch (e) {
       console.error(e);
       showNotification("Error guardando proveedor", "error");
@@ -182,12 +193,8 @@ export default function ProveedoresPage() {
     if (!ok) return;
 
     try {
-      await apiFetch(`/proveedores/${id}`, {
-        method: "DELETE",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
+      await deleteProveedorMutation.mutateAsync(id);
       showNotification("Proveedor eliminado", "success");
-      cargarProveedores();
     } catch (e) {
       console.error(e);
       showNotification("Error eliminando proveedor", "error");
@@ -216,7 +223,7 @@ export default function ProveedoresPage() {
         if (!p) return;
 
         setForm({
-          id: p.id,
+          id: String(p.id),
           nombre: p.nombre,
           contacto: p.contacto || "",
           telefono: p.telefono || "",

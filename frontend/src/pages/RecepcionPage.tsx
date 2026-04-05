@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import "../styles/recepcion.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
@@ -6,6 +7,11 @@ import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { useRecepcionSearch } from "../hooks/useRecepcionSearch";
+import { getCategorias, getProductos, getProveedores } from "../services/productosService";
+import { getPedidosPendientes, recibirPedido } from "../services/pedidosService";
+import { queryKeys } from "../lib/queryClient";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -31,14 +37,52 @@ function hoyES() {
 }
 
 export default function Recepcion() {
-  const [loading, setLoading] = useState(true);
-  const [productos, setProductos] = useState<Producto[]>([]);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const queryClient = useQueryClient();
 
-  const [term, setTerm] = useState("");
-  const [provFiltro, setProvFiltro] = useState<string>("");
-  const [catFiltro, setCatFiltro] = useState<string>("");
+  const productosQuery = useQuery<Producto[]>({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    refetchInterval: 45_000,
+  });
+
+  const categoriasQuery = useQuery<Categoria[]>({
+    queryKey: queryKeys.categorias,
+    queryFn: getCategorias,
+    refetchInterval: 60_000,
+  });
+
+  const proveedoresQuery = useQuery<Proveedor[]>({
+    queryKey: queryKeys.proveedores,
+    queryFn: getProveedores,
+    refetchInterval: 60_000,
+  });
+
+  const [modalPedidosOpen, setModalPedidosOpen] = useState(false);
+
+  const pedidosPendientesQuery = useQuery<Pedido[]>({
+    queryKey: queryKeys.pedidosPendientes,
+    queryFn: getPedidosPendientes,
+    enabled: modalPedidosOpen,
+    refetchInterval: modalPedidosOpen ? 30_000 : false,
+  });
+
+  const productos = productosQuery.data ?? [];
+  const categorias = categoriasQuery.data ?? [];
+  const proveedores = proveedoresQuery.data ?? [];
+  const loading =
+    productosQuery.isLoading
+    || categoriasQuery.isLoading
+    || proveedoresQuery.isLoading;
+
+  const {
+    term,
+    setTerm,
+    provFiltro,
+    setProvFiltro,
+    catFiltro,
+    setCatFiltro,
+    resultadosAutocomplete,
+  } = useRecepcionSearch({ productos });
 
   const [resultadosOpen, setResultadosOpen] = useState(false);
 
@@ -56,9 +100,7 @@ export default function Recepcion() {
   const [cantidadSel, setCantidadSel] = useState<number>(1);
 
   // Modal pedidos
-  const [modalPedidosOpen, setModalPedidosOpen] = useState(false);
   const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
-  const [pedidosPendientes, setPedidosPendientes] = useState<Pedido[]>([]);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
@@ -69,37 +111,45 @@ export default function Recepcion() {
   const { user } = useAuth();
   const usuarioLogueadoId = user?.id || 1;
 
-  async function cargarDatos() {
-    setLoading(true);
-    try {
-      const [pJson, cJson, prJson] = await Promise.all([
-        apiFetch<{ success?: boolean; data?: any[] }>("/productos", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        apiFetch<{ success?: boolean; data?: any[] }>("/categorias", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        apiFetch<{ success?: boolean; data?: any[] }>("/proveedores", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+  const confirmarRecepcionMutation = useMutation({
+    mutationFn: async (payload: {
+      tipo: string;
+      motivo: string;
+      usuario_id: number | string;
+      items: Array<{ producto_id: number | string; cantidad: number }>;
+    }) => {
+      await apiFetch("/movimientos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify(payload),
+        offlineQueue: {
+          enabled: true,
+          queuedMessage: "La recepción manual queda en cola y se sincronizará al recuperar conexión.",
+        },
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.productos });
+      broadcastQueryInvalidation(queryKeys.productos);
+    },
+  });
+
+  const recibirPedidoMutation = useMutation({
+    mutationFn: ({ pedidoId, items }: { pedidoId: number | string; items: Array<{ detalle_id: number | string; cantidad_recibida: number }> }) =>
+      recibirPedido(pedidoId, items),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.productos }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.pedidos }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.pedidosPendientes }),
       ]);
-
-      if (!pJson?.success) throw new Error("Error cargando productos");
-      if (!cJson?.success) throw new Error("Error cargando categorías");
-      if (!prJson?.success) throw new Error("Error cargando proveedores");
-
-      // normalizamos números
-      const prods: Producto[] = (pJson.data ?? []).map((x: any) => ({
-        ...x,
-        stock: Number(x.stock ?? 0),
-        precio: Number(x.precio ?? 0),
-      }));
-
-      setProductos(prods);
-      setCategorias(cJson.data ?? []);
-      setProveedores(prJson.data ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    cargarDatos().catch((e) => console.error(e));
-  }, []);
+      broadcastQueryInvalidation(queryKeys.productos);
+      broadcastQueryInvalidation(queryKeys.pedidos);
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -125,17 +175,6 @@ export default function Recepcion() {
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
-
-  const resultadosAutocomplete = useMemo(() => {
-    const t = term.trim().toLowerCase();
-    if (!t) return [];
-    return productos.filter((p) => {
-      const matchText = String(p.nombre ?? "").toLowerCase().includes(t);
-      const matchProv = !provFiltro || String(p.proveedorId ?? "") === String(provFiltro);
-      const matchCat = !catFiltro || String(p.categoriaId ?? "") === String(catFiltro);
-      return matchText && matchProv && matchCat;
-    });
-  }, [productos, term, provFiltro, catFiltro]);
 
   const resultadosRender = useMemo(() => {
     if (!resultadosOpen) return [];
@@ -213,14 +252,7 @@ export default function Recepcion() {
     };
 
     try {
-      await apiFetch("/movimientos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-      });
+      await confirmarRecepcionMutation.mutateAsync(payload);
     } catch {
       showNotification("Error al guardar recepción", "error");
       return;
@@ -229,7 +261,6 @@ export default function Recepcion() {
     showNotification("Recepción manual guardada correctamente.", "success");
     setRecepcion([]);
     setObs("");
-    await cargarDatos();
   }
 
   // ===== Pedidos (importación) =====
@@ -240,15 +271,7 @@ export default function Recepcion() {
     setVerifQty({}); // Reset quantities for new verification
 
     try {
-      const json = await apiFetch<{ success?: boolean; data?: Pedido[] }>("/pedidos", { headers: { "X-Requested-With": "XMLHttpRequest" } });
-
-      if (!json?.success || !json?.data) throw new Error("Respuesta inesperada");
-
-      const pendientes: Pedido[] = (json.data as Pedido[]).filter(
-        (p) => p.estado === "PENDIENTE" || p.estado === "INCOMPLETO"
-      );
-
-      setPedidosPendientes(pendientes);
+      const pendientes = await pedidosPendientesQuery.refetch().then((result) => result.data ?? []);
 
       // Initialize verifQty for all items in all pending orders
       const initialVerifQty: Record<string, number> = {};
@@ -263,9 +286,8 @@ export default function Recepcion() {
     } catch (e: any) {
       console.error(e);
       showNotification("Error cargando pedidos pendientes", "error");
-      setPedidosPendientes([]);
     }
-  }, []);
+  }, [pedidosPendientesQuery]);
 
   const cerrarDrawerPedidos = useCallback(() => {
     if (!modalPedidosOpen || cerrandoDrawerPedidos) return;
@@ -300,17 +322,10 @@ export default function Recepcion() {
     }
 
     try {
-      const json = await apiFetch<{ data?: { message?: string } }>(`/pedidos/${pedidoId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({ accion: "RECIBIR", items: itemsToReceive }),
+      const message = await recibirPedidoMutation.mutateAsync({
+        pedidoId,
+        items: itemsToReceive,
       });
-
-      // Volver a cargar datos de productos
-      await cargarDatos();
 
       // Añadir a la tabla de recepción (solo los recibidos > 0)
       const nuevasFilas: RecepcionRow[] = [];
@@ -338,7 +353,7 @@ export default function Recepcion() {
         setRecepcion((prev) => [...prev, ...nuevasFilas]);
       }
 
-      showNotification(json?.data?.message ?? "Recepción procesada correctamente", "success");
+      showNotification(message, "success");
       // Refresh the list of pending orders
       await abrirModalPedidos();
     } catch (e) {
@@ -346,7 +361,9 @@ export default function Recepcion() {
       const apiError = e as ApiRequestError;
       showNotification("Error de conexión: " + apiError.message, "error");
     }
-  }, [verifQty, productos, abrirModalPedidos]);
+  }, [verifQty, productos, abrirModalPedidos, recibirPedidoMutation]);
+
+  const pedidosPendientes = pedidosPendientesQuery.data ?? [];
 
   const nombreProveedorActual = useMemo(() => {
     if (!recepcion.length) return "Sin seleccionar";

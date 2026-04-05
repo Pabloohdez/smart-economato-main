@@ -68,8 +68,11 @@
   line-height: 1;
 }
 .ui-btn:disabled, .ui-btn--loading { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
-.ui-btn:not(:disabled):hover { transform: translateY(-1px); }
 .ui-btn:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn:not(:disabled):hover { transform: translateY(-1px); }
+}
 
 /* sizes */
 .ui-btn--sm { padding: 8px 16px; font-size: 13px; }
@@ -82,34 +85,42 @@
   color: #fff;
   box-shadow: 0 4px 14px rgba(179, 49, 49, 0.28);
 }
-.ui-btn--primary:not(:disabled):hover {
-  filter: brightness(1.08);
-  box-shadow: 0 6px 20px rgba(179, 49, 49, 0.38);
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn--primary:not(:disabled):hover {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgba(179, 49, 49, 0.38);
+  }
 }
 .ui-btn--success {
   background: linear-gradient(135deg, #48bb78, #38a169);
   color: #fff;
   box-shadow: 0 4px 14px rgba(56, 161, 105, 0.28);
 }
-.ui-btn--success:not(:disabled):hover {
-  filter: brightness(1.08);
-  box-shadow: 0 6px 20px rgba(56, 161, 105, 0.38);
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn--success:not(:disabled):hover {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgba(56, 161, 105, 0.38);
+  }
 }
 .ui-btn--danger {
   background: linear-gradient(135deg, #e53e3e, #c53030);
   color: #fff;
   box-shadow: 0 4px 14px rgba(197, 48, 48, 0.28);
 }
-.ui-btn--danger:not(:disabled):hover { filter: brightness(1.08); }
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn--danger:not(:disabled):hover { filter: brightness(1.08); }
+}
 .ui-btn--secondary {
   background: var(--color-bg-surface);
   color: var(--color-text-default);
   border: 1.5px solid var(--color-border-default);
   box-shadow: var(--shadow-sm);
 }
-.ui-btn--secondary:not(:disabled):hover {
-  background: var(--color-bg-soft);
-  border-color: var(--color-border-strong);
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn--secondary:not(:disabled):hover {
+    background: var(--color-bg-soft);
+    border-color: var(--color-border-strong);
+  }
 }
 .ui-btn--ghost {
   background: transparent;
@@ -117,9 +128,11 @@
   padding-left: var(--space-3);
   padding-right: var(--space-3);
 }
-.ui-btn--ghost:not(:disabled):hover {
-  background: var(--color-bg-soft);
-  color: var(--color-text-default);
+@media (hover: hover) and (pointer: fine) {
+  .ui-btn--ghost:not(:disabled):hover {
+    background: var(--color-bg-soft);
+    color: var(--color-text-default);
+  }
 }
 
 /* inline spinner inside button */
@@ -221,7 +234,9 @@
   padding: 0 2px;
   flex-shrink: 0;
 }
-.ui-toast__close:hover { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .ui-toast__close:hover { opacity: 1; }
+}
 
 /* progress bar */
 .ui-toast__bar {
@@ -321,7 +336,9 @@
   cursor: pointer;
   transition: background 0.15s;
 }
-.ui-confirm-btn-cancel:hover { background: var(--color-border-default, #e2e8f0); }
+@media (hover: hover) and (pointer: fine) {
+  .ui-confirm-btn-cancel:hover { background: var(--color-border-default, #e2e8f0); }
+}
 
 .ui-confirm-btn-ok {
   flex: 1;
@@ -336,7 +353,9 @@
   box-shadow: 0 4px 14px rgba(179, 49, 49, 0.3);
   transition: filter 0.15s, transform 0.15s;
 }
-.ui-confirm-btn-ok:hover { filter: brightness(1.08); transform: translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+  .ui-confirm-btn-ok:hover { filter: brightness(1.08); transform: translateY(-1px); }
+}
 .ui-confirm-btn-ok--danger {
   background: linear-gradient(135deg, #e53e3e, #c53030);
   box-shadow: 0 4px 14px rgba(229, 62, 62, 0.3);

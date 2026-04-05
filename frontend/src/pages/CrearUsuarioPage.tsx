@@ -13,6 +13,16 @@ type NuevoUsuarioPayload = {
   telefono: string;
 };
 
+type CrearUsuarioResponse = {
+  success?: boolean;
+  ok?: boolean;
+  id?: number | string;
+  message?: string;
+  error?: {
+    message?: string;
+  };
+};
+
 export default function CrearUsuarioPage() {
   const nav = useNavigate();
 
@@ -28,7 +38,7 @@ export default function CrearUsuarioPage() {
   const [loading, setLoading] = useState(false);
 
   async function crearUsuario(payload: NuevoUsuarioPayload) {
-    return apiFetch("/usuarios", {
+    return apiFetch<CrearUsuarioResponse>("/usuarios", {
       method: "POST",
       headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify(payload),

@@ -16,6 +16,9 @@ import { AuditoriaModule } from './auditoria/auditoria.module';
 import { InformesModule } from './informes/informes.module';
 import { RendimientosModule } from './rendimientos/rendimientos.module';
 import { HealthModule } from './health/health.module';
+import { AlergenosModule } from './alergenos/alergenos.module';
+import { EscandallosModule } from './escandallos/escandallos.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -38,6 +41,9 @@ import { HealthModule } from './health/health.module';
     AuditoriaModule,
     InformesModule,
     RendimientosModule,
+    AlergenosModule,
+    EscandallosModule,
+    RealtimeModule,
     HealthModule,
   ],
   providers: [

@@ -4,10 +4,14 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { CreateRendimientoDto } from './create-rendimiento.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Controller('rendimientos')
 export class RendimientosController {
-  constructor(private readonly rendimientosService: RendimientosService) {}
+  constructor(
+    private readonly rendimientosService: RendimientosService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   @Public()
   @Get()
@@ -23,7 +27,9 @@ export class RendimientosController {
     if (items.length === 0) {
       throw new HttpException('No hay datos para guardar', HttpStatus.BAD_REQUEST);
     }
-    return this.rendimientosService.crear(items as any);
+    const result = await this.rendimientosService.crear(items as any);
+    this.realtimeService.publish(['rendimientosHistorial'], 'rendimientos');
+    return result;
   }
 
   @Roles('admin')
@@ -31,6 +37,8 @@ export class RendimientosController {
   async eliminar(@Param('id') id: string) {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) throw new HttpException('ID inválido', HttpStatus.BAD_REQUEST);
-    return this.rendimientosService.eliminar(numId);
+    const result = await this.rendimientosService.eliminar(numId);
+    this.realtimeService.publish(['rendimientosHistorial'], 'rendimientos');
+    return result;
   }
 }

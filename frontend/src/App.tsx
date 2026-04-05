@@ -1,11 +1,14 @@
 import { lazy, Suspense } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import InicioPage from "./pages/InicioPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Spinner from "./components/ui/Spinner";
+import AppRealtimeSync from "./components/app/AppRealtimeSync";
 import { AuthProvider } from "./contexts/AuthContext";
+import { queryClient } from "./lib/queryClient";
 
 const IngresarProductoPage = lazy(() => import("./pages/IngresarProductoPage"));
 const InventarioPage = lazy(() => import("./pages/InventarioPage"));
@@ -23,10 +26,12 @@ const CrearUsuarioPage = lazy(() => import("./pages/CrearUsuarioPage"));
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-      <Suspense fallback={<Spinner />}>
-      <Routes>
+    <QueryClientProvider client={queryClient}>
+      <AppRealtimeSync />
+      <BrowserRouter>
+        <AuthProvider>
+        <Suspense fallback={<Spinner />}>
+        <Routes>
         {/* Login y registro libres */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<CrearUsuarioPage />} />
@@ -60,9 +65,10 @@ export default function App() {
 
         {/* Cualquier otra ruta */}
         <Route path="*" element={<Navigate to="/inicio" replace />} />
-      </Routes>
-      </Suspense>
-      </AuthProvider>
-    </BrowserRouter>
+        </Routes>
+        </Suspense>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }

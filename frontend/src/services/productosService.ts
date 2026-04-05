@@ -70,6 +70,10 @@ export async function crearProductosBatch(items: CrearProductoPayload[]): Promis
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(items),
+    offlineQueue: {
+      enabled: true,
+      queuedMessage: "Los productos se han dejado en cola y se crearán al recuperar conexión.",
+    },
   });
 }
 
@@ -78,6 +82,10 @@ export async function registrarBaja(payload: RegistrarBajaPayload): Promise<unkn
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
+    offlineQueue: {
+      enabled: true,
+      queuedMessage: "La baja queda pendiente y se sincronizará cuando vuelva la red.",
+    },
   });
 }
 
@@ -86,5 +94,9 @@ export async function crearPedido(payload: CrearPedidoPayload): Promise<unknown>
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify(payload),
+    offlineQueue: {
+      enabled: true,
+      queuedMessage: "El pedido se ha guardado en cola y se enviará al recuperar conexión.",
+    },
   });
 }

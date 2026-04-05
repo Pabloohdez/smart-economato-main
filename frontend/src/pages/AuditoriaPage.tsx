@@ -63,24 +63,7 @@ export default function AuditoriaPage() {
   }, []);
 
   useEffect(() => {
-    if (!gridRef.current || accesoDenegado) return;
-
-    if (gridInstance.current) {
-      try {
-        gridInstance.current.destroy();
-      } catch {
-        // ignore
-      }
-      gridInstance.current = null;
-    }
-
-    const data = registrosAuditoria.map((reg) => [
-      formatearFecha(reg.fecha),
-      reg.usuario_nombre || reg.usuario_id || "—",
-      generarBadgeAccion(reg.accion),
-      reg.entidad || "—",
-      generarBotonDetalles(reg),
-    ]);
+    if (!gridRef.current || accesoDenegado || gridInstance.current) return;
 
     gridInstance.current = new Grid({
       columns: [
@@ -90,7 +73,7 @@ export default function AuditoriaPage() {
         { name: "Entidad", width: "120px" },
         { name: "Detalles", width: "120px" },
       ],
-      data,
+      data: [],
       sort: true,
       search: true,
       pagination: {
@@ -126,6 +109,22 @@ export default function AuditoriaPage() {
         gridInstance.current = null;
       }
     };
+  }, [accesoDenegado]);
+
+  useEffect(() => {
+    if (!gridInstance.current || accesoDenegado) return;
+
+    gridInstance.current
+      .updateConfig({
+        data: registrosAuditoria.map((reg) => [
+          formatearFecha(reg.fecha),
+          reg.usuario_nombre || reg.usuario_id || "—",
+          generarBadgeAccion(reg.accion),
+          reg.entidad || "—",
+          generarBotonDetalles(reg),
+        ]),
+      })
+      .forceRender();
   }, [registrosAuditoria, accesoDenegado]);
 
   async function cargarAuditoria(filtrosAplicados?: Partial<FiltrosAuditoria>) {

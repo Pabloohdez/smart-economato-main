@@ -1,110 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import "../styles/escandallos.css";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import { showConfirm, showNotification } from "../utils/notifications";
-
-type IngredienteReceta = {
-  producto_id: number | string;
-  nombre: string;
-  cantidad: number;
-  precio: number;
-};
-
-type Escandallo = {
-  id: number;
-  nombre: string;
-  autor: string;
-  coste: number;
-  pvp: number;
-  items: IngredienteReceta[];
-  elaboracion: string;
-};
-
-const ESCANDALLOS_INICIALES: Escandallo[] = [
-  {
-    id: 1,
-    nombre: "Tortilla de Patatas",
-    autor: "Admin",
-    coste: 1.5,
-    pvp: 8.0,
-    items: [
-      { producto_id: 101, nombre: "Huevos", cantidad: 4, precio: 0.2 },
-      { producto_id: 102, nombre: "Patatas", cantidad: 1, precio: 0.5 },
-      { producto_id: 103, nombre: "Aceite", cantidad: 0.1, precio: 2.0 },
-      { producto_id: 999, nombre: "Sal", cantidad: 0.01, precio: 0.6 },
-    ],
-    elaboracion:
-      "1. Pelar y cortar las patatas.\n2. Freír las patatas en abundante aceite.\n3. Batir los huevos con sal.\n4. Mezclar patatas con huevos.\n5. Cuajar la tortilla en la sartén.",
-  },
-  {
-    id: 2,
-    nombre: "Ensalada Mixta",
-    autor: "Admin",
-    coste: 2.1,
-    pvp: 9.5,
-    items: [
-      { producto_id: 201, nombre: "Lechuga", cantidad: 1, precio: 0.8 },
-      { producto_id: 202, nombre: "Tomate", cantidad: 2, precio: 0.4 },
-      { producto_id: 203, nombre: "Atún", cantidad: 1, precio: 0.9 },
-      { producto_id: 999, nombre: "Sal", cantidad: 0.01, precio: 0.6 },
-    ],
-    elaboracion:
-      "1. Lavar y trocear la lechuga.\n2. Cortar el tomate en gajos.\n3. Añadir el atún desmenuzado.\n4. Aliñar con aceite, vinagre y sal al gusto.",
-  },
-  {
-    id: 3,
-    nombre: "Salmorejo Cordobés",
-    autor: "Admin",
-    coste: 1.85,
-    pvp: 9.0,
-    items: [
-      { producto_id: 202, nombre: "Tomate", cantidad: 2, precio: 0.4 },
-      { producto_id: 103, nombre: "Aceite", cantidad: 0.15, precio: 2.0 },
-      { producto_id: 401, nombre: "Pan Duro", cantidad: 0.3, precio: 0.8 },
-      { producto_id: 402, nombre: "Ajo", cantidad: 0.01, precio: 4.0 },
-      { producto_id: 999, nombre: "Sal", cantidad: 0.02, precio: 0.6 },
-    ],
-    elaboracion:
-      "1. Triturar los tomates con el ajo.\n2. Añadir el pan troceado y triturar más.\n3. Emulsionar con el aceite poco a poco.\n4. Corregir de sal y servir muy frío.",
-  },
-  {
-    id: 4,
-    nombre: "Croquetas de Jamón",
-    autor: "Admin",
-    coste: 3.2,
-    pvp: 12.0,
-    items: [
-      { producto_id: 501, nombre: "Leche", cantidad: 1, precio: 0.9 },
-      { producto_id: 502, nombre: "Harina", cantidad: 0.15, precio: 0.7 },
-      { producto_id: 503, nombre: "Mantequilla", cantidad: 0.1, precio: 6.0 },
-      {
-        producto_id: 504,
-        nombre: "Jamón Serrano",
-        cantidad: 0.2,
-        precio: 15.0,
-      },
-      { producto_id: 999, nombre: "Sal", cantidad: 0.01, precio: 0.6 },
-    ],
-    elaboracion:
-      "1. Tostar la harina en la mantequilla.\n2. Añadir leche caliente poco a poco.\n3. Incorporar el jamón picado.\n4. Enfriar, bolear, empanar y freír.",
-  },
-];
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useAuth } from "../contexts/AuthContext";
+import { deleteEscandallo, getEscandallos, saveEscandallo } from "../services/escandallosService";
+import type { Escandallo, EscandalloItem } from "../types";
+import { queryKeys } from "../lib/queryClient";
 
 export default function EscandallosPage() {
-  const [todosLosProductos, setTodosLosProductos] = useState<Producto[]>([]);
-  const [escandallos, setEscandallos] = useState<Escandallo[]>(
-    ESCANDALLOS_INICIALES,
-  );
-
-  const [loadingProductos, setLoadingProductos] = useState(true);
-  const [err, setErr] = useState("");
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const [busquedaReceta, setBusquedaReceta] = useState("");
   const [busquedaIngrediente, setBusquedaIngrediente] = useState("");
   const [filtroReceta, setFiltroReceta] = useState("");
   const [filtroIngrediente, setFiltroIngrediente] = useState("");
+  const debouncedBusquedaReceta = useDebouncedValue(busquedaReceta, 300);
+  const debouncedBusquedaIngrediente = useDebouncedValue(busquedaIngrediente, 300);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modoLectura, setModoLectura] = useState(false);
@@ -114,63 +30,65 @@ export default function EscandallosPage() {
   const [pvpPlato, setPvpPlato] = useState("0");
   const [elaboracionPlato, setElaboracionPlato] = useState("");
 
-  const [ingredientesReceta, setIngredientesReceta] = useState<
-    IngredienteReceta[]
-  >([]);
+  const [ingredientesReceta, setIngredientesReceta] = useState<EscandalloItem[]>([]);
   const [productoIngredienteId, setProductoIngredienteId] = useState("");
   const [cantidadIngrediente, setCantidadIngrediente] = useState("");
 
+  const productosQuery = useQuery({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+  });
+
+  const escandallosQuery = useQuery({
+    queryKey: queryKeys.escandallos,
+    queryFn: getEscandallos,
+  });
+
+  const saveEscandalloMutation = useMutation({
+    mutationFn: ({ payload, id }: { payload: Parameters<typeof saveEscandallo>[0]; id?: number | null }) =>
+      saveEscandallo(payload, id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.escandallos });
+    },
+  });
+
+  const deleteEscandalloMutation = useMutation({
+    mutationFn: deleteEscandallo,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.escandallos });
+    },
+  });
+
+  const todosLosProductos = useMemo(() => {
+    const lista = Array.isArray(productosQuery.data) ? [...productosQuery.data] : [];
+
+    if (!lista.find((p) => String(p.nombre).trim().toLowerCase() === "sal")) {
+      lista.push({
+        id: "999",
+        nombre: "Sal",
+        precio: 0.6,
+        stock: 0,
+        proveedorId: null,
+        categoriaId: null,
+      } as Producto);
+    }
+
+    return lista;
+  }, [productosQuery.data]);
+
+  const escandallos = escandallosQuery.data ?? [];
+
+  const loadingProductos = productosQuery.isLoading;
+  const loadingEscandallos = escandallosQuery.isLoading;
+  const err =
+    (productosQuery.error instanceof Error && productosQuery.error.message)
+    || (escandallosQuery.error instanceof Error && escandallosQuery.error.message)
+    || "";
+
   useEffect(() => {
-    let alive = true;
-
-    (async () => {
-      try {
-        setErr("");
-        setLoadingProductos(true);
-
-        const productos = await getProductos();
-        if (!alive) return;
-
-        const lista = Array.isArray(productos) ? [...productos] : [];
-
-        if (
-          !lista.find((p) => String(p.nombre).trim().toLowerCase() === "sal")
-        ) {
-          lista.push({
-            id: "999",
-            nombre: "Sal",
-            precio: 0.6,
-            stock: 0,
-            proveedorId: null,
-            categoriaId: null,
-          } as Producto);
-        }
-
-        setTodosLosProductos(lista);
-      } catch (e) {
-        console.warn("No se pudieron cargar productos de la API.", e);
-        if (alive) {
-          setErr("No se pudieron cargar productos de la API.");
-          setTodosLosProductos([
-            {
-              id: "999",
-              nombre: "Sal",
-              precio: 0.6,
-              stock: 0,
-              proveedorId: null,
-              categoriaId: null,
-            } as Producto,
-          ]);
-        }
-      } finally {
-        if (alive) setLoadingProductos(false);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+    setFiltroReceta(debouncedBusquedaReceta);
+    setFiltroIngrediente(debouncedBusquedaIngrediente);
+  }, [debouncedBusquedaIngrediente, debouncedBusquedaReceta]);
 
   const escandallosFiltrados = useMemo(() => {
     const textoReceta = filtroReceta.trim().toLowerCase();
@@ -286,7 +204,7 @@ export default function EscandallosPage() {
     setIngredientesReceta((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function guardarEscandallo(e: React.FormEvent) {
+  async function guardarEscandallo(e: React.FormEvent) {
     e.preventDefault();
 
     if (ingredientesReceta.length === 0) {
@@ -294,29 +212,20 @@ export default function EscandallosPage() {
       return;
     }
 
-    const nuevoEscandallo: Escandallo = {
-      id: editEscandalloId ?? Date.now(),
+    const payload = {
       nombre: nombrePlato.trim(),
       pvp: Number.parseFloat(pvpPlato || "0") || 0,
-      coste: costeTotal,
       elaboracion: elaboracionPlato,
       items: [...ingredientesReceta],
-      autor: "Admin",
+      autor: String(user?.nombre ?? user?.username ?? "Admin"),
     };
 
-    if (!nuevoEscandallo.nombre) {
+    if (!payload.nombre) {
       showNotification("El nombre del plato es obligatorio.", "warning");
       return;
     }
 
-    setEscandallos((prev) => {
-      if (editEscandalloId) {
-        return prev.map((item) =>
-          item.id === editEscandalloId ? nuevoEscandallo : item,
-        );
-      }
-      return [...prev, nuevoEscandallo];
-    });
+    await saveEscandalloMutation.mutateAsync({ payload, id: editEscandalloId });
 
     cerrarModal();
     limpiarFormulario();
@@ -339,7 +248,7 @@ export default function EscandallosPage() {
     });
     if (!confirmado) return;
 
-    setEscandallos((prev) => prev.filter((x) => x.id !== id));
+    await deleteEscandalloMutation.mutateAsync(id);
     showNotification("Receta eliminada correctamente.", "success");
   }
 
@@ -441,7 +350,7 @@ export default function EscandallosPage() {
         </div>
       </div>
 
-      {loadingProductos && <Spinner label="Cargando productos..." />}
+      {(loadingProductos || loadingEscandallos) && <Spinner label="Cargando datos..." />}
       {err && <Alert type="error">{err}</Alert>}
 
       <div className="table-container">

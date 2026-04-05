@@ -2,10 +2,14 @@ import { Body, Controller, Get, Post, Query, Req } from '@nestjs/common';
 import { BajasService } from './bajas.service';
 import type { AuthenticatedRequest } from '../auth/auth.types';
 import { CreateBajaDto } from './dto/create-baja.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Controller('bajas')
 export class BajasController {
-  constructor(private readonly bajasService: BajasService) {}
+  constructor(
+    private readonly bajasService: BajasService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   @Get()
   async listar(
@@ -20,7 +24,7 @@ export class BajasController {
   @Post()
   async crear(@Body() body: CreateBajaDto, @Req() req: AuthenticatedRequest) {
     const ip = req.socket?.remoteAddress;
-    return this.bajasService.crear(
+    const result = await this.bajasService.crear(
       {
         productoId: body.productoId,
         cantidad: body.cantidad,
@@ -31,5 +35,7 @@ export class BajasController {
       },
       ip,
     );
+    this.realtimeService.publish(['productos'], 'bajas');
+    return result;
   }
 }

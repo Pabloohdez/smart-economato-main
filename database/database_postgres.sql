@@ -1,4 +1,10 @@
 -- 1. Limpieza inicial (opcional, para evitar conflictos)
+DROP TABLE IF EXISTS refresh_tokens CASCADE;
+DROP TABLE IF EXISTS escandallo_items CASCADE;
+DROP TABLE IF EXISTS escandallos CASCADE;
+DROP TABLE IF EXISTS usuario_alergenos CASCADE;
+DROP TABLE IF EXISTS producto_alergenos CASCADE;
+DROP TABLE IF EXISTS alergenos CASCADE;
 DROP TABLE IF EXISTS movimientos CASCADE;
 DROP TABLE IF EXISTS detalles_pedido CASCADE;
 DROP TABLE IF EXISTS pedidos CASCADE;
@@ -102,4 +108,70 @@ CREATE TABLE movimientos (
     
     CONSTRAINT fk_mov_producto FOREIGN KEY (producto_id) REFERENCES productos (id) ON DELETE CASCADE,
     CONSTRAINT fk_mov_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE SET NULL
+);
+
+-- 9. Tabla ALERGENOS
+CREATE TABLE alergenos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    icono VARCHAR(80),
+    color_bg VARCHAR(20),
+    color_texto VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 10. Tabla PRODUCTO_ALERGENOS
+CREATE TABLE producto_alergenos (
+    producto_id VARCHAR(50) NOT NULL,
+    alergeno_id INTEGER NOT NULL,
+    PRIMARY KEY (producto_id, alergeno_id),
+    CONSTRAINT fk_producto_alergenos_producto FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_producto_alergenos_alergeno FOREIGN KEY (alergeno_id) REFERENCES alergenos(id) ON DELETE CASCADE
+);
+
+-- 11. Tabla USUARIO_ALERGENOS
+CREATE TABLE usuario_alergenos (
+    usuario_id VARCHAR(50) NOT NULL,
+    alergeno_id INTEGER NOT NULL,
+    PRIMARY KEY (usuario_id, alergeno_id),
+    CONSTRAINT fk_usuario_alergenos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    CONSTRAINT fk_usuario_alergenos_alergeno FOREIGN KEY (alergeno_id) REFERENCES alergenos(id) ON DELETE CASCADE
+);
+
+-- 12. Tabla ESCANDALLOS
+CREATE TABLE escandallos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(120) NOT NULL,
+    autor VARCHAR(100),
+    coste NUMERIC(10,2) DEFAULT 0,
+    pvp NUMERIC(10,2) DEFAULT 0,
+    elaboracion TEXT,
+    usuario_id VARCHAR(50),
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_escandallos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+-- 13. Tabla ESCANDALLO_ITEMS
+CREATE TABLE escandallo_items (
+    id SERIAL PRIMARY KEY,
+    escandallo_id INTEGER NOT NULL,
+    producto_id VARCHAR(50) NOT NULL,
+    nombre VARCHAR(120) NOT NULL,
+    cantidad NUMERIC(10,3) NOT NULL,
+    precio NUMERIC(10,2) NOT NULL,
+    CONSTRAINT fk_escandallo_items_escandallo FOREIGN KEY (escandallo_id) REFERENCES escandallos(id) ON DELETE CASCADE,
+    CONSTRAINT fk_escandallo_items_producto FOREIGN KEY (producto_id) REFERENCES productos(id)
+);
+
+-- 14. Tabla REFRESH_TOKENS
+CREATE TABLE refresh_tokens (
+    id VARCHAR(64) PRIMARY KEY,
+    usuario_id VARCHAR(50) NOT NULL,
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rotated_at TIMESTAMP,
+    revoked_at TIMESTAMP,
+    CONSTRAINT fk_refresh_tokens_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );

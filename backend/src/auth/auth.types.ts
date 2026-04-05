@@ -5,6 +5,7 @@ export type AuthTokenPayload = {
   username: string;
   role?: string | null;
   nombre?: string | null;
+  tokenType?: 'access' | 'refresh';
   iat?: number;
   exp?: number;
 };

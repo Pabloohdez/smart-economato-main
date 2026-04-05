@@ -4,10 +4,14 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
 import { Roles } from '../auth/roles.decorator';
 import { CreateProveedorDto, UpdateProveedorDto } from './create-proveedor.dto';
+import { RealtimeService } from '../realtime/realtime.service';
 
 @Controller('proveedores')
 export class ProveedoresController {
-  constructor(private readonly proveedoresService: ProveedoresService) {}
+  constructor(
+    private readonly proveedoresService: ProveedoresService,
+    private readonly realtimeService: RealtimeService,
+  ) {}
 
   @Public()
   @Get()
@@ -18,7 +22,9 @@ export class ProveedoresController {
   @Roles('admin')
   @Post()
   async crear(@Body() body: CreateProveedorDto) {
-    return this.proveedoresService.crear(body as any);
+    const result = await this.proveedoresService.crear(body as any);
+    this.realtimeService.publish(['proveedores', 'productos'], 'proveedores');
+    return result;
   }
 
   @Roles('admin')
@@ -26,7 +32,9 @@ export class ProveedoresController {
   async actualizar(@Param('id') id: string, @Body() body: UpdateProveedorDto) {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) throw new HttpException('ID inválido', HttpStatus.BAD_REQUEST);
-    return this.proveedoresService.actualizar(numId, body as any);
+    const result = await this.proveedoresService.actualizar(numId, body as any);
+    this.realtimeService.publish(['proveedores', 'productos'], 'proveedores');
+    return result;
   }
 
   @Roles('admin')
@@ -34,6 +42,8 @@ export class ProveedoresController {
   async eliminar(@Param('id') id: string) {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) throw new HttpException('ID obligatorio para eliminar', HttpStatus.BAD_REQUEST);
-    return this.proveedoresService.eliminar(numId);
+    const result = await this.proveedoresService.eliminar(numId);
+    this.realtimeService.publish(['proveedores', 'productos'], 'proveedores');
+    return result;
   }
 }

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import "../styles/ingreso.css";
 import Alert from "../components/ui/Alert";
@@ -9,6 +10,8 @@ import { showConfirm } from "../utils/notifications";
 // Ajusta esta línea si en tu proyecto real estos métodos están en otro service
 import { getCategorias, getProveedores, crearProductosBatch } from "../services/productosService";
 import type { Categoria, Proveedor } from "../types";
+import { queryKeys } from "../lib/queryClient";
+import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
 type ProductoTemporal = {
   nombre: string;
@@ -32,9 +35,7 @@ type ProductoTemporal = {
 
 export default function IngresarProductoPage() {
   const nav = useNavigate();
-
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
+  const queryClient = useQueryClient();
 
   const [nombre, setNombre] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
@@ -44,38 +45,33 @@ export default function IngresarProductoPage() {
   const [proveedorId, setProveedorId] = useState("");
 
   const [listaTemporal, setListaTemporal] = useState<ProductoTemporal[]>([]);
-  const [loadingSelects, setLoadingSelects] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensajeEstado, setMensajeEstado] = useState("");
   const [mensajeTipo, setMensajeTipo] = useState<"ok" | "warn" | "error" | "info" | "">("");
 
-  useEffect(() => {
-    let alive = true;
+  const categoriasQuery = useQuery({
+    queryKey: queryKeys.categorias,
+    queryFn: getCategorias,
+    refetchInterval: 60_000,
+  });
 
-    (async () => {
-      try {
-        setLoadingSelects(true);
-        const [cats, provs] = await Promise.all([getCategorias(), getProveedores()]);
+  const proveedoresQuery = useQuery({
+    queryKey: queryKeys.proveedores,
+    queryFn: getProveedores,
+    refetchInterval: 60_000,
+  });
 
-        if (!alive) return;
+  const guardarBatchMutation = useMutation({
+    mutationFn: crearProductosBatch,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.productos });
+      broadcastQueryInvalidation(queryKeys.productos);
+    },
+  });
 
-        setCategorias(Array.isArray(cats) ? cats : []);
-        setProveedores(Array.isArray(provs) ? provs : []);
-      } catch (e) {
-        console.error("Error cargando categorías/proveedores:", e);
-        if (alive) {
-          setMensajeEstado("Error cargando categorías y proveedores.");
-          setMensajeTipo("error");
-        }
-      } finally {
-        if (alive) setLoadingSelects(false);
-      }
-    })();
-
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const categorias: Categoria[] = categoriasQuery.data ?? [];
+  const proveedores: Proveedor[] = proveedoresQuery.data ?? [];
+  const loadingSelects = categoriasQuery.isLoading || proveedoresQuery.isLoading;
 
   const contadorTexto = useMemo(() => {
     if (listaTemporal.length === 0) return "0 productos";
@@ -198,7 +194,7 @@ export default function IngresarProductoPage() {
       }));
 
       try {
-        await crearProductosBatch(productosLimpios);
+        await guardarBatchMutation.mutateAsync(productosLimpios);
         setMensajeEstado(`¡Éxito! Se guardaron ${productosLimpios.length} productos correctamente.`);
         setMensajeTipo("ok");
         setListaTemporal([]);
