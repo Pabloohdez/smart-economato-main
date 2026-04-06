@@ -5,7 +5,6 @@ import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
-import { useAuth } from "../contexts/AuthContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 type ProductoBaja = Producto & {
@@ -90,9 +89,6 @@ export default function BajasPage() {
   const [modalCantidad, setModalCantidad] = useState(1);
 
   const [confirmando, setConfirmando] = useState(false);
-
-  // Obtener usuario activo para auditoría
-  const { user } = useAuth();
 
   async function cargarDatos() {
     setLoadingDatos(true);
@@ -361,11 +357,10 @@ export default function BajasPage() {
     for (const pb of productosBaja) {
       try {
         const payload = {
-          productoId: pb.id,
+          productoId: String(pb.id),
           cantidad: pb.cantidadBaja,
           tipoBaja: pb.tipoBaja,
           motivo: motivo.trim() || "Sin especificar",
-          usuarioId: user?.id || "admin",
         };
 
         const data = await apiFetch<{ success?: boolean; error?: string }>("/bajas", {

@@ -1,5 +1,5 @@
 import { compare, hash } from 'bcryptjs';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
@@ -34,6 +34,10 @@ export class LoginService {
       throw new UnauthorizedException('Usuario o contraseña incorrectos');
     }
 
+    if (row.email && !row.emailVerifiedAt) {
+      throw new ForbiddenException('Debes verificar tu cuenta antes de iniciar sesión.');
+    }
+
     delete row.password;
     return row;
   }
@@ -57,6 +61,7 @@ export class LoginService {
          u.nombre,
          u.apellidos,
          u.email,
+         u.email_verified_at as "emailVerifiedAt",
          u.telefono,
          u.role,
          COALESCE(array_remove(array_agg(a.nombre ORDER BY a.nombre), NULL), '{}') as alergias
@@ -64,7 +69,7 @@ export class LoginService {
        LEFT JOIN usuario_alergenos ua ON ua.usuario_id = u.id
        LEFT JOIN alergenos a ON a.id = ua.alergeno_id
        WHERE ${whereClause}
-       GROUP BY u.id, u.username, u.password, u.nombre, u.apellidos, u.email, u.telefono, u.role
+       GROUP BY u.id, u.username, u.password, u.nombre, u.apellidos, u.email, u.email_verified_at, u.telefono, u.role
        LIMIT 1`,
       params,
     );

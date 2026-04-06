@@ -35,6 +35,8 @@ export const usuarios = pgTable('usuarios', {
   nombre: varchar('nombre', { length: 100 }),
   apellidos: varchar('apellidos', { length: 100 }),
   email: varchar('email', { length: 100 }),
+  emailVerifiedAt: timestamp('email_verified_at', { mode: 'string' }),
+  verificationSentAt: timestamp('verification_sent_at', { mode: 'string' }),
   telefono: varchar('telefono', { length: 20 }),
 });
 
@@ -145,6 +147,28 @@ export const refreshTokens = pgTable('refresh_tokens', {
   tokenHashUnique: unique('refresh_tokens_token_hash_unique').on(table.tokenHash),
 }));
 
+export const emailVerificationTokens = pgTable('email_verification_tokens', {
+  id: text('id').primaryKey(),
+  usuarioId: text('usuario_id').notNull().references(() => usuarios.id),
+  tokenHash: varchar('token_hash', { length: 128 }).notNull(),
+  expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+  consumedAt: timestamp('consumed_at', { mode: 'string' }),
+}, (table) => ({
+  tokenHashUnique: unique('email_verification_tokens_token_hash_unique').on(table.tokenHash),
+}));
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: text('id').primaryKey(),
+  usuarioId: text('usuario_id').notNull().references(() => usuarios.id),
+  tokenHash: varchar('token_hash', { length: 128 }).notNull(),
+  expiresAt: timestamp('expires_at', { mode: 'string' }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+  consumedAt: timestamp('consumed_at', { mode: 'string' }),
+}, (table) => ({
+  tokenHashUnique: unique('password_reset_tokens_token_hash_unique').on(table.tokenHash),
+}));
+
 export const schema = {
   categorias,
   proveedores,
@@ -159,4 +183,6 @@ export const schema = {
   escandallos,
   escandalloItems,
   refreshTokens,
+  emailVerificationTokens,
+  passwordResetTokens,
 };

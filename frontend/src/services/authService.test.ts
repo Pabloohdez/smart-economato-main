@@ -38,12 +38,10 @@ describe("authService", () => {
     expect(clearSessionMock).not.toHaveBeenCalled();
   });
 
-  it("limpia la sesión y devuelve null si el login falla", async () => {
+  it("limpia la sesión y lanza error si el login falla", async () => {
     apiFetchMock.mockRejectedValue(new Error("boom"));
 
-    const result = await login("admin", "incorrecta");
-
-    expect(result).toBeNull();
+    await expect(login("admin", "incorrecta")).rejects.toThrow("boom");
     expect(clearSessionMock).toHaveBeenCalledTimes(1);
     expect(saveSessionMock).not.toHaveBeenCalled();
   });

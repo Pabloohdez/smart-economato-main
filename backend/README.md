@@ -41,6 +41,8 @@ Health checks disponibles:
 
 El `docker-compose` de la raíz levanta el backend en el contenedor `api` (puerto 3000). El frontend (React) se sirve en el puerto 8081 y hace proxy de `/api` a este backend.
 
+Docker lee las variables del backend desde `backend/.env`. Si te falta ese archivo, copia `backend/.env.example` a `backend/.env` antes de ejecutar `docker compose up --build`.
+
 ## Rutas principales
 
 | Método | Ruta | Descripción |

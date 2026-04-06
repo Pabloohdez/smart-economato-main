@@ -1,4 +1,11 @@
+import { Transform } from 'class-transformer';
 import { IsString, IsOptional, IsEmail } from 'class-validator';
+
+function normalizeOptionalEmail(value: unknown) {
+  if (typeof value !== 'string') return value;
+  const normalized = value.trim().toLowerCase();
+  return normalized || undefined;
+}
 
 export class CreateProveedorDto {
   @IsString()
@@ -13,6 +20,7 @@ export class CreateProveedorDto {
   telefono?: string;
 
   @IsOptional()
+  @Transform(({ value }) => normalizeOptionalEmail(value))
   @IsEmail()
   email?: string;
 
@@ -34,6 +42,7 @@ export class UpdateProveedorDto {
   telefono?: string;
 
   @IsOptional()
+  @Transform(({ value }) => normalizeOptionalEmail(value))
   @IsEmail()
   email?: string;
 

@@ -6,6 +6,7 @@ import type { AlergenoCatalogo, UsuarioActivo } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../services/alergenosService";
 import { queryKeys } from "../lib/queryClient";
+import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -267,15 +268,23 @@ export default function ConfiguracionPage() {
   function guardarPerfil() {
     if (!usuarioActual) return;
 
+    if (!isValidOptionalEmail(email)) {
+      mostrarMensaje("El email no es válido", "red");
+      return;
+    }
+
+    const normalizedEmail = normalizeOptionalEmail(email);
+
     const actualizado: UsuarioActivo = {
       ...usuarioActual,
-      email: email.trim(),
+      email: normalizedEmail,
       telefono: telefono.trim(),
     };
 
     localStorage.setItem("usuarioActivo", JSON.stringify(actualizado));
     updateUser(actualizado);
     setUsuarioActual(actualizado);
+    setEmail(normalizedEmail || "");
     mostrarMensaje("✅ Perfil actualizado correctamente", "green");
   }
 

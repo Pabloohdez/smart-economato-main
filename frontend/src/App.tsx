@@ -23,6 +23,9 @@ const AvisosPage = lazy(() => import("./pages/AvisosPage"));
 const ConfiguracionPage = lazy(() => import("./pages/ConfiguracionPage"));
 const AuditoriaPage = lazy(() => import("./pages/AuditoriaPage"));
 const CrearUsuarioPage = lazy(() => import("./pages/CrearUsuarioPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const VerifyAccountPage = lazy(() => import("./pages/VerifyAccountPage"));
 
 export default function App() {
   return (
@@ -35,6 +38,9 @@ export default function App() {
         {/* Login y registro libres */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/registro" element={<CrearUsuarioPage />} />
+        <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
+        <Route path="/restablecer-password" element={<ResetPasswordPage />} />
+        <Route path="/verificar-cuenta" element={<VerifyAccountPage />} />
         {/* Rutas protegidas */}
         <Route
           path="/"

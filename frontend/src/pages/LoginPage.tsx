@@ -15,15 +15,14 @@ export default function LoginPage() {
     setMsg("");
     setLoading(true);
 
-    const user = await login(username.trim(), password.trim());
-
-    if (user) {
+    try {
+      await login(username.trim(), password.trim());
       nav("/inicio");
-    } else {
-      setMsg("Usuario o contraseña incorrectos");
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : "Usuario o contraseña incorrectos");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   return (
@@ -90,8 +89,10 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div style={{ marginTop: 20 }}>
+        <div className="auth-links">
           <Link to="/recuperar-password">¿Olvidaste tu contraseña?</Link>
+          <br />
+          <Link to="/verificar-cuenta">Verificar cuenta o reenviar correo</Link>
           <br />
           <Link to="/registro" style={{ fontWeight: 600 }}>
             Crear Cuenta Nueva

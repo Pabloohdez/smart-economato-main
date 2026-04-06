@@ -22,6 +22,8 @@ CREATE TABLE usuarios (
     nombre VARCHAR(100),
     apellidos VARCHAR(100),
     email VARCHAR(100),
+    email_verified_at TIMESTAMP,
+    verification_sent_at TIMESTAMP,
     telefono VARCHAR(20)
 );
 
@@ -168,4 +170,24 @@ CREATE TABLE refresh_tokens (
     rotated_at TIMESTAMP,
     revoked_at TIMESTAMP,
     CONSTRAINT fk_refresh_tokens_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE TABLE email_verification_tokens (
+    id VARCHAR(64) PRIMARY KEY,
+    usuario_id VARCHAR(50) NOT NULL,
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    consumed_at TIMESTAMP,
+    CONSTRAINT fk_email_verification_tokens_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+CREATE TABLE password_reset_tokens (
+    id VARCHAR(64) PRIMARY KEY,
+    usuario_id VARCHAR(50) NOT NULL,
+    token_hash VARCHAR(128) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    consumed_at TIMESTAMP,
+    CONSTRAINT fk_password_reset_tokens_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );

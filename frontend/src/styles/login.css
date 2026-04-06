@@ -69,6 +69,30 @@
   animation: fadeInUp 0.65s ease-out;
 }
 
+.auth-container {
+  max-width: 460px;
+}
+
+.auth-copy {
+  display: block;
+  margin: 0 0 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.auth-form {
+  gap: 0;
+}
+
+.auth-links {
+  margin-top: 20px;
+}
+
+.auth-links a {
+  margin-top: 10px;
+}
+
 .formulario {
   display: flex;
   flex-direction: column;

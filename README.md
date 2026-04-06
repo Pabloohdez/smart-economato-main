@@ -21,12 +21,10 @@ docker-compose up --build
 - **App:** [http://localhost:8081](http://localhost:8081) — React (el navegador llama a `/api`, nginx hace proxy al backend).
 - **API:** el backend NestJS corre en el contenedor `api`; las peticiones llegan vía proxy desde el frontend.
 
-Variables de entorno (opcional, en un `.env` en la raíz):
+Variables de entorno para Docker:
 
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS` — conexión a Supabase.
-- `ALLOWED_ORIGINS` — dominios permitidos para CORS del backend (por defecto `http://localhost:8081`).
-- `JWT_SECRET` — secreto obligatorio para firmar tokens de sesión.
-- `JWT_EXPIRES_IN` — duración del token, por ejemplo `8h`.
+- Docker carga la configuración del backend desde `backend/.env`.
+- Si no existe, copia `backend/.env.example` a `backend/.env` y rellena `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`, `ALLOWED_ORIGINS`, `JWT_SECRET` y `JWT_EXPIRES_IN`.
 
 Verificación rápida de estado:
 

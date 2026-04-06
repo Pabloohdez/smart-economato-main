@@ -1,4 +1,4 @@
-const CACHE_NAME = "smart-economato-v1";
+const CACHE_NAME = "smart-economato-v2";
 const APP_SHELL = ["/", "/index.html", "/offline.html"];
 
 self.addEventListener("install", (event) => {
@@ -22,6 +22,19 @@ self.addEventListener("fetch", (event) => {
   }
 
   const url = new URL(request.url);
+
+  if (url.pathname === "/favicon.png" || url.pathname === "/" || url.pathname === "/index.html") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const cloned = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
+          return response;
+        })
+        .catch(() => caches.match(request).then((cached) => cached || caches.match("/offline.html"))),
+    );
+    return;
+  }
 
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(

@@ -6,6 +6,7 @@ import "../styles/proveedores.css";
 import Spinner from "../components/ui/Spinner";
 
 import { showNotification, showConfirm } from "../utils/notifications";
+import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
 import { deleteProveedor, getProveedoresLista, saveProveedor } from "../services/proveedoresService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
@@ -155,19 +156,26 @@ export default function ProveedoresPage() {
   async function guardarProveedor(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!form.nombre) {
+    if (!form.nombre.trim()) {
       showNotification("El nombre del proveedor es obligatorio", "warning");
       return;
     }
+
+    if (!isValidOptionalEmail(form.email)) {
+      showNotification("El email del proveedor no es válido", "warning");
+      return;
+    }
+
+    const normalizedEmail = normalizeOptionalEmail(form.email);
 
     try {
       await saveProveedorMutation.mutateAsync({
         id: form.id || undefined,
         payload: {
-          nombre: form.nombre,
-          contacto: form.contacto,
-          telefono: form.telefono,
-          email: form.email,
+          nombre: form.nombre.trim(),
+          contacto: form.contacto.trim() || undefined,
+          telefono: form.telefono.trim() || undefined,
+          email: normalizedEmail,
         },
       });
       showNotification(
@@ -305,6 +313,7 @@ export default function ProveedoresPage() {
               <div className="form-group">
                 <label>Email</label>
                 <input
+                  type="email"
                   className="form-control"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}

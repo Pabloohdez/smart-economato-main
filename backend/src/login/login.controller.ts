@@ -2,15 +2,19 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { LoginService } from './login.service';
 import { AuthService } from '../auth/auth.service';
+import { AccountSecurityService } from '../auth/account-security.service';
 import { Public } from '../auth/public.decorator';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('login')
 export class LoginController {
   constructor(
     private readonly loginService: LoginService,
     private readonly authService: AuthService,
+    private readonly accountSecurityService: AccountSecurityService,
   ) {}
 
   @Public()
@@ -49,5 +53,19 @@ export class LoginController {
       refreshToken: session.refreshToken,
       user,
     };
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('forgot-password')
+  async forgotPassword(@Body() body: ForgotPasswordDto) {
+    return this.accountSecurityService.requestPasswordReset(body.email);
+  }
+
+  @Public()
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('reset-password')
+  async resetPassword(@Body() body: ResetPasswordDto) {
+    return this.accountSecurityService.resetPassword(body.token, body.password);
   }
 }

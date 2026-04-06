@@ -6,6 +6,13 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+function normalizeOptionalEmail(value: unknown) {
+  if (typeof value !== 'string') return value;
+  const normalized = value.trim().toLowerCase();
+  return normalized || undefined;
+}
 
 export class CreateUsuarioDto {
   @IsString()
@@ -24,9 +31,9 @@ export class CreateUsuarioDto {
   @IsString()
   apellidos?: string;
 
-  @IsOptional()
+  @Transform(({ value }) => normalizeOptionalEmail(value))
   @IsEmail()
-  email?: string;
+  email!: string;
 
   @IsOptional()
   @Matches(/^[+\d()\s-]{7,20}$/)

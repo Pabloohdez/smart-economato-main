@@ -29,6 +29,8 @@ export default function AppLayout() {
   const location = useLocation();
   const { user } = useAuth();
   const userName = String(user?.nombre ?? "Administrador");
+  const userEmail = String(user?.email ?? "").trim();
+  const userRole = String(user?.role ?? user?.rol ?? "usuario").trim();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -53,6 +55,10 @@ export default function AppLayout() {
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   function logout() {
     logoutSession();
@@ -99,14 +105,109 @@ export default function AppLayout() {
           ))}
         </nav>
 
-        <button className="logout" onClick={logout}>
-          ⬅ Salir
-        </button>
+        <div className="sidebar-footer" ref={menuRef}>
+          <button
+            type="button"
+            className="sidebar-user-button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            aria-controls="sidebar-user-dropdown"
+          >
+            <div className="avatar" title="Usuario">
+              {userName.trim().charAt(0).toUpperCase()}
+            </div>
+
+            <span className="sidebar-user-text">
+              <span className="sidebar-user-name">{userName}</span>
+              <span className="sidebar-user-meta">{userEmail || userRole || "Gestor de Economato"}</span>
+            </span>
+
+            <span className="chev sidebar-user-chev" aria-hidden="true">
+              {menuOpen ? "▴" : "▾"}
+            </span>
+          </button>
+
+          {menuOpen && (
+            <div className="sidebar-user-dropdown" id="sidebar-user-dropdown" role="menu">
+              <div className="userDropdownHeader">
+                <div className="avatar avatar-lg">
+                  {userName.trim().charAt(0).toUpperCase()}
+                </div>
+
+                <div className="userDropdownInfo">
+                  <div className="userDropdownName">{userName}</div>
+                  <div className="userDropdownRole">{userEmail || userRole || "Gestor de Economato"}</div>
+                </div>
+              </div>
+
+              <button
+                className="ddItem"
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
+                  nav("/avisos");
+                }}
+              >
+                <span className="ddLeft">
+                  <i className="fa-solid fa-bell"></i>
+                  <span>Centro de avisos</span>
+                </span>
+                <span className="ddBadge">15</span>
+              </button>
+
+              <button
+                className="ddItem"
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false);
+                  nav("/configuracion");
+                }}
+              >
+                <span className="ddLeft">
+                  <i className="fa-solid fa-gear"></i>
+                  <span>Configuración</span>
+                </span>
+              </button>
+
+              <div className="ddMetaRow">
+                <span className="ddLeft ddMuted">
+                  <i className="fa-solid fa-clock"></i>
+                  <span>Sesión iniciada</span>
+                </span>
+                <span className="ddMetaValue">hoy</span>
+              </div>
+
+              <div className="ddMetaRow">
+                <span className="ddLeft ddMuted">
+                  <i className="fa-solid fa-calendar-days"></i>
+                  <span>Fecha</span>
+                </span>
+                <span className="ddMetaValue">
+                  {new Intl.DateTimeFormat("es-ES", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  }).format(new Date())}
+                </span>
+              </div>
+
+              <div className="ddSep" />
+
+              <button className="ddDanger" type="button" onClick={logout}>
+                <i className="fa-solid fa-right-from-bracket"></i>
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
+          )}
+        </div>
       </aside>
 
       <div className="main">
         <header className="topbar">
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="topbar-heading">
             <button
               className="menu-toggle"
               type="button"
@@ -129,115 +230,6 @@ export default function AppLayout() {
               />
               {currentItem.label}
             </h1>
-          </div>
-
-          <div className="userMenu" ref={menuRef}>
-            <button
-              type="button"
-              className="userButton"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              aria-controls="user-menu-dropdown"
-            >
-              <span className="userText">
-                <span className="userName">
-                  {userName}
-                </span>
-                <span className="userRole">Gestor de Economato</span>
-              </span>
-
-              <div className="avatar" title="Usuario">
-                {userName
-                  .trim()
-                  .charAt(0)
-                  .toUpperCase()}
-              </div>
-
-              <span className="chev" aria-hidden="true">
-                {menuOpen ? "▴" : "▾"}
-              </span>
-            </button>
-
-            {menuOpen && (
-              <div className="userDropdown" id="user-menu-dropdown" role="menu">
-                <div className="userDropdownHeader">
-                  <div className="avatar avatar-lg">
-                    {userName
-                      .trim()
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-
-                  <div className="userDropdownInfo">
-                    <div className="userDropdownName">
-                      {userName}
-                    </div>
-                    <div className="userDropdownRole">Gestor de Economato</div>
-                  </div>
-                </div>
-
-                <button
-                  className="ddItem"
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    nav("/avisos");
-                  }}
-                >
-                  <span className="ddLeft">
-                    <i className="fa-solid fa-bell"></i>
-                    <span>Centro de avisos</span>
-                  </span>
-                  <span className="ddBadge">15</span>
-                </button>
-
-                <button
-                  className="ddItem"
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    nav("/configuracion");
-                  }}
-                >
-                  <span className="ddLeft">
-                    <i className="fa-solid fa-gear"></i>
-                    <span>Configuración</span>
-                  </span>
-                </button>
-
-                <div className="ddMetaRow">
-                  <span className="ddLeft ddMuted">
-                    <i className="fa-solid fa-clock"></i>
-                    <span>Sesión iniciada</span>
-                  </span>
-                  <span className="ddMetaValue">hoy</span>
-                </div>
-
-                <div className="ddMetaRow">
-                  <span className="ddLeft ddMuted">
-                    <i className="fa-solid fa-calendar-days"></i>
-                    <span>Fecha</span>
-                  </span>
-                  <span className="ddMetaValue">
-                    {new Intl.DateTimeFormat("es-ES", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    }).format(new Date())}
-                  </span>
-                </div>
-
-                <div className="ddSep" />
-
-                <button className="ddDanger" type="button" onClick={logout}>
-                  <i className="fa-solid fa-right-from-bracket"></i>
-                  <span>Cerrar sesión</span>
-                </button>
-              </div>
-            )}
           </div>
         </header>
 

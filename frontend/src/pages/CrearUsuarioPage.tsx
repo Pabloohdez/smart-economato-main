@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/crearusuario.css";
 import { apiFetch } from "../services/apiClient";
 import Alert from "../components/ui/Alert";
+import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
 
 type NuevoUsuarioPayload = {
   usuario: string;
@@ -48,6 +49,14 @@ export default function CrearUsuarioPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
+    const normalizedEmail = normalizeOptionalEmail(email);
+
+    if (!normalizedEmail || !isValidOptionalEmail(normalizedEmail)) {
+      setMsgTipo("error");
+      setMsg("El correo electrónico no es válido");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -56,7 +65,7 @@ export default function CrearUsuarioPage() {
         password: password.trim(),
         nombre: nombre.trim(),
         apellidos: apellidos.trim(),
-        email: email.trim(),
+        email: normalizedEmail,
         telefono: telefono.trim(),
       };
 
@@ -64,9 +73,9 @@ export default function CrearUsuarioPage() {
 
       if (data?.success || data?.ok || data?.id) {
         setMsgTipo("success");
-        setMsg("Cuenta creada correctamente");
+        setMsg(data?.message || "Cuenta creada. Revisa tu correo para verificarla.");
         setTimeout(() => {
-          nav("/login");
+          nav(`/verificar-cuenta?email=${encodeURIComponent(normalizedEmail)}`);
         }, 1200);
       } else {
         setMsgTipo("error");
