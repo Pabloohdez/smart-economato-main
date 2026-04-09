@@ -24,6 +24,7 @@ export default function EscandallosPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modoLectura, setModoLectura] = useState(false);
+  const [detalleEscandallo, setDetalleEscandallo] = useState<Escandallo | null>(null);
 
   const [editEscandalloId, setEditEscandalloId] = useState<number | null>(null);
   const [nombrePlato, setNombrePlato] = useState("");
@@ -33,6 +34,8 @@ export default function EscandallosPage() {
   const [ingredientesReceta, setIngredientesReceta] = useState<EscandalloItem[]>([]);
   const [productoIngredienteId, setProductoIngredienteId] = useState("");
   const [cantidadIngrediente, setCantidadIngrediente] = useState("");
+  const [busquedaProductoIngrediente, setBusquedaProductoIngrediente] = useState("");
+  const [mostrarSugerenciasIngrediente, setMostrarSugerenciasIngrediente] = useState(false);
 
   const productosQuery = useQuery({
     queryKey: queryKeys.productos,
@@ -108,6 +111,22 @@ export default function EscandallosPage() {
     });
   }, [escandallos, filtroReceta, filtroIngrediente]);
 
+  const productoIngredienteSeleccionado = useMemo(
+    () => todosLosProductos.find((producto) => String(producto.id) === String(productoIngredienteId)) ?? null,
+    [productoIngredienteId, todosLosProductos],
+  );
+
+  const productosSugeridos = useMemo(() => {
+    const texto = busquedaProductoIngrediente.trim().toLowerCase();
+    if (texto.length < 2) {
+      return [];
+    }
+
+    return todosLosProductos
+      .filter((producto) => producto.nombre.toLowerCase().includes(texto))
+      .slice(0, 8);
+  }, [busquedaProductoIngrediente, todosLosProductos]);
+
   const costeTotal = useMemo(() => {
     return ingredientesReceta.reduce(
       (sum, ing) => sum + ing.cantidad * ing.precio,
@@ -130,7 +149,14 @@ export default function EscandallosPage() {
   }
 
   function abrirVerReceta(esc: Escandallo) {
-    cargarRecetaEnFormulario(esc, true);
+    setDetalleEscandallo({
+      ...esc,
+      items: getEscandalloItems(esc),
+    });
+  }
+
+  function cerrarDetalle() {
+    setDetalleEscandallo(null);
   }
 
   function cargarRecetaEnFormulario(esc: Escandallo, readonly: boolean) {
@@ -141,12 +167,18 @@ export default function EscandallosPage() {
     setIngredientesReceta([...(esc.items || [])]);
     setProductoIngredienteId("");
     setCantidadIngrediente("");
+    setBusquedaProductoIngrediente("");
+    setMostrarSugerenciasIngrediente(false);
     setModoLectura(readonly);
     setModalOpen(true);
   }
 
   function cerrarModal() {
     setModalOpen(false);
+  }
+
+  function getEscandalloItems(escandallo: Escandallo | null | undefined) {
+    return Array.isArray(escandallo?.items) ? escandallo.items : [];
   }
 
   function limpiarFormulario() {
@@ -157,6 +189,14 @@ export default function EscandallosPage() {
     setIngredientesReceta([]);
     setProductoIngredienteId("");
     setCantidadIngrediente("");
+    setBusquedaProductoIngrediente("");
+    setMostrarSugerenciasIngrediente(false);
+  }
+
+  function seleccionarIngrediente(producto: Producto) {
+    setProductoIngredienteId(String(producto.id));
+    setBusquedaProductoIngrediente(producto.nombre);
+    setMostrarSugerenciasIngrediente(false);
   }
 
   function agregarIngrediente() {
@@ -198,10 +238,26 @@ export default function EscandallosPage() {
 
     setProductoIngredienteId("");
     setCantidadIngrediente("");
+    setBusquedaProductoIngrediente("");
+    setMostrarSugerenciasIngrediente(false);
   }
 
   function eliminarIngrediente(index: number) {
     setIngredientesReceta((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function actualizarCantidadIngrediente(index: number, cantidad: string) {
+    const parsed = Number.parseFloat(cantidad);
+    setIngredientesReceta((prev) => prev.map((item, itemIndex) => {
+      if (itemIndex !== index) {
+        return item;
+      }
+
+      return {
+        ...item,
+        cantidad: Number.isNaN(parsed) || parsed <= 0 ? item.cantidad : parsed,
+      };
+    }));
   }
 
   async function guardarEscandallo(e: React.FormEvent) {
@@ -275,6 +331,20 @@ export default function EscandallosPage() {
     if (margen < 50) return "resumen-value text-warning";
     return "resumen-value text-success";
   }
+
+  function classMargenBadge(margen: number) {
+    if (margen < 20) return "bg-red-50 text-red-700 ring-red-200";
+    if (margen < 50) return "bg-amber-50 text-amber-700 ring-amber-200";
+    return "bg-emerald-50 text-emerald-700 ring-emerald-200";
+  }
+
+  const detalleItems = getEscandalloItems(detalleEscandallo);
+  const detalleCoste = detalleItems.reduce(
+    (sum, item) => sum + Number(item.cantidad) * Number(item.precio),
+    0,
+  );
+  const detallePvp = Number(detalleEscandallo?.pvp ?? 0);
+  const detalleMargen = detallePvp > 0 ? ((detallePvp - detalleCoste) / detallePvp) * 100 : 0;
 
   return (
     <div className="table-wrapper">
@@ -366,7 +436,7 @@ export default function EscandallosPage() {
               <th>Coste Total</th>
               <th>PVP</th>
               <th>Beneficio %</th>
-              <th>Editar</th>
+                    <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -403,6 +473,14 @@ export default function EscandallosPage() {
                       <div className="action-buttons">
                         <button
                           type="button"
+                          className="btn-sm btn-secondary"
+                          title="Ver detalle"
+                          onClick={() => abrirVerReceta(esc)}
+                        >
+                          <i className="fa-solid fa-eye"></i>
+                        </button>
+                        <button
+                          type="button"
                           className="btn-sm btn-primary"
                           title="Editar"
                           onClick={() => abrirEditarReceta(esc)}
@@ -426,6 +504,151 @@ export default function EscandallosPage() {
           </tbody>
         </table>
       </div>
+
+      {detalleEscandallo && (
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200">
+            <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-8 py-7 text-white">
+              <div>
+                <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
+                  Ficha de escandallo
+                </p>
+                <h2 className="m-0 text-3xl font-black tracking-tight">
+                  {detalleEscandallo.nombre}
+                </h2>
+                <p className="mt-2 text-sm font-medium text-white/80">
+                  Autor: {detalleEscandallo.autor || "Admin"}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={cerrarDetalle}
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20"
+                aria-label="Cerrar detalle"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            <div className="max-h-[calc(92vh-96px)] overflow-y-auto px-8 py-8">
+              <div className="grid gap-4 md:grid-cols-3">
+                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 text-center">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                    Coste total
+                  </span>
+                  <span className="mt-2 block text-3xl font-black text-slate-800">
+                    {detalleCoste.toFixed(2)} €
+                  </span>
+                </article>
+
+                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-6 py-5 text-center">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                    PVP
+                  </span>
+                  <span className="mt-2 block text-3xl font-black text-[var(--color-brand-500)]">
+                    {detallePvp.toFixed(2)} €
+                  </span>
+                </article>
+
+                <article className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                    Margen
+                  </span>
+                  <span className={`mt-2 inline-flex rounded-full px-4 py-2 text-2xl font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
+                    {detalleMargen.toFixed(1)}%
+                  </span>
+                </article>
+              </div>
+
+              <section className="mt-8 rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
+                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
+                    Ingredientes
+                  </h3>
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-slate-100">
+                  <table className="w-full border-collapse text-left text-sm">
+                    <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
+                      <tr>
+                        <th className="px-5 py-4">Producto</th>
+                        <th className="px-5 py-4 text-center">Cantidad</th>
+                        <th className="px-5 py-4 text-right">Coste unidad</th>
+                        <th className="px-5 py-4 text-right">Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {detalleItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
+                            Este escandallo no tiene ingredientes registrados.
+                          </td>
+                        </tr>
+                      ) : (
+                        detalleItems.map((item, index) => {
+                          const subtotal = Number(item.cantidad) * Number(item.precio);
+                          return (
+                            <tr key={`${item.producto_id}-${index}`} className="border-t border-slate-100">
+                              <td className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
+                                {item.nombre}
+                              </td>
+                              <td className="px-5 py-4 text-center text-slate-500">
+                                {item.cantidad}
+                              </td>
+                              <td className="px-5 py-4 text-right text-slate-500">
+                                {Number(item.precio).toFixed(2)} €
+                              </td>
+                              <td className="px-5 py-4 text-right font-bold text-slate-700">
+                                {subtotal.toFixed(2)} €
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="mt-8 rounded-[26px] border border-slate-200 bg-slate-50 p-6">
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
+                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
+                    Elaboración
+                  </h3>
+                </div>
+
+                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-5 text-sm leading-7 text-slate-600 whitespace-pre-wrap">
+                  {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
+                </div>
+              </section>
+
+              <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                  onClick={cerrarDetalle}
+                >
+                  Cerrar
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center rounded-2xl bg-[var(--color-brand-500)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-200/70 transition hover:bg-[var(--color-brand-600)]"
+                  onClick={() => {
+                    cerrarDetalle();
+                    abrirEditarReceta(detalleEscandallo);
+                  }}
+                >
+                  <i className="fa-solid fa-pen mr-2"></i>
+                  Editar receta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {modalOpen && (
         <div className="modal-overlay-escandallos modal-open-escandallos">
@@ -509,26 +732,81 @@ export default function EscandallosPage() {
                   <div className="calculadora-controls">
                     <div className="control-group-grow">
                       <label
-                        htmlFor="selectProductoIngrediente"
+                        htmlFor="busquedaProductoIngrediente"
                         className="label-control"
                       >
                         Producto
                       </label>
-                      <select
-                        id="selectProductoIngrediente"
-                        className="select-form"
-                        value={productoIngredienteId}
-                        onChange={(e) =>
-                          setProductoIngredienteId(e.target.value)
-                        }
-                      >
-                        <option value="">Buscar ingrediente...</option>
-                        {todosLosProductos.map((prod) => (
-                          <option key={String(prod.id)} value={String(prod.id)}>
-                            {prod.nombre} ({Number(prod.precio).toFixed(2)}€)
-                          </option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          id="busquedaProductoIngrediente"
+                          className="input-form"
+                          placeholder="Escribe al menos 2 letras..."
+                          value={busquedaProductoIngrediente}
+                          onChange={(e) => {
+                            const nextValue = e.target.value;
+                            setBusquedaProductoIngrediente(nextValue);
+                            setMostrarSugerenciasIngrediente(true);
+                            if (productoIngredienteSeleccionado?.nombre !== nextValue) {
+                              setProductoIngredienteId("");
+                            }
+                          }}
+                          onFocus={() => {
+                            if (busquedaProductoIngrediente.trim().length >= 2) {
+                              setMostrarSugerenciasIngrediente(true);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && productosSugeridos.length === 1) {
+                              e.preventDefault();
+                              seleccionarIngrediente(productosSugeridos[0]);
+                            }
+                          }}
+                        />
+
+                        {productoIngredienteSeleccionado && (
+                          <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                            <span className="inline-flex rounded-full bg-emerald-50 px-2 py-1 font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                              Seleccionado
+                            </span>
+                            <span>
+                              {productoIngredienteSeleccionado.nombre} ({Number(productoIngredienteSeleccionado.precio).toFixed(2)} €)
+                            </span>
+                          </div>
+                        )}
+
+                        {mostrarSugerenciasIngrediente && productosSugeridos.length > 0 && (
+                          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
+                            {productosSugeridos.map((producto) => (
+                              <button
+                                key={String(producto.id)}
+                                type="button"
+                                className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition hover:bg-slate-50"
+                                onClick={() => seleccionarIngrediente(producto)}
+                              >
+                                <span className="min-w-0 pr-3">
+                                  <span className="block truncate text-sm font-bold text-slate-700">
+                                    {producto.nombre}
+                                  </span>
+                                  <span className="block text-xs text-slate-400">
+                                    ID {producto.id}
+                                  </span>
+                                </span>
+                                <span className="text-sm font-black text-[var(--color-brand-500)]">
+                                  {Number(producto.precio).toFixed(2)} €
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {mostrarSugerenciasIngrediente && busquedaProductoIngrediente.trim().length >= 2 && productosSugeridos.length === 0 && (
+                          <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-20 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 shadow-xl">
+                            No se han encontrado ingredientes con ese nombre.
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="control-group-fixed">
@@ -586,7 +864,20 @@ export default function EscandallosPage() {
                           return (
                             <tr key={`${ing.producto_id}-${index}`}>
                               <td>{ing.nombre}</td>
-                              <td>{ing.cantidad}</td>
+                              <td>
+                                {modoLectura ? (
+                                  ing.cantidad
+                                ) : (
+                                  <input
+                                    type="number"
+                                    step="0.001"
+                                    min="0.001"
+                                    className="input-form"
+                                    value={String(ing.cantidad)}
+                                    onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
+                                  />
+                                )}
+                              </td>
                               <td>{ing.precio.toFixed(2)} €</td>
                               <td>{total.toFixed(2)} €</td>
                               <td className="action-cell">
@@ -620,19 +911,47 @@ export default function EscandallosPage() {
                 </div>
               </div>
 
-              <div className="resumen-panel">
-                <div className="resumen-item">
-                  <strong>Margen Beneficio:</strong>
-                  <span className={classMargenResumen(margenBeneficio)}>
-                    {margenBeneficio.toFixed(1)}%
+              <div className="grid gap-4 md:grid-cols-3">
+                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                    Coste actual
                   </span>
-                </div>
-                <div className="resumen-item">
-                  <strong>Beneficio Neto:</strong>
-                  <span className="resumen-value">
-                    {beneficioNeto.toFixed(2)} €
+                  <span className="mt-2 block text-3xl font-black text-slate-800">
+                    {costeTotal.toFixed(2)} €
                   </span>
-                </div>
+                  <p className="mt-2 mb-0 text-sm text-slate-500">
+                    Suma de todos los ingredientes de la receta.
+                  </p>
+                </article>
+
+                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-6 py-5">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                    PVP sugerido
+                  </span>
+                  <span className="mt-2 block text-3xl font-black text-[var(--color-brand-500)]">
+                    {pvp.toFixed(2)} €
+                  </span>
+                  <p className="mt-2 mb-0 text-sm text-slate-500">
+                    Precio final que verá el usuario o cliente interno.
+                  </p>
+                </article>
+
+                <article className="rounded-3xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                    Rentabilidad
+                  </span>
+                  <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <span className={`inline-flex rounded-full px-4 py-2 text-xl font-black ring-1 ${classMargenBadge(margenBeneficio)}`}>
+                      {margenBeneficio.toFixed(1)}%
+                    </span>
+                    <span className="text-2xl font-black text-slate-700">
+                      {beneficioNeto.toFixed(2)} €
+                    </span>
+                  </div>
+                  <p className="mt-2 mb-0 text-sm text-slate-500">
+                    Margen y beneficio neto calculados en tiempo real.
+                  </p>
+                </article>
               </div>
 
               <div className="form-footer">

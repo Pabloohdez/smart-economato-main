@@ -30,6 +30,15 @@ type ProductoAviso = Producto & {
 
 type ModalModo = "baja" | "pedido" | null;
 
+function hoyES() {
+  return new Date().toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function AvisosPage() {
   const queryClient = useQueryClient();
 
@@ -298,7 +307,15 @@ export default function AvisosPage() {
           </h1>
           <p className="avisos-subtitulo">Resumen de alertas y notificaciones del sistema</p>
         </div>
-        <div className="avisos-timestamp">{timestamp}</div>
+
+        <div className="avisos-header-meta">
+          <div className="avisos-date-chip">
+            <i className="fa-solid fa-calendar"></i>
+            <span>{hoyES()}</span>
+          </div>
+
+          {timestamp ? <div className="avisos-timestamp">{timestamp}</div> : null}
+        </div>
       </div>
 
       <div className="avisos-metricas">

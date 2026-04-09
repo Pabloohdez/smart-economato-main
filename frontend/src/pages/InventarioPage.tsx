@@ -27,6 +27,16 @@ function daysUntil(date: Date): number {
   return Math.floor((b - a) / (1000 * 60 * 60 * 24));
 }
 
+function hoyES() {
+  const fecha = new Date();
+  return fecha.toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function InventarioPage() {
   const nav = useNavigate();
 
@@ -140,16 +150,23 @@ export default function InventarioPage() {
     <div>
       {/* Header como el compi */}
       <div className="header-inventario">
-        <div>
+        <div className="header-inventario-copy">
           <h1 className="titulo-inventario">
             <i className="fa-solid fa-boxes-stacked"></i> INVENTARIO
           </h1>
           <p className="subtitulo">Gestiona y consulta el stock de productos</p>
         </div>
 
-        <button className="btn-ingresar-header" type="button" onClick={() => nav("/inventario/nuevo")}>
-          <i className="fa-solid fa-plus"></i> Ingresar Producto
-        </button>
+        <div className="header-inventario-actions">
+          <div className="info-fecha info-fecha--inventario">
+            <i className="fa-solid fa-calendar" />
+            <span>{hoyES()}</span>
+          </div>
+
+          <button className="btn-ingresar-header" type="button" onClick={() => nav("/inventario/nuevo")}>
+            <i className="fa-solid fa-plus"></i> Ingresar Producto
+          </button>
+        </div>
       </div>
 
       <InventarioToolbar

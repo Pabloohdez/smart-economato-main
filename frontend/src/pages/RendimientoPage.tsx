@@ -429,7 +429,7 @@ export default function RendimientoPage() {
       >
         <div>
           <h1 className="titulo-rendimiento">
-            <i className="fa-solid fa-chart-pie"></i> RENDIMIENTO
+            <i className="fa-solid fa-chart-pie"></i> Rendimiento
           </h1>
           <p className="subtitulo">
             Toda materia prima susceptible de manipulación o preelaboración
@@ -437,10 +437,7 @@ export default function RendimientoPage() {
           </p>
         </div>
 
-        <div
-          className="acciones-header"
-          style={{ display: "flex", gap: "15px", alignItems: "center" }}
-        >
+        <div className="acciones-header-rend">
           <div className="info-fecha">
             <i className="fa-solid fa-calendar"></i>
             <span>{fechaActual}</span>
@@ -448,12 +445,7 @@ export default function RendimientoPage() {
 
           <button
             type="button"
-            className="btn-nuevo-rend"
-            style={{
-              background: "#2d3748",
-              padding: "8px 15px",
-              fontSize: "14px",
-            }}
+            className="btn-secundario-rend"
             onClick={imprimir}
           >
             <i className="fa-solid fa-print"></i> Imprimir / PDF

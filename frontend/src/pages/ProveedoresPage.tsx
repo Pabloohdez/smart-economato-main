@@ -12,6 +12,16 @@ import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import type { Proveedor } from "../types";
 
+function hoyES() {
+  const fecha = new Date();
+  return fecha.toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function ProveedoresPage() {
   const gridRef = useRef<HTMLDivElement | null>(null);
   const gridInstance = useRef<Grid | null>(null);
@@ -253,10 +263,21 @@ export default function ProveedoresPage() {
 
   return (
     <div>
-      <div className="content-header">
-        <h2>Gestión de Proveedores</h2>
+      <div className="content-header content-header--split">
+        <div>
+          <h2>
+            <i className="fa-solid fa-truck-field"></i>
+            Gestión de Proveedores
+          </h2>
+          <p className="content-subtitle">Directorio operativo de contactos, teléfonos y correos de suministro.</p>
+        </div>
 
         <div className="header-actions">
+          <div className="header-date-chip">
+            <i className="fa-solid fa-calendar"></i>
+            <span>{hoyES()}</span>
+          </div>
+
           <button className="btn-primary" onClick={abrirModal}>
             <i className="fa-solid fa-plus"></i>
             Nuevo Proveedor

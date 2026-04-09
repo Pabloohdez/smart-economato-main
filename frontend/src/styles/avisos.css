@@ -9,6 +9,8 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .avisos-titulo {
@@ -31,12 +33,42 @@
   margin: 0;
 }
 
+.avisos-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.avisos-date-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.avisos-date-chip i {
+  color: var(--color-brand-500);
+}
+
+.avisos-date-chip span {
+  text-transform: capitalize;
+}
+
 .avisos-timestamp {
   font-size: 12px;
-  color: #9ca3af;
-  padding: 6px 12px;
+  color: #6b7280;
+  padding: 10px 14px;
   background: #f9fafb;
-  border-radius: 6px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
 }
 
 .avisos-metricas {
@@ -683,6 +715,16 @@
 @media (max-width: 768px) {
   .avisos-page {
     padding: 16px;
+  }
+
+  .avisos-header-meta {
+    width: 100%;
+  }
+
+  .avisos-date-chip,
+  .avisos-timestamp {
+    width: 100%;
+    justify-content: center;
   }
 
   .alerta-item {

@@ -33,12 +33,24 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-bg-soft);
-  padding: 8px 16px;
-  border-radius: 10px;
+  background: var(--color-bg-surface);
+  padding: 10px 16px;
+  border-radius: 12px;
   color: var(--color-text-muted);
   font-size: 14px;
   border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-rendimiento .info-fecha span {
+  text-transform: capitalize;
+}
+
+.acciones-header-rend {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .stats-container-rend {
@@ -240,6 +252,28 @@
   background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
   box-shadow: 0 6px 18px rgba(56, 161, 105, 0.4);
   transform: translateY(-2px);
+}
+
+.btn-secundario-rend {
+  background: linear-gradient(135deg, #334155 0%, #1f2937 100%);
+  color: var(--color-bg-surface);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.24);
+  transition: all var(--motion-base);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-secundario-rend:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(31, 41, 55, 0.32);
 }
 
 .resultados-busqueda-rend {
@@ -769,6 +803,12 @@
     flex-direction: column;
   }
 
+  .acciones-header-rend {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .titulo-rendimiento {
     font-size: 1.4rem;
   }
@@ -788,6 +828,7 @@
   }
 
   .btn-nuevo-rend,
+  .btn-secundario-rend,
   .btn-accion-rend {
     width: 100%;
     justify-content: center;
@@ -818,6 +859,7 @@
   .btn-eliminar-rend,
   .modal-overlay-rend,
   .btn-nuevo-rend,
+  .btn-secundario-rend,
   .controles-registro-rend,
   .botones-finales-rend {
     display: none !important;

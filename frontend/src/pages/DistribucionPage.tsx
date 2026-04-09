@@ -29,6 +29,16 @@ function formatFechaHora(iso: string) {
   return { fecha, hora };
 }
 
+function hoyES() {
+  const fecha = new Date();
+  return fecha.toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function badgeDestinoClass(motivoRaw?: string) {
   const motivo = (motivoRaw || "Sin especificar").toLowerCase();
   if (motivo.includes("cocina")) return "badge-cocina";
@@ -330,9 +340,18 @@ export default function DistribucionPage() {
 
   return (
     <div>
-      <div className="content-header">
-        <h2>Distribución / Salida de Stock</h2>
-        <p className="text-muted">Registra la salida de productos hacia cocina, bar u otros departamentos.</p>
+      <div className="content-header content-header--split">
+        <div>
+          <h2>
+            <i className="fa-solid fa-truck" /> Distribución / Salida de Stock
+          </h2>
+          <p className="text-muted">Registra la salida de productos hacia cocina, bar u otros departamentos.</p>
+        </div>
+
+        <div className="header-date-chip">
+          <i className="fa-solid fa-calendar" />
+          <span>{hoyES()}</span>
+        </div>
       </div>
 
       <div className="distribucion-container">

@@ -31,12 +31,32 @@ body {
     margin-bottom: 30px;
     border-bottom: 2px solid var(--color-border-default);
     padding-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .content-header h2 {
-    color: var(--primary-color);
+    color: var(--color-text-strong);
     font-size: 28px;
     font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.content-header h2 i {
+    color: var(--primary-color);
+}
+
+.content-header--split {
+    align-items: flex-end;
+}
+
+.content-subtitle {
+    margin: 8px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .card {
@@ -72,6 +92,50 @@ body {
 .btn-primary:focus-visible {
     outline: 3px solid var(--primary-color);
     outline-offset: 2px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.header-date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border-default);
+    background: var(--color-bg-surface);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.header-date-chip i {
+    color: var(--primary-color);
+}
+
+.header-date-chip span {
+    text-transform: capitalize;
+}
+
+@media (max-width: 900px) {
+    .content-header--split {
+        align-items: stretch;
+    }
+
+    .header-actions {
+        width: 100%;
+    }
+
+    .header-date-chip,
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Delete Button - Red styling like avisos */

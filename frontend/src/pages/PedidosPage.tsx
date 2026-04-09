@@ -21,6 +21,16 @@ type ItemPedido = {
   proveedor_id?: number | string | null;
 };
 
+function hoyES() {
+  const fecha = new Date();
+  return fecha.toLocaleDateString("es-ES", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export default function PedidosPage() {
   const nav = useNavigate();
   const queryClient = useQueryClient();
@@ -241,10 +251,21 @@ export default function PedidosPage() {
 
   return (
     <div>
-      <div className="content-header">
-        <h2>Pedidos y Compras</h2>
+      <div className="content-header content-header--split">
+        <div>
+          <h2>
+            <i className="fa-solid fa-file-invoice-dollar"></i>
+            Pedidos y Compras
+          </h2>
+          <p className="content-subtitle">Historial de compras y generación de pedidos por proveedor.</p>
+        </div>
 
         <div className="header-actions">
+          <div className="header-date-chip">
+            <i className="fa-solid fa-calendar"></i>
+            <span>{hoyES()}</span>
+          </div>
+
           <button type="button" className="btn-primary" onClick={irANuevoPedido}>
             <i className="fa-solid fa-plus"></i> Nuevo Pedido
           </button>
