@@ -5,24 +5,34 @@ import { logout as logoutSession } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
 
 const navItems = [
-  { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house" },
-  { to: "/recepcion", label: "Recepción", icon: "fa-solid fa-truck-ramp-box" },
-  { to: "/distribucion", label: "Distribución", icon: "fa-solid fa-truck" },
-  { to: "/inventario", label: "Inventario", icon: "fa-solid fa-boxes-stacked" },
-  { to: "/bajas", label: "Bajas", icon: "fa-solid fa-ban" },
-  { to: "/proveedores", label: "Proveedores", icon: "fa-solid fa-building" },
-  { to: "/pedidos", label: "Pedidos", icon: "fa-solid fa-file-invoice" },
-  { to: "/escandallos", label: "Escandallos", icon: "fa-solid fa-utensils" },
-  { to: "/rendimiento", label: "Rendimiento", icon: "fa-solid fa-chart-pie" },
-  { to: "/avisos", label: "Avisos", icon: "fa-solid fa-bell" },
+  { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house", roles: ["administrador", "profesor", "alumno"] },
+  { to: "/recepcion", label: "Recepción", icon: "fa-solid fa-truck-ramp-box", roles: ["administrador", "profesor"] },
+  { to: "/distribucion", label: "Distribución", icon: "fa-solid fa-truck", roles: ["administrador", "profesor"] },
+  { to: "/inventario", label: "Inventario", icon: "fa-solid fa-boxes-stacked", roles: ["administrador", "profesor", "alumno"] },
+  { to: "/bajas", label: "Bajas", icon: "fa-solid fa-ban", roles: ["administrador", "profesor"] },
+  { to: "/proveedores", label: "Proveedores", icon: "fa-solid fa-building", roles: ["administrador"] },
+  { to: "/pedidos", label: "Pedidos", icon: "fa-solid fa-file-invoice", roles: ["administrador", "profesor"] },
+  { to: "/escandallos", label: "Escandallos", icon: "fa-solid fa-utensils", roles: ["administrador", "profesor", "alumno"] },
+  { to: "/rendimiento", label: "Rendimiento", icon: "fa-solid fa-chart-pie", roles: ["administrador", "profesor"] },
+  { to: "/avisos", label: "Avisos", icon: "fa-solid fa-bell", roles: ["administrador", "profesor", "alumno"] },
   {
     to: "/configuracion",
     label: "Configuración",
     icon: "fa-solid fa-gear",
     separated: true,
+    roles: ["administrador", "profesor"],
   },
-  { to: "/auditoria", label: "Auditoría", icon: "fa-solid fa-clipboard-list" },
+  { to: "/auditoria", label: "Auditoría", icon: "fa-solid fa-clipboard-list", roles: ["administrador"] },
 ];
+
+function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno" | "usuario" {
+  const role = roleRaw.trim().toLowerCase();
+  if (role === "admin" || role === "administrador") return "administrador";
+  if (role === "teacher" || role === "profesor") return "profesor";
+  if (role === "student" || role === "alumno") return "alumno";
+  if (role === "user" || role === "usuario") return "usuario";
+  return "usuario";
+}
 
 export default function AppLayout() {
   const nav = useNavigate();
@@ -31,6 +41,7 @@ export default function AppLayout() {
   const userName = String(user?.nombre ?? "Administrador");
   const userEmail = String(user?.email ?? "").trim();
   const userRole = String(user?.role ?? user?.rol ?? "usuario").trim();
+  const normalizedRole = normalizeRole(userRole);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -137,7 +148,10 @@ export default function AppLayout() {
 
                 <div className="userDropdownInfo">
                   <div className="userDropdownName">{userName}</div>
-                  <div className="userDropdownRole">{userEmail || userRole || "Gestor de Economato"}</div>
+                  <div className="userDropdownRole">{userEmail || "Gestor de Economato"}</div>
+                  <span className={`role-badge role-badge--${normalizedRole}`}>
+                    {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
+                  </span>
                 </div>
               </div>
 
@@ -218,23 +232,13 @@ export default function AppLayout() {
             >
               <i className="fa-solid fa-bars" />
             </button>
-            <h1 className="topbar-title">
-              <i
-                className={currentItem.icon}
-                style={{
-                  marginRight: "10px",
-                  fontSize: "0.9em",
-                  color: "var(--brand)",
-                  opacity: 0.8,
-                }}
-              />
-              {currentItem.label}
-            </h1>
           </div>
         </header>
 
         <main className="content" id="main-content">
-          <Outlet />
+          <div className="page-transition" key={location.pathname}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

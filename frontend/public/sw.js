@@ -1,4 +1,4 @@
-const CACHE_NAME = "smart-economato-v2";
+const CACHE_NAME = "smart-economato-v3";
 const APP_SHELL = ["/", "/index.html", "/offline.html"];
 
 self.addEventListener("install", (event) => {

@@ -408,14 +408,7 @@ export default function DistribucionPage() {
               />
             </div>
 
-            <button
-              id="btnBuscarDistribucion"
-              className="btn-buscar-dist"
-              type="button"
-              onClick={buscarEnAPI}
-            >
-              <i className="fa-solid fa-search" /> Buscar
-            </button>
+
           </div>
 
           {/* Dropdown de resultados */}

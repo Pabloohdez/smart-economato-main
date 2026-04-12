@@ -59,10 +59,6 @@ export default function InventarioToolbar({
           aria-label="Buscar producto por nombre o código"
         />
 
-        <button id="btnBuscar" className="btn-buscar-inventario" type="button">
-          <i className="fa-solid fa-search" /> Buscar
-        </button>
-
         <button
           id="btnEscanearInventario"
           className="btn-scan-inventario"

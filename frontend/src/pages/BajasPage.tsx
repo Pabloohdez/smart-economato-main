@@ -510,25 +510,7 @@ export default function BajasPage() {
               }}
             />
 
-            <button
-              id="btnBuscarBaja"
-              className="btn-buscar-baja"
-              type="button"
-              onClick={buscarProductos}
-              style={{
-                background: "linear-gradient(135deg, #b33131 0%, #9c2b2b 100%)",
-                color: "white",
-                border: "none",
-                boxShadow: "0 4px 6px rgba(179, 49, 49, 0.3)",
-                minWidth: 150,
-                width: "auto",
-                padding: "12px 30px",
-                borderRadius: 12,
-                fontWeight: "bold",
-              }}
-            >
-              <i className="fa-solid fa-search" /> Buscar
-            </button>
+
 
             <button
               id="btnEscanearBaja"

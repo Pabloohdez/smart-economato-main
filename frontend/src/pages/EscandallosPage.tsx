@@ -363,19 +363,8 @@ export default function EscandallosPage() {
               placeholder="Buscar por nombre..."
               value={busquedaReceta}
               onChange={(e) => setBusquedaReceta(e.target.value)}
-              onKeyUp={(e) => {
-                if (e.key === "Enter") aplicarFiltros();
-              }}
             />
           </div>
-
-          <button
-            type="button"
-            className="btn-accion btn-buscar"
-            onClick={aplicarFiltros}
-          >
-            <i className="fa-solid fa-search"></i> Buscar
-          </button>
 
           <div className="grupo-busqueda">
             <label htmlFor="busquedaIngrediente" className="label-control">
@@ -388,19 +377,8 @@ export default function EscandallosPage() {
               placeholder="Por ingrediente..."
               value={busquedaIngrediente}
               onChange={(e) => setBusquedaIngrediente(e.target.value)}
-              onKeyUp={(e) => {
-                if (e.key === "Enter") aplicarFiltros();
-              }}
             />
           </div>
-
-          <button
-            type="button"
-            className="btn-accion btn-buscar"
-            onClick={aplicarFiltros}
-          >
-            <i className="fa-solid fa-filter"></i> Filtrar
-          </button>
 
           <button
             type="button"

@@ -447,16 +447,7 @@ export default function Recepcion() {
                 />
               </div>
 
-              <button
-                className="btn-buscar-producto"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setResultadosOpen(true);
-                }}
-              >
-                <i className="fa-solid fa-search" /> Buscar
-              </button>
+
 
               <button
                 className="btn-scan-recepcion"

@@ -1,3 +1,5 @@
+@import "./styles/global-enhancements.css";
+
 @tailwind components;
 @tailwind utilities;
 
