@@ -7,6 +7,7 @@ export default function LoginPage() {
   const nav = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -57,18 +58,29 @@ export default function LoginPage() {
 
           <div className="field-group">
             <label htmlFor="password" className="sr-only">Contraseña</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Contraseña"
-              className="user"
-              required
-              autoComplete="current-password"
-              aria-describedby={msg ? "login-error" : undefined}
-              aria-invalid={!!msg || undefined}
-            />
+            <div className="password-wrap">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Contraseña"
+                className="user user--password"
+                required
+                autoComplete="current-password"
+                aria-describedby={msg ? "login-error" : undefined}
+                aria-invalid={!!msg || undefined}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`} aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           {msg ? (

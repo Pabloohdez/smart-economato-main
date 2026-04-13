@@ -171,6 +171,44 @@ p:hover, a:hover {
   width: 100%;
 }
 
+.password-wrap{
+  position: relative;
+  width: 100%;
+}
+
+.user--password{
+  padding-right: 48px;
+}
+
+.password-toggle{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border-default);
+  background: #fff;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast);
+}
+
+.password-toggle:hover{
+  background: var(--color-bg-soft);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-default);
+}
+
+.password-toggle:focus-visible{
+  outline: 3px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
 .resp {
   margin-top: 10px;
   min-height: 20px;
