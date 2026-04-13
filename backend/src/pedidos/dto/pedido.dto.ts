@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -8,13 +9,20 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+const UNIDADES_PEDIDO = ['ud', 'kg', 'l', 'g', 'ml'] as const;
+
 export class PedidoItemDto {
   @IsString()
   producto_id: string;
 
+  @IsOptional()
+  @IsString()
+  @IsIn(UNIDADES_PEDIDO)
+  unidad?: (typeof UNIDADES_PEDIDO)[number];
+
   @Type(() => Number)
   @IsNumber()
-  @Min(1)
+  @Min(0.001)
   cantidad: number;
 
   @Type(() => Number)
@@ -48,7 +56,7 @@ export class RecepcionItemDto {
 
   @Type(() => Number)
   @IsNumber()
-  @Min(0)
+  @Min(0.001)
   cantidad_recibida: number;
 }
 

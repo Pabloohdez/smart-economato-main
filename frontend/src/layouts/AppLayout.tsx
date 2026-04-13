@@ -71,6 +71,25 @@ export default function AppLayout() {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  // Sidebar mobile: cerrar con ESC + bloquear scroll del body
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSidebarOpen(false);
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("sidebar-mobile-open", sidebarOpen);
+    return () => {
+      document.body.classList.remove("sidebar-mobile-open");
+    };
+  }, [sidebarOpen]);
+
   function logout() {
     logoutSession();
     nav("/login", { replace: true });

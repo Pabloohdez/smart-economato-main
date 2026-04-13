@@ -41,6 +41,7 @@ export type PedidoItem = {
   id: number | string;
   producto_id: number | string;
   producto_nombre: string;
+  unidad?: string;
   cantidad: number;
   cantidad_recibida?: number;
   precio_unitario?: number;

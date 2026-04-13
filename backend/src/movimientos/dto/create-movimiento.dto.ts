@@ -7,7 +7,7 @@ export class CreateMovimientoDto {
 
   @Type(() => Number)
   @IsNumber()
-  @Min(1)
+  @Min(0.001)
   cantidad: number;
 
   @IsOptional()

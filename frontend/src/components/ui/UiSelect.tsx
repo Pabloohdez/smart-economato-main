@@ -27,6 +27,7 @@ export default function UiSelect(props: UiSelectProps) {
   } = props;
 
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ left: number; top: number; width: number } | null>(null);
 
@@ -39,7 +40,9 @@ export default function UiSelect(props: UiSelectProps) {
     const onDown = (e: MouseEvent) => {
       const t = e.target;
       if (!(t instanceof Node)) return;
-      if (wrapRef.current && !wrapRef.current.contains(t)) setOpen(false);
+      const inWrap = Boolean(wrapRef.current && wrapRef.current.contains(t));
+      const inMenu = Boolean(menuRef.current && menuRef.current.contains(t));
+      if (!inWrap && !inMenu) setOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
@@ -101,11 +104,16 @@ export default function UiSelect(props: UiSelectProps) {
               className="ui-select__menu ui-select__menu--portal"
               role="listbox"
               aria-label={label ?? "selector"}
+              ref={menuRef}
               style={{
                 position: "fixed",
                 left: menuPos.left,
                 top: menuPos.top,
                 width: menuPos.width,
+              }}
+              onMouseDown={(e) => {
+                // Evita que el click en el portal se interprete como "fuera"
+                e.stopPropagation();
               }}
             >
               {options.map((opt) => {

@@ -19,8 +19,27 @@ type ItemPedido = {
   nombre: string;
   precio: number;
   cantidad: number;
+  unidad?: string;
   proveedor_id?: number | string | null;
 };
+
+const UNIDADES_OPCIONES = [
+  { value: "ud", label: "Unidades" },
+  { value: "kg", label: "Kg" },
+  { value: "l", label: "Litros" },
+  { value: "g", label: "Gramos" },
+  { value: "ml", label: "Mililitros" },
+] as const;
+
+function stepDeUnidad(unidad?: string) {
+  if (unidad === "ud") return 1;
+  return 0.001;
+}
+
+function minDeUnidad(unidad?: string) {
+  if (unidad === "ud") return 1;
+  return 0.001;
+}
 
 function hoyES() {
   const fecha = new Date();
@@ -143,6 +162,9 @@ export default function PedidosPage() {
 
   function agregarItem(prod: Producto) {
     const provId = prod.proveedorId ?? prod.proveedor?.id ?? null;
+    const unidadDefault = String(prod.unidadMedida || prod.precioUnitario || "ud").trim().toLowerCase();
+    const unidad =
+      UNIDADES_OPCIONES.some((u) => u.value === unidadDefault) ? unidadDefault : "ud";
 
     setItemsPedido((prev) => {
       const existente = prev.find((i) => String(i.producto_id) === String(prod.id));
@@ -150,7 +172,10 @@ export default function PedidosPage() {
       if (existente) {
         return prev.map((item) =>
           String(item.producto_id) === String(prod.id)
-            ? { ...item, cantidad: item.cantidad + 1 }
+            ? {
+                ...item,
+                cantidad: item.cantidad + (item.unidad === "ud" ? 1 : 0.001),
+              }
             : item
         );
       }
@@ -161,7 +186,8 @@ export default function PedidosPage() {
           producto_id: prod.id,
           nombre: prod.nombre,
           precio: Number(prod.precio),
-          cantidad: 1,
+          cantidad: unidad === "ud" ? 1 : 0.001,
+          unidad,
           proveedor_id: provId,
         },
       ];
@@ -169,10 +195,25 @@ export default function PedidosPage() {
   }
 
   function cambiarCantidad(index: number, value: string) {
-    const cantidad = Math.max(1, parseInt(value || "1", 10) || 1);
+    const raw = Number(String(value || "").replace(",", "."));
+    const unidad = itemsPedido[index]?.unidad ?? "ud";
+    const min = minDeUnidad(unidad);
+    const cantidad = Number.isFinite(raw) ? Math.max(min, raw) : min;
 
     setItemsPedido((prev) =>
       prev.map((item, i) => (i === index ? { ...item, cantidad } : item))
+    );
+  }
+
+  function cambiarUnidad(index: number, unidad: string) {
+    setItemsPedido((prev) =>
+      prev.map((item, i) => {
+        if (i !== index) return item;
+        const nextUnidad = unidad || "ud";
+        const min = minDeUnidad(nextUnidad);
+        const nextCantidad = Math.max(min, Number(item.cantidad || 0) || min);
+        return { ...item, unidad: nextUnidad, cantidad: nextCantidad };
+      })
     );
   }
 
@@ -370,6 +411,7 @@ export default function PedidosPage() {
                     <thead>
                       <tr>
                         <th>Producto</th>
+                        <th>Unidad</th>
                         <th>Cant.</th>
                         <th>Precio</th>
                         <th>Total</th>
@@ -380,20 +422,32 @@ export default function PedidosPage() {
                     <tbody>
                       {itemsPedido.length === 0 && (
                         <tr>
-                          <td colSpan={5}>No hay productos añadidos al pedido.</td>
+                          <td colSpan={6}>No hay productos añadidos al pedido.</td>
                         </tr>
                       )}
 
                       {itemsPedido.map((item, idx) => {
                         const subtotal = item.cantidad * item.precio;
+                        const unidad = item.unidad ?? "ud";
 
                         return (
                           <tr key={`${item.producto_id}-${idx}`}>
                             <td>{item.nombre}</td>
+                            <td style={{ minWidth: 140 }}>
+                              <UiSelect
+                                value={unidad}
+                                onChange={(v) => cambiarUnidad(idx, v)}
+                                options={UNIDADES_OPCIONES.map((u) => ({
+                                  value: u.value,
+                                  label: u.label,
+                                }))}
+                              />
+                            </td>
                             <td>
                               <input
                                 type="number"
-                                min={1}
+                                min={minDeUnidad(unidad)}
+                                step={stepDeUnidad(unidad)}
                                 value={item.cantidad}
                                 className="input-cantidad"
                                 onChange={(e) => cambiarCantidad(idx, e.target.value)}
@@ -417,7 +471,7 @@ export default function PedidosPage() {
 
                     <tfoot>
                       <tr>
-                        <td colSpan={3} className="text-right">
+                        <td colSpan={4} className="text-right">
                           <strong>Total Estimado:</strong>
                         </td>
                         <td colSpan={2}>

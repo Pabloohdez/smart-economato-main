@@ -35,6 +35,7 @@ export type CrearPedidoPayload = {
   usuarioId: string;
   items: Array<{
     producto_id: number | string;
+    unidad?: string;
     cantidad: number;
     precio: number;
     nombre: string;

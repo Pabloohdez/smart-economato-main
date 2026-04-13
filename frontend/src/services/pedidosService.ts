@@ -37,7 +37,7 @@ export async function getPedidosPendientes(): Promise<Pedido[]> {
 
 export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise<boolean> {
   // El backend (Nest + ValidationPipe con forbidNonWhitelisted) solo acepta
-  // { proveedorId:number, total?:number, items?:[{producto_id:string,cantidad:number,precio:number}] }
+  // { proveedorId:number, total?:number, items?:[{producto_id:string,unidad?:string,cantidad:number,precio:number}] }
   // y rechaza propiedades extra (usuarioId, nombre, proveedor_id, etc).
   const apiPayload = {
     proveedorId: payload.proveedorId == null ? payload.proveedorId : Number(payload.proveedorId),
@@ -45,6 +45,7 @@ export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise
     items: Array.isArray(payload.items)
       ? payload.items.map((i) => ({
           producto_id: String(i.producto_id),
+          unidad: (i as { unidad?: string }).unidad,
           cantidad: i.cantidad,
           precio: i.precio,
         }))

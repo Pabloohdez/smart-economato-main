@@ -19,6 +19,7 @@ export class PedidosService {
                 'id', pd.id,
                 'pedido_id', pd.pedido_id,
                 'producto_id', pd.producto_id,
+                'unidad', pd.unidad,
                 'cantidad', pd.cantidad,
                 'cantidad_recibida', pd.cantidad_recibida,
                 'precio_unitario', pd.precio_unitario,
@@ -27,7 +28,7 @@ export class PedidosService {
             ), 
             '[]'::json
           )
-          FROM pedido_detalles pd
+          FROM detalles_pedido pd
           LEFT JOIN productos prod ON pd.producto_id = prod.id
           WHERE pd.pedido_id = p.id
         ) as items
@@ -66,7 +67,7 @@ export class PedidosService {
 
     const { rows: items } = await this.db.query(
       `SELECT pd.*, p.nombre as producto_nombre
-       FROM pedido_detalles pd
+       FROM detalles_pedido pd
        LEFT JOIN productos p ON pd.producto_id = p.id
        WHERE pd.pedido_id = $1`,
       [id],
@@ -79,7 +80,7 @@ export class PedidosService {
     proveedorId: number;
     total?: number;
     usuarioId?: number | string;
-    items?: Array<{ producto_id: string; cantidad: number; precio: number }>;
+    items?: Array<{ producto_id: string; unidad?: string; cantidad: number; precio: number }>;
   }) {
     let userId: string | number | undefined = body.usuarioId;
     if (userId != null) {
@@ -100,8 +101,8 @@ export class PedidosService {
       if (body.items?.length) {
         for (const item of body.items) {
           await client.query(
-            `INSERT INTO pedido_detalles (pedido_id, producto_id, cantidad, precio_unitario) VALUES ($1, $2, $3, $4)`,
-            [pedidoId, item.producto_id, item.cantidad, item.precio],
+            `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
+            [pedidoId, item.producto_id, item.unidad ?? 'ud', item.cantidad, item.precio],
           );
         }
       }
@@ -124,7 +125,7 @@ export class PedidosService {
             const cant = Number(item.cantidad_recibida);
             if (cant > 0) {
               const { rows } = await client.query(
-                'SELECT producto_id FROM pedido_detalles WHERE id = $1',
+                'SELECT producto_id FROM detalles_pedido WHERE id = $1',
                 [item.detalle_id],
               );
               if (rows.length > 0) {
@@ -136,7 +137,7 @@ export class PedidosService {
                 );
 
                 await client.query(
-                  'UPDATE pedido_detalles SET cantidad_recibida = COALESCE(cantidad_recibida, 0) + $1 WHERE id = $2',
+                  'UPDATE detalles_pedido SET cantidad_recibida = COALESCE(cantidad_recibida, 0) + $1 WHERE id = $2',
                   [cant, item.detalle_id],
                 );
               }
@@ -144,7 +145,7 @@ export class PedidosService {
           }
 
           const { rows: checkRows } = await client.query(
-            'SELECT SUM(cantidad) as total_pedida, SUM(cantidad_recibida) as total_recibida FROM pedido_detalles WHERE pedido_id = $1',
+            'SELECT SUM(cantidad) as total_pedida, SUM(cantidad_recibida) as total_recibida FROM detalles_pedido WHERE pedido_id = $1',
             [id],
           );
           const totalPedida = Number(checkRows[0].total_pedida || 0);

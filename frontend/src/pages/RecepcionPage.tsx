@@ -21,6 +21,7 @@ type RecepcionRow = {
   proveedor: string;
   stock: number;
   cantidadRecibida: number;
+  unidad?: string;
   precio: number;
 };
 
@@ -36,6 +37,11 @@ function hoyES() {
     month: "long",
     day: "numeric",
   });
+}
+
+function stepDeUnidad(unidad?: string) {
+  if ((unidad ?? "ud") === "ud") return 1;
+  return 0.001;
 }
 
 export default function Recepcion() {
@@ -375,6 +381,7 @@ export default function Recepcion() {
           proveedor: provNombre,
           stock: stockAnterior,
           cantidadRecibida: qty,
+          unidad: it.unidad ?? prod?.unidadMedida ?? prod?.precioUnitario,
           precio: Number(it.precio_unitario ?? prod?.precio ?? 0),
         });
       }
@@ -660,6 +667,7 @@ export default function Recepcion() {
                             <thead>
                               <tr>
                                 <th>Producto</th>
+                                <th>Unidad</th>
                                 <th>Pedida</th>
                                 <th>Recibida (Antes)</th>
                                 <th className="recepcion-col-recibir">A Recibir Ahora</th>
@@ -672,9 +680,12 @@ export default function Recepcion() {
                                   0,
                                   (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)
                                 );
+                                const unidad = (it.unidad ?? "ud") as string;
+                                const step = stepDeUnidad(unidad);
                                 return (
                                   <tr key={String(it.id)}>
                                     <td>{it.producto_nombre}</td>
+                                    <td style={{ whiteSpace: "nowrap" }}>{unidad}</td>
                                     <td>{it.cantidad}</td>
                                     <td>{it.cantidad_recibida || 0}</td>
                                     <td className="recepcion-col-recibir">
@@ -685,7 +696,11 @@ export default function Recepcion() {
                                             className="recepcion-stepper-btn"
                                             aria-label={`Reducir cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
-                                              actualizarCantidadVerificada(String(it.id), Number(qtyVerif || 0) - 1, maxRecibir)
+                                              actualizarCantidadVerificada(
+                                                String(it.id),
+                                                Number(qtyVerif || 0) - step,
+                                                maxRecibir
+                                              )
                                             }
                                           >
                                             -
@@ -694,6 +709,7 @@ export default function Recepcion() {
                                             type="number"
                                             min={0}
                                             max={maxRecibir}
+                                            step={step}
                                             value={qtyVerif}
                                             onChange={(e) =>
                                               actualizarCantidadVerificada(
@@ -710,7 +726,11 @@ export default function Recepcion() {
                                             className="recepcion-stepper-btn"
                                             aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
-                                              actualizarCantidadVerificada(String(it.id), Number(qtyVerif || 0) + 1, maxRecibir)
+                                              actualizarCantidadVerificada(
+                                                String(it.id),
+                                                Number(qtyVerif || 0) + step,
+                                                maxRecibir
+                                              )
                                             }
                                           >
                                             +
@@ -778,6 +798,7 @@ export default function Recepcion() {
                 <th>Producto</th>
                 <th className="recepcion-col-proveedor">Proveedor</th>
                 <th>Stock Actual</th>
+                <th>Unidad</th>
                 <th>Cantidad Recibida</th>
                 <th>Nuevo Stock</th>
                 <th className="recepcion-col-precio">Precio</th>
@@ -789,7 +810,7 @@ export default function Recepcion() {
             <tbody>
               {!recepcion.length ? (
                 <tr className="fila-vacia">
-                  <td colSpan={8}>
+                  <td colSpan={9}>
                     <div className="mensaje-vacio">
                       <i className="fa-solid fa-inbox" />
                       <p>No hay productos en la recepción actual</p>
@@ -803,6 +824,7 @@ export default function Recepcion() {
                     <td>{r.nombre}</td>
                     <td className="recepcion-col-proveedor">{r.proveedor}</td>
                     <td>{r.stock}</td>
+                    <td style={{ whiteSpace: "nowrap" }}>{String(r.unidad ?? "ud")}</td>
                     <td>{r.cantidadRecibida}</td>
                     <td className="stock-nuevo">{r.stock + r.cantidadRecibida}</td>
                     <td className="recepcion-col-precio">{formatEUR(r.precio)}</td>
