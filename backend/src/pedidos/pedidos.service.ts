@@ -3,9 +3,32 @@ import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class PedidosService {
+  private hasUnidadColumn: boolean | null = null;
+
   constructor(private readonly db: DatabaseService) {}
 
+  private async supportsUnidadColumn(): Promise<boolean> {
+    if (this.hasUnidadColumn != null) {
+      return this.hasUnidadColumn;
+    }
+
+    const { rows } = await this.db.query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT 1
+         FROM information_schema.columns
+         WHERE table_schema = 'public'
+           AND table_name = 'detalles_pedido'
+           AND column_name = 'unidad'
+       ) as "exists"`,
+    );
+
+    this.hasUnidadColumn = Boolean(rows[0]?.exists);
+    return this.hasUnidadColumn;
+  }
+
   async findAll(page?: number, limit?: number) {
+    const hasUnidadColumn = await this.supportsUnidadColumn();
+    const unidadValueExpr = hasUnidadColumn ? 'pd.unidad' : "'ud'::varchar";
     const safeLimit = limit && limit > 0 ? Math.min(limit, 200) : undefined;
     let sql = `
       SELECT 
@@ -19,7 +42,7 @@ export class PedidosService {
                 'id', pd.id,
                 'pedido_id', pd.pedido_id,
                 'producto_id', pd.producto_id,
-                'unidad', pd.unidad,
+                'unidad', ${unidadValueExpr},
                 'cantidad', pd.cantidad,
                 'cantidad_recibida', pd.cantidad_recibida,
                 'precio_unitario', pd.precio_unitario,
@@ -53,6 +76,8 @@ export class PedidosService {
   }
 
   async findOne(id: number) {
+    const hasUnidadColumn = await this.supportsUnidadColumn();
+    const unidadSelect = hasUnidadColumn ? 'pd.unidad' : "'ud'::varchar as unidad";
     const { rows: head } = await this.db.query(
       `SELECT p.*, pr.nombre as proveedor_nombre, u.username as usuario_nombre
        FROM pedidos p
@@ -66,7 +91,7 @@ export class PedidosService {
     const pedido: Record<string, unknown> = { ...h, proveedorId: h.proveedor_id };
 
     const { rows: items } = await this.db.query(
-      `SELECT pd.*, p.nombre as producto_nombre
+      `SELECT pd.id, pd.pedido_id, pd.producto_id, ${unidadSelect}, pd.cantidad, pd.cantidad_recibida, pd.precio_unitario, p.nombre as producto_nombre
        FROM detalles_pedido pd
        LEFT JOIN productos p ON pd.producto_id = p.id
        WHERE pd.pedido_id = $1`,
@@ -82,6 +107,7 @@ export class PedidosService {
     usuarioId?: number | string;
     items?: Array<{ producto_id: string; unidad?: string; cantidad: number; precio: number }>;
   }) {
+    const hasUnidadColumn = await this.supportsUnidadColumn();
     let userId: string | number | undefined = body.usuarioId;
     if (userId != null) {
       const { rowCount } = await this.db.query('SELECT id FROM usuarios WHERE id = $1', [userId]);
@@ -100,10 +126,17 @@ export class PedidosService {
       const pedidoId = (ins[0] as { id: number }).id;
       if (body.items?.length) {
         for (const item of body.items) {
-          await client.query(
-            `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
-            [pedidoId, item.producto_id, item.unidad ?? 'ud', item.cantidad, item.precio],
-          );
+          if (hasUnidadColumn) {
+            await client.query(
+              `INSERT INTO detalles_pedido (pedido_id, producto_id, unidad, cantidad, precio_unitario) VALUES ($1, $2, $3, $4, $5)`,
+              [pedidoId, item.producto_id, item.unidad ?? 'ud', item.cantidad, item.precio],
+            );
+          } else {
+            await client.query(
+              `INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad, precio_unitario) VALUES ($1, $2, $3, $4)`,
+              [pedidoId, item.producto_id, item.cantidad, item.precio],
+            );
+          }
         }
       }
       return { id: pedidoId };

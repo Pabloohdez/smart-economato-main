@@ -9,7 +9,7 @@ import {
 export const API_URL = (import.meta.env.VITE_API_URL as string) || "/api";
 
 type ApiError = {
-  error?: string;
+  error?: string | { message?: string; code?: number };
   message?: string;
   [key: string]: unknown;
 };
@@ -53,6 +53,32 @@ function isOffline() {
 
 function isNetworkError(error: unknown) {
   return error instanceof TypeError || (error instanceof Error && !("status" in error));
+}
+
+function extractApiErrorMessage(data: unknown, status: number): string {
+  if (typeof data === "string" && data.trim()) {
+    return data;
+  }
+
+  if (typeof data === "object" && data !== null) {
+    const errObj = data as ApiError;
+    if (typeof errObj.message === "string" && errObj.message.trim()) {
+      return errObj.message;
+    }
+
+    if (typeof errObj.error === "string" && errObj.error.trim()) {
+      return errObj.error;
+    }
+
+    if (typeof errObj.error === "object" && errObj.error !== null) {
+      const nestedMessage = (errObj.error as { message?: unknown }).message;
+      if (typeof nestedMessage === "string" && nestedMessage.trim()) {
+        return nestedMessage;
+      }
+    }
+  }
+
+  return `HTTP ${status}`;
 }
 
 async function refreshAccessToken(): Promise<boolean> {
@@ -120,8 +146,7 @@ async function executeApiRequest<T>(
   }
 
   if (!res.ok) {
-    const errObj = (typeof data === "object" && data !== null) ? (data as ApiError) : {};
-    const msg = errObj.error ?? errObj.message ?? `HTTP ${res.status}`;
+    const msg = extractApiErrorMessage(data, res.status);
     if (res.status === 401) {
       if (retryOnUnauthorized && path !== "/login" && path !== "/login/refresh") {
         const refreshed = await refreshAccessToken();

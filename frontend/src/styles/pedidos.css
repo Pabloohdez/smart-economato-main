@@ -76,9 +76,48 @@ body {
   text-transform: capitalize;
 }
 
+.pedidos-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.pedidos-kpi-card {
+  border: 1px solid var(--color-border-default);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, #f9fbff 100%);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pedidos-kpi-card strong {
+  font-size: 24px;
+  color: var(--color-text-strong);
+  line-height: 1;
+}
+
+.pedidos-kpi-label {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pedidos-kpi-card--accent {
+  border-color: rgba(179, 49, 49, 0.28);
+  background: linear-gradient(135deg, rgba(179, 49, 49, 0.08) 0%, rgba(179, 49, 49, 0.02) 100%);
+}
+
 @media (max-width: 900px) {
   .content-header--split {
     align-items: stretch;
+  }
+
+  .pedidos-kpi-grid {
+    grid-template-columns: 1fr;
   }
 
   .header-actions {

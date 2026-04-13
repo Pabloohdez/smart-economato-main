@@ -152,6 +152,14 @@ export default function PedidosPage() {
     return itemsPedido.reduce((acc, item) => acc + item.cantidad * item.precio, 0);
   }, [itemsPedido]);
 
+  const pedidosResumen = useMemo(() => {
+    const pendientes = pedidos.filter((p) => String(p.estado ?? "").toUpperCase() === "PENDIENTE").length;
+    const incompletos = pedidos.filter((p) => String(p.estado ?? "").toUpperCase() === "INCOMPLETO").length;
+    const importeTotal = pedidos.reduce((acc, p) => acc + Number(p.total ?? 0), 0);
+
+    return { pendientes, incompletos, importeTotal };
+  }, [pedidos]);
+
   function irANuevoPedido() {
     setVista("nuevo");
   }
@@ -317,6 +325,21 @@ export default function PedidosPage() {
           </button>
         </div>
       </div>
+
+      <section className="pedidos-kpi-grid" aria-label="Resumen de pedidos">
+        <article className="pedidos-kpi-card">
+          <span className="pedidos-kpi-label">Pedidos Pendientes</span>
+          <strong>{pedidosResumen.pendientes}</strong>
+        </article>
+        <article className="pedidos-kpi-card">
+          <span className="pedidos-kpi-label">Pedidos Incompletos</span>
+          <strong>{pedidosResumen.incompletos}</strong>
+        </article>
+        <article className="pedidos-kpi-card pedidos-kpi-card--accent">
+          <span className="pedidos-kpi-label">Importe Histórico</span>
+          <strong>{pedidosResumen.importeTotal.toFixed(2)} €</strong>
+        </article>
+      </section>
 
       {err && <Alert type="error">{err}</Alert>}
 

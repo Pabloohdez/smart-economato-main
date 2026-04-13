@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Producto } from "../../services/productosService";
+import TablePagination from "../ui/TablePagination";
 
 function parseDate(d?: string | null): Date | null {
   if (!d) return null;
@@ -16,6 +17,9 @@ function formatShortDate(d: Date): string {
 }
 
 export default function InventarioTable({ items }: { items: Producto[] }) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
   const rows = useMemo(() => {
     return items.map((p) => {
       const stock = Number(p.stock ?? 0);
@@ -26,6 +30,13 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
       return { p, stock, min, cadDias, alerta };
     });
   }, [items]);
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const visibleRows = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return rows.slice(start, start + pageSize);
+  }, [rows, safePage, pageSize]);
 
   return (
     <div className="panel-tabla">
@@ -43,14 +54,14 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <tr>
                 <td colSpan={7} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
                   No hay productos para mostrar.
                 </td>
               </tr>
             ) : (
-              rows.map(({ p, stock, min, cadDias, alerta }) => {
+              visibleRows.map(({ p, stock, min, cadDias, alerta }) => {
                 const stockBajo = stock <= min;
                 let cadLabel = "—";
                 let cadClass = "badge-fecha-normal";
@@ -90,6 +101,15 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
           </tbody>
         </table>
       </div>
+      <TablePagination
+        totalItems={rows.length}
+        page={safePage}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        pageSizeOptions={[10, 25, 50, 100]}
+        label="productos"
+      />
       <div className="resumen-inventario">
         <div>
           Total productos: <span className="resumen-valor">{items.length}</span>

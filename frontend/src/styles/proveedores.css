@@ -59,6 +59,41 @@ body {
     font-size: 14px;
 }
 
+.proveedores-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.proveedores-kpi-card {
+    border: 1px solid var(--color-border-default);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.proveedores-kpi-card span {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.proveedores-kpi-card strong {
+    color: var(--color-text-strong);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.proveedores-kpi-card--accent {
+    border-color: rgba(179, 49, 49, 0.28);
+    background: linear-gradient(135deg, rgba(179, 49, 49, 0.08) 0%, rgba(179, 49, 49, 0.02) 100%);
+}
+
 .card {
     background: var(--bg-card);
     border: 1px solid rgba(0, 0, 0, 0.02);
@@ -125,6 +160,10 @@ body {
 @media (max-width: 900px) {
     .content-header--split {
         align-items: stretch;
+    }
+
+    .proveedores-kpi-grid {
+        grid-template-columns: 1fr;
     }
 
     .header-actions {

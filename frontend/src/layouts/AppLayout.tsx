@@ -110,11 +110,22 @@ export default function AppLayout() {
         aria-label="Navegacion principal"
       >
         <NavLink to="/inicio" className="brand">
-          <img
-            src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
-            alt="CIFP Virgen de la Candelaria"
-            className="brand-logo"
-          />
+          <div className="brand-left">
+            <img
+              src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
+              alt="CIFP Virgen de la Candelaria"
+              className="brand-logo"
+            />
+
+            <div className="brand-copy">
+              <strong className="brand-title">Smart Economato</strong>
+            </div>
+          </div>
+
+          <div className="brand-alert" aria-label="Avisos pendientes">
+            <i className="fa-regular fa-bell" aria-hidden="true" />
+            <span className="brand-alert-count">20</span>
+          </div>
         </NavLink>
 
         <nav className="nav" aria-label="Secciones del sistema">

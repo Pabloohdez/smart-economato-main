@@ -78,7 +78,7 @@ export default function LoginPage() {
                 aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
               >
-                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"}`} aria-hidden="true" />
+                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} password-toggle-icon`} aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -114,9 +114,9 @@ export default function LoginPage() {
 
       <footer
         className="login-footer"
-        aria-label="2025 Pablo Hdez. Todos los derechos reservados."
+        aria-label="Smart Economato"
       >
-        © 2025 Pablo Hdez. Todos los derechos reservados.
+        Smart Economato
       </footer>
     </div>
   );

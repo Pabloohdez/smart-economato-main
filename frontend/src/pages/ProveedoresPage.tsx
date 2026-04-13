@@ -9,6 +9,7 @@ import { deleteProveedor, getProveedoresLista, saveProveedor } from "../services
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import type { Proveedor } from "../types";
+import TablePagination from "../components/ui/TablePagination";
 
 function hoyES() {
   const fecha = new Date();
@@ -25,6 +26,8 @@ export default function ProveedoresPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const [form, setForm] = useState({
     id: "",
@@ -72,6 +75,23 @@ export default function ProveedoresPage() {
       );
     });
   }, [proveedores, q]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const visible = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, safePage, pageSize]);
+
+  const proveedoresResumen = useMemo(() => {
+    const conTelefono = proveedores.filter((p) => Boolean(String(p.telefono ?? "").trim())).length;
+    const conEmail = proveedores.filter((p) => Boolean(String(p.email ?? "").trim())).length;
+    return {
+      total: proveedores.length,
+      conTelefono,
+      conEmail,
+    };
+  }, [proveedores]);
 
   useEffect(() => {
     if (proveedoresQuery.error) {
@@ -185,6 +205,21 @@ export default function ProveedoresPage() {
         </div>
       </div>
 
+      <section className="proveedores-kpi-grid" aria-label="Resumen de proveedores">
+        <article className="proveedores-kpi-card">
+          <span>Proveedores Totales</span>
+          <strong>{proveedoresResumen.total}</strong>
+        </article>
+        <article className="proveedores-kpi-card">
+          <span>Con Teléfono</span>
+          <strong>{proveedoresResumen.conTelefono}</strong>
+        </article>
+        <article className="proveedores-kpi-card proveedores-kpi-card--accent">
+          <span>Con Email</span>
+          <strong>{proveedoresResumen.conEmail}</strong>
+        </article>
+      </section>
+
       <div className="card">
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
@@ -193,7 +228,10 @@ export default function ProveedoresPage() {
               <input
                 type="text"
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={(e) => {
+                  setQ(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Buscar proveedor..."
                 aria-label="Buscar proveedor"
                 style={{ maxWidth: 360 }}
@@ -212,14 +250,14 @@ export default function ProveedoresPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.length === 0 ? (
+                  {visible.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
                         No hay proveedores para mostrar.
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((p) => (
+                    visible.map((p) => (
                       <tr key={String(p.id)}>
                         <td style={{ fontWeight: 700 }}>{p.nombre}</td>
                         <td>{p.contacto || "-"}</td>
@@ -260,6 +298,16 @@ export default function ProveedoresPage() {
                 </tbody>
               </table>
             </div>
+
+            <TablePagination
+              totalItems={filtered.length}
+              page={safePage}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              pageSizeOptions={[10, 25, 50]}
+              label="proveedores"
+            />
           </>
         )}
       </div>

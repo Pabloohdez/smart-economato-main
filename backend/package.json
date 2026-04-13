@@ -12,6 +12,7 @@
     "test:e2e": "jest --runInBand --runTestsByPath test/auth-refresh.e2e-spec.ts",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "seed:demo-roles": "node scripts/seed-demo-roles.js",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio"

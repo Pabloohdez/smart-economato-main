@@ -209,6 +209,21 @@ button#btnBuscar.btn-buscar-inventario {
   overflow: hidden;
 }
 
+.panel-tabla .table-pagination-wrap {
+  padding: 16px 24px 14px;
+  margin-top: 0;
+  border-top: 1px solid var(--color-border-default);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
+.panel-tabla .table-pagination-summary {
+  font-weight: 600;
+}
+
+.panel-tabla .table-pagination-controls {
+  justify-content: flex-end;
+}
+
 /* --- ESTILOS DE ALERTA EN TABLA (sin Grid.js) --- */
 .alerta-cell {
   background-color: #fff5f5 !important;
@@ -392,6 +407,14 @@ button#btnBuscar.btn-buscar-inventario:hover {
     flex-direction: column;
     gap: 10px;
     align-items: flex-start;
+  }
+
+  .panel-tabla .table-pagination-wrap {
+    padding: 14px 16px;
+  }
+
+  .panel-tabla .table-pagination-controls {
+    justify-content: flex-start;
   }
 }
 /* ===== Alias .inv-* => tokens ===== */

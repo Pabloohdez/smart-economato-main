@@ -210,6 +210,13 @@ p:hover, a:hover {
   outline-offset: 2px;
 }
 
+.password-toggle-icon{
+  width: 16px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1;
+}
+
 .resp {
   margin-top: 10px;
   min-height: 20px;
