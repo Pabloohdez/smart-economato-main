@@ -246,6 +246,8 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 25px;
   max-width: 1000px;
+  width: min(1000px, 100%);
+  margin: 0 auto;
 }
 
 .card{
