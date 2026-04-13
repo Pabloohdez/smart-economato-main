@@ -22,6 +22,7 @@ type CarritoItem = {
   productoId: number | string;
   nombre: string;
   cantidad: number;
+  unidad?: string;
 };
 
 function formatFechaHora(iso: string) {
@@ -51,6 +52,22 @@ function badgeDestinoClass(motivoRaw?: string) {
   return "badge-default";
 }
 
+function normalizarUnidad(raw?: string) {
+  const u = String(raw ?? "").trim().toLowerCase();
+  if (!u) return "ud";
+  if (u === "unidad" || u === "unidades" || u === "ud") return "ud";
+  if (u === "kilo" || u === "kilos" || u === "kg") return "kg";
+  if (u === "litro" || u === "litros" || u === "l") return "l";
+  return u;
+}
+
+function stepDeUnidad(unidad?: string) {
+  const u = normalizarUnidad(unidad);
+  if (u === "ud") return 1;
+  if (u === "kg" || u === "l") return 0.001;
+  return 1;
+}
+
 export default function DistribucionPage() {
   const pref = verificarPreferencias();
 
@@ -70,6 +87,7 @@ export default function DistribucionPage() {
 
   const [productoActual, setProductoActual] = useState<Producto | null>(null);
   const [cantidadSalida, setCantidadSalida] = useState<number>(1);
+  const [modoBascula, setModoBascula] = useState<boolean>(true);
 
   const [carrito, setCarrito] = useState<CarritoItem[]>([]);
   const [motivo, setMotivo] = useState("Cocina");
@@ -94,6 +112,7 @@ export default function DistribucionPage() {
         precio: Number(p.precio ?? 0),
         stock: Number(p.stock ?? 0),
         codigoBarras: p.codigoBarras,
+        unidadMedida: p.unidadMedida,
         alergenos: p.alergenos || [],
       }));
 
@@ -136,6 +155,18 @@ export default function DistribucionPage() {
     cargarProductos();
     cargarHistorial();
   }, []);
+
+  // Si el producto es por kg/l y hay báscula conectada, rellena la cantidad con la lectura
+  useEffect(() => {
+    if (!productoActual) return;
+    const unidad = normalizarUnidad(productoActual.unidadMedida);
+    const step = stepDeUnidad(unidad);
+    if (step === 1) return;
+    if (!modoBascula) return;
+    if (!scale.connected || scale.weightKg == null) return;
+    const v = Number(scale.weightKg.toFixed(3));
+    setCantidadSalida(v);
+  }, [productoActual, scale.connected, scale.weightKg, modoBascula]);
 
   // cerrar dropdown si clic fuera
   useEffect(() => {
@@ -222,7 +253,9 @@ export default function DistribucionPage() {
     }
 
     setProductoActual(p);
-    setCantidadSalida(1);
+    const step = stepDeUnidad(p.unidadMedida);
+    setCantidadSalida(step);
+    setModoBascula(step !== 1);
     setResultadosOpen(false);
     setProductosBusqueda(null);
     setTerm(p.nombre);
@@ -230,9 +263,12 @@ export default function DistribucionPage() {
 
   function ajustarCant(delta: number) {
     setCantidadSalida((prev) => {
-      let val = Number(prev || 1) + delta;
-      if (val < 1) val = 1;
+      const step = stepDeUnidad(productoActual?.unidadMedida);
+      let val = Number(prev || step) + delta * step;
+      if (val < step) val = step;
       if (productoActual && val > productoActual.stock) val = productoActual.stock;
+      // para unidades enteras, evitamos decimales por seguridad
+      if (step === 1) val = Math.round(val);
       return val;
     });
   }
@@ -264,12 +300,14 @@ export default function DistribucionPage() {
     const debeBloquear = await mostrarAlertaAlergenos(productoActual);
     if (debeBloquear) return;
 
-    const cant = Math.max(1, Number(cantidadSalida || 1));
+    const step = stepDeUnidad(productoActual.unidadMedida);
+    const cant = Math.max(step, Number(cantidadSalida || step));
     if (cant > productoActual.stock) {
       showNotification("No hay stock suficiente", "error");
       return;
     }
 
+    const unidad = normalizarUnidad(productoActual.unidadMedida);
     setCarrito((prev) => {
       const idx = prev.findIndex((i) => String(i.productoId) === String(productoActual.id));
       if (idx >= 0) {
@@ -277,7 +315,7 @@ export default function DistribucionPage() {
         copy[idx] = { ...copy[idx], cantidad: copy[idx].cantidad + cant };
         return copy;
       }
-      return [...prev, { productoId: productoActual.id, nombre: productoActual.nombre, cantidad: cant }];
+      return [...prev, { productoId: productoActual.id, nombre: productoActual.nombre, cantidad: cant, unidad }];
     });
 
     setProductoActual(null);
@@ -490,7 +528,7 @@ export default function DistribucionPage() {
 
               <div className="prod-card__stock">
                 <i className="fa-solid fa-cubes" />
-                Stock disponible: <strong>{productoActual.stock}</strong> unidades
+                Stock disponible: <strong>{productoActual.stock}</strong> {normalizarUnidad(productoActual.unidadMedida)}
               </div>
 
               <div className="prod-card__cant-wrap">
@@ -509,17 +547,26 @@ export default function DistribucionPage() {
                     id="cantidadSalida"
                     className="prod-card__cant-input"
                     value={cantidadSalida}
-                    min={0.001}
-                    step={0.001}
+                    min={stepDeUnidad(productoActual.unidadMedida)}
+                    step={stepDeUnidad(productoActual.unidadMedida)}
                     max={productoActual.stock}
-                    onChange={(e) => setCantidadSalida(Number(e.target.value))}
+                    onChange={(e) => {
+                      const step = stepDeUnidad(productoActual.unidadMedida);
+                      let v = Number(e.target.value);
+                      if (!Number.isFinite(v)) v = step;
+                      if (v < step) v = step;
+                      if (v > productoActual.stock) v = productoActual.stock;
+                      if (step === 1) v = Math.round(v);
+                      setCantidadSalida(v);
+                    }}
                   />
                   <button
                     type="button"
                     className="prod-card__cant-btn"
                     onClick={() => {
                       const kg = scale.captureKg();
-                      if (kg != null) setCantidadSalida(Number(kg.toFixed(3)));
+                      const step = stepDeUnidad(productoActual.unidadMedida);
+                      if (kg != null && step !== 1) setCantidadSalida(Number(kg.toFixed(3)));
                     }}
                     aria-label="Usar lectura de báscula"
                     title="Usar lectura de báscula"
@@ -536,6 +583,22 @@ export default function DistribucionPage() {
                     <i className="fa-solid fa-plus" />
                   </button>
                 </div>
+                {stepDeUnidad(productoActual.unidadMedida) !== 1 && (
+                  <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", fontSize: 12, color: "#718096" }}>
+                    <span>
+                      Lectura:{" "}
+                      <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
+                    </span>
+                    <label style={{ display: "inline-flex", gap: 8, alignItems: "center", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={modoBascula}
+                        onChange={(e) => setModoBascula(e.target.checked)}
+                      />
+                      Usar báscula (auto)
+                    </label>
+                  </div>
+                )}
               </div>
 
               <button
@@ -578,7 +641,7 @@ export default function DistribucionPage() {
                   carrito.map((item, index) => (
                     <tr key={`${String(item.productoId)}-${index}`}>
                       <td>{item.nombre}</td>
-                      <td>{item.cantidad}</td>
+                      <td>{item.cantidad} {item.unidad ?? ""}</td>
                       <td>
                         <button type="button" onClick={() => eliminarDelCarrito(index)} aria-label={`Eliminar ${item.nombre}`}>
                           <i className="fa-solid fa-trash" />

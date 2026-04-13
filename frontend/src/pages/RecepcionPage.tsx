@@ -44,6 +44,15 @@ function stepDeUnidad(unidad?: string) {
   return 0.001;
 }
 
+function normalizarUnidad(raw?: string) {
+  const u = String(raw ?? "").trim().toLowerCase();
+  if (!u) return "ud";
+  if (u === "unidad" || u === "unidades" || u === "ud") return "ud";
+  if (u === "kilo" || u === "kilos" || u === "kg") return "kg";
+  if (u === "litro" || u === "litros" || u === "l") return "l";
+  return u;
+}
+
 export default function Recepcion() {
   const queryClient = useQueryClient();
   const scale = useScaleSerial({ baudRate: 9600 });
@@ -112,6 +121,7 @@ export default function Recepcion() {
   // Modal pedidos
   const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
+  const [verifCaptured, setVerifCaptured] = useState<Record<string, number>>({}); // detalle_id -> kg capturados
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
@@ -209,7 +219,9 @@ export default function Recepcion() {
   function abrirModalCantidad(p: Producto) {
     console.log("[Recepcion] abrirModalCantidad called for:", p.nombre, "id:", p.id);
     setProductoSel(p);
-    setCantidadSel(1);
+    const unidad = normalizarUnidad(p.unidadMedida);
+    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+    setCantidadSel(step);
     setModalCantidadOpen(true);
     console.log("[Recepcion] modalCantidadOpen set to true");
   }
@@ -232,6 +244,7 @@ export default function Recepcion() {
 
   function agregarProducto(p: Producto, cant: number) {
     const provNombre = proveedorNombreDeProducto(p);
+    const unidad = normalizarUnidad(p.unidadMedida);
 
     setRecepcion((prev) => [
       ...prev,
@@ -241,6 +254,7 @@ export default function Recepcion() {
         proveedor: provNombre,
         stock: Number(p.stock ?? 0),
         cantidadRecibida: cant,
+        unidad,
         precio: Number(p.precio ?? 0),
       },
     ]);
@@ -252,6 +266,18 @@ export default function Recepcion() {
   function actualizarCantidadVerificada(detalleId: string, siguiente: number, maximo: number) {
     const safe = Math.max(0, Math.min(maximo, siguiente));
     setVerifQty((prev) => ({ ...prev, [detalleId]: safe }));
+  }
+
+  function capturarBasculaParaDetalle(detalleId: string, unidadRaw: string | undefined, maximo: number) {
+    const unidad = normalizarUnidad(unidadRaw);
+    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+    if (step === 1) return;
+    const kg = scale.captureKg();
+    if (kg == null) return;
+    const v = Number(kg.toFixed(3));
+    setVerifCaptured((prev) => ({ ...prev, [detalleId]: v }));
+    // por defecto, también rellenamos "a recibir ahora"
+    actualizarCantidadVerificada(detalleId, v, maximo);
   }
 
   function eliminarFila(idx: number) {
@@ -339,6 +365,8 @@ export default function Recepcion() {
   }, [cerrandoDrawerPedidos, modalPedidosOpen]);
 
   const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
+    const TOLERANCIA = 0.05; // 50g/50ml aprox
+
     const confirmado = await showConfirm({
       title: "Confirmar recepción",
       message: "¿Confirmar entrada de stock y actualizar pedido?",
@@ -346,6 +374,45 @@ export default function Recepcion() {
       icon: "fa-solid fa-boxes-stacked",
     });
     if (!confirmado) return;
+
+    // Verificación con báscula: si hay capturas, avisamos si no coincide con lo esperado
+    const discrepancias: string[] = [];
+    for (const it of items) {
+      const detalleId = String(it.id);
+      const unidad = normalizarUnidad(it.unidad);
+      if (!(unidad === "kg" || unidad === "l")) continue;
+
+      const capt = verifCaptured[detalleId];
+      if (capt == null) continue;
+
+      const maxRecibir = Math.max(
+        0,
+        (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)
+      );
+      const qty = Number(verifQty[detalleId] ?? 0);
+
+      const diffEsperado = Math.abs(capt - maxRecibir);
+      const diffQty = Math.abs(capt - qty);
+
+      if (diffEsperado > TOLERANCIA || diffQty > TOLERANCIA) {
+        discrepancias.push(
+          `${it.producto_nombre}: esperado ${maxRecibir.toFixed(3)} ${unidad}, báscula ${capt.toFixed(3)} kg, a recibir ${qty.toFixed(3)} ${unidad}`
+        );
+      }
+    }
+
+    if (discrepancias.length) {
+      const okDiscrep = await showConfirm({
+        title: "⚠️ Discrepancia con báscula",
+        message:
+          "Hay líneas donde la lectura de báscula no cuadra con lo esperado.\n\n" +
+          discrepancias.slice(0, 6).join("\n") +
+          (discrepancias.length > 6 ? `\n... (+${discrepancias.length - 6} más)` : "") +
+          "\n\n¿Quieres continuar igualmente?",
+        confirmLabel: "Sí, continuar",
+      });
+      if (!okDiscrep) return;
+    }
 
     const itemsToReceive = items.map((it) => ({
       detalle_id: it.id,
@@ -398,7 +465,7 @@ export default function Recepcion() {
       const apiError = e as ApiRequestError;
       showNotification("Error de conexión: " + apiError.message, "error");
     }
-  }, [verifQty, productos, abrirModalPedidos, recibirPedidoMutation]);
+  }, [verifQty, verifCaptured, productos, abrirModalPedidos, recibirPedidoMutation, scale]);
 
   const pedidosPendientes = pedidosPendientesQuery.data ?? [];
 
@@ -724,6 +791,16 @@ export default function Recepcion() {
                                           <button
                                             type="button"
                                             className="recepcion-stepper-btn"
+                                            aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
+                                            title="Usar lectura de báscula"
+                                            onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
+                                            disabled={!scale.connected || scale.weightKg == null || step === 1}
+                                          >
+                                            <i className="fa-solid fa-scale-balanced" />
+                                          </button>
+                                          <button
+                                            type="button"
+                                            className="recepcion-stepper-btn"
                                             aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
                                               actualizarCantidadVerificada(
@@ -895,23 +972,51 @@ export default function Recepcion() {
             <div className="recepcion-modal-input-group">
               <label>Cantidad:</label>
               <div className="recepcion-stepper-modal">
+                {(() => {
+                  const unidad = normalizarUnidad(productoSel?.unidadMedida);
+                  const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                  const min = step;
+                  return (
                 <button
                   type="button"
                   className="recepcion-stepper-btn"
                   aria-label="Reducir cantidad"
-                  onClick={() => setCantidadSel((prev) => Math.max(1, Number(prev || 1) - 1))}
+                  onClick={() => setCantidadSel((prev) => Math.max(min, Number(prev || min) - step))}
                 >
                   -
                 </button>
+                  );
+                })()}
                 <input
                   type="number"
                   className="recepcion-modal-input-cantidad"
-                  min={1}
+                  min={(() => {
+                    const unidad = normalizarUnidad(productoSel?.unidadMedida);
+                    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                    return step;
+                  })()}
+                  step={(() => {
+                    const unidad = normalizarUnidad(productoSel?.unidadMedida);
+                    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                    return step;
+                  })()}
                   value={cantidadSel}
-                  onChange={(e) => setCantidadSel(Math.max(1, Number(e.target.value || 1)))}
+                  onChange={(e) => {
+                    const unidad = normalizarUnidad(productoSel?.unidadMedida);
+                    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                    let v = Number(e.target.value || step);
+                    if (!Number.isFinite(v)) v = step;
+                    if (v < step) v = step;
+                    if (step === 1) v = Math.round(v);
+                    setCantidadSel(v);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && productoSel) {
-                      agregarProducto(productoSel, Math.max(1, Number(cantidadSel || 1)));
+                      const unidad = normalizarUnidad(productoSel.unidadMedida);
+                      const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                      let v = Math.max(step, Number(cantidadSel || step));
+                      if (step === 1) v = Math.round(v);
+                      agregarProducto(productoSel, v);
                       cerrarModalCantidad();
                     }
                   }}
@@ -921,11 +1026,39 @@ export default function Recepcion() {
                 <button
                   type="button"
                   className="recepcion-stepper-btn"
+                  aria-label="Usar lectura de báscula"
+                  onClick={() => {
+                    if (!productoSel) return;
+                    const unidad = normalizarUnidad(productoSel.unidadMedida);
+                    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                    if (step === 1) return;
+                    const kg = scale.captureKg();
+                    if (kg != null) setCantidadSel(Number(kg.toFixed(3)));
+                  }}
+                  disabled={!scale.connected || scale.weightKg == null}
+                  title="Usar lectura de báscula"
+                >
+                  <i className="fa-solid fa-scale-balanced" />
+                </button>
+                <button
+                  type="button"
+                  className="recepcion-stepper-btn"
                   aria-label="Aumentar cantidad"
-                  onClick={() => setCantidadSel((prev) => Math.max(1, Number(prev || 1) + 1))}
+                  onClick={() => {
+                    const unidad = normalizarUnidad(productoSel?.unidadMedida);
+                    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                    setCantidadSel((prev) => {
+                      let v = Math.max(step, Number(prev || step) + step);
+                      if (step === 1) v = Math.round(v);
+                      return v;
+                    });
+                  }}
                 >
                   +
                 </button>
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12, color: "#718096" }}>
+                Unidad: <strong>{normalizarUnidad(productoSel?.unidadMedida)}</strong>
               </div>
             </div>
 
@@ -937,7 +1070,11 @@ export default function Recepcion() {
                 className="recepcion-btn-modal recepcion-btn-modal-confirmar"
                 onClick={() => {
                   if (!productoSel) return;
-                  agregarProducto(productoSel, Math.max(1, Number(cantidadSel || 1)));
+                  const unidad = normalizarUnidad(productoSel.unidadMedida);
+                  const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
+                  let v = Math.max(step, Number(cantidadSel || step));
+                  if (step === 1) v = Math.round(v);
+                  agregarProducto(productoSel, v);
                   cerrarModalCantidad();
                 }}
               >
