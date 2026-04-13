@@ -15,6 +15,8 @@ import { apiFetch } from "../services/apiClient";
 import type { Producto, Movimiento } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useScaleSerial } from "../hooks/useScaleSerial";
+import UiSelect from "../components/ui/UiSelect";
 
 type CarritoItem = {
   productoId: number | string;
@@ -54,6 +56,7 @@ export default function DistribucionPage() {
 
   // Obtener usuario activo para auditoría de movimientos
   const { user } = useAuth();
+  const scale = useScaleSerial({ baudRate: 9600 });
 
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosBase, setProductosBase] = useState<Producto[]>([]);
@@ -354,6 +357,32 @@ export default function DistribucionPage() {
         </div>
       </div>
 
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <strong>Báscula</strong>
+            <span style={{ fontSize: 13, color: "#4a5568" }}>
+              Lectura:{" "}
+              <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
+            </span>
+            {!scale.supported ? (
+              <span style={{ fontSize: 12, color: "#e53e3e" }}>(Web Serial no soportado)</span>
+            ) : scale.connected ? (
+              <button type="button" className="btn-secondary" onClick={scale.disconnect}>
+                <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
+              </button>
+            ) : (
+              <button type="button" className="btn-secondary" onClick={scale.connect}>
+                <i className="fa-solid fa-plug" /> Conectar
+              </button>
+            )}
+          </div>
+          <div style={{ fontSize: 12, color: "#718096" }}>
+            Tip: en “Cantidad a retirar” puedes usar decimales (kg).
+          </div>
+        </div>
+      </div>
+
       <div className="distribucion-container">
         {/* Panel Izq */}
         <div className="card panel-seleccion" ref={buscadorWrapRef}>
@@ -480,10 +509,24 @@ export default function DistribucionPage() {
                     id="cantidadSalida"
                     className="prod-card__cant-input"
                     value={cantidadSalida}
-                    min={1}
+                    min={0.001}
+                    step={0.001}
                     max={productoActual.stock}
                     onChange={(e) => setCantidadSalida(Number(e.target.value))}
                   />
+                  <button
+                    type="button"
+                    className="prod-card__cant-btn"
+                    onClick={() => {
+                      const kg = scale.captureKg();
+                      if (kg != null) setCantidadSalida(Number(kg.toFixed(3)));
+                    }}
+                    aria-label="Usar lectura de báscula"
+                    title="Usar lectura de báscula"
+                    disabled={!scale.connected || scale.weightKg == null}
+                  >
+                    <i className="fa-solid fa-scale-balanced" />
+                  </button>
                   <button
                     type="button"
                     className="prod-card__cant-btn"
@@ -551,18 +594,18 @@ export default function DistribucionPage() {
           <div className="carrito-footer">
             <div className="form-group">
               <label htmlFor="motivoSalida">Destino / Motivo:</label>
-              <select
+              <UiSelect
                 id="motivoSalida"
-                className="form-control"
                 value={motivo}
-                onChange={(e) => setMotivo(e.target.value)}
-              >
-                <option value="Cocina">Cocina</option>
-                <option value="Bar/Cafetería">Bar/Cafetería</option>
-                <option value="Eventos">Eventos</option>
-                <option value="Caducidad/Merma">Caducidad / Merma</option>
-                <option value="Donación">Donación</option>
-              </select>
+                onChange={setMotivo}
+                options={[
+                  { value: "Cocina", label: "Cocina" },
+                  { value: "Bar/Cafetería", label: "Bar/Cafetería" },
+                  { value: "Eventos", label: "Eventos" },
+                  { value: "Caducidad/Merma", label: "Caducidad / Merma" },
+                  { value: "Donación", label: "Donación" },
+                ]}
+              />
             </div>
 
             <button className="btn-success btn-block" type="button" onClick={confirmarSalida}>

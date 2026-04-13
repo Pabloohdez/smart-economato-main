@@ -11,6 +11,8 @@ import { apiFetch } from "../services/apiClient";
 import { showConfirm } from "../utils/notifications";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+import { useScaleSerial } from "../hooks/useScaleSerial";
+import UiSelect from "../components/ui/UiSelect";
 
 type RegistroRendimiento = {
   id: number;
@@ -52,6 +54,7 @@ export default function RendimientoPage() {
   const [modalPesoBruto, setModalPesoBruto] = useState("");
   const [modalPesoNeto, setModalPesoNeto] = useState("");
 
+  const scale = useScaleSerial({ baudRate: 9600 });
 
   const productosQuery = useQuery<Producto[]>({
     queryKey: queryKeys.productos,
@@ -443,6 +446,38 @@ export default function RendimientoPage() {
             <span>{fechaActual}</span>
           </div>
 
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, color: "#4a5568" }}>
+              Báscula:{" "}
+              <strong>
+                {scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}
+              </strong>
+            </span>
+            {!scale.supported ? (
+              <span style={{ fontSize: 12, color: "#e53e3e" }}>
+                (Web Serial no soportado)
+              </span>
+            ) : scale.connected ? (
+              <button
+                type="button"
+                className="btn-secundario-rend"
+                onClick={scale.disconnect}
+                style={{ padding: "8px 10px" }}
+              >
+                <i className="fa-solid fa-plug-circle-xmark"></i> Desconectar
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="btn-secundario-rend"
+                onClick={scale.connect}
+                style={{ padding: "8px 10px" }}
+              >
+                <i className="fa-solid fa-plug"></i> Conectar báscula
+              </button>
+            )}
+          </div>
+
           <button
             type="button"
             className="btn-secundario-rend"
@@ -516,19 +551,15 @@ export default function RendimientoPage() {
               />
             </div>
 
-            <select
-              className="select-filtro-rend"
-              aria-label="Filtrar por categoría"
+            <UiSelect
               value={filtroCategoria}
-              onChange={(e) => setFiltroCategoria(e.target.value)}
-            >
-              <option value="">Todas las categorías</option>
-              {categoriasDisponibles.map((cat) => (
-                <option key={String(cat.id)} value={cat.nombre}>
-                  {cat.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={setFiltroCategoria}
+              placeholder="Todas las categorías"
+              options={[
+                { value: "", label: "Todas las categorías" },
+                ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
+              ]}
+            />
           </div>
 
           <div className="filtros-rend">
@@ -743,19 +774,15 @@ export default function RendimientoPage() {
           </h3>
 
           <div className="filtros-historial-rend">
-            <select
-              className="select-filtro-historial-rend"
-              aria-label="Filtrar historial por categoría"
+            <UiSelect
               value={filtroCategoriaHistorial}
-              onChange={(e) => setFiltroCategoriaHistorial(e.target.value)}
-            >
-              <option value="">Todas las categorías</option>
-              {categoriasDisponibles.map((cat) => (
-                <option key={String(cat.id)} value={cat.nombre}>
-                  {cat.nombre}
-                </option>
-              ))}
-            </select>
+              onChange={setFiltroCategoriaHistorial}
+              placeholder="Todas las categorías"
+              options={[
+                { value: "", label: "Todas las categorías" },
+                ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
+              ]}
+            />
           </div>
         </div>
 
@@ -843,30 +870,60 @@ export default function RendimientoPage() {
 
             <div className="modal-campo-rend">
               <label htmlFor="modalInputPesoBruto">Peso Bruto (kg):</label>
-              <input
-                type="number"
-                id="modalInputPesoBruto"
-                className="modal-input-rend"
-                min="0.001"
-                step="0.001"
-                placeholder="0.000"
-                value={modalPesoBruto}
-                onChange={(e) => setModalPesoBruto(e.target.value)}
-              />
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  type="number"
+                  id="modalInputPesoBruto"
+                  className="modal-input-rend"
+                  min="0.001"
+                  step="0.001"
+                  placeholder="0.000"
+                  value={modalPesoBruto}
+                  onChange={(e) => setModalPesoBruto(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn-modal-rend"
+                  onClick={() => {
+                    const kg = scale.captureKg();
+                    if (kg != null) setModalPesoBruto(String(kg.toFixed(3)));
+                  }}
+                  disabled={!scale.connected || scale.weightKg == null}
+                  title="Usar lectura actual de la báscula"
+                  style={{ padding: "10px 12px" }}
+                >
+                  <i className="fa-solid fa-scale-balanced"></i>
+                </button>
+              </div>
             </div>
 
             <div className="modal-campo-rend">
               <label htmlFor="modalInputPesoNeto">Peso Neto (kg):</label>
-              <input
-                type="number"
-                id="modalInputPesoNeto"
-                className="modal-input-rend"
-                min="0"
-                step="0.001"
-                placeholder="0.000"
-                value={modalPesoNeto}
-                onChange={(e) => setModalPesoNeto(e.target.value)}
-              />
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <input
+                  type="number"
+                  id="modalInputPesoNeto"
+                  className="modal-input-rend"
+                  min="0"
+                  step="0.001"
+                  placeholder="0.000"
+                  value={modalPesoNeto}
+                  onChange={(e) => setModalPesoNeto(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn-modal-rend"
+                  onClick={() => {
+                    const kg = scale.captureKg();
+                    if (kg != null) setModalPesoNeto(String(kg.toFixed(3)));
+                  }}
+                  disabled={!scale.connected || scale.weightKg == null}
+                  title="Usar lectura actual de la báscula"
+                  style={{ padding: "10px 12px" }}
+                >
+                  <i className="fa-solid fa-scale-balanced"></i>
+                </button>
+              </div>
             </div>
 
             <div className="modal-resultados-rend">

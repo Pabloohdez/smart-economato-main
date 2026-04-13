@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Grid, html } from "gridjs";
-import "gridjs/dist/theme/mermaid.css";
 import "../styles/proveedores.css";
 import Spinner from "../components/ui/Spinner";
 
@@ -23,11 +21,10 @@ function hoyES() {
 }
 
 export default function ProveedoresPage() {
-  const gridRef = useRef<HTMLDivElement | null>(null);
-  const gridInstance = useRef<Grid | null>(null);
   const queryClient = useQueryClient();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [q, setQ] = useState("");
 
   const [form, setForm] = useState({
     id: "",
@@ -63,85 +60,25 @@ export default function ProveedoresPage() {
   const proveedores = proveedoresQuery.data ?? [];
   const loading = proveedoresQuery.isLoading;
 
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return proveedores;
+    return proveedores.filter((p) => {
+      return (
+        String(p.nombre ?? "").toLowerCase().includes(s)
+        || String(p.contacto ?? "").toLowerCase().includes(s)
+        || String(p.telefono ?? "").toLowerCase().includes(s)
+        || String(p.email ?? "").toLowerCase().includes(s)
+      );
+    });
+  }, [proveedores, q]);
+
   useEffect(() => {
     if (proveedoresQuery.error) {
       console.error(proveedoresQuery.error);
       showNotification("Error de conexión cargando proveedores", "error");
     }
   }, [proveedoresQuery.error]);
-
-  // ----------------------------
-  // Crear / refrescar GRID
-  // ----------------------------
-
-  useEffect(() => {
-    if (!gridRef.current || loading || gridInstance.current) return;
-
-    gridInstance.current = new Grid({
-      columns: [
-        { name: "id", hidden: true }, // 👈 oculta, pero existe
-        "Nombre",
-        "Contacto",
-        "Teléfono",
-        "Email",
-        {
-          name: "Acciones",
-          formatter: (_, row) => {
-            const id = String(row.cells[0].data); // 👈 pillo el ID real
-            return html(`
-        <button class="btn-editar" data-id="${id}" title="Editar">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        <button class="btn-eliminar" data-id="${id}" title="Eliminar">
-          <i class="fa-solid fa-trash-can"></i>
-        </button>
-      `);
-          },
-        },
-      ],
-
-      data: [],
-
-      search: true,
-
-      pagination: {
-        limit: 10,
-      },
-
-      language: {
-        search: { placeholder: "Buscar proveedor..." },
-        pagination: {
-          previous: "Anterior",
-          next: "Siguiente",
-          showing: "Mostrando",
-          results: () => "resultados",
-        },
-      },
-    }).render(gridRef.current);
-
-    return () => {
-      if (gridInstance.current) {
-        gridInstance.current.destroy();
-        gridInstance.current = null;
-      }
-    };
-  }, [loading]);
-
-  useEffect(() => {
-    if (!gridInstance.current || loading) return;
-
-    gridInstance.current
-      .updateConfig({
-        data: proveedores.map((p) => [
-          p.id,
-          p.nombre,
-          p.contacto || "-",
-          p.telefono || "-",
-          p.email || "-",
-        ]),
-      })
-      .forceRender();
-  }, [proveedores, loading]);
 
   function abrirModal() {
     setForm({
@@ -220,43 +157,6 @@ export default function ProveedoresPage() {
   }
 
   // ----------------------------
-  // Detectar clicks en botones grid
-  // ----------------------------
-
-  useEffect(() => {
-    function handler(e: any) {
-      const btn = e.target.closest("button");
-
-      if (!btn) return;
-
-      const id = btn.dataset.id;
-
-      if (btn.classList.contains("btn-eliminar")) {
-        eliminarProveedor(id);
-      }
-
-      if (btn.classList.contains("btn-editar")) {
-        const p = proveedores.find((x) => x.id === id);
-
-        if (!p) return;
-
-        setForm({
-          id: String(p.id),
-          nombre: p.nombre,
-          contacto: p.contacto || "",
-          telefono: p.telefono || "",
-          email: p.email || "",
-        });
-
-        setModalOpen(true);
-      }
-    }
-
-    document.addEventListener("click", handler);
-
-    return () => document.removeEventListener("click", handler);
-  }, [proveedores]);
-
   // ----------------------------
   // RENDER
   // ----------------------------
@@ -287,14 +187,88 @@ export default function ProveedoresPage() {
 
       <div className="card">
         {loading && <Spinner label="Cargando proveedores..." />}
-        <div ref={gridRef} style={loading ? { display: "none" } : {}}></div>
+        {!loading && (
+          <>
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+              <input
+                type="text"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar proveedor..."
+                aria-label="Buscar proveedor"
+                style={{ maxWidth: 360 }}
+              />
+            </div>
+
+            <div className="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Contacto</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th style={{ textAlign: "right" }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
+                        No hay proveedores para mostrar.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((p) => (
+                      <tr key={String(p.id)}>
+                        <td style={{ fontWeight: 700 }}>{p.nombre}</td>
+                        <td>{p.contacto || "-"}</td>
+                        <td>{p.telefono || "-"}</td>
+                        <td>{p.email || "-"}</td>
+                        <td style={{ textAlign: "right" }}>
+                          <div style={{ display: "inline-flex", gap: 8 }}>
+                            <button
+                              type="button"
+                              className="btn-secondary"
+                              title="Editar"
+                              onClick={() => {
+                                setForm({
+                                  id: String(p.id),
+                                  nombre: p.nombre,
+                                  contacto: p.contacto || "",
+                                  telefono: p.telefono || "",
+                                  email: p.email || "",
+                                });
+                                setModalOpen(true);
+                              }}
+                            >
+                              <i className="fa-solid fa-pen" />
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-warning"
+                              title="Eliminar"
+                              onClick={() => eliminarProveedor(String(p.id))}
+                            >
+                              <i className="fa-solid fa-trash-can" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       {modalOpen && (
         <div className="modal">
           <div className="modal-content">
-            <button className="close" onClick={cerrarModal}>
-              &times;
+            <button type="button" className="close close--icon" onClick={cerrarModal} aria-label="Cerrar">
+              <i className="fa-solid fa-xmark" />
             </button>
 
             <h2>{form.id ? "Editar Proveedor" : "Nuevo Proveedor"}</h2>

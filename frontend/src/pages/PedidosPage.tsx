@@ -12,6 +12,7 @@ import type { Proveedor, Producto, PedidoHistorial } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { crearPedidoHistorial, getPedidos } from "../services/pedidosService";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+import UiSelect from "../components/ui/UiSelect";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -311,19 +312,16 @@ export default function PedidosPage() {
               <div className="form-row">
                 <div className="form-group" style={{ flex: 1 }}>
                   <label htmlFor="selectProveedor">Proveedor:</label>
-                  <select
+                  <UiSelect
                     id="selectProveedor"
-                    className="form-control"
                     value={proveedorId}
-                    onChange={(e) => setProveedorId(e.target.value)}
-                  >
-                    <option value="">-- Seleccionar Proveedor --</option>
-                    {proveedores.map((p) => (
-                      <option key={String(p.id)} value={String(p.id)}>
-                        {p.nombre}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setProveedorId}
+                    placeholder="-- Seleccionar Proveedor --"
+                    options={[
+                      { value: "", label: "-- Seleccionar Proveedor --" },
+                      ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
+                    ]}
+                  />
                 </div>
 
                 <div className="form-group" style={{ flex: 1 }}>

@@ -6,6 +6,7 @@ import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import UiSelect from "../components/ui/UiSelect";
 
 type ProductoBaja = Producto & {
   tipoBaja: "Rotura" | "Caducado" | "Merma" | "Ajuste" | "Otro";
@@ -525,24 +526,20 @@ export default function BajasPage() {
           </div>
 
           <div className="filtros-baja">
-            <select
+            <UiSelect
               id="selectCategoriaBaja"
-              className="select-filtro-baja"
-              aria-label="Filtrar por categoría"
               value={catId}
-              onChange={(e) => {
-                setCatId(e.target.value);
+              onChange={(v) => {
+                setCatId(v);
                 setResultadosOpen(true);
               }}
               disabled={loadingDatos}
-            >
-              <option value="">Todas las categorías</option>
-              {categorias.map((c) => (
-                <option key={String(c.id)} value={String(c.id)}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
+              placeholder="Todas las categorías"
+              options={[
+                { value: "", label: "Todas las categorías" },
+                ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
+              ]}
+            />
 
             <button id="btnProductosCaducados" className="btn-filtro-especial" type="button" onClick={mostrarProductosCaducados}>
               <i className="fa-solid fa-clock" /> Ver Productos Próximos a Caducar
@@ -619,8 +616,8 @@ export default function BajasPage() {
                   <td colSpan={8}>
                     <div className="mensaje-vacio">
                       <i className="fa-solid fa-inbox" />
-                      <p>No hay productos registrados en esta baja</p>
-                      <small>Busca y selecciona productos para comenzar</small>
+                      <p style={{ margin: "6px 0 2px" }}>No hay productos registrados en esta baja</p>
+                      <small style={{ display: "block" }}>Busca y selecciona productos para comenzar</small>
                     </div>
                   </td>
                 </tr>
@@ -761,20 +758,19 @@ export default function BajasPage() {
           </h3>
 
           <div className="filtros-historial">
-            <select
+            <UiSelect
               id="selectFiltroTipoBaja"
-              className="select-filtro-historial"
-              aria-label="Filtrar historial por tipo de baja"
               value={filtroTipoHistorial}
-              onChange={(e) => setFiltroTipoHistorial(e.target.value)}
-            >
-              <option value="">Todos los tipos</option>
-              <option value="Rotura">Roturas</option>
-              <option value="Caducado">Caducados</option>
-              <option value="Merma">Mermas</option>
-              <option value="Ajuste">Ajustes</option>
-              <option value="Otro">Otros</option>
-            </select>
+              onChange={setFiltroTipoHistorial}
+              options={[
+                { value: "", label: "Todos los tipos" },
+                { value: "Rotura", label: "Roturas" },
+                { value: "Caducado", label: "Caducados" },
+                { value: "Merma", label: "Mermas" },
+                { value: "Ajuste", label: "Ajustes" },
+                { value: "Otro", label: "Otros" },
+              ]}
+            />
           </div>
         </div>
 
@@ -868,18 +864,18 @@ export default function BajasPage() {
           <div className="modal-campos-baja">
             <div className="modal-campo">
               <label htmlFor="modalSelectTipoBaja">Tipo de Baja:</label>
-              <select
+              <UiSelect
                 id="modalSelectTipoBaja"
-                className="modal-select-tipo"
                 value={modalTipoBaja}
-                onChange={(e) => setModalTipoBaja(e.target.value as ProductoBaja["tipoBaja"])}
-              >
-                <option value="Rotura">Rotura</option>
-                <option value="Caducado">Caducado</option>
-                <option value="Merma">Merma</option>
-                <option value="Ajuste">Ajuste de Inventario</option>
-                <option value="Otro">Otro</option>
-              </select>
+                onChange={(v) => setModalTipoBaja(v as ProductoBaja["tipoBaja"])}
+                options={[
+                  { value: "Rotura", label: "Rotura" },
+                  { value: "Caducado", label: "Caducado" },
+                  { value: "Merma", label: "Merma" },
+                  { value: "Ajuste", label: "Ajuste de Inventario" },
+                  { value: "Otro", label: "Otro" },
+                ]}
+              />
             </div>
 
             <div className="modal-campo">

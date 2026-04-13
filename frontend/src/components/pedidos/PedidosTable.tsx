@@ -1,6 +1,4 @@
-import { useEffect, useRef } from "react";
-import { Grid, html } from "gridjs";
-import "gridjs/dist/theme/mermaid.css";
+import { useMemo, useState } from "react";
 import type { PedidoHistorial } from "../../types";
 
 type Props = {
@@ -9,96 +7,80 @@ type Props = {
 };
 
 export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const gridRef = useRef<Grid | null>(null);
-  const onIrARecepcionRef = useRef(onIrARecepcion);
-
-  onIrARecepcionRef.current = onIrARecepcion;
-
-  useEffect(() => {
-    if (!wrapperRef.current || gridRef.current) return;
-
-    const grid = new Grid({
-      columns: [
-        "ID",
-        "Proveedor",
-        "Estado",
-        "Total",
-        {
-          name: "Acciones",
-          formatter: (_cell, row) => {
-            const id = row.cells[0].data;
-            const estado = String(row.cells[2].data ?? "").toUpperCase();
-
-            if (estado === "PENDIENTE" || estado === "INCOMPLETO") {
-              return html(
-                `<button class="btn-grid-recepcion" data-id="${id}">Ir a Recepción</button>`
-              );
-            }
-
-            return html(`<span class="badge-success">Completado</span>`);
-          },
-        },
-      ],
-      data: [],
-      pagination: {
-        limit: 5,
-      },
-      sort: true,
-      search: true,
-      language: {
-        search: {
-          placeholder: "Buscar...",
-        },
-        pagination: {
-          previous: "Ant",
-          next: "Sig",
-          showing: "Mostrando",
-          results: () => "resultados",
-        },
-      },
-      className: {
-        table: "gridjs-table",
-      },
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return pedidos;
+    return pedidos.filter((p) => {
+      return (
+        String(p.id).toLowerCase().includes(s)
+        || String(p.proveedor_nombre ?? "").toLowerCase().includes(s)
+        || String(p.estado ?? "").toLowerCase().includes(s)
+      );
     });
+  }, [pedidos, q]);
 
-    grid.render(wrapperRef.current);
-    gridRef.current = grid;
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Buscar..."
+          aria-label="Buscar pedidos"
+          style={{ maxWidth: 320 }}
+        />
+      </div>
 
-    const handleClick = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const btn = target.closest(".btn-grid-recepcion") as HTMLButtonElement | null;
-      if (!btn) return;
-      const id = btn.dataset.id;
-      if (id) onIrARecepcionRef.current(id);
-    };
-
-    wrapperRef.current.addEventListener("click", handleClick);
-
-    return () => {
-      wrapperRef.current?.removeEventListener("click", handleClick);
-      if (gridRef.current) {
-        gridRef.current.destroy();
-        gridRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!gridRef.current) return;
-
-    gridRef.current
-      .updateConfig({
-        data: pedidos.map((p) => [
-          p.id,
-          p.proveedor_nombre,
-          p.estado,
-          `${Number(p.total).toFixed(2)} €`,
-          null,
-        ]),
-      })
-      .forceRender();
-  }, [pedidos]);
-
-  return <div ref={wrapperRef} />;
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Proveedor</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
+                  No hay pedidos que coincidan.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((p) => {
+                const estado = String(p.estado ?? "").toUpperCase();
+                const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
+                return (
+                  <tr key={String(p.id)}>
+                    <td>{p.id}</td>
+                    <td>{p.proveedor_nombre}</td>
+                    <td>{p.estado}</td>
+                    <td>{Number(p.total ?? 0).toFixed(2)} €</td>
+                    <td>
+                      {canReceive ? (
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          onClick={() => onIrARecepcion(p.id)}
+                        >
+                          Ir a Recepción
+                        </button>
+                      ) : (
+                        <span className="badge-success">Completado</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }

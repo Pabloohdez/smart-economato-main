@@ -12,6 +12,8 @@ import { getCategorias, getProductos, getProveedores } from "../services/product
 import { getPedidosPendientes, recibirPedido } from "../services/pedidosService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+import { useScaleSerial } from "../hooks/useScaleSerial";
+import UiSelect from "../components/ui/UiSelect";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -38,6 +40,7 @@ function hoyES() {
 
 export default function Recepcion() {
   const queryClient = useQueryClient();
+  const scale = useScaleSerial({ baudRate: 9600 });
 
   const productosQuery = useQuery<Producto[]>({
     queryKey: queryKeys.productos,
@@ -93,6 +96,7 @@ export default function Recepcion() {
   );
 
   const [obs, setObs] = useState("");
+  const [expectedKg, setExpectedKg] = useState<string>("");
 
   // Modal cantidad (manual)
   const [modalCantidadOpen, setModalCantidadOpen] = useState(false);
@@ -118,18 +122,28 @@ export default function Recepcion() {
       usuario_id: number | string;
       items: Array<{ producto_id: number | string; cantidad: number }>;
     }) => {
-      await apiFetch("/movimientos", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify(payload),
-        offlineQueue: {
-          enabled: true,
-          queuedMessage: "La recepción manual queda en cola y se sincronizará al recuperar conexión.",
-        },
-      });
+      // El backend acepta un movimiento por request:
+      // { productoId: string, cantidad: number, tipo?: 'ENTRADA'|'SALIDA', motivo?: string }
+      // y rechaza propiedades extra / payloads "batch" (forbidNonWhitelisted).
+      for (const item of payload.items) {
+        await apiFetch("/movimientos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            productoId: String(item.producto_id),
+            cantidad: item.cantidad,
+            tipo: payload.tipo,
+            motivo: payload.motivo,
+          }),
+          offlineQueue: {
+            enabled: true,
+            queuedMessage: "La recepción manual queda en cola y se sincronizará al recuperar conexión.",
+          },
+        });
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.productos });
@@ -241,6 +255,21 @@ export default function Recepcion() {
   async function confirmarRecepcionManual() {
     if (!recepcion.length) return;
 
+    // Si el usuario indica kg esperados, validamos contra la lectura actual
+    const expected = Number(String(expectedKg || "").replace(",", "."));
+    if (Number.isFinite(expected) && expected > 0 && scale.weightKg != null) {
+      const diff = Math.abs(scale.weightKg - expected);
+      // Tolerancia simple: 0.05 kg (50g). Ajustable.
+      const tolerance = 0.05;
+      if (diff > tolerance) {
+        showNotification(
+          `⚠️ Peso no coincide: esperado ${expected.toFixed(3)} kg, báscula ${scale.weightKg.toFixed(3)} kg (Δ ${diff.toFixed(3)} kg)`,
+          "warning",
+        );
+        return;
+      }
+    }
+
     const payload = {
       tipo: "ENTRADA",
       motivo: obs || "Recepción Manual",
@@ -261,6 +290,7 @@ export default function Recepcion() {
     showNotification("Recepción manual guardada correctamente.", "success");
     setRecepcion([]);
     setObs("");
+    setExpectedKg("");
   }
 
   // ===== Pedidos (importación) =====
@@ -387,6 +417,57 @@ export default function Recepcion() {
         </div>
       </div>
 
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <strong>Báscula</strong>
+            <span style={{ fontSize: 13, color: "#4a5568" }}>
+              Lectura:{" "}
+              <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
+            </span>
+            {!scale.supported ? (
+              <span style={{ fontSize: 12, color: "#e53e3e" }}>(Web Serial no soportado)</span>
+            ) : scale.connected ? (
+              <button type="button" className="btn-secondary" onClick={scale.disconnect}>
+                <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
+              </button>
+            ) : (
+              <button type="button" className="btn-secondary" onClick={scale.connect}>
+                <i className="fa-solid fa-plug" /> Conectar
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <label style={{ fontSize: 13, color: "#4a5568" }}>
+              Kg esperados (opcional):
+            </label>
+            <input
+              type="number"
+              step="0.001"
+              min="0"
+              value={expectedKg}
+              onChange={(e) => setExpectedKg(e.target.value)}
+              className="form-control"
+              style={{ width: 160 }}
+              placeholder="0.000"
+            />
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => {
+                const kg = scale.captureKg();
+                if (kg != null) setExpectedKg(String(kg.toFixed(3)));
+              }}
+              disabled={!scale.connected || scale.weightKg == null}
+              title="Copiar lectura a kg esperados"
+            >
+              <i className="fa-solid fa-copy" /> Usar lectura
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Panel búsqueda */}
       <div className="panel-busqueda" ref={buscadorWrapRef}>
         <h2 className="titulo-seccion">
@@ -496,23 +577,25 @@ export default function Recepcion() {
           </div>
 
           <div className="filtros-rapidos">
-            <select className="select-filtro" value={provFiltro} onChange={(e) => setProvFiltro(e.target.value)}>
-              <option value="">Todos los proveedores</option>
-              {proveedores.map((p) => (
-                <option key={String(p.id)} value={String(p.id)}>
-                  {p.nombre}
-                </option>
-              ))}
-            </select>
+            <UiSelect
+              value={provFiltro}
+              onChange={setProvFiltro}
+              placeholder="Todos los proveedores"
+              options={[
+                { value: "", label: "Todos los proveedores" },
+                ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
+              ]}
+            />
 
-            <select className="select-filtro" value={catFiltro} onChange={(e) => setCatFiltro(e.target.value)}>
-              <option value="">Todas las categorías</option>
-              {categorias.map((c) => (
-                <option key={String(c.id)} value={String(c.id)}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
+            <UiSelect
+              value={catFiltro}
+              onChange={setCatFiltro}
+              placeholder="Todas las categorías"
+              options={[
+                { value: "", label: "Todas las categorías" },
+                ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
+              ]}
+            />
           </div>
         </div>
         <div style={{ textAlign: "right", marginTop: 15 }}>

@@ -6,6 +6,7 @@ import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
 import Button from "../components/ui/Button";
 import { showConfirm } from "../utils/notifications";
+import UiSelect from "../components/ui/UiSelect";
 
 // Ajusta esta línea si en tu proyecto real estos métodos están en otro service
 import { getCategorias, getProveedores, crearProductosBatch } from "../services/productosService";
@@ -244,22 +245,17 @@ export default function IngresarProductoPage() {
           <label className="label-input" htmlFor="selectCategoria">
             Categoría
           </label>
-          <select
+          <UiSelect
             id="selectCategoria"
-            className="input-form"
             value={categoriaId}
-            onChange={(e) => setCategoriaId(e.target.value)}
+            onChange={setCategoriaId}
             disabled={loadingSelects}
-          >
-            <option value="">
-              {loadingSelects ? "Cargando..." : "Seleccionar..."}
-            </option>
-            {categorias.map((c) => (
-              <option key={String(c.id)} value={String(c.id)}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
+            placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
+            options={[
+              { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
+              ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
+            ]}
+          />
         </div>
 
         <div className="campo-grupo campo-precio">
@@ -309,22 +305,17 @@ export default function IngresarProductoPage() {
           <label className="label-input" htmlFor="selectProveedor">
             Proveedor
           </label>
-          <select
+          <UiSelect
             id="selectProveedor"
-            className="input-form"
             value={proveedorId}
-            onChange={(e) => setProveedorId(e.target.value)}
+            onChange={setProveedorId}
             disabled={loadingSelects}
-          >
-            <option value="">
-              {loadingSelects ? "Cargando..." : "Seleccionar..."}
-            </option>
-            {proveedores.map((p) => (
-              <option key={String(p.id)} value={String(p.id)}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
+            placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
+            options={[
+              { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
+              ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
+            ]}
+          />
         </div>
 
         <Button

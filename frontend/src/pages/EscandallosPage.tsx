@@ -349,7 +349,10 @@ export default function EscandallosPage() {
   return (
     <div className="table-wrapper">
       <div className="table-header">
-        <h1>Escandallos y Recetas</h1>
+        <h1>
+          <i className="fa-solid fa-receipt" style={{ color: "var(--color-brand-500)", marginRight: 10 }} />
+          Escandallos y Recetas
+        </h1>
 
         <div className="escandallo-controls">
           <div className="grupo-busqueda">

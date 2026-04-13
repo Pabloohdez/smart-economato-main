@@ -36,10 +36,25 @@ export async function getPedidosPendientes(): Promise<Pedido[]> {
 }
 
 export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise<boolean> {
+  // El backend (Nest + ValidationPipe con forbidNonWhitelisted) solo acepta
+  // { proveedorId:number, total?:number, items?:[{producto_id:string,cantidad:number,precio:number}] }
+  // y rechaza propiedades extra (usuarioId, nombre, proveedor_id, etc).
+  const apiPayload = {
+    proveedorId: payload.proveedorId == null ? payload.proveedorId : Number(payload.proveedorId),
+    total: payload.total,
+    items: Array.isArray(payload.items)
+      ? payload.items.map((i) => ({
+          producto_id: String(i.producto_id),
+          cantidad: i.cantidad,
+          precio: i.precio,
+        }))
+      : undefined,
+  };
+
   const json = await apiFetch<PedidosResponse<unknown>>("/pedidos", {
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(apiPayload),
     offlineQueue: {
       enabled: true,
       queuedMessage: "El pedido queda en cola y se enviará cuando vuelva la conexión.",

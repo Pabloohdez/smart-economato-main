@@ -203,6 +203,32 @@ body {
     color: var(--primary-color);
 }
 
+.close.close--icon {
+    float: none;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color);
+    background: var(--color-bg-surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+.close.close--icon:hover {
+    color: var(--primary-color);
+    background: var(--color-bg-soft);
+}
+
+.modal-content {
+    position: relative;
+}
+
 /* --- Forms --- */
 .form-group {
     margin-bottom: 20px;

@@ -1,4 +1,5 @@
 import type { Categoria, Proveedor } from "../../services/productosService";
+import UiSelect from "../ui/UiSelect";
 
 type Props = {
   q: string;
@@ -74,46 +75,40 @@ export default function InventarioToolbar({
       <div className="controles-filtros">
         <div className="grupo-filtro">
           <label className="label-filtro"><i className="fa-solid fa-tag" /> Categoría</label>
-          <select
-            className="select-filtro-inventario"
+          <UiSelect
             value={catId}
-            onChange={(e) => setCatId(e.target.value)}
-          >
-            <option value="">Todas las categorías</option>
-            {cats.map((c) => (
-              <option key={String(c.id)} value={String(c.id)}>
-                {c.nombre}
-              </option>
-            ))}
-          </select>
+            onChange={setCatId}
+            placeholder="Todas las categorías"
+            options={[
+              { value: "", label: "Todas las categorías" },
+              ...cats.map((c) => ({ value: String(c.id), label: c.nombre })),
+            ]}
+          />
         </div>
 
         <div className="grupo-filtro">
           <label className="label-filtro"><i className="fa-solid fa-truck" /> Proveedor</label>
-          <select
-            className="select-filtro-inventario"
+          <UiSelect
             value={provId}
-            onChange={(e) => setProvId(e.target.value)}
-          >
-            <option value="">Todos los proveedores</option>
-            {provs.map((p) => (
-              <option key={String(p.id)} value={String(p.id)}>
-                {p.nombre}
-              </option>
-            ))}
-          </select>
+            onChange={setProvId}
+            placeholder="Todos los proveedores"
+            options={[
+              { value: "", label: "Todos los proveedores" },
+              ...provs.map((p) => ({ value: String(p.id), label: p.nombre })),
+            ]}
+          />
         </div>
 
         <div className="grupo-filtro">
           <label className="label-filtro"><i className="fa-solid fa-arrow-up-short-wide" /> Ordenar</label>
-          <select
-            className="select-filtro-inventario"
+          <UiSelect
             value={orden}
-            onChange={(e) => setOrden(e.target.value as "asc" | "desc")}
-          >
-            <option value="asc">Precio: Menor a Mayor</option>
-            <option value="desc">Precio: Mayor a Menor</option>
-          </select>
+            onChange={(v) => setOrden(v as "asc" | "desc")}
+            options={[
+              { value: "asc", label: "Precio: Menor a Mayor" },
+              { value: "desc", label: "Precio: Mayor a Menor" },
+            ]}
+          />
         </div>
       </div>
 
