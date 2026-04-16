@@ -149,6 +149,10 @@ export default function AvisosPage() {
         && p.fechaCaducidadNormalizada !== "Sin fecha",
       )
       .map((p) => {
+        // Si el stock ya está a 0, no tiene sentido mantener el aviso de "dar de baja"
+        if (p.stockNum <= 0) {
+          return null;
+        }
         const fecha = new Date(p.fechaCaducidadNormalizada as string);
         if (Number.isNaN(fecha.getTime()) || fecha >= hoy) {
           return null;
@@ -163,7 +167,7 @@ export default function AvisosPage() {
 
   const stockBajo = useMemo<ProductoAviso[]>(() => {
     return productos
-      .filter((p) => p.stockMinimoNum > 0 && p.stockNum <= p.stockMinimoNum)
+      .filter((p) => p.stockMinimoNum > 0 && p.stockNum > 0 && p.stockNum <= p.stockMinimoNum)
       .sort((a, b) => a.stockNum / a.stockMinimoNum - b.stockNum / b.stockMinimoNum);
   }, [productos]);
 
