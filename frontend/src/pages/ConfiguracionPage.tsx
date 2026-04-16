@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showAlert, showNotification } from "../utils/notifications";
-import "../styles/configuracion.css";
 import type { AlergenoCatalogo, UsuarioActivo } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../services/alergenosService";
@@ -364,22 +363,28 @@ export default function ConfiguracionPage() {
 
   return (
     <div>
-      <div className="header-configuracion">
-        <h1 className="titulo-configuracion">
-          <i className="fa-solid fa-gear"></i> CONFIGURACIÓN DE PERFIL
+      <div className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
+        <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
+          <i className="fa-solid fa-gear text-[var(--color-brand-500)]" /> CONFIGURACIÓN DE PERFIL
         </h1>
-        <p className="subtitulo">
+        <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
           Gestiona tu información personal y configuración de alergias
         </p>
       </div>
 
       <div
-        className="tabs-navegacion"
+        className="flex gap-2.5 mb-[30px] border-b-2 border-[var(--color-border-default)] pb-2.5 max-[768px]:flex-col"
         role="tablist"
         aria-label="Secciones de configuración"
       >
         <button
-          className={`tab-btn ${tabActiva === "perfil" ? "activo" : ""}`}
+          className={[
+            "px-6 py-3 rounded-[10px] font-semibold text-[14px] border-2 transition flex items-center gap-2",
+            tabActiva === "perfil"
+              ? "bg-[var(--color-brand-500)] text-[var(--color-bg-surface)] border-[var(--color-brand-500)]"
+              : "bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]",
+            "max-[768px]:rounded-[10px]",
+          ].join(" ")}
           role="tab"
           aria-selected={tabActiva === "perfil"}
           onClick={() => setTabActiva("perfil")}
@@ -389,7 +394,13 @@ export default function ConfiguracionPage() {
         </button>
 
         <button
-          className={`tab-btn ${tabActiva === "alergias" ? "activo" : ""}`}
+          className={[
+            "px-6 py-3 rounded-[10px] font-semibold text-[14px] border-2 transition flex items-center gap-2",
+            tabActiva === "alergias"
+              ? "bg-[var(--color-brand-500)] text-[var(--color-bg-surface)] border-[var(--color-brand-500)]"
+              : "bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]",
+            "max-[768px]:rounded-[10px]",
+          ].join(" ")}
           role="tab"
           aria-selected={tabActiva === "alergias"}
           onClick={() => setTabActiva("alergias")}
@@ -399,7 +410,13 @@ export default function ConfiguracionPage() {
         </button>
 
         <button
-          className={`tab-btn ${tabActiva === "notificaciones" ? "activo" : ""}`}
+          className={[
+            "px-6 py-3 rounded-[10px] font-semibold text-[14px] border-2 transition flex items-center gap-2",
+            tabActiva === "notificaciones"
+              ? "bg-[var(--color-brand-500)] text-[var(--color-bg-surface)] border-[var(--color-brand-500)]"
+              : "bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]",
+            "max-[768px]:rounded-[10px]",
+          ].join(" ")}
           role="tab"
           aria-selected={tabActiva === "notificaciones"}
           onClick={() => setTabActiva("notificaciones")}
@@ -409,361 +426,366 @@ export default function ConfiguracionPage() {
         </button>
       </div>
 
-      <div className={`tab-content ${tabActiva === "perfil" ? "activo" : ""}`}>
-        {tabActiva === "perfil" && (
-          <div className="panel-perfil">
-            <h2 className="titulo-seccion">
-              <i className="fa-solid fa-id-card"></i> Información Personal
-            </h2>
+      {tabActiva === "perfil" && (
+        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+          <h2 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+            <i className="fa-solid fa-id-card" /> Información Personal
+          </h2>
 
-            <div className="form-perfil">
-              <div className="campo-perfil">
-                <label htmlFor="inputNombrePerfil">Nombre Completo</label>
-                <input
-                  type="text"
-                  id="inputNombrePerfil"
-                  className="input-perfil"
-                  value={nombreCompleto}
-                  readOnly
-                />
-              </div>
-
-              <div className="campo-perfil">
-                <label htmlFor="inputUsuarioPerfil">Usuario</label>
-                <input
-                  type="text"
-                  id="inputUsuarioPerfil"
-                  className="input-perfil"
-                  value={usuario}
-                  readOnly
-                />
-              </div>
-
-              <div className="campos-grupo">
-                <div className="campo-perfil">
-                  <label htmlFor="inputEmailPerfil">Email</label>
-                  <input
-                    type="email"
-                    id="inputEmailPerfil"
-                    className="input-perfil"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                <div className="campo-perfil">
-                  <label htmlFor="inputTelefonoPerfil">Teléfono</label>
-                  <input
-                    type="tel"
-                    id="inputTelefonoPerfil"
-                    className="input-perfil"
-                    value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="campo-perfil">
-                <label htmlFor="inputRolPerfil">Rol</label>
-                <input
-                  type="text"
-                  id="inputRolPerfil"
-                  className="input-perfil"
-                  value={rol}
-                  readOnly
-                />
-              </div>
-
-              <button
-                id="btnGuardarPerfil"
-                className="btn-guardar-perfil"
-                type="button"
-                onClick={guardarPerfil}
+          <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="inputNombrePerfil"
+                className="font-semibold text-[13px] text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
               >
-                <i className="fa-solid fa-save"></i> Guardar Cambios
-              </button>
+                Nombre Completo
+              </label>
+              <input
+                type="text"
+                id="inputNombrePerfil"
+                className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] cursor-not-allowed"
+                value={nombreCompleto}
+                readOnly
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="inputUsuarioPerfil"
+                className="font-semibold text-[13px] text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
+              >
+                Usuario
+              </label>
+              <input
+                type="text"
+                id="inputUsuarioPerfil"
+                className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] cursor-not-allowed"
+                value={usuario}
+                readOnly
+              />
+            </div>
+
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-5 max-[768px]:grid-cols-1">
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="inputEmailPerfil"
+                  className="font-semibold text-[13px] text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  id="inputEmailPerfil"
+                  className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-200 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="inputTelefonoPerfil"
+                  className="font-semibold text-[13px] text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
+                >
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  id="inputTelefonoPerfil"
+                  className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-200 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="inputRolPerfil"
+                className="font-semibold text-[13px] text-[var(--color-text-muted)] uppercase tracking-[0.5px]"
+              >
+                Rol
+              </label>
+              <input
+                type="text"
+                id="inputRolPerfil"
+                className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] cursor-not-allowed"
+                value={rol}
+                readOnly
+              />
+            </div>
+
+            <button
+              id="btnGuardarPerfil"
+              className="mt-2.5 px-8 py-3.5 rounded-[10px] font-semibold text-[15px] text-[var(--color-bg-surface)] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] shadow-[0_4px_15px_rgba(179,49,49,0.3)] hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] transition"
+              type="button"
+              onClick={guardarPerfil}
+            >
+              <i className="fa-solid fa-save" /> Guardar Cambios
+            </button>
+          </div>
+        </div>
+      )}
+
+      {tabActiva === "alergias" && (
+        <>
+          <div className="bg-[linear-gradient(135deg,#fff5f5_0%,#fed7d7_100%)] border-l-4 border-l-[#c53030] p-5 rounded-[10px] flex items-start gap-[15px] mb-[30px]">
+            <i className="fa-solid fa-shield-halved text-[24px] text-[#c53030] mt-0.5" />
+            <div>
+              <strong className="block text-[16px] text-[#742a2a] mb-1">
+                Información Importante
+              </strong>
+              <p className="m-0 text-[14px] text-[#9b2c2c] leading-[1.5]">
+                Configura tus alergias para recibir alertas automáticas. Esta
+                información es crítica para tu seguridad.
+              </p>
             </div>
           </div>
-        )}
-      </div>
 
-      <div
-        className={`tab-content ${tabActiva === "alergias" ? "activo" : ""}`}
-      >
-        {tabActiva === "alergias" && (
-          <>
-            <div className="alerta-seguridad">
-              <i className="fa-solid fa-shield-halved"></i>
-              <div>
-                <strong>Información Importante</strong>
-                <p>
-                  Configura tus alergias para recibir alertas automáticas. Esta
-                  información es crítica para tu seguridad.
-                </p>
-              </div>
-            </div>
-
-            <div className="panel-alergias">
-              <h3 className="titulo-seccion">
-                <i className="fa-solid fa-triangle-exclamation"></i> Mis
-                Alergias Registradas
-              </h3>
-
-              <div className="grid-alergenos">
-                {catalogoAlergenos.map((item) => {
-                  const checked = alergiasSeleccionadas.includes(item.nombre);
-                  const backgroundColor = item.colorBg ?? (item as AlergenoCatalogo & { bg?: string }).bg ?? "#eef2f7";
-                  const textColor = item.colorTexto ?? (item as AlergenoCatalogo & { color?: string }).color ?? "#1f2937";
-                  const iconClass = item.icono ?? "fa-solid fa-triangle-exclamation";
-                  const inputId = `check-${item.nombre
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "")
-                    .replace(/ /g, "-")
-                    .replace(/\./g, "")}`;
-
-                  return (
-                    <div
-                      className="card-alergeno"
-                      data-alergeno={item.nombre}
-                      key={item.nombre}
-                    >
-                      <input
-                        type="checkbox"
-                        id={inputId}
-                        className="checkbox-alergeno"
-                        checked={checked}
-                        onChange={() => toggleAlergia(item.nombre)}
-                      />
-                      <label htmlFor={inputId} className="label-alergeno">
-                        <div
-                          className="icono-alergeno"
-                          style={{ background: backgroundColor, color: textColor }}
-                        >
-                          <i className={iconClass}></i>
-                        </div>
-                        <span className="nombre-alergeno">{item.nombre}</span>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="resumen-alergias">
-                <h4>
-                  <i className="fa-solid fa-list-check"></i> Resumen de Alergias
-                  Seleccionadas
-                </h4>
-
-                <div className="lista-seleccionadas">
-                  {resumenAlergias.length === 0 ? (
-                    <p className="texto-vacio">
-                      No has seleccionado ninguna alergia
-                    </p>
-                  ) : (
-                    resumenAlergias.map((alergia) => (
-                      <div className="badge-alergia-seleccionada" key={alergia}>
-                        <i className="fa-solid fa-triangle-exclamation"></i>
-                        {alergia}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <button
-                id="btnGuardarAlergias"
-                className="btn-guardar-alergias"
-                type="button"
-                onClick={guardarAlergias}
-              >
-                <i className="fa-solid fa-shield-heart"></i> Guardar
-                Configuración de Alergias
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-
-      <div
-        className={`tab-content ${tabActiva === "notificaciones" ? "activo" : ""}`}
-      >
-        {tabActiva === "notificaciones" && (
-          <div className="panel-notificaciones">
-            <h3 className="titulo-seccion">
-              <i className="fa-solid fa-bell"></i> Preferencias de Alertas
+          <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+            <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+              <i className="fa-solid fa-triangle-exclamation" /> Mis Alergias Registradas
             </h3>
 
-            <div className="opciones-notificaciones">
-              <div className="opcion-notif">
-                <div className="info-opcion">
-                  <i
-                    className="fa-solid fa-triangle-exclamation"
-                    style={{ color: "#c53030" }}
-                  ></i>
-                  <div>
-                    <label
-                      htmlFor="switchAlertasProductos"
-                      style={{ cursor: "pointer" }}
-                    >
-                      <strong>Alertas de Productos con Alérgenos</strong>
-                    </label>
-                    <p>
-                      Recibir advertencias al buscar productos con tus alérgenos
-                    </p>
-                  </div>
-                </div>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    id="switchAlertasProductos"
-                    checked={alertasProductos}
-                    onChange={(e) => {
-                      setAlertasProductos(e.target.checked);
-                      if (e.target.checked) {
-                        showAlert(
-                          "Has activado las alertas de alérgenos. El sistema te avisará automáticamente cuando intentes distribuir un producto que contenga tus alérgenos registrados.",
-                          "warning",
-                          "Alertas de Alérgenos Activadas",
-                        );
-                      }
-                    }}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-[15px] mb-[30px] max-[768px]:grid-cols-[repeat(auto-fill,minmax(120px,1fr))]">
+              {catalogoAlergenos.map((item) => {
+                const checked = alergiasSeleccionadas.includes(item.nombre);
+                const backgroundColor =
+                  item.colorBg ??
+                  (item as AlergenoCatalogo & { bg?: string }).bg ??
+                  "#eef2f7";
+                const textColor =
+                  item.colorTexto ??
+                  (item as AlergenoCatalogo & { color?: string }).color ??
+                  "#1f2937";
+                const iconClass = item.icono ?? "fa-solid fa-triangle-exclamation";
+                const inputId = `check-${item.nombre
+                  .toLowerCase()
+                  .normalize("NFD")
+                  .replace(/[\u0300-\u036f]/g, "")
+                  .replace(/ /g, "-")
+                  .replace(/\./g, "")}`;
 
-              <div className="opcion-notif">
-                <div className="info-opcion">
-                  <i
-                    className="fa-solid fa-dolly"
-                    style={{ color: "#2f855a" }}
-                  ></i>
-                  <div>
+                return (
+                  <div key={item.nombre} data-alergeno={item.nombre} className="relative">
+                    <input
+                      type="checkbox"
+                      id={inputId}
+                      className="sr-only peer"
+                      checked={checked}
+                      onChange={() => toggleAlergia(item.nombre)}
+                    />
                     <label
-                      htmlFor="switchBloqueoDistribucion"
-                      style={{ cursor: "pointer" }}
+                      htmlFor={inputId}
+                      className="relative flex flex-col items-center gap-2.5 p-5 bg-[var(--color-bg-surface)] border-[3px] border-[var(--color-border-default)] rounded-xl cursor-pointer transition hover:border-[var(--color-border-strong)] hover:translate-y-[-3px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] peer-checked:border-[#c53030] peer-checked:bg-[#fff5f5] peer-checked:shadow-[0_0_0_4px_rgba(197,48,48,0.1)]"
                     >
-                      <strong>Bloqueo en Distribución</strong>
+                      <span className="absolute top-2 right-2 hidden peer-checked:flex w-6 h-6 rounded-full bg-[#c53030] text-white items-center justify-center text-[14px] font-bold">
+                        ✓
+                      </span>
+                      <div
+                        className="w-[60px] h-[60px] rounded-full flex items-center justify-center text-[28px]"
+                        style={{ background: backgroundColor, color: textColor }}
+                      >
+                        <i className={iconClass} />
+                      </div>
+                      <span className="font-semibold text-[14px] text-[var(--color-text-strong)] text-center">
+                        {item.nombre}
+                      </span>
                     </label>
-                    <p>
-                      Impedir distribución de productos incompatibles con tus
-                      alergias
-                    </p>
                   </div>
-                </div>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    id="switchBloqueoDistribucion"
-                    checked={bloqueoDistribucion}
-                    onChange={(e) => setBloqueoDistribucion(e.target.checked)}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
+                );
+              })}
+            </div>
 
-              <div className="opcion-notif">
-                <div className="info-opcion">
-                  <i
-                    className="fa-solid fa-inbox"
-                    style={{ color: "#3182ce" }}
-                  ></i>
-                  <div>
-                    <label
-                      htmlFor="switchNuevosProductos"
-                      style={{ cursor: "pointer" }}
-                    >
-                      <strong>Alertas de Nuevos Productos</strong>
-                    </label>
-                    <p>
-                      Notificar cuando se añadan productos con tus alérgenos
-                    </p>
-                  </div>
-                </div>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    id="switchNuevosProductos"
-                    checked={nuevosProductos}
-                    onChange={(e) => setNuevosProductos(e.target.checked)}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
+            <div className="bg-[var(--color-bg-soft)] p-5 rounded-[10px] border-2 border-[var(--color-border-default)] mb-5">
+              <h4 className="m-0 mb-[15px] text-[16px] text-[var(--color-text-strong)] flex items-center gap-2">
+                <i className="fa-solid fa-list-check" /> Resumen de Alergias Seleccionadas
+              </h4>
 
-              <div className="opcion-notif">
-                <div className="info-opcion">
-                  <i
-                    className="fa-solid fa-filter"
-                    style={{ color: "#805ad5" }}
-                  ></i>
-                  <div>
-                    <label
-                      htmlFor="switchFiltradoBusqueda"
-                      style={{ cursor: "pointer" }}
+              <div className="flex flex-wrap gap-2.5">
+                {resumenAlergias.length === 0 ? (
+                  <p className="m-0 italic text-[var(--color-text-default)]">
+                    No has seleccionado ninguna alergia
+                  </p>
+                ) : (
+                  resumenAlergias.map((alergia) => (
+                    <div
+                      key={alergia}
+                      className="px-4 py-2 bg-[var(--color-bg-surface)] border-2 border-[#c53030] text-[#c53030] rounded-[20px] font-semibold text-[13px] flex items-center gap-2"
                     >
-                      <strong>Filtrado Estricto en Búsqueda</strong>
-                    </label>
-                    <p>
-                      Ocultar automáticamente resultados incompatibles con tus
-                      alergias
-                    </p>
-                  </div>
-                </div>
-                <label className="switch">
-                  <input
-                    type="checkbox"
-                    id="switchFiltradoBusqueda"
-                    checked={filtradoBusqueda}
-                    onChange={(e) => setFiltradoBusqueda(e.target.checked)}
-                  />
-                  <span className="slider"></span>
-                </label>
+                      <i className="fa-solid fa-triangle-exclamation" />
+                      {alergia}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
             <button
-              id="btnGuardarNotificaciones"
-              className="btn-guardar-notificaciones"
+              id="btnGuardarAlergias"
+              className="mt-2.5 px-8 py-3.5 rounded-[10px] font-semibold text-[15px] text-[var(--color-bg-surface)] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] shadow-[0_4px_15px_rgba(179,49,49,0.3)] hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] transition flex items-center justify-center gap-2.5"
               type="button"
-              onClick={guardarNotificaciones}
+              onClick={guardarAlergias}
             >
-              <i className="fa-solid fa-save"></i> Guardar Preferencias
+              <i className="fa-solid fa-shield-heart" /> Guardar Configuración de Alergias
             </button>
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {tabActiva === "notificaciones" && (
+        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+          <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+            <i className="fa-solid fa-bell" /> Preferencias de Alertas
+          </h3>
+
+          <div className="flex flex-col gap-5 mb-[30px]">
+            <div className="flex items-center justify-between gap-4 p-5 bg-[var(--color-bg-soft)] rounded-xl border-2 border-[var(--color-border-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-surface)] max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-[15px]">
+              <div className="flex items-start gap-[15px] flex-1">
+                <i className="fa-solid fa-triangle-exclamation text-[24px] mt-0.5" style={{ color: "#c53030" }} />
+                <div>
+                  <label htmlFor="switchAlertasProductos" className="cursor-pointer">
+                    <strong className="block text-[15px] text-[var(--color-text-strong)] mb-1">
+                      Alertas de Productos con Alérgenos
+                    </strong>
+                  </label>
+                  <p className="m-0 text-[13px] text-[var(--color-text-muted)] leading-[1.4]">
+                    Recibir advertencias al buscar productos con tus alérgenos
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center self-start max-[768px]:self-auto cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="switchAlertasProductos"
+                  className="sr-only peer"
+                  checked={alertasProductos}
+                  onChange={(e) => {
+                    setAlertasProductos(e.target.checked);
+                    if (e.target.checked) {
+                      showAlert(
+                        "Has activado las alertas de alérgenos. El sistema te avisará automáticamente cuando intentes distribuir un producto que contenga tus alérgenos registrados.",
+                        "warning",
+                        "Alertas de Alérgenos Activadas",
+                      );
+                    }
+                  }}
+                />
+                <span className="w-[60px] h-[34px] rounded-full bg-[var(--color-border-strong)] transition duration-300 peer-checked:bg-[#48bb78]" />
+                <span className="absolute left-1 bottom-1 w-[26px] h-[26px] rounded-full bg-[var(--color-bg-surface)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition duration-300 peer-checked:translate-x-[26px]" />
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 p-5 bg-[var(--color-bg-soft)] rounded-xl border-2 border-[var(--color-border-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-surface)] max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-[15px]">
+              <div className="flex items-start gap-[15px] flex-1">
+                <i className="fa-solid fa-dolly text-[24px] mt-0.5" style={{ color: "#2f855a" }} />
+                <div>
+                  <label htmlFor="switchBloqueoDistribucion" className="cursor-pointer">
+                    <strong className="block text-[15px] text-[var(--color-text-strong)] mb-1">
+                      Bloqueo en Distribución
+                    </strong>
+                  </label>
+                  <p className="m-0 text-[13px] text-[var(--color-text-muted)] leading-[1.4]">
+                    Impedir distribución de productos incompatibles con tus alergias
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center self-start max-[768px]:self-auto cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="switchBloqueoDistribucion"
+                  className="sr-only peer"
+                  checked={bloqueoDistribucion}
+                  onChange={(e) => setBloqueoDistribucion(e.target.checked)}
+                />
+                <span className="w-[60px] h-[34px] rounded-full bg-[var(--color-border-strong)] transition duration-300 peer-checked:bg-[#48bb78]" />
+                <span className="absolute left-1 bottom-1 w-[26px] h-[26px] rounded-full bg-[var(--color-bg-surface)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition duration-300 peer-checked:translate-x-[26px]" />
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 p-5 bg-[var(--color-bg-soft)] rounded-xl border-2 border-[var(--color-border-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-surface)] max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-[15px]">
+              <div className="flex items-start gap-[15px] flex-1">
+                <i className="fa-solid fa-inbox text-[24px] mt-0.5" style={{ color: "#3182ce" }} />
+                <div>
+                  <label htmlFor="switchNuevosProductos" className="cursor-pointer">
+                    <strong className="block text-[15px] text-[var(--color-text-strong)] mb-1">
+                      Alertas de Nuevos Productos
+                    </strong>
+                  </label>
+                  <p className="m-0 text-[13px] text-[var(--color-text-muted)] leading-[1.4]">
+                    Notificar cuando se añadan productos con tus alérgenos
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center self-start max-[768px]:self-auto cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="switchNuevosProductos"
+                  className="sr-only peer"
+                  checked={nuevosProductos}
+                  onChange={(e) => setNuevosProductos(e.target.checked)}
+                />
+                <span className="w-[60px] h-[34px] rounded-full bg-[var(--color-border-strong)] transition duration-300 peer-checked:bg-[#48bb78]" />
+                <span className="absolute left-1 bottom-1 w-[26px] h-[26px] rounded-full bg-[var(--color-bg-surface)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition duration-300 peer-checked:translate-x-[26px]" />
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between gap-4 p-5 bg-[var(--color-bg-soft)] rounded-xl border-2 border-[var(--color-border-default)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-bg-surface)] max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-[15px]">
+              <div className="flex items-start gap-[15px] flex-1">
+                <i className="fa-solid fa-filter text-[24px] mt-0.5" style={{ color: "#805ad5" }} />
+                <div>
+                  <label htmlFor="switchFiltradoBusqueda" className="cursor-pointer">
+                    <strong className="block text-[15px] text-[var(--color-text-strong)] mb-1">
+                      Filtrado Estricto en Búsqueda
+                    </strong>
+                  </label>
+                  <p className="m-0 text-[13px] text-[var(--color-text-muted)] leading-[1.4]">
+                    Ocultar automáticamente resultados incompatibles con tus alergias
+                  </p>
+                </div>
+              </div>
+
+              <label className="relative inline-flex items-center self-start max-[768px]:self-auto cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="switchFiltradoBusqueda"
+                  className="sr-only peer"
+                  checked={filtradoBusqueda}
+                  onChange={(e) => setFiltradoBusqueda(e.target.checked)}
+                />
+                <span className="w-[60px] h-[34px] rounded-full bg-[var(--color-border-strong)] transition duration-300 peer-checked:bg-[#48bb78]" />
+                <span className="absolute left-1 bottom-1 w-[26px] h-[26px] rounded-full bg-[var(--color-bg-surface)] shadow-[0_2px_4px_rgba(0,0,0,0.2)] transition duration-300 peer-checked:translate-x-[26px]" />
+              </label>
+            </div>
+          </div>
+
+          <button
+            id="btnGuardarNotificaciones"
+            className="mt-2.5 px-8 py-3.5 rounded-[10px] font-semibold text-[15px] text-[var(--color-bg-surface)] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] shadow-[0_4px_15px_rgba(179,49,49,0.3)] hover:translate-y-[-2px] hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] transition flex items-center justify-center gap-2.5"
+            type="button"
+            onClick={guardarNotificaciones}
+          >
+            <i className="fa-solid fa-save" /> Guardar Preferencias
+          </button>
+        </div>
+      )}
 
       <div
         id="mensajeEstadoConfig"
-        className={`mensaje-estado-config ${mensajeTipo ? "mensaje-visible" : ""}`}
-        style={{
-          background:
-            mensajeTipo === "green"
-              ? "#f0fff4"
-              : mensajeTipo === "orange"
-                ? "#fffaf0"
-                : mensajeTipo === "red"
-                  ? "#fff5f5"
-                  : "transparent",
-          color:
-            mensajeTipo === "green"
-              ? "#2f855a"
-              : mensajeTipo === "orange"
-                ? "#c05621"
-                : mensajeTipo === "red"
-                  ? "#c53030"
-                  : "transparent",
-          border:
-            mensajeTipo === "green"
-              ? "2px solid #9ae6b4"
-              : mensajeTipo === "orange"
-                ? "2px solid #fbd38d"
-                : mensajeTipo === "red"
-                  ? "2px solid #fc8181"
-                  : "none",
-        }}
+        className={[
+          "text-center font-semibold min-h-6 text-[14px] px-3 py-3 rounded-lg mt-5 transition-opacity",
+          mensajeTipo ? "opacity-100" : "opacity-0",
+          mensajeTipo === "green"
+            ? "bg-[#f0fff4] text-[#2f855a] border-2 border-[#9ae6b4]"
+            : mensajeTipo === "orange"
+              ? "bg-[#fffaf0] text-[#c05621] border-2 border-[#fbd38d]"
+              : mensajeTipo === "red"
+                ? "bg-[#fff5f5] text-[#c53030] border-2 border-[#fc8181]"
+                : "bg-transparent text-transparent border-0",
+        ].join(" ")}
       >
         {mensajeEstado}
       </div>

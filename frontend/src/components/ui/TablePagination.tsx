@@ -1,5 +1,3 @@
-import "../../styles/table-pagination.css";
-
 type Props = {
   totalItems: number;
   page: number;
@@ -66,10 +64,11 @@ export default function TablePagination({
   const pageItems = buildPageItems(safePage, totalPages);
 
   return (
-    <div className="table-pagination-wrap">
-      <div className="table-pagination-summary">
+    <div className="mt-3.5 flex items-center justify-between gap-3.5 flex-wrap">
+      <div className="inline-flex items-center gap-2 text-[var(--color-text-muted)] text-[14px]">
         <span>Mostrando</span>
         <select
+          className="border border-[var(--color-border-default)] rounded-[10px] py-[7px] px-2.5 bg-white text-[var(--color-text-default)] font-semibold"
           value={pageSize}
           onChange={(e) => {
             onPageSizeChange(Number(e.target.value));
@@ -88,24 +87,38 @@ export default function TablePagination({
         </span>
       </div>
 
-      <div className="table-pagination-controls" aria-label="Paginación de tabla">
-        <button type="button" onClick={() => onPageChange(1)} disabled={safePage <= 1}>
+      <div className="inline-flex items-center gap-1.5 flex-wrap" aria-label="Paginación de tabla">
+        <button
+          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          type="button"
+          onClick={() => onPageChange(1)}
+          disabled={safePage <= 1}
+        >
           «
         </button>
-        <button type="button" onClick={() => onPageChange(safePage - 1)} disabled={safePage <= 1}>
+        <button
+          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          type="button"
+          onClick={() => onPageChange(safePage - 1)}
+          disabled={safePage <= 1}
+        >
           ‹
         </button>
 
         {pageItems.map((item, index) =>
           item === "dots" ? (
-            <span className="table-pagination-dots" key={`dots-${index}`}>
+            <span className="px-1.5 text-[var(--color-text-muted)]" key={`dots-${index}`}>
               ...
             </span>
           ) : (
             <button
               type="button"
               key={item}
-              className={item === safePage ? "is-active" : undefined}
+              className={
+                item === safePage
+                  ? "min-w-9 h-9 rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white font-semibold cursor-pointer shadow-[0_6px_16px_rgba(179,49,49,0.25)]"
+                  : "min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+              }
               onClick={() => onPageChange(item)}
               aria-current={item === safePage ? "page" : undefined}
             >
@@ -114,10 +127,20 @@ export default function TablePagination({
           ),
         )}
 
-        <button type="button" onClick={() => onPageChange(safePage + 1)} disabled={safePage >= totalPages}>
+        <button
+          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          type="button"
+          onClick={() => onPageChange(safePage + 1)}
+          disabled={safePage >= totalPages}
+        >
           ›
         </button>
-        <button type="button" onClick={() => onPageChange(totalPages)} disabled={safePage >= totalPages}>
+        <button
+          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          type="button"
+          onClick={() => onPageChange(totalPages)}
+          disabled={safePage >= totalPages}
+        >
           »
         </button>
       </div>

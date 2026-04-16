@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/crearusuario.css";
 import { apiFetch } from "../services/apiClient";
 import Alert from "../components/ui/Alert";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
@@ -91,29 +90,36 @@ export default function CrearUsuarioPage() {
   }
 
   return (
-    <div className="registro-page">
-      <div className="registro-header">
+    <div className="relative min-h-screen flex flex-col justify-center items-center bg-[linear-gradient(135deg,#fff0f0_0%,#ffdada_100%)] bg-fixed overflow-x-hidden px-4 pt-[90px] pb-[80px] box-border">
+      <div className="pointer-events-none absolute -top-[100px] -left-[100px] h-[400px] w-[400px] opacity-60 bg-[radial-gradient(#ffc2c2,transparent_70%)]" />
+      <div className="pointer-events-none absolute -bottom-[50px] -right-[50px] h-[300px] w-[300px] opacity-60 bg-[radial-gradient(#ffc2c2,transparent_70%)]" />
+
+      <div className="absolute top-5 left-10 w-[calc(100%-80px)] flex justify-between items-center z-10 max-[600px]:top-2.5 max-[600px]:left-5 max-[600px]:w-[calc(100%-40px)]">
         <img
           src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
           alt="Virgen de la Candelaria"
-          className="registro-logo"
+          className="w-40 h-auto [filter:drop-shadow(0_2px_4px_rgba(0,0,0,0.1))] max-[480px]:w-[130px]"
         />
 
-        <Link to="/login" className="registro-back" aria-label="Volver al login">
+        <Link
+          to="/login"
+          className="text-[24px] text-[var(--color-brand-500)] no-underline transition-colors hover:text-[var(--color-brand-600)]"
+          aria-label="Volver al login"
+        >
           &#8592;
         </Link>
       </div>
 
-      <div className="registro-container">
-        <h2 className="registro-title">Crear Cuenta</h2>
+      <div className="w-full max-w-[520px] text-center relative z-[5] bg-white/85 [backdrop-filter:blur(12px)] border border-white/60 px-8 py-9 rounded-[20px] shadow-[0_8px_32px_0_rgba(179,49,49,0.15)] animate-fadeInUp box-border max-[600px]:max-w-[420px] max-[600px]:px-5 max-[600px]:py-7 max-[480px]:w-[92%]">
+        <h2 className="text-[1.5rem] font-semibold text-[var(--color-brand-500)] mb-5">Crear Cuenta</h2>
 
-        <form className="registro-form" onSubmit={onSubmit}>
+        <form className="flex flex-col w-full" onSubmit={onSubmit}>
           <input
             type="text"
             value={usuario}
             onChange={(e) => setUsuario(e.target.value)}
             placeholder="Nombre de usuario"
-            className="registro-input"
+            className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
             required
             aria-label="Nombre de usuario"
           />
@@ -123,18 +129,18 @@ export default function CrearUsuarioPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Contraseña"
-            className="registro-input"
+            className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
             required
             aria-label="Contraseña"
           />
 
-          <div className="registro-row">
+          <div className="flex gap-2.5 w-full max-[600px]:flex-col max-[600px]:gap-0">
             <input
               type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Nombre"
-              className="registro-input"
+              className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none flex-1"
               required
               aria-label="Nombre"
             />
@@ -144,7 +150,7 @@ export default function CrearUsuarioPage() {
               value={apellidos}
               onChange={(e) => setApellidos(e.target.value)}
               placeholder="Apellidos"
-              className="registro-input"
+              className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none flex-1"
               required
               aria-label="Apellidos"
             />
@@ -155,7 +161,7 @@ export default function CrearUsuarioPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Correo electrónico"
-            className="registro-input"
+            className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
             required
             aria-label="Correo electrónico"
           />
@@ -165,7 +171,7 @@ export default function CrearUsuarioPage() {
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
             placeholder="Teléfono"
-            className="registro-input"
+            className="w-full box-border p-[15px] mb-[15px] border-2 border-transparent bg-[#f9f9f9] rounded-xl text-[14px] text-[#333] transition-[border-color,box-shadow,background] duration-200 placeholder:text-[#aaa] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
             required
             aria-label="Número de teléfono"
           />
@@ -173,7 +179,7 @@ export default function CrearUsuarioPage() {
           {msg && <Alert type={msgTipo}>{msg}</Alert>}
           <button
             type="submit"
-            className="registro-submit"
+            className="w-full box-border p-[15px] mt-2.5 rounded-xl text-[14px] bg-[var(--color-brand-500)] text-white font-semibold tracking-wide cursor-pointer border-0 shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background-color,filter] duration-200 hover:bg-[var(--color-brand-600)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             disabled={loading}
             aria-busy={loading}
           >
@@ -181,12 +187,12 @@ export default function CrearUsuarioPage() {
           </button>
         </form>
 
-        <Link to="/login" className="registro-link">
+        <Link to="/login" className="text-[13px] text-[#666] no-underline transition-colors mt-4 inline-block hover:text-[var(--color-brand-500)]">
           ¿Ya tienes cuenta? Inicia sesión
         </Link>
       </div>
 
-      <footer className="registro-footer">
+      <footer className="fixed bottom-0 left-0 w-full py-4 bg-white/90 [backdrop-filter:blur(5px)] text-[#777] text-[12px] text-center border-t border-t-[#eee] z-10">
         © 2025 Pablo Hdez. Todos los derechos reservados.
       </footer>
     </div>

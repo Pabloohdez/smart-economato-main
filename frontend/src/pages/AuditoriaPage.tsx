@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import "../styles/auditoria.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
@@ -199,16 +198,16 @@ export default function AuditoriaPage() {
 
   function getAccionBadge(accion: string) {
     const badges: Record<string, { clase: string; icono: string; texto: string }> = {
-      MOVIMIENTO: { clase: "badge-movimiento", icono: "fa-arrows-rotate", texto: "Movimiento" },
-      PEDIDO: { clase: "badge-pedido", icono: "fa-shopping-cart", texto: "Pedido" },
-      BAJA: { clase: "badge-baja", icono: "fa-trash", texto: "Baja" },
-      CREAR_PRODUCTO: { clase: "badge-crear", icono: "fa-plus", texto: "Crear Producto" },
-      MODIFICAR_PRODUCTO: { clase: "badge-modificar", icono: "fa-edit", texto: "Modificar Producto" },
-      ELIMINAR_PRODUCTO: { clase: "badge-eliminar", icono: "fa-times", texto: "Eliminar Producto" },
+      MOVIMIENTO: { clase: "bg-[#e6f7ff] text-[#0066cc]", icono: "fa-arrows-rotate", texto: "Movimiento" },
+      PEDIDO: { clase: "bg-[#f0f9ff] text-[#0284c7]", icono: "fa-shopping-cart", texto: "Pedido" },
+      BAJA: { clase: "bg-[#fff1f2] text-[#e11d48]", icono: "fa-trash", texto: "Baja" },
+      CREAR_PRODUCTO: { clase: "bg-[#f0fdf4] text-[#16a34a]", icono: "fa-plus", texto: "Crear Producto" },
+      MODIFICAR_PRODUCTO: { clase: "bg-[#fef3c7] text-[#d97706]", icono: "fa-edit", texto: "Modificar Producto" },
+      ELIMINAR_PRODUCTO: { clase: "bg-[#fef2f2] text-[#dc2626]", icono: "fa-times", texto: "Eliminar Producto" },
     };
     return (
       badges[accion] ?? {
-        clase: "badge-movimiento",
+        clase: "bg-[#e6f7ff] text-[#0066cc]",
         icono: "fa-question",
         texto: accion,
       }
@@ -252,16 +251,16 @@ export default function AuditoriaPage() {
   if (accesoDenegado) {
     return (
       <div>
-        <div className="header-auditoria">
-          <h1 className="titulo-auditoria">
+        <div className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
+          <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
             <i className="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
           </h1>
-          <p className="subtitulo">
+          <p className="text-[14px] text-[var(--color-text-muted)] m-0">
             Historial completo de actividades del sistema
           </p>
         </div>
 
-        <div className="panel-tabla">
+        <div className="bg-[var(--color-bg-surface)] p-6 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)]">
           <Alert type="error" title="Acceso denegado">
             {errorMsg || "Se requieren permisos de administrador"}
           </Alert>
@@ -272,19 +271,19 @@ export default function AuditoriaPage() {
 
   return (
     <div>
-      <div className="header-auditoria">
-        <h1 className="titulo-auditoria">
+      <div className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
+        <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
           <i className="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
         </h1>
-        <p className="subtitulo">
+        <p className="text-[14px] text-[var(--color-text-muted)] m-0">
           Historial completo de actividades del sistema
         </p>
       </div>
 
-      <div className="panel-filtros">
-        <div className="filtros-container">
-          <div className="filtro-item">
-            <label htmlFor="filtroAccion">
+      <div className="bg-[var(--color-bg-surface)] p-6 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] mb-6 border border-[var(--color-border-default)]">
+        <div className="flex flex-wrap gap-5 items-end">
+          <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
+            <label htmlFor="filtroAccion" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-filter"></i> Tipo de Acción
             </label>
             <UiSelect
@@ -304,8 +303,8 @@ export default function AuditoriaPage() {
             />
           </div>
 
-          <div className="filtro-item">
-            <label htmlFor="filtroUsuario">
+          <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
+            <label htmlFor="filtroUsuario" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-user"></i> Usuario
             </label>
             <UiSelect
@@ -320,14 +319,14 @@ export default function AuditoriaPage() {
             />
           </div>
 
-          <div className="filtro-item">
-            <label htmlFor="filtroFechaDesde">
+          <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
+            <label htmlFor="filtroFechaDesde" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-calendar"></i> Desde
             </label>
             <input
               type="date"
               id="filtroFechaDesde"
-              className="input-fecha"
+              className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[var(--radius-sm)] text-[14px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
               value={filtros.fechaDesde}
               onChange={(e) =>
                 setFiltros((prev) => ({ ...prev, fechaDesde: e.target.value }))
@@ -335,14 +334,14 @@ export default function AuditoriaPage() {
             />
           </div>
 
-          <div className="filtro-item">
-            <label htmlFor="filtroFechaHasta">
+          <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
+            <label htmlFor="filtroFechaHasta" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-calendar"></i> Hasta
             </label>
             <input
               type="date"
               id="filtroFechaHasta"
-              className="input-fecha"
+              className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[var(--radius-sm)] text-[14px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
               value={filtros.fechaHasta}
               onChange={(e) =>
                 setFiltros((prev) => ({ ...prev, fechaHasta: e.target.value }))
@@ -350,11 +349,11 @@ export default function AuditoriaPage() {
             />
           </div>
 
-          <div className="filtro-acciones">
+          <div className="flex gap-3 items-stretch flex-wrap self-end max-[768px]:w-full max-[768px]:flex-col">
             <button
               type="button"
               id="btnAplicarFiltros"
-              className="btn-aplicar"
+              className="h-11 px-5 rounded-[var(--radius-sm)] font-semibold text-[14px] cursor-pointer inline-flex items-center gap-2 border-0 text-white bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] shadow-[0_4px_12px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(179,49,49,0.4)] hover:brightness-105 max-[768px]:w-full max-[768px]:justify-center"
               onClick={aplicarFiltros}
             >
               <i className="fa-solid fa-search"></i> Aplicar
@@ -362,7 +361,7 @@ export default function AuditoriaPage() {
             <button
               type="button"
               id="btnLimpiarFiltros"
-              className="btn-limpiar"
+              className="h-11 px-5 rounded-[var(--radius-sm)] font-semibold text-[14px] cursor-pointer inline-flex items-center gap-2 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] transition-[background,border-color] duration-150 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] max-[768px]:w-full max-[768px]:justify-center"
               onClick={limpiarFiltros}
             >
               <i className="fa-solid fa-eraser"></i> Limpiar
@@ -371,18 +370,18 @@ export default function AuditoriaPage() {
         </div>
       </div>
 
-      <div className="barra-resumen">
-        <div className="resumen-item">
+      <div className="flex gap-4 mb-5 flex-wrap max-[768px]:flex-col">
+        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-list-ol"></i>
           <span>
             <strong>{resumen.total}</strong> registros
           </span>
         </div>
-        <div className="resumen-item">
+        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-calendar-days"></i>
           <span>{resumen.rangoFechas}</span>
         </div>
-        <div className="resumen-item">
+        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-users"></i>
           <span>
             <strong>{resumen.usuariosUnicos}</strong> usuario
@@ -391,43 +390,43 @@ export default function AuditoriaPage() {
         </div>
       </div>
 
-      <div className="panel-tabla">
+      <div className="bg-[var(--color-bg-surface)] p-6 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)]">
         {loading && <Spinner label="Cargando auditoría..." />}
         {!loading && errorMsg && (
           <Alert type="error" title="Error al cargar">{errorMsg}</Alert>
         )}
         {!loading && !errorMsg && (
           <>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+            <div className="flex gap-2.5 items-center mb-3 flex-wrap">
               <input
                 type="text"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Buscar..."
                 aria-label="Buscar en auditoría"
-                style={{ maxWidth: 360 }}
+                className="w-full max-w-[360px] px-4 py-2.5 border-2 border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
               />
-              <span style={{ color: "#718096", fontSize: 13 }}>
+              <span className="text-[#718096] text-[13px]">
                 Mostrando <strong>{visible.length}</strong> de <strong>{filtrados.length}</strong>
                 {totalRegistros ? ` (total remoto: ${totalRegistros})` : ""}
               </span>
             </div>
 
-            <div className="table-container">
-              <table>
+            <div className="overflow-x-auto rounded-[12px] border border-[var(--color-border-default)]">
+              <table className="w-full border-collapse bg-white">
                 <thead>
-                  <tr>
-                    <th>Fecha/Hora</th>
-                    <th>Usuario</th>
-                    <th>Acción</th>
-                    <th>Entidad</th>
-                    <th style={{ textAlign: "right" }}>Detalles</th>
+                  <tr className="bg-[var(--color-bg-soft)]">
+                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Fecha/Hora</th>
+                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Usuario</th>
+                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Acción</th>
+                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Entidad</th>
+                    <th className="text-right px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Detalles</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visible.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
+                      <td colSpan={5} className="text-center p-5 text-[#718096]">
                         No hay registros.
                       </td>
                     </tr>
@@ -435,17 +434,21 @@ export default function AuditoriaPage() {
                     visible.map((reg) => {
                       const badge = getAccionBadge(reg.accion);
                       return (
-                        <tr key={String(reg.id)}>
-                          <td style={{ whiteSpace: "nowrap" }}>{formatearFecha(reg.fecha)}</td>
-                          <td>{reg.usuario_nombre || reg.usuario_id || "—"}</td>
+                        <tr key={String(reg.id)} className="border-t border-[var(--color-border-default)] hover:bg-[var(--color-bg-soft)]">
+                          <td className="px-4 py-3 whitespace-nowrap text-[14px] text-[var(--color-text-strong)]">{formatearFecha(reg.fecha)}</td>
+                          <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{reg.usuario_nombre || reg.usuario_id || "—"}</td>
                           <td>
-                            <span className={`badge-accion ${badge.clase}`}>
+                            <span className={`px-3 py-1.5 rounded-md text-[12px] font-semibold inline-flex items-center gap-1.5 ${badge.clase}`}>
                               <i className={`fa-solid ${badge.icono}`} /> {badge.texto}
                             </span>
                           </td>
-                          <td>{reg.entidad || "—"}</td>
-                          <td style={{ textAlign: "right" }}>
-                            <button type="button" className="btn-secondary" onClick={() => abrirModal(reg)}>
+                          <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{reg.entidad || "—"}</td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              type="button"
+                              className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                              onClick={() => abrirModal(reg)}
+                            >
                               <i className="fa-solid fa-eye" /> Ver
                             </button>
                           </td>
@@ -457,22 +460,22 @@ export default function AuditoriaPage() {
               </table>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="flex justify-end mt-3">
+              <div className="flex gap-2 items-center">
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color,opacity] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={pageSafe <= 1}
                 >
                   Anterior
                 </button>
-                <span style={{ fontSize: 13, color: "#4a5568" }}>
+                <span className="text-[13px] text-[#4a5568]">
                   {pageSafe} / {totalPages}
                 </span>
                 <button
                   type="button"
-                  className="btn-secondary"
+                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color,opacity] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={pageSafe >= totalPages}
                 >
@@ -486,31 +489,31 @@ export default function AuditoriaPage() {
 
       {modalOpen && registroSeleccionado && (
         <div
-          className="modal-detalles"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]"
           onClick={(e) => e.target === e.currentTarget && cerrarModal()}
         >
-          <div className="modal-contenido">
-            <div className="modal-header">
-              <h3>
+          <div className="bg-[var(--color-bg-surface)] rounded-[var(--radius-md)] w-[90%] max-w-[600px] max-h-[80vh] overflow-hidden shadow-[var(--shadow-lg)]">
+            <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex justify-between items-center">
+              <h3 className="m-0 text-[18px] flex items-center gap-3">
                 <i className="fa-solid fa-info-circle"></i> Detalles de la
                 Acción
               </h3>
               <button
                 type="button"
-                className="btn-cerrar-modal"
+                className="bg-white/20 border-0 text-white w-8 h-8 rounded-full cursor-pointer transition-transform duration-200 inline-flex items-center justify-center hover:bg-white/30 hover:rotate-90"
                 onClick={cerrarModal}
               >
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
 
-            <div className="modal-body">
-              <div className="detalle-seccion">
-                <div className="detalle-seccion-titulo">
+            <div className="p-6 max-h-[calc(80vh-80px)] overflow-y-auto">
+              <div className="mb-5">
+                <div className="text-[13px] font-bold text-[var(--color-brand-500)] uppercase tracking-wide mb-3 pb-2 border-b-2 border-b-[var(--color-brand-100)] flex items-center gap-2">
                   <i className="fa-solid fa-circle-info"></i> Información
                   General
                 </div>
-                <div className="detalle-grid">
+                <div className="grid grid-cols-2 gap-3 max-[768px]:grid-cols-1">
                   {crearItemDetalleReact(
                     "Registro",
                     `#${registroSeleccionado.id}`,
@@ -536,22 +539,22 @@ export default function AuditoriaPage() {
 
               {registroSeleccionado.detalles &&
                 Object.keys(registroSeleccionado.detalles).length > 0 && (
-                  <div className="detalle-seccion">
-                    <div className="detalle-seccion-titulo">
+                  <div className="mb-5">
+                    <div className="text-[13px] font-bold text-[var(--color-brand-500)] uppercase tracking-wide mb-3 pb-2 border-b-2 border-b-[var(--color-brand-100)] flex items-center gap-2">
                       <i
                         className={`fa-solid ${obtenerIconoAccion(registroSeleccionado.accion)}`}
                       ></i>
                       Datos de la Operación
                     </div>
 
-                    <div className="detalle-grid">
+                    <div className="grid grid-cols-2 gap-3 max-[768px]:grid-cols-1">
                       {renderDetallesOperacion(registroSeleccionado)}
                     </div>
                   </div>
                 )}
 
               {registroSeleccionado.entidad && (
-                <div className="detalle-pie">
+                <div className="mt-4 px-4 py-3 bg-[var(--color-bg-soft)] rounded-[var(--radius-sm)] text-[13px] text-[var(--color-text-muted)] flex items-center gap-2">
                   <i className="fa-solid fa-tag"></i>
                   <span>
                     Entidad afectada:{" "}
@@ -573,9 +576,9 @@ export default function AuditoriaPage() {
 
 function crearItemDetalleReact(label: string, valor: string) {
   return (
-    <div className="detalle-item" key={`${label}-${valor}`}>
-      <div className="detalle-label">{label}</div>
-      <div className="detalle-valor">{valor}</div>
+    <div className="px-4 py-3 bg-[var(--color-bg-soft)] rounded-[var(--radius-sm)] border-l-[3px] border-l-[var(--color-border-default)] hover:border-l-[var(--color-brand-500)] transition-[border-color] duration-150" key={`${label}-${valor}`}>
+      <div className="font-bold text-[var(--color-text-muted)] text-[10px] uppercase tracking-widest mb-0.5">{label}</div>
+      <div className="text-[14px] font-medium text-[var(--color-text-strong)]">{valor}</div>
     </div>
   );
 }

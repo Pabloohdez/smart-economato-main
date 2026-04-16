@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
-import "../styles/pedidos.css";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
@@ -20,6 +19,7 @@ type ItemPedido = {
   precio: number;
   cantidad: number;
   unidad?: string;
+  unidadBase?: "ud" | "kg" | "l";
   proveedor_id?: number | string | null;
 };
 
@@ -31,13 +31,71 @@ const UNIDADES_OPCIONES = [
   { value: "ml", label: "Mililitros" },
 ] as const;
 
+function normalizarUnidad(raw?: string) {
+  const u = String(raw ?? "").trim().toLowerCase();
+  if (!u) return "ud";
+  if (u === "unidad" || u === "unidades" || u === "ud") return "ud";
+  if (u === "kilo" || u === "kilos" || u === "kg") return "kg";
+  if (u === "litro" || u === "litros" || u === "l") return "l";
+  if (u === "gramo" || u === "gramos" || u === "g") return "g";
+  if (u === "mililitro" || u === "mililitros" || u === "ml") return "ml";
+  return u;
+}
+
+function detectarUnidadDesdeTexto(raw?: string): "ud" | "kg" | "l" | "g" | "ml" | null {
+  const s = String(raw ?? "").toLowerCase();
+  if (!s.trim()) return null;
+  // buscamos tokens comunes sin fiarnos del resto del texto
+  if (/\bkg\b/.test(s) || /\bkilo(s)?\b/.test(s)) return "kg";
+  if (/\bg\b/.test(s) || /\bgramo(s)?\b/.test(s)) return "g";
+  if (/\bml\b/.test(s) || /\bmililitro(s)?\b/.test(s)) return "ml";
+  // cuidado: "l" puede colisionar con palabras, por eso buscamos " l" o "litro"
+  if (/\blitro(s)?\b/.test(s) || /(^|\s)l(\s|$)/.test(s)) return "l";
+  if (/\bud\b/.test(s) || /\bunidade(s)?\b/.test(s) || /\bunidad(es)?\b/.test(s)) return "ud";
+  return null;
+}
+
+function unidadBaseDeProducto(prod: Producto): "ud" | "kg" | "l" {
+  // La unidad base debe venir del campo de unidad (no del texto de precio unitario),
+  // porque `precioUnitario` a veces contiene descripciones y rompe la detección.
+  const fromUnidad = prod.unidadMedida ? normalizarUnidad(prod.unidadMedida) : null;
+  const fromPrecioUnitario = !fromUnidad ? detectarUnidadDesdeTexto((prod as any).precioUnitario) : null;
+  const u = fromUnidad ?? fromPrecioUnitario ?? "ud";
+  if (u === "kg" || u === "g") return "kg";
+  if (u === "l" || u === "ml") return "l";
+  return "ud";
+}
+
+function opcionesUnidadParaBase(base: "ud" | "kg" | "l") {
+  if (base === "kg") return [{ value: "kg", label: "Kg" }, { value: "g", label: "Gramos" }] as const;
+  if (base === "l") return [{ value: "l", label: "Litros" }, { value: "ml", label: "Mililitros" }] as const;
+  return [{ value: "ud", label: "Unidades" }] as const;
+}
+
+function factorAUnidadBase(unidad: string, base: "ud" | "kg" | "l") {
+  const u = normalizarUnidad(unidad);
+  if (base === "ud") return 1;
+  if (base === "kg") return u === "g" ? 0.001 : 1;
+  if (base === "l") return u === "ml" ? 0.001 : 1;
+  return 1;
+}
+
+function baseDesdeUnidadSeleccionada(unidad: string): "ud" | "kg" | "l" {
+  const u = normalizarUnidad(unidad);
+  if (u === "kg" || u === "g") return "kg";
+  if (u === "l" || u === "ml") return "l";
+  return "ud";
+}
+
 function stepDeUnidad(unidad?: string) {
-  if (unidad === "ud") return 1;
-  return 0.001;
+  const u = normalizarUnidad(unidad);
+  if (u === "ud" || u === "g" || u === "ml") return 1;
+  return 0.001; // kg / l
 }
 
 function minDeUnidad(unidad?: string) {
-  if (unidad === "ud") return 1;
+  const u = normalizarUnidad(unidad);
+  if (u === "ud" || u === "g" || u === "ml") return 1;
   return 0.001;
 }
 
@@ -149,7 +207,11 @@ export default function PedidosPage() {
   }, [productos, proveedorId]);
 
   const totalPedido = useMemo(() => {
-    return itemsPedido.reduce((acc, item) => acc + item.cantidad * item.precio, 0);
+    return itemsPedido.reduce((acc, item) => {
+      const base = item.unidadBase ?? "ud";
+      const factor = factorAUnidadBase(item.unidad ?? base, base);
+      return acc + item.cantidad * factor * item.precio;
+    }, 0);
   }, [itemsPedido]);
 
   const pedidosResumen = useMemo(() => {
@@ -170,9 +232,8 @@ export default function PedidosPage() {
 
   function agregarItem(prod: Producto) {
     const provId = prod.proveedorId ?? prod.proveedor?.id ?? null;
-    const unidadDefault = String(prod.unidadMedida || prod.precioUnitario || "ud").trim().toLowerCase();
-    const unidad =
-      UNIDADES_OPCIONES.some((u) => u.value === unidadDefault) ? unidadDefault : "ud";
+    const base = unidadBaseDeProducto(prod);
+    const unidad = opcionesUnidadParaBase(base)[0].value;
 
     setItemsPedido((prev) => {
       const existente = prev.find((i) => String(i.producto_id) === String(prod.id));
@@ -182,7 +243,7 @@ export default function PedidosPage() {
           String(item.producto_id) === String(prod.id)
             ? {
                 ...item,
-                cantidad: item.cantidad + (item.unidad === "ud" ? 1 : 0.001),
+                cantidad: item.cantidad + (normalizarUnidad(item.unidad) === "ud" ? 1 : 1),
               }
             : item
         );
@@ -194,8 +255,9 @@ export default function PedidosPage() {
           producto_id: prod.id,
           nombre: prod.nombre,
           precio: Number(prod.precio),
-          cantidad: unidad === "ud" ? 1 : 0.001,
+          cantidad: 1,
           unidad,
+          unidadBase: base,
           proveedor_id: provId,
         },
       ];
@@ -220,7 +282,8 @@ export default function PedidosPage() {
         const nextUnidad = unidad || "ud";
         const min = minDeUnidad(nextUnidad);
         const nextCantidad = Math.max(min, Number(item.cantidad || 0) || min);
-        return { ...item, unidad: nextUnidad, cantidad: nextCantidad };
+        const nextBase = baseDesdeUnidadSeleccionada(nextUnidad);
+        return { ...item, unidad: nextUnidad, unidadBase: nextBase, cantidad: nextCantidad };
       })
     );
   }
@@ -252,8 +315,16 @@ export default function PedidosPage() {
         };
       }
 
-      pedidosPorProveedor[pid].items.push(item);
-      pedidosPorProveedor[pid].total += item.cantidad * item.precio;
+      const base = item.unidadBase ?? "ud";
+      const factor = factorAUnidadBase(item.unidad ?? base, base);
+      const cantidadBase = item.cantidad * factor;
+
+      pedidosPorProveedor[pid].items.push({
+        ...item,
+        unidad: base,
+        cantidad: cantidadBase,
+      });
+      pedidosPorProveedor[pid].total += cantidadBase * item.precio;
     });
 
     const proveedoresIds = Object.keys(pedidosPorProveedor);
@@ -301,51 +372,59 @@ export default function PedidosPage() {
 
   return (
     <div>
-      <div className="content-header content-header--split">
+      <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
         <div>
-          <h2>
-            <i className="fa-solid fa-file-invoice-dollar"></i>
+          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
+            <i className="fa-solid fa-file-invoice-dollar text-[var(--color-brand-500)]"></i>
             Pedidos y Compras
           </h2>
-          <p className="content-subtitle">Historial de compras y generación de pedidos por proveedor.</p>
+          <p className="mt-2 mb-0 text-[14px] text-[var(--color-text-muted)]">Historial de compras y generación de pedidos por proveedor.</p>
         </div>
 
-        <div className="header-actions">
-          <div className="header-date-chip">
-            <i className="fa-solid fa-calendar"></i>
+        <div className="flex gap-[15px] flex-wrap items-center max-[900px]:w-full">
+          <div className="inline-flex items-center gap-2.5 px-4 py-3 border border-[var(--color-border-default)] rounded-[12px] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[var(--color-text-muted)] font-semibold max-[900px]:w-full max-[900px]:justify-center">
+            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
             <span>{hoyES()}</span>
           </div>
 
-          <button type="button" className="btn-primary" onClick={irANuevoPedido}>
+          <button
+            type="button"
+            className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background] duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)] max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5"
+            onClick={irANuevoPedido}
+          >
             <i className="fa-solid fa-plus"></i> Nuevo Pedido
           </button>
 
-          <button type="button" className="btn-secondary" onClick={irAHistorial}>
+          <button
+            type="button"
+            className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
+            onClick={irAHistorial}
+          >
             <i className="fa-solid fa-list"></i> Ver Historial
           </button>
         </div>
       </div>
 
-      <section className="pedidos-kpi-grid" aria-label="Resumen de pedidos">
-        <article className="pedidos-kpi-card">
-          <span className="pedidos-kpi-label">Pedidos Pendientes</span>
-          <strong>{pedidosResumen.pendientes}</strong>
+      <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
+        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
         </article>
-        <article className="pedidos-kpi-card">
-          <span className="pedidos-kpi-label">Pedidos Incompletos</span>
-          <strong>{pedidosResumen.incompletos}</strong>
+        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Incompletos</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.incompletos}</strong>
         </article>
-        <article className="pedidos-kpi-card pedidos-kpi-card--accent">
-          <span className="pedidos-kpi-label">Importe Histórico</span>
-          <strong>{pedidosResumen.importeTotal.toFixed(2)} €</strong>
+        <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Importe Histórico</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.importeTotal.toFixed(2)} €</strong>
         </article>
       </section>
 
       {err && <Alert type="error">{err}</Alert>}
 
       {vista === "lista" && (
-        <div className="card">
-          <h3>Historial de Pedidos</h3>
+        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
+          <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5">Historial de Pedidos</h3>
 
           {loadingPedidos && <Spinner label="Cargando pedidos..." />}
 
@@ -364,8 +443,8 @@ export default function PedidosPage() {
       )}
 
       {vista === "nuevo" && (
-        <div className="card">
-          <h3>
+        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
+          <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 flex items-center gap-2">
             <i className="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido
           </h3>
 
@@ -394,32 +473,32 @@ export default function PedidosPage() {
                     type="date"
                     id="fechaPedido"
                     disabled
-                    className="form-control"
+                    className="w-full p-3 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] text-[var(--color-text-strong)] bg-white box-border focus:border-[var(--color-brand-500)] focus:outline-none"
                     value={fechaPedido}
                     onChange={() => {}}
                   />
                 </div>
               </div>
 
-              <div className="pedido-builder">
-                <div className="lista-productos-prov">
+              <div className="grid grid-cols-[1fr_1.5fr] gap-[30px] mt-5 max-[900px]:grid-cols-1">
+                <div>
                   <h4>Productos Disponibles</h4>
 
-                  <div className="lista-scroll">
+                  <div className="border-2 border-[var(--color-border-default)] h-[400px] overflow-y-auto bg-white rounded-[10px]">
                     {!proveedorId && (
-                      <p className="text-muted">Selecciona un proveedor primero</p>
+                      <p className="text-[var(--color-text-muted)] p-3">Selecciona un proveedor primero</p>
                     )}
 
                     {proveedorId && productosFiltrados.length === 0 && (
-                      <p className="text-muted">No hay productos asociados a este proveedor</p>
+                      <p className="text-[var(--color-text-muted)] p-3">No hay productos asociados a este proveedor</p>
                     )}
 
                     {proveedorId &&
                       productosFiltrados.map((p) => (
-                        <div className="item-prov" key={String(p.id)}>
-                          <span>{p.nombre}</span>
-                          <strong>{Number(p.precio).toFixed(2)} €</strong>
-                          <button type="button" onClick={() => agregarItem(p)}>
+                        <div className="flex justify-between items-center gap-3 px-[15px] py-4 border-b border-[var(--color-border-default)] text-[14px] hover:bg-[var(--color-bg-soft)]" key={String(p.id)}>
+                          <span className="flex-1">{p.nombre}</span>
+                          <strong className="whitespace-nowrap">{Number(p.precio).toFixed(2)} €</strong>
+                          <button className="bg-[var(--color-brand-500)] text-white border-0 w-11 min-w-11 h-11 rounded-lg font-bold cursor-pointer" type="button" onClick={() => agregarItem(p)}>
                             +
                           </button>
                         </div>
@@ -427,86 +506,104 @@ export default function PedidosPage() {
                   </div>
                 </div>
 
-                <div className="carrito-pedido">
+                <div>
                   <h4>Items del Pedido</h4>
 
-                  <table className="table-carrito">
-                    <thead>
-                      <tr>
-                        <th>Producto</th>
-                        <th>Unidad</th>
-                        <th>Cant.</th>
-                        <th>Precio</th>
-                        <th>Total</th>
-                        <th>Acción</th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {itemsPedido.length === 0 && (
+                  <div className="w-full overflow-x-auto rounded-[10px] border border-[var(--color-border-default)] bg-white">
+                    <table className="w-full min-w-[720px] border-collapse text-[14px]">
+                      <thead className="bg-[var(--color-bg-soft)]">
                         <tr>
-                          <td colSpan={6}>No hay productos añadidos al pedido.</td>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)]">
+                            Producto
+                          </th>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)]">
+                            Unidad
+                          </th>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                            Cant.
+                          </th>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                            Precio
+                          </th>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                            Total
+                          </th>
+                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                            Acción
+                          </th>
                         </tr>
-                      )}
+                      </thead>
 
-                      {itemsPedido.map((item, idx) => {
-                        const subtotal = item.cantidad * item.precio;
-                        const unidad = item.unidad ?? "ud";
-
-                        return (
-                          <tr key={`${item.producto_id}-${idx}`}>
-                            <td>{item.nombre}</td>
-                            <td style={{ minWidth: 140 }}>
-                              <UiSelect
-                                value={unidad}
-                                onChange={(v) => cambiarUnidad(idx, v)}
-                                options={UNIDADES_OPCIONES.map((u) => ({
-                                  value: u.value,
-                                  label: u.label,
-                                }))}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="number"
-                                min={minDeUnidad(unidad)}
-                                step={stepDeUnidad(unidad)}
-                                value={item.cantidad}
-                                className="input-cantidad"
-                                onChange={(e) => cambiarCantidad(idx, e.target.value)}
-                              />
-                            </td>
-                            <td>{item.precio.toFixed(2)} €</td>
-                            <td>{subtotal.toFixed(2)} €</td>
-                            <td>
-                              <button
-                                type="button"
-                                className="btn-remove"
-                                onClick={() => borrarItem(idx)}
-                              >
-                                x
-                              </button>
+                      <tbody>
+                        {itemsPedido.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="px-4 py-5 text-[var(--color-text-muted)]">
+                              No hay productos añadidos al pedido.
                             </td>
                           </tr>
-                        );
-                      })}
-                    </tbody>
+                        )}
 
-                    <tfoot>
-                      <tr>
-                        <td colSpan={4} className="text-right">
-                          <strong>Total Estimado:</strong>
-                        </td>
-                        <td colSpan={2}>
-                          <strong>{totalPedido.toFixed(2)} €</strong>
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
+                        {itemsPedido.map((item, idx) => {
+                          const unidad = item.unidad ?? "ud";
+                          const base = item.unidadBase ?? "ud";
+                          const factor = factorAUnidadBase(unidad, base);
+                          const subtotal = item.cantidad * factor * item.precio;
+
+                          return (
+                            <tr key={`${item.producto_id}-${idx}`} className="border-b border-[var(--color-border-default)] last:border-b-0">
+                              <td className="px-4 py-3">{item.nombre}</td>
+                              <td className="px-4 py-3 min-w-[180px]">
+                                <UiSelect
+                                  value={unidad}
+                                  onChange={(v) => cambiarUnidad(idx, v)}
+                                  options={UNIDADES_OPCIONES.map((u) => ({
+                                    value: u.value,
+                                    label: u.label,
+                                  }))}
+                                />
+                              </td>
+                              <td className="px-4 py-3">
+                                <input
+                                  type="number"
+                                  min={minDeUnidad(unidad)}
+                                  step={stepDeUnidad(unidad)}
+                                  value={item.cantidad}
+                                  className="w-[80px] py-1.5 px-2 border border-[var(--color-border-strong)] rounded-lg"
+                                  onChange={(e) => cambiarCantidad(idx, e.target.value)}
+                                />
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">{item.precio.toFixed(2)} €</td>
+                              <td className="px-4 py-3 whitespace-nowrap">{subtotal.toFixed(2)} €</td>
+                              <td className="px-4 py-3">
+                                <button
+                                  type="button"
+                                  className="bg-[#e53e3e] text-white border-0 w-11 min-w-11 h-11 rounded-lg cursor-pointer font-bold"
+                                  onClick={() => borrarItem(idx)}
+                                >
+                                  x
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+
+                      <tfoot className="bg-[var(--color-bg-soft)]">
+                        <tr>
+                          <td colSpan={4} className="px-4 py-3 text-right font-semibold">
+                            Total Estimado:
+                          </td>
+                          <td colSpan={2} className="px-4 py-3 font-extrabold whitespace-nowrap">
+                            {totalPedido.toFixed(2)} €
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
 
                   <button
                     type="button"
-                    className="btn-success btn-block"
+                    className="w-full mt-5 py-[15px] bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[10px] font-semibold cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                     onClick={guardarPedido}
                     disabled={guardando}
                   >

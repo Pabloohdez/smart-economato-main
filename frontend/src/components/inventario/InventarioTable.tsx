@@ -39,24 +39,24 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
   }, [rows, safePage, pageSize]);
 
   return (
-    <div className="panel-tabla">
-      <div className="table-container">
-        <table>
+    <div className="bg-[var(--color-bg-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] overflow-hidden">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full border-separate border-spacing-0 text-[14px]">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Producto</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Caducidad</th>
-              <th>Proveedor</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">ID</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Producto</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Categoría</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Precio</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Stock</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Caducidad</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Proveedor</th>
             </tr>
           </thead>
           <tbody>
             {visibleRows.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
+                <td colSpan={7} className="text-center py-5 px-4 text-[#718096]">
                   No hay productos para mostrar.
                 </td>
               </tr>
@@ -64,36 +64,75 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
               visibleRows.map(({ p, stock, min, cadDias, alerta }) => {
                 const stockBajo = stock <= min;
                 let cadLabel = "—";
-                let cadClass = "badge-fecha-normal";
+                let cadNode: React.ReactNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
                 if (cadDias != null) {
                   if (cadDias < 0) {
                     cadLabel = "⚠ CADUCADO";
-                    cadClass = "badge-caducado";
+                    cadNode = (
+                      <span className="bg-[#c53030] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold inline-flex items-center animate-pulse">
+                        {cadLabel}
+                      </span>
+                    );
                   } else if (cadDias <= 30) {
                     cadLabel = `⏰ ${cadDias}d`;
-                    cadClass = "badge-proximo-caducar";
+                    cadNode = (
+                      <span className="bg-[#fffaf0] text-[#c05621] px-3 py-1.5 rounded-lg border-2 border-[#f6ad55] text-[11px] font-bold inline-flex items-center">
+                        {cadLabel}
+                      </span>
+                    );
                   } else {
                     const fecha = new Date(Date.now() + cadDias * 24 * 60 * 60 * 1000);
                     cadLabel = formatShortDate(fecha);
-                    cadClass = "badge-fecha-normal";
+                    cadNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
                   }
                 }
 
                 return (
-                  <tr key={String(p.id)} className={alerta ? "alerta-row" : ""}>
-                    <td className={alerta ? "alerta-cell" : ""}>{String(p.id ?? "")}</td>
-                    <td className={alerta ? "alerta-cell" : ""}>{String(p.nombre ?? "—")}</td>
-                    <td className={alerta ? "alerta-cell" : ""}>{String(p.categoria?.nombre ?? "—")}</td>
-                    <td className={alerta ? "alerta-cell" : ""}>
-                      <span className="precio">{Number(p.precio ?? 0).toFixed(2)} €</span>
-                    </td>
-                    <td className={alerta ? "alerta-cell" : ""}>
-                      <span className={stockBajo ? "badge-stock-bajo" : "badge-stock-ok"}>{stock}</span>
-                    </td>
-                    <td className={alerta ? "alerta-cell" : ""}>
-                      <span className={cadClass}>{cadLabel}</span>
-                    </td>
-                    <td className={alerta ? "alerta-cell" : ""}>{String(p.proveedor?.nombre ?? "—")}</td>
+                  <tr
+                    key={String(p.id)}
+                    className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]"
+                  >
+                    {(
+                      [
+                        String(p.id ?? ""),
+                        String(p.nombre ?? "—"),
+                        String(p.categoria?.nombre ?? "—"),
+                        `${Number(p.precio ?? 0).toFixed(2)} €`,
+                        null,
+                        null,
+                        String(p.proveedor?.nombre ?? "—"),
+                      ] as const
+                    ).map((value, idx) => {
+                      const base = "px-4 py-3 border-b border-[var(--color-border-default)] text-[var(--color-text-default)] align-middle";
+                      const alertBg = alerta ? "bg-[#fff5f5]" : "";
+                      if (idx === 4) {
+                        return (
+                          <td key={idx} className={`${base} ${alertBg}`}>
+                            <span
+                              className={
+                                stockBajo
+                                  ? "bg-[#fff5f5] text-[#c53030] px-3 py-1 rounded-full font-bold border border-[#feb2b2] inline-block animate-pulse"
+                                  : "bg-[#f0fff4] text-[#2f855a] px-3 py-1 rounded-full font-bold inline-block"
+                              }
+                            >
+                              {stock}
+                            </span>
+                          </td>
+                        );
+                      }
+                      if (idx === 5) {
+                        return (
+                          <td key={idx} className={`${base} ${alertBg}`}>
+                            {cadNode}
+                          </td>
+                        );
+                      }
+                      return (
+                        <td key={idx} className={`${base} ${alertBg}`}>
+                          {value}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })
@@ -110,9 +149,9 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
         pageSizeOptions={[10, 25, 50, 100]}
         label="productos"
       />
-      <div className="resumen-inventario">
+      <div className="px-[var(--space-6)] py-[var(--space-5)] bg-[linear-gradient(135deg,var(--color-bg-soft)_0%,var(--color-border-default)_100%)] border-t-2 border-[var(--color-border-default)] flex items-center justify-between font-semibold max-[768px]:flex-col max-[768px]:gap-2.5 max-[768px]:items-start">
         <div>
-          Total productos: <span className="resumen-valor">{items.length}</span>
+          Total productos: <span className="text-[var(--color-brand-500)] text-[18px]">{items.length}</span>
         </div>
       </div>
     </div>

@@ -1,4 +1,16 @@
 # Build: React + TypeScript con Vite
+FROM node:20-alpine AS dev
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+EXPOSE 8081
+
+# En dev, el código se monta como volumen desde docker-compose
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "8081"]
+
 FROM node:20-alpine AS builder
 
 WORKDIR /app

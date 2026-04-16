@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import "../styles/ingreso.css";
 import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
 import Button from "../components/ui/Button";
@@ -41,6 +40,7 @@ export default function IngresarProductoPage() {
   const [nombre, setNombre] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
   const [precio, setPrecio] = useState("");
+  const [unidadMedida, setUnidadMedida] = useState<"ud" | "kg" | "l">("ud");
   const [stock, setStock] = useState("");
   const [stockMin, setStockMin] = useState("");
   const [proveedorId, setProveedorId] = useState("");
@@ -91,6 +91,7 @@ export default function IngresarProductoPage() {
     setNombre("");
     setCategoriaId("");
     setPrecio("");
+    setUnidadMedida("ud");
     setStock("");
     setStockMin("");
     setProveedorId("");
@@ -113,15 +114,17 @@ export default function IngresarProductoPage() {
     const proveedorNombre =
       proveedores.find((p) => String(p.id) === String(proveedorId))?.nombre ?? "";
 
+    const unidadLabel = unidadMedida === "kg" ? "kg" : unidadMedida === "l" ? "l" : "ud";
+
     const nuevoProducto: ProductoTemporal = {
       nombre: nombreLimpio,
       precio: precioNum,
-      precioUnitario: "unidad",
+      precioUnitario: unidadLabel,
       stock: Number.isNaN(stockNum) ? 0 : stockNum,
       stockMinimo: Number.isNaN(stockMinNum) ? 5 : stockMinNum,
       categoriaId,
       proveedorId,
-      unidadMedida: "unidad",
+      unidadMedida: unidadLabel,
       marca: "Sin marca",
       codigoBarras: generarCodigoBarras(),
       fechaCaducidad: "2024-12-31",
@@ -216,7 +219,7 @@ export default function IngresarProductoPage() {
           type="button"
           variant="ghost"
           size="sm"
-          className="btn-volver"
+          className="inline-flex items-center gap-2 px-[18px] py-2.5 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] rounded-[10px] font-semibold text-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-[background,color,border-color,transform,box-shadow] duration-200 hover:bg-[var(--color-border-default)] hover:text-[var(--color-text-strong)] hover:border-[var(--color-border-strong)] hover:-translate-x-[3px] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
           icon="fa-solid fa-arrow-left"
           onClick={() => nav("/inventario")}
         >
@@ -224,25 +227,27 @@ export default function IngresarProductoPage() {
         </Button>
       </div>
 
-      <h1 className="titulo-ingreso">INGRESO MASIVO DE MERCANCÍA</h1>
+      <h1 className="text-center text-[var(--color-brand-500)] mb-6 font-bold tracking-wide">
+        INGRESO MASIVO DE MERCANCÍA
+      </h1>
 
-      <div className="panel-captura">
-        <div className="campo-grupo campo-nombre">
-          <label className="label-input" htmlFor="inputNombre">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex flex-wrap gap-5 items-end border border-black/5">
+        <div className="flex flex-col gap-2 flex-grow min-w-[220px] flex-[2]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputNombre">
             Nombre del Producto
           </label>
           <input
             id="inputNombre"
             type="text"
-            className="input-form"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="Ej: Leche Entera"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
           />
         </div>
 
-        <div className="campo-grupo campo-categoria">
-          <label className="label-input" htmlFor="selectCategoria">
+        <div className="flex flex-col gap-2 flex-grow min-w-[160px] flex-[1.5]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectCategoria">
             Categoría
           </label>
           <UiSelect
@@ -258,14 +263,30 @@ export default function IngresarProductoPage() {
           />
         </div>
 
-        <div className="campo-grupo campo-precio">
-          <label className="label-input" htmlFor="inputPrecio">
-            Precio (€)
+        <div className="flex flex-col gap-2 flex-grow min-w-[120px] flex-[0.9]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectUnidadMedida">
+            Unidad
+          </label>
+          <UiSelect
+            id="selectUnidadMedida"
+            value={unidadMedida}
+            onChange={(v) => setUnidadMedida((v as any) || "ud")}
+            options={[
+              { value: "ud", label: "Unidades (ud)" },
+              { value: "kg", label: "Peso (kg)" },
+              { value: "l", label: "Volumen (l)" },
+            ]}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 flex-grow min-w-[120px] flex-[0.9]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputPrecio">
+            Precio ({unidadMedida === "kg" ? "€/kg" : unidadMedida === "l" ? "€/l" : "€/ud"})
           </label>
           <input
             id="inputPrecio"
             type="number"
-            className="input-form"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="0.00"
             step="0.01"
             value={precio}
@@ -273,36 +294,36 @@ export default function IngresarProductoPage() {
           />
         </div>
 
-        <div className="campo-grupo campo-stock">
-          <label className="label-input" htmlFor="inputStock">
+        <div className="flex flex-col gap-2 flex-grow min-w-[90px] flex-[0.8]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStock">
             Stock
           </label>
           <input
             id="inputStock"
             type="number"
-            className="input-form"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="0"
             value={stock}
             onChange={(e) => setStock(e.target.value)}
           />
         </div>
 
-        <div className="campo-grupo campo-stock">
-          <label className="label-input" htmlFor="inputStockMin">
+        <div className="flex flex-col gap-2 flex-grow min-w-[90px] flex-[0.8]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStockMin">
             Mínimo
           </label>
           <input
             id="inputStockMin"
             type="number"
-            className="input-form"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="5"
             value={stockMin}
             onChange={(e) => setStockMin(e.target.value)}
           />
         </div>
 
-        <div className="campo-grupo campo-proveedor">
-          <label className="label-input" htmlFor="selectProveedor">
+        <div className="flex flex-col gap-2 flex-grow min-w-[160px] flex-[1.5]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectProveedor">
             Proveedor
           </label>
           <UiSelect
@@ -321,7 +342,7 @@ export default function IngresarProductoPage() {
         <Button
           type="button"
           variant="success"
-          className="btn-accion btn-agregar"
+          className="h-11 px-7 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2.5 shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,box-shadow,filter] duration-200 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white hover:-translate-y-0.5 hover:shadow-[0_6px_15px_rgba(49,130,206,0.4)] hover:brightness-105 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed"
           icon="fa-solid fa-plus"
           onClick={agregarALista}
         >
@@ -329,27 +350,30 @@ export default function IngresarProductoPage() {
         </Button>
       </div>
 
-      <div className="seccion-tabla">
-        <h3 className="titulo-lista">
+      <div className="mt-[35px]">
+        <h3 className="text-[var(--color-text-strong)] mb-4 flex items-center gap-2.5 text-[1.1rem] flex-wrap">
           <i className="fa-solid fa-list-check"></i> Lista de Previsualización
-          <span className="badge-contador">{contadorTexto}</span>
+          <span className="text-[12px] bg-[var(--color-border-default)] text-[var(--color-text-muted)] px-2.5 py-1 rounded-xl font-semibold">
+            {contadorTexto}
+          </span>
         </h3>
 
-        <table className="tabla-temporal">
+        <div className="overflow-x-auto rounded-xl border border-black/5 shadow-[var(--shadow-sm)]">
+          <table className="w-full border-separate border-spacing-0 bg-[var(--color-bg-surface)]">
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Proveedor</th>
-              <th style={{ textAlign: "center" }}>Acción</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Nombre</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Categoría</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Precio</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Stock</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Proveedor</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-center font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Acción</th>
             </tr>
           </thead>
           <tbody>
             {listaTemporal.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: "20px" }}>
+                <td colSpan={6} className="p-5">
                   <EmptyState
                     icon="fa-solid fa-box-open"
                     title="Lista vacía"
@@ -359,16 +383,18 @@ export default function IngresarProductoPage() {
               </tr>
             ) : (
               listaTemporal.map((prod, index) => (
-                <tr key={`${prod.codigoBarras}-${index}`}>
-                  <td>{prod.nombre}</td>
-                  <td>{prod._tempCategoriaNombre}</td>
-                  <td>{prod.precio.toFixed(2)} €</td>
-                  <td>{prod.stock}</td>
-                  <td>{prod._tempProveedorNombre}</td>
-                  <td style={{ textAlign: "center" }}>
+                <tr key={`${prod.codigoBarras}-${index}`} className="border-b border-b-[var(--color-border-default)] last:border-b-0 hover:bg-[#fafbfc]">
+                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod.nombre}</td>
+                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod._tempCategoriaNombre}</td>
+                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">
+                    {prod.precio.toFixed(2)} €/{prod.unidadMedida || "ud"}
+                  </td>
+                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod.stock}</td>
+                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</td>
+                  <td className="px-4 py-3 text-center">
                     <button
                       type="button"
-                      className="btn-borrar-fila"
+                      className="bg-[#fff5f5] text-[#e53e3e] border-0 w-8 h-8 rounded-lg cursor-pointer transition-transform duration-200 inline-flex items-center justify-center shadow-[0_2px_4px_rgba(229,62,62,0.1)] hover:bg-[#fed7d7] hover:scale-105"
                       onClick={() => borrarFila(index)}
                     >
                       <i className="fa-solid fa-xmark"></i>
@@ -378,14 +404,15 @@ export default function IngresarProductoPage() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
-      <div className="acciones-finales">
+      <div className="flex justify-end gap-5 mt-6 mb-5 pt-5 border-t border-t-[var(--color-border-default)] flex-wrap">
         <Button
           type="button"
           variant="secondary"
-          className={`btn-accion btn-limpiar ${listaTemporal.length === 0 ? "oculto" : ""}`}
+          className={`h-11 px-7 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2.5 shadow-[0_4px_12px_rgba(229,62,62,0.3)] transition-[transform,box-shadow,filter] duration-200 bg-[linear-gradient(135deg,#fc8181_0%,#e53e3e_100%)] text-white hover:-translate-y-0.5 hover:shadow-[0_6px_15px_rgba(229,62,62,0.4)] hover:brightness-105 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed ${listaTemporal.length === 0 ? "hidden" : ""}`}
           icon="fa-solid fa-trash"
           onClick={limpiarLista}
         >
@@ -395,7 +422,7 @@ export default function IngresarProductoPage() {
         <Button
           type="button"
           variant="primary"
-          className={`btn-accion btn-guardar ${listaTemporal.length === 0 ? "oculto" : ""}`}
+          className={`h-11 px-9 border-0 rounded-[10px] font-semibold text-[15px] cursor-pointer inline-flex items-center justify-center gap-2.5 shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,box-shadow,filter] duration-200 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white tracking-wide hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(56,161,105,0.4)] hover:brightness-105 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed ${listaTemporal.length === 0 ? "hidden" : ""}`}
           icon="fa-solid fa-cloud-arrow-up"
           onClick={guardarEnBaseDeDatos}
           disabled={listaTemporal.length === 0}

@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
-import "../styles/recepcion.css";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
@@ -478,57 +477,64 @@ export default function Recepcion() {
   return (
     <div>
       {/* Header */}
-      <div className="header-recepcion">
+      <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
-          <h1 className="titulo-recepcion">
-            <i className="fa-solid fa-truck-ramp-box" /> RECEPCIÓN DE MERCANCÍA
+          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
+            <i className="fa-solid fa-truck-ramp-box text-[var(--color-brand-500)]" /> RECEPCIÓN DE MERCANCÍA
           </h1>
-          <p className="subtitulo">Registra las entregas de proveedores y actualiza el inventario</p>
+          <p className="m-0 text-[14px] text-[#50596D]">
+            Registra las entregas de proveedores y actualiza el inventario
+          </p>
         </div>
-        <div className="info-fecha">
+        <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[10px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
           <i className="fa-solid fa-calendar" />
           <span>{hoyES()}</span>
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
+        <div className="flex gap-3 items-center flex-wrap justify-between">
+          <div className="flex gap-2.5 items-center flex-wrap">
             <strong>Báscula</strong>
-            <span style={{ fontSize: 13, color: "#4a5568" }}>
+            <span className="text-[13px] text-[#4a5568]">
               Lectura:{" "}
               <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
             </span>
             {!scale.supported ? (
-              <span style={{ fontSize: 12, color: "#e53e3e" }}>(Web Serial no soportado)</span>
+              <span className="text-[12px] text-[#e53e3e]">(Web Serial no soportado)</span>
             ) : scale.connected ? (
-              <button type="button" className="btn-secondary" onClick={scale.disconnect}>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition"
+                onClick={scale.disconnect}
+              >
                 <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
               </button>
             ) : (
-              <button type="button" className="btn-secondary" onClick={scale.connect}>
+              <button
+                type="button"
+                className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition"
+                onClick={scale.connect}
+              >
                 <i className="fa-solid fa-plug" /> Conectar
               </button>
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <label style={{ fontSize: 13, color: "#4a5568" }}>
-              Kg esperados (opcional):
-            </label>
+          <div className="flex gap-2 items-center flex-wrap">
+            <label className="text-[13px] text-[#4a5568]">Kg esperados (opcional):</label>
             <input
               type="number"
               step="0.001"
               min="0"
               value={expectedKg}
               onChange={(e) => setExpectedKg(e.target.value)}
-              className="form-control"
-              style={{ width: 160 }}
+              className="w-40 py-3 px-3 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] text-[var(--color-text-strong)] bg-white box-border focus:border-[var(--color-brand-500)] focus:outline-none"
               placeholder="0.000"
             />
             <button
               type="button"
-              className="btn-secondary"
+              className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={() => {
                 const kg = scale.captureKg();
                 if (kg != null) setExpectedKg(String(kg.toFixed(3)));
@@ -543,21 +549,21 @@ export default function Recepcion() {
       </div>
 
       {/* Panel búsqueda */}
-      <div className="panel-busqueda" ref={buscadorWrapRef}>
-        <h2 className="titulo-seccion">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5" ref={buscadorWrapRef}>
+        <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
         </h2>
 
-        <div className="controles-busqueda">
-          <div className="campo-busqueda" style={{ position: "relative" }}>
-            <div className="busq-wrap">
-              <div className="busq-input-wrap">
+        <div className="flex flex-col gap-[15px]">
+          <div className="flex gap-3 items-center relative max-[768px]:flex-col max-[768px]:items-stretch">
+            <div className="flex gap-3 items-center w-full">
+              <div className="relative flex-1 flex items-center">
                 {/* Ghost suggestion */}
                 {resultadosAutocomplete.length > 0 &&
                   term.length >= 2 &&
                   resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) &&
                   resultadosAutocomplete[0].nombre.toLowerCase() !== term.toLowerCase() && (
-                    <div className="busq-ghost" aria-hidden="true">
+                    <div className="absolute left-0 top-0 w-full h-12 px-4 border-2 border-transparent text-[15px] pointer-events-none z-[2] flex items-center whitespace-pre overflow-hidden" aria-hidden="true">
                       <span style={{ visibility: "hidden" }}>{term}</span>
                       <span style={{ color: "#a0aec0" }}>
                         {resultadosAutocomplete[0].nombre.slice(term.length)}
@@ -566,7 +572,7 @@ export default function Recepcion() {
                   )}
                 <input
                   id="inputRecepcion"
-                  className="busq-input"
+                  className="relative z-[1] flex-1 w-full h-12 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-transparent transition-[border-color,box-shadow,background] duration-200 box-border focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus:bg-[var(--color-bg-surface)]"
                   value={term}
                   autoComplete="off"
                   onChange={(e) => {
@@ -605,7 +611,7 @@ export default function Recepcion() {
 
 
               <button
-                className="btn-scan-recepcion"
+                className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-xl bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] inline-flex items-center justify-center cursor-pointer shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 touch-manipulation"
                 type="button"
                 onClick={escanearCodigoBarras}
                 aria-label="Escanear codigo de barras"
@@ -617,14 +623,14 @@ export default function Recepcion() {
 
             {/* Dropdown de resultados */}
             {resultadosOpen && (
-              <div id="listaResultados" className="resultados-busqueda">
+              <div id="listaResultados" className="absolute top-full left-0 right-0 z-50 border-2 border-[var(--color-border-default)] border-t-0 max-h-[220px] overflow-y-auto bg-white rounded-b-[10px] shadow-[0_8px_20px_rgba(0,0,0,0.08)] mt-[-2px]">
                 {loading ? (
-                  <div className="item-resultado" style={{ color: "#718096", fontStyle: "italic", justifyContent: "center" }}>
+                  <div className="flex items-center justify-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)] text-[#718096] italic">
                     <i className="fa-solid fa-spinner fa-spin" /> Cargando...
                   </div>
                 ) : resultadosRender.length === 0 ? (
                   term.trim().length >= 2 ? (
-                    <div className="item-resultado" style={{ color: "#718096", fontStyle: "italic", justifyContent: "center" }}>
+                    <div className="flex items-center justify-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)] text-[#718096] italic">
                       Sin resultados para «{term.trim()}»
                     </div>
                   ) : null
@@ -632,7 +638,7 @@ export default function Recepcion() {
                   resultadosRender.map((p) => (
                     <div
                       key={String(p.id)}
-                      className="item-resultado"
+                      className="flex items-center justify-between gap-3 px-4 py-[11px] border-b border-[var(--color-border-default)] cursor-pointer transition-[background,padding-left,border-left] duration-150 hover:bg-[#fff5f5] hover:border-l-[3px] hover:border-l-[var(--color-brand-500)] hover:pl-[13px]"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -650,7 +656,7 @@ export default function Recepcion() {
             )}
           </div>
 
-          <div className="filtros-rapidos">
+          <div className="flex gap-[15px] max-[768px]:flex-col">
             <UiSelect
               value={provFiltro}
               onChange={setProvFiltro}
@@ -672,10 +678,10 @@ export default function Recepcion() {
             />
           </div>
         </div>
-        <div style={{ textAlign: "right", marginTop: 15 }}>
+        <div className="text-right mt-[15px]">
           <button
-            className="btn-buscar-producto"
-            style={{ background: "#2d3748", display: "inline-flex" }}
+            className="h-12 px-7 bg-[#2d3748] text-white border-0 rounded-[10px] font-semibold cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2 shadow-[0_4px_15px_rgba(45,55,72,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(45,55,72,0.35)]"
+            style={{ display: "inline-flex" }}
             onClick={abrirModalPedidos}
           >
             <i className="fa-solid fa-cloud-arrow-down" /> Importar/Recibir Pedido
@@ -686,17 +692,20 @@ export default function Recepcion() {
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
         <div
-          className={`modal-overlay-recepcion active recepcion-overlay-drawer ${cerrandoDrawerPedidos ? "is-closing" : ""}`}
+          className={`fixed inset-0 z-[1000] backdrop-blur-[4px] transition-[background,opacity] duration-200 ${cerrandoDrawerPedidos ? "bg-[rgba(11,18,32,0)]" : "bg-[rgba(11,18,32,0.42)]"} flex items-stretch justify-end`}
           onClick={cerrarDrawerPedidos}
         >
-          <aside className="recepcion-drawer" onClick={(e) => e.stopPropagation()}>
-            <div className="recepcion-drawer-header">
-              <h3>
+          <aside
+            className={`w-[min(38vw,620px)] max-w-[100vw] h-full bg-[var(--color-bg-surface)] border-l border-[var(--color-border-default)] shadow-[-16px_0_40px_rgba(0,0,0,0.18)] p-6 overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "translate-x-9 opacity-55" : "translate-x-0 opacity-100"} max-[1280px]:w-[min(58vw,760px)] max-[1024px]:w-[min(78vw,920px)] max-[768px]:w-screen max-[768px]:p-4`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 mb-5">
+              <h3 className="m-0 flex items-center gap-2">
                 <i className="fa-solid fa-cloud-arrow-down" /> Importar Pedido Pendiente
               </h3>
               <button
                 type="button"
-                className="recepcion-drawer-close"
+                className="w-11 h-11 min-w-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] inline-flex items-center justify-center cursor-pointer active:scale-[0.98]"
                 aria-label="Cerrar importacion de pedidos"
                 onClick={cerrarDrawerPedidos}
               >
@@ -704,40 +713,49 @@ export default function Recepcion() {
               </button>
             </div>
 
-            <div className="recepcion-drawer-body">
+            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1">
 
             {pedidosPendientes.length === 0 ? (
-              <div className="recepcion-pedidos-vacio">
+              <div className="flex-1 flex items-center justify-center text-center text-[var(--color-text-muted)]">
                 <p>No hay pedidos pendientes o incompletos.</p>
               </div>
             ) : (
-              <div className="recepcion-pedidos-lista">
+              <div className="mt-5 flex-1 flex flex-col gap-[18px]">
                 {pedidosPendientes.map((ped) => {
                   const items = Array.isArray(ped.items) ? ped.items : [];
                   const completado = ped.estado.toUpperCase() === "COMPLETADO";
 
                   return (
-                    <div key={String(ped.id)} className="pedido-card recepcion-pedido-card">
-                      <div className="pedido-card-header">
+                    <div key={String(ped.id)} className="border border-[var(--color-border-default)] rounded-[14px] p-4 bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] flex flex-col justify-between">
+                      <div className="flex items-start justify-between gap-3 pb-3 mb-3 border-b border-[var(--color-border-default)] max-[1024px]:flex-col max-[1024px]:items-start">
                         <div>
                           <strong>Pedido #{ped.id}</strong> — Proveedor: {ped.proveedor_nombre}
                         </div>
-                        <span className={`badge-estado ${ped.estado.toLowerCase()}`}>
+                        <span
+                          className={[
+                            "inline-flex items-center justify-center min-h-7 px-2.5 py-1 rounded-full text-[12px] font-bold uppercase whitespace-nowrap",
+                            ped.estado.toLowerCase() === "pendiente"
+                              ? "bg-[#fff5f5] text-[#b33131]"
+                              : ped.estado.toLowerCase() === "incompleto"
+                                ? "bg-[#fffaf0] text-[#c05621]"
+                                : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]",
+                          ].join(" ")}
+                        >
                           {ped.estado}
                         </span>
                       </div>
-                      <div className="pedido-card-body">
+                      <div className="min-w-0">
                         {items.length === 0 ? (
                           <p>Sin items</p>
                         ) : (
-                          <table className="tabla-recepcion recepcion-tabla-pedidos" style={{ marginTop: 10 }}>
+                          <table className="w-full border-separate border-spacing-0 text-[12px] table-fixed mt-2.5">
                             <thead>
                               <tr>
-                                <th>Producto</th>
-                                <th>Unidad</th>
-                                <th>Pedida</th>
-                                <th>Recibida (Antes)</th>
-                                <th className="recepcion-col-recibir">A Recibir Ahora</th>
+                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Producto</th>
+                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Unidad</th>
+                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Pedida</th>
+                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Recibida (Antes)</th>
+                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-center font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap w-[160px] max-[1024px]:w-[148px]">A Recibir Ahora</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -751,16 +769,16 @@ export default function Recepcion() {
                                 const step = stepDeUnidad(unidad);
                                 return (
                                   <tr key={String(it.id)}>
-                                    <td>{it.producto_nombre}</td>
-                                    <td style={{ whiteSpace: "nowrap" }}>{unidad}</td>
-                                    <td>{it.cantidad}</td>
-                                    <td>{it.cantidad_recibida || 0}</td>
-                                    <td className="recepcion-col-recibir">
+                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.producto_nombre}</td>
+                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)] whitespace-nowrap">{unidad}</td>
+                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.cantidad}</td>
+                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.cantidad_recibida || 0}</td>
+                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)] text-center">
                                       {!completado ? (
-                                        <div className="recepcion-stepper-inline">
+                                        <div className="inline-flex items-center gap-2 justify-center w-full">
                                           <button
                                             type="button"
-                                            className="recepcion-stepper-btn"
+                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                                             aria-label={`Reducir cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
                                               actualizarCantidadVerificada(
@@ -785,12 +803,12 @@ export default function Recepcion() {
                                                 maxRecibir
                                               )
                                             }
-                                            className="recepcion-stepper-input"
+                                            className="w-[74px] min-h-11 py-2 px-2.5 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-surface)] text-center font-semibold [appearance:textfield]"
                                             inputMode="numeric"
                                           />
                                           <button
                                             type="button"
-                                            className="recepcion-stepper-btn"
+                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
                                             aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
                                             title="Usar lectura de báscula"
                                             onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
@@ -800,7 +818,7 @@ export default function Recepcion() {
                                           </button>
                                           <button
                                             type="button"
-                                            className="recepcion-stepper-btn"
+                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                                             aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
                                               actualizarCantidadVerificada(
@@ -826,9 +844,9 @@ export default function Recepcion() {
                       </div>
 
                       {!completado && (
-                        <div style={{ textAlign: "right", marginTop: 15 }}>
+                        <div className="text-right mt-[15px]">
                           <button
-                            className="btn-accion-recepcion"
+                            className="min-h-11 px-4 py-2.5 border-0 rounded-[10px] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white font-semibold inline-flex items-center gap-2 cursor-pointer shadow-[0_4px_12px_rgba(179,49,49,0.24)] transition-[transform,filter,box-shadow] duration-150 hover:-translate-y-px hover:brightness-105 hover:shadow-[0_6px_16px_rgba(179,49,49,0.3)] active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                             type="button"
                             onClick={() =>
                               verificarPedidoLocal(Number(ped.id), items, ped.proveedor_nombre)
@@ -846,8 +864,8 @@ export default function Recepcion() {
             )}
             </div>
 
-            <div className="recepcion-drawer-footer">
-              <button className="recepcion-btn-modal recepcion-btn-modal-cancelar" onClick={cerrarDrawerPedidos}>
+            <div className="mt-5 pt-[18px] pb-2 border-t border-[var(--color-border-default)] bg-[var(--color-bg-surface)]">
+              <button className="w-full min-h-12 px-3 py-3 rounded-lg font-semibold cursor-pointer border-0 bg-[var(--color-border-default)] text-[var(--color-text-muted)]" onClick={cerrarDrawerPedidos}>
                 Cerrar
               </button>
             </div>
@@ -856,58 +874,65 @@ export default function Recepcion() {
         document.body
       )}
       {/* Panel recepción actual */}
-      <div className="panel-recepcion">
-        <div className="header-panel-recepcion">
-          <h3 className="titulo-seccion">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5 max-[1024px]:p-[18px]">
+        <div className="flex items-center justify-between gap-3 mb-5 flex-wrap max-[1024px]:items-start">
+          <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
             <i className="fa-solid fa-clipboard-check" /> Recepción Actual
           </h3>
 
-          <div className="info-proveedor">
-            <span className="label-proveedor">Proveedor:</span>
-            <span className="nombre-proveedor">{nombreProveedorActual}</span>
+          <div className="bg-[var(--color-bg-surface)] px-5 py-2.5 rounded-lg border border-[var(--color-border-default)]">
+            <span className="text-[#50596D] text-[13px] mr-2">Proveedor:</span>
+            <span className="text-[var(--color-text-strong)] font-semibold text-[15px]">{nombreProveedorActual}</span>
           </div>
         </div>
 
-        <div className="tabla-wrapper">
-          <table className="tabla-recepcion">
+        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[760px] border-separate border-spacing-0 bg-[var(--color-bg-surface)] max-[1024px]:min-w-0">
             <thead>
               <tr>
-                <th>Producto</th>
-                <th className="recepcion-col-proveedor">Proveedor</th>
-                <th>Stock Actual</th>
-                <th>Unidad</th>
-                <th>Cantidad Recibida</th>
-                <th>Nuevo Stock</th>
-                <th className="recepcion-col-precio">Precio</th>
-                <th>Subtotal</th>
-                <th>Acción</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Producto</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:hidden">Proveedor</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Stock Actual</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Unidad</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Cantidad Recibida</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Nuevo Stock</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:hidden">Precio</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Subtotal</th>
+                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Acción</th>
               </tr>
             </thead>
 
             <tbody>
               {!recepcion.length ? (
-                <tr className="fila-vacia">
+                <tr>
                   <td colSpan={9}>
-                    <div className="mensaje-vacio">
-                      <i className="fa-solid fa-inbox" />
-                      <p>No hay productos en la recepción actual</p>
-                      <small>Busca y selecciona productos para comenzar</small>
+                    <div className="py-[60px] px-5">
+                      <div className="flex flex-col items-center justify-center gap-2 text-center">
+                        <i className="fa-solid fa-inbox text-[48px] mb-1 opacity-55" />
+                        <p className="m-0 font-bold">No hay productos en la recepción actual</p>
+                        <small className="opacity-80">Busca y selecciona productos para comenzar</small>
+                      </div>
                     </div>
                   </td>
                 </tr>
               ) : (
                 recepcion.map((r, idx) => (
-                  <tr key={`${String(r.producto_id)}-${idx}`}>
-                    <td>{r.nombre}</td>
-                    <td className="recepcion-col-proveedor">{r.proveedor}</td>
-                    <td>{r.stock}</td>
-                    <td style={{ whiteSpace: "nowrap" }}>{String(r.unidad ?? "ud")}</td>
-                    <td>{r.cantidadRecibida}</td>
-                    <td className="stock-nuevo">{r.stock + r.cantidadRecibida}</td>
-                    <td className="recepcion-col-precio">{formatEUR(r.precio)}</td>
-                    <td>{formatEUR(r.precio * r.cantidadRecibida)}</td>
-                    <td>
-                      <button className="btn-eliminar-item" onClick={() => eliminarFila(idx)} title="Eliminar">
+                  <tr key={`${String(r.producto_id)}-${idx}`} className="hover:bg-[var(--color-bg-soft)]">
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.nombre}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:hidden">{r.proveedor}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.cantidadRecibida}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[#2f855a] font-bold text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:hidden">{formatEUR(r.precio)}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</td>
+                    <td className="p-[14px] border-b border-[var(--color-border-default)] max-[1024px]:py-3 max-[1024px]:px-2">
+                      <button
+                        className="bg-[#fff5f5] text-[#e53e3e] border-0 w-9 h-9 rounded-lg cursor-pointer transition-[transform,background] duration-200 inline-flex items-center justify-center hover:bg-[#fed7d7] hover:scale-110 max-[1024px]:w-11 max-[1024px]:h-11"
+                        onClick={() => eliminarFila(idx)}
+                        title="Eliminar"
+                        type="button"
+                      >
                         <i className="fa-solid fa-trash" />
                       </button>
                     </td>
@@ -918,11 +943,11 @@ export default function Recepcion() {
 
             {!!recepcion.length && (
               <tfoot>
-                <tr className="fila-total">
+                <tr className="bg-[var(--color-bg-surface)] text-[16px]">
                   <td colSpan={6}>
                     <strong>TOTAL DE LA RECEPCIÓN</strong>
                   </td>
-                  <td className="total-valor">{formatEUR(totalRecepcion)}</td>
+                  <td className="text-[var(--color-brand-500)] text-[20px] font-bold">{formatEUR(totalRecepcion)}</td>
                   <td />
                 </tr>
               </tfoot>
@@ -932,13 +957,13 @@ export default function Recepcion() {
       </div>
 
       {/* Observaciones + acciones */}
-      <div className="panel-acciones">
-        <div className="campo-observaciones">
-          <label className="label-observaciones">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+        <div className="mb-5">
+          <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]">
             <i className="fa-solid fa-note-sticky" /> Observaciones / Notas
           </label>
           <textarea
-            className="textarea-observaciones"
+            className="w-full py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[14px] resize-y bg-[var(--color-bg-surface)] transition-[border-color,background] duration-200 focus:border-[var(--color-brand-500)] focus:outline-none"
             placeholder="Añade notas sobre esta recepción (opcional)..."
             rows={3}
             value={obs}
@@ -946,13 +971,21 @@ export default function Recepcion() {
           />
         </div>
 
-        <div className="botones-finales">
+        <div className="flex justify-end gap-[15px] max-[768px]:flex-col">
           {!!recepcion.length && (
             <>
-              <button className="btn-accion btn-cancelar" onClick={() => setRecepcion([])}>
+              <button
+                className="px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer transition-[transform,background,border-color] duration-200 inline-flex items-center gap-2.5 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:-translate-y-0.5 max-[768px]:w-full max-[768px]:justify-center"
+                onClick={() => setRecepcion([])}
+                type="button"
+              >
                 <i className="fa-solid fa-xmark" /> Cancelar Recepción
               </button>
-              <button className="btn-accion btn-guardar-recepcion" onClick={confirmarRecepcionManual}>
+              <button
+                className="px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2.5 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,#68d391_0%,#48bb78_100%)] hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
+                onClick={confirmarRecepcionManual}
+                type="button"
+              >
                 <i className="fa-solid fa-check-circle" /> CONFIRMAR RECEPCIÓN
               </button>
             </>
@@ -962,16 +995,16 @@ export default function Recepcion() {
 
       {/* Modal Cantidad (usando Portal) */}
       {modalCantidadOpen && createPortal(
-        <div className="modal-overlay-recepcion active">
-          <div className="recepcion-modal-contenido">
-            <h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] p-4">
+          <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[400px]">
+            <h3 className="m-0 mb-[15px] text-[var(--color-text-strong)] flex items-center gap-2.5">
               <i className="fa-solid fa-box-open" /> Cantidad Recibida
             </h3>
-            <p className="recepcion-modal-producto-nombre">{productoSel?.nombre ?? ""}</p>
+            <p className="text-[#50596D] text-[14px] mb-5">{productoSel?.nombre ?? ""}</p>
 
-            <div className="recepcion-modal-input-group">
-              <label>Cantidad:</label>
-              <div className="recepcion-stepper-modal">
+            <div className="mb-[25px]">
+              <label className="block text-[var(--color-text-muted)] font-semibold mb-2 text-[14px]">Cantidad:</label>
+              <div className="inline-flex items-center gap-2">
                 {(() => {
                   const unidad = normalizarUnidad(productoSel?.unidadMedida);
                   const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
@@ -979,7 +1012,7 @@ export default function Recepcion() {
                   return (
                 <button
                   type="button"
-                  className="recepcion-stepper-btn"
+                  className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                   aria-label="Reducir cantidad"
                   onClick={() => setCantidadSel((prev) => Math.max(min, Number(prev || min) - step))}
                 >
@@ -989,7 +1022,7 @@ export default function Recepcion() {
                 })()}
                 <input
                   type="number"
-                  className="recepcion-modal-input-cantidad"
+                  className="w-[84px] min-h-11 py-3 px-3 border-2 border-[var(--color-border-default)] rounded-lg text-[18px] font-semibold text-center [appearance:textfield]"
                   min={(() => {
                     const unidad = normalizarUnidad(productoSel?.unidadMedida);
                     const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
@@ -1025,7 +1058,7 @@ export default function Recepcion() {
                 />
                 <button
                   type="button"
-                  className="recepcion-stepper-btn"
+                  className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   aria-label="Usar lectura de báscula"
                   onClick={() => {
                     if (!productoSel) return;
@@ -1042,7 +1075,7 @@ export default function Recepcion() {
                 </button>
                 <button
                   type="button"
-                  className="recepcion-stepper-btn"
+                  className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                   aria-label="Aumentar cantidad"
                   onClick={() => {
                     const unidad = normalizarUnidad(productoSel?.unidadMedida);
@@ -1057,17 +1090,17 @@ export default function Recepcion() {
                   +
                 </button>
               </div>
-              <div style={{ marginTop: 8, fontSize: 12, color: "#718096" }}>
+              <div className="mt-2 text-[12px] text-[#718096]">
                 Unidad: <strong>{normalizarUnidad(productoSel?.unidadMedida)}</strong>
               </div>
             </div>
 
-            <div className="recepcion-modal-botones">
-              <button className="recepcion-btn-modal recepcion-btn-modal-cancelar" onClick={cerrarModalCantidad}>
+            <div className="flex gap-3">
+              <button className="flex-1 py-3 border-0 rounded-lg font-semibold cursor-pointer bg-[var(--color-border-default)] text-[var(--color-text-muted)]" onClick={cerrarModalCantidad} type="button">
                 Cancelar
               </button>
               <button
-                className="recepcion-btn-modal recepcion-btn-modal-confirmar"
+                className="flex-1 py-3 border-0 rounded-lg font-semibold cursor-pointer bg-[var(--color-brand-500)] text-white hover:bg-[#9c2b2b] transition-colors duration-150"
                 onClick={() => {
                   if (!productoSel) return;
                   const unidad = normalizarUnidad(productoSel.unidadMedida);
@@ -1077,6 +1110,7 @@ export default function Recepcion() {
                   agregarProducto(productoSel, v);
                   cerrarModalCantidad();
                 }}
+                type="button"
               >
                 Añadir
               </button>

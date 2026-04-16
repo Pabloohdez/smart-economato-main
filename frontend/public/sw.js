@@ -1,6 +1,13 @@
 const CACHE_NAME = "smart-economato-v3";
 const APP_SHELL = ["/", "/index.html", "/offline.html"];
 
+function fallbackResponse(status = 503, text = "Offline") {
+  return new Response(text, {
+    status,
+    headers: { "Content-Type": "text/plain; charset=utf-8" },
+  });
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()),
@@ -31,7 +38,12 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           return response;
         })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("/offline.html"))),
+        .catch(() =>
+          caches
+            .match(request)
+            .then((cached) => cached || caches.match("/offline.html"))
+            .then((res) => res || fallbackResponse()),
+        ),
     );
     return;
   }
@@ -44,7 +56,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           return response;
         })
-        .catch(() => caches.match(request)),
+        .catch(() => caches.match(request).then((res) => res || fallbackResponse(504, "API offline"))),
     );
     return;
   }
@@ -55,7 +67,9 @@ self.addEventListener("fetch", (event) => {
         return cached;
       }
 
-      return fetch(request).catch(() => caches.match("/offline.html"));
+      return fetch(request)
+        .catch(() => caches.match("/offline.html"))
+        .then((res) => res || fallbackResponse());
     }),
   );
 });

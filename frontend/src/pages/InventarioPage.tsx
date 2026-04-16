@@ -9,7 +9,6 @@ import Alert from "../components/ui/Alert";
 import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { queryKeys } from "../lib/queryClient";
-import "../styles/inventario.css";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
   if (!raw) return null;
@@ -149,22 +148,27 @@ export default function InventarioPage() {
   return (
     <div>
       {/* Header como el compi */}
-      <div className="header-inventario">
-        <div className="header-inventario-copy">
-          <h1 className="titulo-inventario">
-            <i className="fa-solid fa-boxes-stacked"></i> INVENTARIO
+      <div className="flex items-center justify-between gap-4 flex-wrap mb-[var(--space-7)] pb-[var(--space-5)] border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
+        <div>
+          <h1 className="m-0 mb-[var(--space-2)] flex items-center gap-[var(--space-3)] text-[28px] font-bold text-[var(--color-text-strong)]">
+            <i className="fa-solid fa-boxes-stacked text-[var(--color-brand-500)]" />
+            INVENTARIO
           </h1>
-          <p className="subtitulo">Gestiona y consulta el stock de productos</p>
+          <p className="m-0 text-[14px] text-[var(--color-text-muted)]">Gestiona y consulta el stock de productos</p>
         </div>
 
-        <div className="header-inventario-actions">
-          <div className="info-fecha info-fecha--inventario">
+        <div className="flex items-center gap-[14px] max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
+          <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[12px] text-[var(--color-text-muted)] font-bold inline-flex items-center gap-2.5 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:justify-center">
             <i className="fa-solid fa-calendar" />
             <span>{hoyES()}</span>
           </div>
 
-          <button className="btn-ingresar-header" type="button" onClick={() => nav("/inventario/nuevo")}>
-            <i className="fa-solid fa-plus"></i> Ingresar Producto
+          <button
+            className="min-h-[44px] px-[22px] py-3 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[var(--radius-sm)] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
+            type="button"
+            onClick={() => nav("/inventario/nuevo")}
+          >
+            <i className="fa-solid fa-plus" /> Ingresar Producto
           </button>
         </div>
       </div>

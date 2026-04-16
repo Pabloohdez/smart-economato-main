@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import "../styles/proveedores.css";
 import Spinner from "../components/ui/Spinner";
 
 import { showNotification, showConfirm } from "../utils/notifications";
@@ -62,6 +61,7 @@ export default function ProveedoresPage() {
 
   const proveedores = proveedoresQuery.data ?? [];
   const loading = proveedoresQuery.isLoading;
+  const guardandoProveedor = saveProveedorMutation.isPending;
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -123,6 +123,8 @@ export default function ProveedoresPage() {
   async function guardarProveedor(e: React.FormEvent) {
     e.preventDefault();
 
+    if (guardandoProveedor) return;
+
     if (!form.nombre.trim()) {
       showNotification("El nombre del proveedor es obligatorio", "warning");
       return;
@@ -183,48 +185,54 @@ export default function ProveedoresPage() {
 
   return (
     <div>
-      <div className="content-header content-header--split">
+      <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
         <div>
-          <h2>
-            <i className="fa-solid fa-truck-field"></i>
+          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
+            <i className="fa-solid fa-truck-field text-[var(--color-brand-500)]"></i>
             Gestión de Proveedores
           </h2>
-          <p className="content-subtitle">Directorio operativo de contactos, teléfonos y correos de suministro.</p>
+          <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
+            Directorio operativo de contactos, teléfonos y correos de suministro.
+          </p>
         </div>
 
-        <div className="header-actions">
-          <div className="header-date-chip">
-            <i className="fa-solid fa-calendar"></i>
+        <div className="flex items-center gap-[15px] flex-wrap max-[900px]:w-full">
+          <div className="inline-flex items-center gap-2.5 px-4 py-3 rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[#50596D] font-semibold max-[900px]:w-full max-[900px]:justify-center">
+            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
             <span>{hoyES()}</span>
           </div>
 
-          <button className="btn-primary" onClick={abrirModal}>
+          <button
+            className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] inline-flex items-center gap-2 max-[900px]:w-full max-[900px]:justify-center"
+            onClick={abrirModal}
+            type="button"
+          >
             <i className="fa-solid fa-plus"></i>
             Nuevo Proveedor
           </button>
         </div>
       </div>
 
-      <section className="proveedores-kpi-grid" aria-label="Resumen de proveedores">
-        <article className="proveedores-kpi-card">
-          <span>Proveedores Totales</span>
-          <strong>{proveedoresResumen.total}</strong>
+      <section className="grid grid-cols-3 gap-3 mb-[14px] max-[900px]:grid-cols-1" aria-label="Resumen de proveedores">
+        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[#50596D] text-[13px] font-semibold">Proveedores Totales</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.total}</strong>
         </article>
-        <article className="proveedores-kpi-card">
-          <span>Con Teléfono</span>
-          <strong>{proveedoresResumen.conTelefono}</strong>
+        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[#50596D] text-[13px] font-semibold">Con Teléfono</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.conTelefono}</strong>
         </article>
-        <article className="proveedores-kpi-card proveedores-kpi-card--accent">
-          <span>Con Email</span>
-          <strong>{proveedoresResumen.conEmail}</strong>
+        <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <span className="text-[#50596D] text-[13px] font-semibold">Con Email</span>
+          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.conEmail}</strong>
         </article>
       </section>
 
-      <div className="card">
+      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)]">
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+            <div className="flex gap-2.5 items-center mb-3 flex-wrap">
               <input
                 type="text"
                 value={q}
@@ -234,40 +242,40 @@ export default function ProveedoresPage() {
                 }}
                 placeholder="Buscar proveedor..."
                 aria-label="Buscar proveedor"
-                style={{ maxWidth: 360 }}
+                className="w-full max-w-[360px] py-2.5 px-3.5 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
               />
             </div>
 
-            <div className="table-container">
-              <table>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full border-separate border-spacing-0 text-[14px]">
                 <thead>
                   <tr>
-                    <th>Nombre</th>
-                    <th>Contacto</th>
-                    <th>Teléfono</th>
-                    <th>Email</th>
-                    <th style={{ textAlign: "right" }}>Acciones</th>
+                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Nombre</th>
+                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Contacto</th>
+                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Teléfono</th>
+                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Email</th>
+                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-right whitespace-nowrap sticky top-0 z-[1]">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visible.length === 0 ? (
                     <tr>
-                      <td colSpan={5} style={{ textAlign: "center", padding: 20, color: "#718096" }}>
+                      <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
                         No hay proveedores para mostrar.
                       </td>
                     </tr>
                   ) : (
                     visible.map((p) => (
-                      <tr key={String(p.id)}>
-                        <td style={{ fontWeight: 700 }}>{p.nombre}</td>
-                        <td>{p.contacto || "-"}</td>
-                        <td>{p.telefono || "-"}</td>
-                        <td>{p.email || "-"}</td>
-                        <td style={{ textAlign: "right" }}>
-                          <div style={{ display: "inline-flex", gap: 8 }}>
+                      <tr key={String(p.id)} className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]">
+                        <td className="px-4 py-3 border-b border-[var(--color-border-default)] font-bold">{p.nombre}</td>
+                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.contacto || "-"}</td>
+                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.telefono || "-"}</td>
+                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.email || "-"}</td>
+                        <td className="px-4 py-3 border-b border-[var(--color-border-default)] text-right">
+                          <div className="inline-flex gap-2">
                             <button
                               type="button"
-                              className="btn-secondary"
+                              className="bg-[#ebf8ff] text-[#3182ce] border-0 w-9 h-9 rounded-lg cursor-pointer inline-flex items-center justify-center transition-[transform,background,color] duration-150 hover:bg-[#bee3f8] hover:text-[#2c5282] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-[#3182ce] focus-visible:outline-offset-2"
                               title="Editar"
                               onClick={() => {
                                 setForm({
@@ -284,7 +292,7 @@ export default function ProveedoresPage() {
                             </button>
                             <button
                               type="button"
-                              className="btn-warning"
+                              className="bg-[#fff5f5] text-[#c53030] border border-[#fc8181] w-9 h-9 rounded-lg cursor-pointer inline-flex items-center justify-center transition-[transform,background,color,border-color,box-shadow] duration-150 hover:bg-[#fed7d7] hover:text-[#9b2c2c] hover:border-[#f56565] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(220,38,38,0.1)]"
                               title="Eliminar"
                               onClick={() => eliminarProveedor(String(p.id))}
                             >
@@ -313,28 +321,35 @@ export default function ProveedoresPage() {
       </div>
 
       {modalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <button type="button" className="close close--icon" onClick={cerrarModal} aria-label="Cerrar">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4">
+          <div className="relative bg-[var(--color-bg-surface)] p-[30px] rounded-2xl w-[90%] max-w-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+            <button
+              type="button"
+              className="absolute top-3.5 right-3.5 w-[42px] h-[42px] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] inline-flex items-center justify-center text-[#50596D] shadow-[var(--shadow-sm)] hover:text-[var(--color-brand-500)] hover:bg-[var(--color-bg-soft)]"
+              onClick={cerrarModal}
+              aria-label="Cerrar"
+            >
               <i className="fa-solid fa-xmark" />
             </button>
 
-            <h2>{form.id ? "Editar Proveedor" : "Nuevo Proveedor"}</h2>
+            <h2 className="m-0 mb-5 text-[20px] font-bold text-[var(--color-text-strong)]">
+              {form.id ? "Editar Proveedor" : "Nuevo Proveedor"}
+            </h2>
 
             <form onSubmit={guardarProveedor}>
-              <div className="form-group">
-                <label>Nombre Empresa</label>
+              <div className="mb-5">
+                <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Nombre Empresa</label>
                 <input
-                  className="form-control"
+                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 />
               </div>
 
-              <div className="form-group">
-                <label>Persona de Contacto</label>
+              <div className="mb-5">
+                <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Persona de Contacto</label>
                 <input
-                  className="form-control"
+                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
                   value={form.contacto}
                   onChange={(e) =>
                     setForm({ ...form, contacto: e.target.value })
@@ -342,10 +357,10 @@ export default function ProveedoresPage() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Teléfono</label>
+              <div className="mb-5">
+                <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Teléfono</label>
                 <input
-                  className="form-control"
+                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
                   value={form.telefono}
                   onChange={(e) =>
                     setForm({ ...form, telefono: e.target.value })
@@ -353,19 +368,29 @@ export default function ProveedoresPage() {
                 />
               </div>
 
-              <div className="form-group">
-                <label>Email</label>
+              <div className="mb-5">
+                <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Email</label>
                 <input
                   type="email"
-                  className="form-control"
+                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
 
-              <div className="form-actions">
-                <button className="btn-primary" type="submit">
-                  Guardar Proveedor
+              <div className="text-right mt-6">
+                <button
+                  className="bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  type="submit"
+                  disabled={guardandoProveedor}
+                >
+                  {guardandoProveedor ? (
+                    <>
+                      <i className="fa-solid fa-spinner fa-spin" /> Guardando...
+                    </>
+                  ) : (
+                    "Guardar Proveedor"
+                  )}
                 </button>
               </div>
             </form>

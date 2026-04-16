@@ -26,7 +26,7 @@ export type RegistrarBajaPayload = {
   cantidad: number;
   tipoBaja: string;
   motivo: string;
-  usuarioId: string;
+  usuarioId?: string;
 };
 
 export type CrearPedidoPayload = {
@@ -79,10 +79,13 @@ export async function crearProductosBatch(items: CrearProductoPayload[]): Promis
 }
 
 export async function registrarBaja(payload: RegistrarBajaPayload): Promise<unknown> {
+  // El backend rechaza campos extra como `usuarioId` en /bajas.
+  // Aceptamos el tipo por compatibilidad, pero lo excluimos del body.
+  const { usuarioId: _usuarioId, ...body } = payload;
   return apiFetch("/bajas", {
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
     offlineQueue: {
       enabled: true,
       queuedMessage: "La baja queda pendiente y se sincronizará cuando vuelva la red.",

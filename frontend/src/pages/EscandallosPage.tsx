@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
-import "../styles/escandallos.css";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import { showConfirm, showNotification } from "../utils/notifications";
@@ -273,6 +272,7 @@ export default function EscandallosPage() {
       pvp: Number.parseFloat(pvpPlato || "0") || 0,
       elaboracion: elaboracionPlato,
       items: [...ingredientesReceta],
+      coste_total: costeTotal,
       autor: String(user?.nombre ?? user?.username ?? "Admin"),
     };
 
@@ -321,15 +321,15 @@ export default function EscandallosPage() {
   }
 
   function classMargenTabla(margen: number) {
-    if (margen < 20) return "text-danger";
-    if (margen < 50) return "text-warning";
-    return "text-success";
+    if (margen < 20) return "text-[#e53e3e] font-bold";
+    if (margen < 50) return "text-[#dd6b20] font-bold";
+    return "text-[#38a169] font-bold";
   }
 
   function classMargenResumen(margen: number) {
-    if (margen < 20) return "resumen-value text-danger";
-    if (margen < 50) return "resumen-value text-warning";
-    return "resumen-value text-success";
+    if (margen < 20) return "text-[#e53e3e]";
+    if (margen < 50) return "text-[#dd6b20]";
+    return "text-[#38a169]";
   }
 
   function classMargenBadge(margen: number) {
@@ -347,36 +347,36 @@ export default function EscandallosPage() {
   const detalleMargen = detallePvp > 0 ? ((detallePvp - detalleCoste) / detallePvp) * 100 : 0;
 
   return (
-    <div className="table-wrapper">
-      <div className="table-header">
-        <h1>
-          <i className="fa-solid fa-receipt" style={{ color: "var(--color-brand-500)", marginRight: 10 }} />
+    <div className="w-full mb-8">
+      <div className="mb-6 w-full">
+        <h1 className="m-0 mb-6 text-[28px] font-extrabold text-[var(--color-brand-500)] flex items-center gap-3">
+          <i className="fa-solid fa-receipt text-[var(--color-brand-500)]" />
           Escandallos y Recetas
         </h1>
 
-        <div className="escandallo-controls">
-          <div className="grupo-busqueda">
-            <label htmlFor="busquedaEscandallos" className="label-control">
+        <div className="bg-[var(--color-bg-surface)] px-[25px] py-5 rounded-2xl shadow-[0_8px_20px_rgba(0,0,0,0.04)] border border-black/5 mb-7 flex items-end gap-4 flex-wrap max-[768px]:flex-col max-[768px]:items-stretch">
+          <div className="flex flex-col gap-1.5 min-w-[200px] flex-grow">
+            <label htmlFor="busquedaEscandallos" className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
               Buscar Receta
             </label>
             <input
               type="text"
               id="busquedaEscandallos"
-              className="input-control"
+              className="h-11 w-full px-4 border border-[var(--color-border-default)] rounded-[10px] text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
               placeholder="Buscar por nombre..."
               value={busquedaReceta}
               onChange={(e) => setBusquedaReceta(e.target.value)}
             />
           </div>
 
-          <div className="grupo-busqueda">
-            <label htmlFor="busquedaIngrediente" className="label-control">
+          <div className="flex flex-col gap-1.5 min-w-[200px] flex-grow">
+            <label htmlFor="busquedaIngrediente" className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
               Buscar por Ingrediente
             </label>
             <input
               type="text"
               id="busquedaIngrediente"
-              className="input-control"
+              className="h-11 w-full px-4 border border-[var(--color-border-default)] rounded-[10px] text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
               placeholder="Por ingrediente..."
               value={busquedaIngrediente}
               onChange={(e) => setBusquedaIngrediente(e.target.value)}
@@ -385,7 +385,7 @@ export default function EscandallosPage() {
 
           <button
             type="button"
-            className="btn-accion btn-mostrar-todo"
+            className="h-11 px-6 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2 shadow-[0_4px_6px_rgba(0,0,0,0.1)] whitespace-nowrap bg-[var(--color-text-strong)] text-white transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:bg-[#1f2937]"
             onClick={mostrarTodo}
           >
             <i className="fa-solid fa-sync"></i> Mostrar Todo
@@ -393,7 +393,7 @@ export default function EscandallosPage() {
 
           <button
             type="button"
-            className="btn-accion btn-nuevo"
+            className="h-11 px-6 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(56,161,105,0.3)] whitespace-nowrap bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:brightness-105 max-[768px]:w-full"
             onClick={abrirNuevaReceta}
           >
             <i className="fa-solid fa-plus"></i> Nueva Receta
@@ -404,20 +404,20 @@ export default function EscandallosPage() {
       {(loadingProductos || loadingEscandallos) && <Spinner label="Cargando datos..." />}
       {err && <Alert type="error">{err}</Alert>}
 
-      <div className="table-container">
-        <table>
+      <div className="bg-[var(--color-bg-surface)] rounded-xl overflow-x-auto shadow-[var(--shadow-sm)] border border-black/5 w-full">
+        <table className="w-full border-separate border-spacing-0">
           <caption className="sr-only">
             Lista de escandallos y recetas disponibles
           </caption>
           <thead>
             <tr>
-              <th>Nombre</th>
-              <th>Autor</th>
-              <th>Ingredientes</th>
-              <th>Coste Total</th>
-              <th>PVP</th>
-              <th>Beneficio %</th>
-                    <th>Acciones</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Nombre</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Autor</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Ingredientes</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Coste Total</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">PVP</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Beneficio %</th>
+              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-center font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)] uppercase tracking-wide">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -425,7 +425,7 @@ export default function EscandallosPage() {
               <tr>
                 <td
                   colSpan={7}
-                  style={{ textAlign: "center", padding: "20px" }}
+                  className="text-center p-5 text-[var(--color-text-muted)]"
                 >
                   No se encontraron recetas.
                 </td>
@@ -436,25 +436,25 @@ export default function EscandallosPage() {
                   esc.pvp > 0 ? ((esc.pvp - esc.coste) / esc.pvp) * 100 : 0;
 
                 return (
-                  <tr key={esc.id}>
+                  <tr key={esc.id} className="hover:[&>td]:bg-[#fafbfc]">
                     <td
-                      className="font-bold text-primary clickable-name"
+                      className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] font-bold text-[var(--color-brand-500)] cursor-pointer underline decoration-transparent hover:decoration-[var(--color-brand-500)] hover:text-[#902424]"
                       onClick={() => abrirVerReceta(esc)}
                     >
                       {esc.nombre}
                     </td>
-                    <td>{esc.autor || "Admin"}</td>
-                    <td>{esc.items?.length ?? 0} ingredientes</td>
-                    <td>{esc.coste.toFixed(2)} €</td>
-                    <td>{esc.pvp.toFixed(2)} €</td>
-                    <td className={`font-bold ${classMargenTabla(margen)}`}>
+                    <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{esc.autor || "Admin"}</td>
+                    <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{esc.items?.length ?? 0} ingredientes</td>
+                    <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{esc.coste.toFixed(2)} €</td>
+                    <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{esc.pvp.toFixed(2)} €</td>
+                    <td className={`px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] ${classMargenTabla(margen)}`}>
                       {margen.toFixed(1)}%
                     </td>
-                    <td className="action-cell">
-                      <div className="action-buttons">
+                    <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-center">
+                      <div className="inline-flex gap-2">
                         <button
                           type="button"
-                          className="btn-sm btn-secondary"
+                          className="w-8 h-8 rounded-md inline-flex items-center justify-center border-0 cursor-pointer transition-colors bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)]"
                           title="Ver detalle"
                           onClick={() => abrirVerReceta(esc)}
                         >
@@ -462,7 +462,7 @@ export default function EscandallosPage() {
                         </button>
                         <button
                           type="button"
-                          className="btn-sm btn-primary"
+                          className="w-8 h-8 rounded-md inline-flex items-center justify-center border-0 cursor-pointer transition-colors bg-[#ebf8ff] text-[#3182ce] hover:bg-[#bee3f8] hover:text-[#2c5282]"
                           title="Editar"
                           onClick={() => abrirEditarReceta(esc)}
                         >
@@ -470,7 +470,7 @@ export default function EscandallosPage() {
                         </button>
                         <button
                           type="button"
-                          className="btn-sm btn-danger"
+                          className="w-8 h-8 rounded-md inline-flex items-center justify-center border border-[#fca5a5] cursor-pointer transition-[transform,box-shadow,background,border-color,color] duration-150 bg-[#fef2f2] text-[#991b1b] hover:bg-[#fee2e2] hover:border-[#f87171] hover:text-[#7f1d1d] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(220,38,38,0.1)]"
                           title="Eliminar"
                           onClick={() => eliminarEscandallo(esc.id)}
                         >
@@ -632,18 +632,18 @@ export default function EscandallosPage() {
       )}
 
       {modalOpen && (
-        <div className="modal-overlay-escandallos modal-open-escandallos">
-          <div className="modal-content">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
+          <div className="relative max-h-[90vh] w-[95%] max-w-[900px] overflow-y-auto rounded-2xl bg-[var(--color-bg-surface)] p-[30px] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10">
             <button
               type="button"
-              className="close-modal"
+              className="absolute right-6 top-5 text-[28px] leading-none text-[#a0aec0] hover:text-[#e53e3e] transition-colors bg-transparent border-0 cursor-pointer"
               aria-label="Cerrar ventana"
               onClick={cerrarModal}
             >
               &times;
             </button>
 
-            <h2 className="modal-title">
+            <h2 className="m-0 mt-0 text-[1.5rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-5 mb-7">
               {modoLectura
                 ? "Ver Receta"
                 : editEscandalloId
@@ -652,9 +652,9 @@ export default function EscandallosPage() {
             </h2>
 
             <form onSubmit={guardarEscandallo}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="nombrePlato" className="label-form">
+              <div className="grid grid-cols-2 gap-6 mb-7 max-[768px]:grid-cols-1">
+                <div className="flex flex-col gap-2 mb-4">
+                  <label htmlFor="nombrePlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
                     <i className="fa-solid fa-utensils"></i>
                     Nombre del Plato
                   </label>
@@ -662,7 +662,7 @@ export default function EscandallosPage() {
                     type="text"
                     id="nombrePlato"
                     required
-                    className="input-form"
+                    className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none disabled:opacity-70"
                     placeholder="Ej: Tortilla Española"
                     value={nombrePlato}
                     disabled={modoLectura}
@@ -670,8 +670,8 @@ export default function EscandallosPage() {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="pvpPlato" className="label-form">
+                <div className="flex flex-col gap-2 mb-4">
+                  <label htmlFor="pvpPlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
                     <i className="fa-solid fa-euro-sign"></i>
                     Precio Venta (PVP)
                   </label>
@@ -679,22 +679,22 @@ export default function EscandallosPage() {
                     type="number"
                     id="pvpPlato"
                     step="0.01"
-                    className="input-form"
+                    className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none disabled:opacity-70"
                     value={pvpPlato}
                     disabled={modoLectura}
                     onChange={(e) => setPvpPlato(e.target.value)}
                   />
                 </div>
 
-                <div className="form-group full-width">
-                  <label htmlFor="elaboracionPlato" className="label-form">
+                <div className="col-span-2 flex flex-col gap-2 mb-1 max-[768px]:col-span-1">
+                  <label htmlFor="elaboracionPlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
                     <i className="fa-solid fa-list-ol"></i>
                     Pasos de Elaboración
                   </label>
                   <textarea
                     id="elaboracionPlato"
                     rows={4}
-                    className="textarea-form"
+                    className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none disabled:opacity-70 resize-y min-h-[100px]"
                     placeholder="Describe los pasos para preparar la receta..."
                     value={elaboracionPlato}
                     disabled={modoLectura}
@@ -703,18 +703,18 @@ export default function EscandallosPage() {
                 </div>
               </div>
 
-              <div className="calculadora-panel">
-                <h3 className="calculadora-title">
+              <div className="border border-[var(--color-border-default)] p-6 rounded-xl mb-7 bg-[var(--color-bg-soft)]">
+                <h3 className="m-0 mb-5 text-[1.1rem] text-[var(--color-text-strong)] flex items-center gap-2.5">
                   <i className="fa-solid fa-basket-shopping"></i>
                   Ingredientes
                 </h3>
 
                 {!modoLectura && (
-                  <div className="calculadora-controls">
-                    <div className="control-group-grow">
+                  <div className="flex gap-4 mb-5 items-end max-[768px]:flex-col max-[768px]:items-stretch">
+                    <div className="flex-1 flex flex-col gap-2">
                       <label
                         htmlFor="busquedaProductoIngrediente"
-                        className="label-control"
+                        className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide"
                       >
                         Producto
                       </label>
@@ -722,7 +722,7 @@ export default function EscandallosPage() {
                         <input
                           type="text"
                           id="busquedaProductoIngrediente"
-                          className="input-form"
+                          className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                           placeholder="Escribe al menos 2 letras..."
                           value={busquedaProductoIngrediente}
                           onChange={(e) => {
@@ -790,10 +790,10 @@ export default function EscandallosPage() {
                       </div>
                     </div>
 
-                    <div className="control-group-fixed">
+                    <div className="w-[100px] flex flex-col gap-2">
                       <label
                         htmlFor="cantidadIngrediente"
-                        className="label-control"
+                        className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide"
                       >
                         Cant.
                       </label>
@@ -802,7 +802,7 @@ export default function EscandallosPage() {
                         id="cantidadIngrediente"
                         step="0.001"
                         placeholder="0"
-                        className="input-form"
+                        className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                         value={cantidadIngrediente}
                         onChange={(e) => setCantidadIngrediente(e.target.value)}
                       />
@@ -810,7 +810,7 @@ export default function EscandallosPage() {
 
                     <button
                       type="button"
-                      className="btn-add-ingredient"
+                      className="h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
                       title="Añadir ingrediente"
                       onClick={agregarIngrediente}
                     >
@@ -819,15 +819,15 @@ export default function EscandallosPage() {
                   </div>
                 )}
 
-                <div className="table-container-ing">
-                  <table className="table-ingredientes">
+                <div className="bg-[var(--color-bg-surface)] rounded-xl overflow-x-auto shadow-[var(--shadow-sm)] border border-black/5 w-full">
+                  <table className="w-full border-separate border-spacing-0 border border-[var(--color-border-default)]">
                     <thead>
                       <tr>
-                        <th>Producto</th>
-                        <th style={{ width: "80px" }}>Cant.</th>
-                        <th style={{ width: "80px" }}>Coste U.</th>
-                        <th style={{ width: "90px" }}>Total</th>
-                        <th style={{ width: "50px", textAlign: "center" }}>
+                        <th className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] p-3 text-left font-semibold text-[12px] uppercase tracking-wide">Producto</th>
+                        <th className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] p-3 text-left font-semibold text-[12px] uppercase tracking-wide w-20">Cant.</th>
+                        <th className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] p-3 text-left font-semibold text-[12px] uppercase tracking-wide w-20">Coste U.</th>
+                        <th className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] p-3 text-left font-semibold text-[12px] uppercase tracking-wide w-[90px]">Total</th>
+                        <th className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] p-3 text-center font-semibold text-[12px] uppercase tracking-wide w-[50px]">
                           Acciones
                         </th>
                       </tr>
@@ -835,7 +835,7 @@ export default function EscandallosPage() {
                     <tbody>
                       {ingredientesReceta.length === 0 ? (
                         <tr>
-                          <td colSpan={5} style={{ textAlign: "center" }}>
+                          <td colSpan={5} className="text-center p-5 text-[var(--color-text-muted)]">
                             No hay ingredientes añadidos.
                           </td>
                         </tr>
@@ -843,8 +843,8 @@ export default function EscandallosPage() {
                         ingredientesReceta.map((ing, index) => {
                           const total = ing.cantidad * ing.precio;
                           return (
-                            <tr key={`${ing.producto_id}-${index}`}>
-                              <td>{ing.nombre}</td>
+                            <tr key={`${ing.producto_id}-${index}`} className="hover:[&>td]:bg-[#fafbfc]">
+                              <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{ing.nombre}</td>
                               <td>
                                 {modoLectura ? (
                                   ing.cantidad
@@ -853,19 +853,19 @@ export default function EscandallosPage() {
                                     type="number"
                                     step="0.001"
                                     min="0.001"
-                                    className="input-form"
+                                    className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                                     value={String(ing.cantidad)}
                                     onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
                                   />
                                 )}
                               </td>
-                              <td>{ing.precio.toFixed(2)} €</td>
-                              <td>{total.toFixed(2)} €</td>
-                              <td className="action-cell">
+                              <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{ing.precio.toFixed(2)} €</td>
+                              <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{total.toFixed(2)} €</td>
+                              <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-center">
                                 {!modoLectura && (
                                   <button
                                     type="button"
-                                    className="btn-eliminar-item"
+                                    className="bg-[#fff5f5] text-[#e53e3e] border-0 w-[30px] h-[30px] rounded-md cursor-pointer inline-flex items-center justify-center transition-transform duration-150 hover:bg-[#fed7d7] hover:scale-110"
                                     onClick={() => eliminarIngrediente(index)}
                                   >
                                     <i className="fa-solid fa-trash"></i>
@@ -878,14 +878,14 @@ export default function EscandallosPage() {
                       )}
                     </tbody>
                     <tfoot>
-                      <tr className="tfoot-resumen">
-                        <td colSpan={3} className="tfoot-label">
+                      <tr className="bg-[var(--color-bg-soft)] font-bold">
+                        <td colSpan={3} className="text-right p-4 text-[var(--color-text-strong)]">
                           COSTE TOTAL:
                         </td>
-                        <td className="tfoot-total">
+                        <td className="px-4 py-3 text-[#c53030]">
                           {costeTotal.toFixed(2)} €
                         </td>
-                        <td></td>
+                        <td />
                       </tr>
                     </tfoot>
                   </table>
@@ -935,17 +935,20 @@ export default function EscandallosPage() {
                 </article>
               </div>
 
-              <div className="form-footer">
+              <div className="flex justify-end gap-4 pt-5 border-t border-t-[var(--color-border-default)]">
                 <button
                   type="button"
-                  className="btn-cancel"
+                  className="bg-[var(--color-border-default)] text-[var(--color-text-muted)] border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer transition-colors hover:text-[var(--color-text-strong)]"
                   onClick={cerrarModal}
                 >
                   Cancelar
                 </button>
 
                 {!modoLectura && (
-                  <button type="submit" className="btn-save">
+                  <button
+                    type="submit"
+                    className="border-0 px-9 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white hover:-translate-y-0.5 hover:brightness-105"
+                  >
                     <i className="fa-solid fa-save"></i> Guardar Receta
                   </button>
                 )}

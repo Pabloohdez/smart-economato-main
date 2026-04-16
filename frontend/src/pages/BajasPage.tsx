@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import "../styles/bajas.css";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
@@ -33,13 +32,13 @@ function formatFechaCortaES(iso: string) {
 
 function claseTipoBaja(tipo: string) {
   const map: Record<string, string> = {
-    Rotura: "tipo-rotura",
-    Caducado: "tipo-caducado",
-    Merma: "tipo-merma",
-    Ajuste: "tipo-ajuste",
-    Otro: "tipo-otro",
+    Rotura: "bg-[#fff5f5] text-[#c53030]",
+    Caducado: "bg-[#fffaf0] text-[#dd6b20]",
+    Merma: "bg-[#fefcbf] text-[#d69e2e]",
+    Ajuste: "bg-[#e6fffa] text-[#319795]",
+    Otro: "bg-[var(--color-border-default)] text-[var(--color-text-muted)]",
   };
-  return map[tipo] ?? "tipo-otro";
+  return map[tipo] ?? "bg-[var(--color-border-default)] text-[var(--color-text-muted)]";
 }
 
 function badgeCaducidad(fechaCaducidad?: string | null) {
@@ -49,9 +48,10 @@ function badgeCaducidad(fechaCaducidad?: string | null) {
   const cad = new Date(fechaCaducidad);
   const dias = Math.ceil((cad.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
 
-  if (dias <= 0) return { text: "CADUCADO", className: "badge-caducidad caducidad-urgente" };
-  if (dias <= 7) return { text: `${dias} días`, className: "badge-caducidad caducidad-urgente" };
-  if (dias <= 30) return { text: `${dias} días`, className: "badge-caducidad caducidad-proxima" };
+  const base = "inline-flex items-center px-3 py-1.5 rounded-lg text-[12px] font-semibold ml-2.5";
+  if (dias <= 0) return { text: "CADUCADO", className: `${base} bg-[#fff5f5] text-[#c53030]` };
+  if (dias <= 7) return { text: `${dias} días`, className: `${base} bg-[#fff5f5] text-[#c53030]` };
+  if (dias <= 30) return { text: `${dias} días`, className: `${base} bg-[#fffaf0] text-[#dd6b20]` };
 
   return null;
 }
@@ -422,64 +422,64 @@ export default function BajasPage() {
   return (
     <div>
       {/* HEADER */}
-      <div className="header-bajas">
+      <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
         <div>
-          <h1 className="titulo-bajas">
+          <h1 className="text-[#c53030] text-[28px] font-bold m-0 mb-2 flex items-center gap-3">
             <i className="fa-solid fa-circle-exclamation" /> GESTIÓN DE BAJAS
           </h1>
-          <p className="subtitulo">Registra roturas, caducados, mermas y ajustes de inventario</p>
+          <p className="text-[#50596D] text-[14px] m-0">Registra roturas, caducados, mermas y ajustes de inventario</p>
         </div>
-        <div className="info-fecha">
+        <div className="bg-[var(--color-bg-soft)] px-5 py-3 rounded-[10px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] max-[768px]:w-full max-[768px]:justify-center">
           <i className="fa-solid fa-calendar" />
           <span id="fechaActualBajas">{fechaActual}</span>
         </div>
       </div>
 
       {/* STATS */}
-      <div className="stats-container">
-        <div className="stat-card stat-roturas">
-          <div className="stat-icon">
+      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-hammer" />
           </div>
-          <div className="stat-info">
-            <span className="stat-label">Roturas del Mes</span>
-            <span className="stat-valor" id="statRoturas">
+          <div className="flex-1 flex flex-col">
+            <span className="text-[13px] text-[#50596D] mb-1.5">Roturas del Mes</span>
+            <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statRoturas">
               {stats.roturas}
             </span>
           </div>
         </div>
 
-        <div className="stat-card stat-caducados">
-          <div className="stat-icon">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fffaf0] text-[#dd6b20]">
             <i className="fa-solid fa-clock" />
           </div>
-          <div className="stat-info">
-            <span className="stat-label">Productos Caducados</span>
-            <span className="stat-valor" id="statCaducados">
+          <div className="flex-1 flex flex-col">
+            <span className="text-[13px] text-[#50596D] mb-1.5">Productos Caducados</span>
+            <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statCaducados">
               {stats.caducados}
             </span>
           </div>
         </div>
 
-        <div className="stat-card stat-mermas">
-          <div className="stat-icon">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fefcbf] text-[#d69e2e]">
             <i className="fa-solid fa-scale-unbalanced" />
           </div>
-          <div className="stat-info">
-            <span className="stat-label">Mermas Registradas</span>
-            <span className="stat-valor" id="statMermas">
+          <div className="flex-1 flex flex-col">
+            <span className="text-[13px] text-[#50596D] mb-1.5">Mermas Registradas</span>
+            <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statMermas">
               {stats.mermas}
             </span>
           </div>
         </div>
 
-        <div className="stat-card stat-valor-perdido">
-          <div className="stat-icon">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#c53030]">
             <i className="fa-solid fa-euro-sign" />
           </div>
-          <div className="stat-info">
-            <span className="stat-label">Valor Perdido Total</span>
-            <span className="stat-valor" id="statValorPerdido">
+          <div className="flex-1 flex flex-col">
+            <span className="text-[13px] text-[#50596D] mb-1.5">Valor Perdido Total</span>
+            <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statValorPerdido">
               {stats.valorPerdido.toFixed(2)} €
             </span>
           </div>
@@ -487,17 +487,17 @@ export default function BajasPage() {
       </div>
 
       {/* PANEL REGISTRO */}
-      <div className="panel-registro-baja">
-        <h2 className="titulo-seccion">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+        <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-clipboard-list" /> Registrar Nueva Baja
         </h2>
 
-        <div className="controles-registro">
-          <div className="campo-busqueda-baja">
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-3 max-[768px]:flex-col">
             <input
               type="text"
               id="inputBusquedaBaja"
-              className="input-busqueda-baja"
+              className="flex-1 px-[18px] py-[14px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-200 focus:bg-[var(--color-bg-surface)] focus:border-[#c53030] focus:shadow-[0_0_0_4px_rgba(197,48,48,0.1)] focus:outline-none"
               placeholder="Buscar producto por nombre o código de barras..."
               aria-label="Buscar producto por nombre o código de barras"
               value={q}
@@ -515,7 +515,7 @@ export default function BajasPage() {
 
             <button
               id="btnEscanearBaja"
-              className="btn-scan-baja"
+              className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-xl bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] shadow-[var(--shadow-sm)] inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
               type="button"
               onClick={escanearCodigoBarras}
               aria-label="Escanear codigo de barras"
@@ -525,7 +525,7 @@ export default function BajasPage() {
             </button>
           </div>
 
-          <div className="filtros-baja">
+          <div className="flex gap-4 max-[768px]:flex-col">
             <UiSelect
               id="selectCategoriaBaja"
               value={catId}
@@ -541,7 +541,12 @@ export default function BajasPage() {
               ]}
             />
 
-            <button id="btnProductosCaducados" className="btn-filtro-especial" type="button" onClick={mostrarProductosCaducados}>
+            <button
+              id="btnProductosCaducados"
+              className="px-5 py-3 rounded-[10px] font-semibold cursor-pointer inline-flex items-center gap-2 whitespace-nowrap border-0 text-white bg-[linear-gradient(135deg,#ed8936_0%,#dd6b20_100%)] shadow-[0_4px_12px_rgba(221,107,32,0.3)] transition-transform duration-200 hover:-translate-y-0.5"
+              type="button"
+              onClick={mostrarProductosCaducados}
+            >
               <i className="fa-solid fa-clock" /> Ver Productos Próximos a Caducar
             </button>
           </div>
@@ -550,16 +555,16 @@ export default function BajasPage() {
         {/* Resultados */}
         <div
           id="resultadosBusquedaBaja"
-          className={`resultados-busqueda-baja ${resultadosOpen ? "" : "oculto"}`}
+          className={`mt-5 border-t border-[var(--color-border-default)] pt-5 max-h-[350px] overflow-y-auto ${resultadosOpen ? "" : "hidden"}`}
         >
           {loadingDatos ? (
-            <div style={{ padding: "12px 0" }}>
+            <div className="py-3">
               <Spinner size="sm" label="Cargando productos..." />
             </div>
           ) : resultados.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 20, color: "#a0aec0" }}>
-              <i className="fa-solid fa-search" style={{ fontSize: 32, marginBottom: 10 }} />
-              <p>No se encontraron productos</p>
+            <div className="text-center p-5 text-[#a0aec0]">
+              <i className="fa-solid fa-search text-[32px] mb-2.5" />
+              <p className="m-0">No se encontraron productos</p>
             </div>
           ) : (
             resultados.map((p) => {
@@ -570,13 +575,13 @@ export default function BajasPage() {
                 <button
                   key={String(p.id)}
                   type="button"
-                  className="item-resultado-baja"
+                  className="w-full min-h-14 px-[15px] py-[15px] bg-[var(--color-bg-soft)] rounded-[10px] mb-2.5 cursor-pointer transition-[background,border-color,transform] duration-200 border-2 border-transparent text-left active:scale-[0.99] hover:bg-[#fff5f5] hover:border-[#fc8181] hover:translate-x-[5px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
                   aria-label={`Seleccionar ${p.nombre}`}
                   onClick={() => seleccionarProducto(p)}
                 >
-                  <div className="info-producto-baja">
-                    <div className="nombre-producto-baja">{p.nombre}</div>
-                    <div className="detalles-producto-baja">
+                  <div className="flex-1">
+                    <div className="font-semibold text-[var(--color-text-strong)] mb-1">{p.nombre}</div>
+                    <div className="text-[13px] text-[#50596D]">
                       {cat?.nombre || "Sin categoría"} • Stock: {p.stock} • {Number(p.precio ?? 0).toFixed(2)} €
                       {cad ? <span className={cad.className}>{cad.text}</span> : null}
                     </div>
@@ -589,67 +594,72 @@ export default function BajasPage() {
       </div>
 
       {/* BAJA ACTIVA */}
-      <div className="panel-baja-activa">
-        <h3 className="titulo-seccion">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+        <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-file-lines" /> Registro de Baja Actual
         </h3>
 
-        <div className="tabla-wrapper">
-          <table id="tablaBajas" className="tabla-bajas">
+        <div className="overflow-x-auto">
+          <table id="tablaBajas" className="w-full border-separate border-spacing-0 bg-[var(--color-bg-surface)]">
             <caption className="visually-hidden">Listado de productos dados de baja en la sesión actual</caption>
             <thead>
               <tr>
-                <th>Producto</th>
-                <th>Tipo de Baja</th>
-                <th>Stock Actual</th>
-                <th>Cantidad Baja</th>
-                <th>Stock Final</th>
-                <th>Precio Unit.</th>
-                <th>Valor Perdido</th>
-                <th>Acción</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Producto</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Tipo de Baja</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Stock Actual</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Cantidad Baja</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Stock Final</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Precio Unit.</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Valor Perdido</th>
+                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Acción</th>
               </tr>
             </thead>
 
             <tbody id="tbodyBajas">
               {productosBaja.length === 0 ? (
-                <tr className="fila-vacia">
+                <tr>
                   <td colSpan={8}>
-                    <div className="mensaje-vacio">
-                      <i className="fa-solid fa-inbox" />
-                      <p style={{ margin: "6px 0 2px" }}>No hay productos registrados en esta baja</p>
-                      <small style={{ display: "block" }}>Busca y selecciona productos para comenzar</small>
+                    <div className="text-center text-[#a0aec0] py-[60px] px-5">
+                      <i className="fa-solid fa-inbox text-[48px] mb-[15px] opacity-50" />
+                      <p className="text-[16px] font-semibold m-0 mt-1.5 mb-0.5 text-black">No hay productos registrados en esta baja</p>
+                      <small className="block text-[13px] text-black">Busca y selecciona productos para comenzar</small>
                     </div>
                   </td>
                 </tr>
               ) : (
                 productosBaja.map((p, index) => (
-                  <tr key={`${String(p.id)}-${index}`}>
-                    <td>
+                  <tr key={`${String(p.id)}-${index}`} className="hover:bg-[#fffaf0]">
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
                       <strong>{p.nombre}</strong>
                       <br />
-                      <small style={{ color: "#718096" }}>{p.nombreCategoria}</small>
+                      <small className="text-[#718096]">{p.nombreCategoria}</small>
                     </td>
 
-                    <td>
-                      <span className={`badge-tipo-baja ${claseTipoBaja(p.tipoBaja)}`}>{p.tipoBaja}</span>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                      <span className={`inline-block px-3 py-1.5 rounded-lg text-[12px] font-semibold ${claseTipoBaja(p.tipoBaja)}`}>{p.tipoBaja}</span>
                     </td>
 
-                    <td>{p.stock}</td>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{p.stock}</td>
 
-                    <td>
-                      <strong style={{ color: "#c53030" }}>{p.cantidadBaja}</strong>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                      <strong className="text-[#c53030]">{p.cantidadBaja}</strong>
                     </td>
 
-                    <td className="stock-reducido">{Number(p.stock) - Number(p.cantidadBaja)}</td>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] font-bold text-[#c53030]">{Number(p.stock) - Number(p.cantidadBaja)}</td>
 
-                    <td>{Number(p.precio ?? 0).toFixed(2)} €</td>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{Number(p.precio ?? 0).toFixed(2)} €</td>
 
-                    <td>
-                      <strong style={{ color: "#c53030" }}>{p.valorPerdido.toFixed(2)} €</strong>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                      <strong className="text-[#c53030]">{p.valorPerdido.toFixed(2)} €</strong>
                     </td>
 
-                    <td>
-                      <button className="btn-eliminar-baja" type="button" onClick={() => eliminarProductoBaja(index)} aria-label={`Eliminar ${p.nombre}`}>
+                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                      <button
+                        className="bg-[#fff5f5] text-[#e53e3e] border-0 w-11 h-11 min-w-11 min-h-11 p-0 rounded-xl cursor-pointer transition-colors inline-flex items-center justify-center hover:bg-[#fed7d7] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
+                        type="button"
+                        onClick={() => eliminarProductoBaja(index)}
+                        aria-label={`Eliminar ${p.nombre}`}
+                      >
                         <i className="fa-solid fa-trash" />
                       </button>
                     </td>
@@ -658,12 +668,12 @@ export default function BajasPage() {
               )}
             </tbody>
 
-            <tfoot id="tfootBajas" className={productosBaja.length ? "" : "oculto"}>
-              <tr className="fila-total-baja">
+            <tfoot id="tfootBajas" className={productosBaja.length ? "" : "hidden"}>
+              <tr className="bg-[#fff5f5] text-[16px]">
                 <td colSpan={6}>
                   <strong>VALOR TOTAL DE BAJAS</strong>
                 </td>
-                <td id="totalValorBajas" className="total-valor-baja">
+                <td id="totalValorBajas" className="text-[#c53030] text-[20px] font-bold">
                   {totalValorBajas.toFixed(2)} €
                 </td>
                 <td />
@@ -674,14 +684,14 @@ export default function BajasPage() {
       </div>
 
       {/* ACCIONES */}
-      <div className="panel-acciones-baja">
-        <div className="campo-motivo">
-          <label className="label-motivo" htmlFor="textareaMotivoBaja">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+        <div className="mb-5">
+          <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
             <i className="fa-solid fa-message" /> Motivo / Descripción Detallada
           </label>
           <textarea
             id="textareaMotivoBaja"
-            className="textarea-motivo"
+            className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] text-[14px] resize-y bg-[var(--color-bg-soft)] transition-[border-color,background] duration-200 focus:bg-[var(--color-bg-surface)] focus:border-[#c53030] focus:outline-none"
             placeholder="Describe el motivo de las bajas (opcional pero recomendado)..."
             rows={3}
             aria-label="Motivo o descripción detallada de la baja"
@@ -690,10 +700,10 @@ export default function BajasPage() {
           />
         </div>
 
-        <div className="botones-finales-baja">
+        <div className="flex justify-end gap-4 max-[768px]:flex-col">
           <button
             id="btnCancelarBaja"
-            className={`btn-accion-baja btn-cancelar-baja ${productosBaja.length ? "" : "oculto"}`}
+            className={`px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer inline-flex items-center gap-2.5 border-2 border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] transition-[transform,background,border-color] duration-200 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
             type="button"
             onClick={cancelarBaja}
             disabled={confirmando}
@@ -703,7 +713,7 @@ export default function BajasPage() {
 
           <button
             id="btnConfirmarBaja"
-            className={`btn-accion-baja btn-confirmar-baja ${productosBaja.length ? "" : "oculto"}`}
+            className={`px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer inline-flex items-center gap-2.5 border-0 text-white bg-[linear-gradient(135deg,#e53e3e_0%,#c53030_100%)] shadow-[0_4px_15px_rgba(197,48,48,0.3)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(197,48,48,0.4)] disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
             type="button"
             onClick={confirmarBaja}
             disabled={confirmando}
@@ -724,7 +734,7 @@ export default function BajasPage() {
       {/* MENSAJE ESTADO */}
       <div
         id="mensajeEstadoBajas"
-        className="mensaje-estado-bajas"
+        className="text-center font-semibold min-h-6 text-[14px] p-3 rounded-lg mt-5 border-2"
         style={
           mensajeEstado
             ? {
@@ -751,13 +761,13 @@ export default function BajasPage() {
       </div>
 
       {/* HISTORIAL */}
-      <div className="panel-historial">
-        <div className="header-historial">
-          <h3 className="titulo-seccion">
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+        <div className="flex justify-between items-center mb-5 max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-3">
+          <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
             <i className="fa-solid fa-clock-rotate-left" /> Historial de Bajas
           </h3>
 
-          <div className="filtros-historial">
+          <div className="flex gap-2.5">
             <UiSelect
               id="selectFiltroTipoBaja"
               value={filtroTipoHistorial}
@@ -774,17 +784,17 @@ export default function BajasPage() {
           </div>
         </div>
 
-        <div id="contenedorHistorial" className="contenedor-historial">
+        <div id="contenedorHistorial" className="min-h-[200px]">
           {loadingHistorial ? (
-            <div style={{ padding: "12px 0" }}>
+            <div className="py-3">
               <Spinner size="sm" label="Cargando historial..." />
             </div>
           ) : historialFiltrado.length === 0 ? (
-            <p style={{ textAlign: "center", color: "#666", padding: 20 }}>
+            <p className="text-center text-[#666] p-5 m-0">
               No hay bajas registradas este mes
             </p>
           ) : (
-            <div style={{ maxHeight: 400, overflowY: "auto" }}>
+            <div className="max-h-[400px] overflow-y-auto">
               {historialFiltrado.map((baja, idx) => {
                 const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                 const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
@@ -794,36 +804,24 @@ export default function BajasPage() {
                 return (
                   <div
                     key={idx}
-                    style={{
-                      background: "white",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 8,
-                      padding: 15,
-                      marginBottom: 10,
-                    }}
+                    className="bg-white border border-[#e2e8f0] rounded-lg p-[15px] mb-2.5"
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 10 }}>
+                    <div className="flex justify-between items-start mb-2.5 gap-4">
                       <div>
-                        <strong style={{ fontSize: 16 }}>{baja.producto_nombre || "Producto desconocido"}</strong>
-                        <div style={{ marginTop: 5 }}>
-                          <span className={`badge-tipo-baja ${claseTipoBaja(baja.tipoBaja)}`}>{baja.tipoBaja}</span>
+                        <strong className="text-[16px]">{baja.producto_nombre || "Producto desconocido"}</strong>
+                        <div className="mt-1">
+                          <span className={`inline-block px-3 py-1.5 rounded-lg text-[12px] font-semibold ${claseTipoBaja(baja.tipoBaja)}`}>{baja.tipoBaja}</span>
                         </div>
                       </div>
 
-                      <div style={{ textAlign: "right", color: "#718096", fontSize: 14 }}>
+                      <div className="text-right text-[#718096] text-[14px]">
                         <div>{fecha}</div>
                         <div>{hora}</div>
                       </div>
                     </div>
 
                     <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr",
-                        gap: 10,
-                        fontSize: 14,
-                        color: "#4a5568",
-                      }}
+                      className="grid grid-cols-2 gap-2.5 text-[14px] text-[#4a5568] max-[640px]:grid-cols-1"
                     >
                       <div>
                         <strong>Cantidad:</strong> {cant}
@@ -837,7 +835,7 @@ export default function BajasPage() {
                       <div>
                         <strong>Total:</strong> {total.toFixed(2)} €
                       </div>
-                      <div style={{ gridColumn: "1 / -1" }}>
+                      <div className="col-span-2 max-[640px]:col-span-1">
                         <strong>Motivo:</strong> {baja.motivo || "Sin especificar"}
                       </div>
                     </div>
@@ -850,20 +848,23 @@ export default function BajasPage() {
       </div>
 
       {/* MODAL */}
-      <div id="modalDetalleBaja" className={`modal-overlay-baja ${modalOpen ? "" : "oculto"}`}>
-        <div className="modal-contenido-baja" role="dialog" aria-modal="true" aria-label="Detalles de la baja">
-          <h3>
+      <div
+        id="modalDetalleBaja"
+        className={`fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] [backdrop-filter:blur(4px)] ${modalOpen ? "" : "hidden"}`}
+      >
+        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[450px]" role="dialog" aria-modal="true" aria-label="Detalles de la baja">
+          <h3 className="m-0 mb-[15px] text-[var(--color-text-strong)] flex items-center gap-2.5">
             <i className="fa-solid fa-circle-minus" />
             Detalles de la Baja
           </h3>
 
-          <p id="modalNombreProductoBaja" className="modal-producto-nombre-baja">
+          <p id="modalNombreProductoBaja" className="text-[#50596D] text-[14px] mb-5 font-semibold">
             {productoSeleccionado?.nombre ?? ""}
           </p>
 
-          <div className="modal-campos-baja">
-            <div className="modal-campo">
-              <label htmlFor="modalSelectTipoBaja">Tipo de Baja:</label>
+          <div className="flex flex-col gap-5 mb-[25px]">
+            <div className="flex flex-col">
+              <label htmlFor="modalSelectTipoBaja" className="text-[var(--color-text-muted)] font-semibold mb-2 text-[14px]">Tipo de Baja:</label>
               <UiSelect
                 id="modalSelectTipoBaja"
                 value={modalTipoBaja}
@@ -878,12 +879,12 @@ export default function BajasPage() {
               />
             </div>
 
-            <div className="modal-campo">
-              <label htmlFor="modalInputCantidadBaja">Cantidad:</label>
-              <div className="bajas-stepper">
+            <div className="flex flex-col">
+              <label htmlFor="modalInputCantidadBaja" className="text-[var(--color-text-muted)] font-semibold mb-2 text-[14px]">Cantidad:</label>
+              <div className="inline-flex items-center gap-2">
                 <button
                   type="button"
-                  className="bajas-stepper-btn"
+                  className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
                   aria-label="Reducir cantidad"
                   onClick={() => setModalCantidad((prev) => Math.max(1, Number(prev || 1) - 1))}
                 >
@@ -892,7 +893,7 @@ export default function BajasPage() {
                 <input
                   type="number"
                   id="modalInputCantidadBaja"
-                  className="modal-input-cantidad-baja"
+                  className="w-[84px] min-h-11 px-3 border-2 border-[var(--color-border-default)] rounded-lg text-[18px] font-semibold text-center [appearance:textfield]"
                   min={1}
                   max={productoSeleccionado?.stock ?? 1}
                   value={modalCantidad}
@@ -915,7 +916,7 @@ export default function BajasPage() {
                 />
                 <button
                   type="button"
-                  className="bajas-stepper-btn"
+                  className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
                   aria-label="Aumentar cantidad"
                   onClick={() => {
                     const max = Number(productoSeleccionado?.stock ?? 1);
@@ -925,18 +926,28 @@ export default function BajasPage() {
                   +
                 </button>
               </div>
-              <small id="modalStockDisponible" className="stock-disponible-info">
+              <small id="modalStockDisponible" className="mt-1 text-[#50596D] text-[12px]">
                 Stock disponible: {productoSeleccionado?.stock ?? 0} unidades
               </small>
             </div>
           </div>
 
-          <div className="modal-botones-baja">
-            <button id="btnModalCancelarBaja" className="btn-modal-baja btn-modal-cancelar-baja" type="button" onClick={cerrarModal}>
+          <div className="flex gap-3">
+            <button
+              id="btnModalCancelarBaja"
+              className="flex-1 py-3 rounded-lg font-semibold cursor-pointer transition-colors bg-[var(--color-border-default)] text-[var(--color-text-muted)] hover:brightness-95"
+              type="button"
+              onClick={cerrarModal}
+            >
               Cancelar
             </button>
 
-            <button id="btnModalConfirmarBaja" className="btn-modal-baja btn-modal-confirmar-baja" type="button" onClick={confirmarBajaModal}>
+            <button
+              id="btnModalConfirmarBaja"
+              className="flex-1 py-3 rounded-lg font-semibold cursor-pointer transition-colors bg-[#c53030] text-white hover:bg-[#9b2c2c]"
+              type="button"
+              onClick={confirmarBajaModal}
+            >
               Registrar Baja
             </button>
           </div>

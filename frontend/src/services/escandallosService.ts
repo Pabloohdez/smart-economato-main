@@ -9,6 +9,7 @@ type ApiDataResponse<T> = {
 type SaveEscandalloPayload = {
   nombre: string;
   autor?: string;
+  coste_total: number;
   pvp: number;
   elaboracion: string;
   items: EscandalloItem[];
@@ -23,12 +24,17 @@ export async function saveEscandallo(
   payload: SaveEscandalloPayload,
   id?: number | null,
 ): Promise<Escandallo> {
+  const safeCosteTotal =
+    Number.isFinite(Number(payload.coste_total))
+      ? Number(payload.coste_total)
+      : payload.items.reduce((total, item) => total + Number(item.cantidad) * Number(item.precio), 0);
+
   const response = await apiFetch<ApiDataResponse<Escandallo>>(
     id ? `/escandallos/${id}` : "/escandallos",
     {
       method: id ? "PUT" : "POST",
       headers: { "X-Requested-With": "XMLHttpRequest" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, coste_total: safeCosteTotal }),
       offlineQueue: {
         enabled: true,
         queuedMessage: "El escandallo queda en cola y se sincronizará cuando vuelva la conexión.",
@@ -36,10 +42,7 @@ export async function saveEscandallo(
           id: id ?? Date.now(),
           nombre: payload.nombre,
           autor: payload.autor ?? "Pendiente",
-          coste: payload.items.reduce(
-            (total, item) => total + Number(item.cantidad) * Number(item.precio),
-            0,
-          ),
+          coste: safeCosteTotal,
           pvp: payload.pvp,
           elaboracion: payload.elaboracion,
           items: payload.items,

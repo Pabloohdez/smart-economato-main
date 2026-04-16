@@ -5,9 +5,26 @@ services:
   frontend:
     build:
       context: ./frontend
+      target: dev
       args:
         VITE_API_URL: /api
     container_name: smart-economato-frontend
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+
+  frontend_prod:
+    profiles: ["prod"]
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: /api
+    container_name: smart-economato-frontend-prod
     restart: always
     ports:
       - "8081:80"

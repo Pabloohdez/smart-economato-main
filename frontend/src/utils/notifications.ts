@@ -1,4 +1,4 @@
-﻿// frontend/src/utils/notifications.ts
+// frontend/src/utils/notifications.ts
 export type NotificationType = "success" | "error" | "warning" | "info";
 
 /* ================================================================
@@ -13,7 +13,31 @@ const TOAST_ICONS: Record<NotificationType, string> = {
   info:    "fa-solid fa-circle-info",
 };
 
+function ensureUiOverlayStyles() {
+  // Fallback defensivo: si por cualquier motivo el CSS global no cargó,
+  // inyectamos estilos mínimos para que confirm/toast sigan siendo modales reales.
+  if (document.getElementById("ui-overlay-styles")) return;
+  const style = document.createElement("style");
+  style.id = "ui-overlay-styles";
+  style.textContent = `
+    #ui-toast-container{position:fixed;right:18px;top:18px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+    .ui-toast{pointer-events:auto;display:grid;grid-template-columns:18px 1fr 28px;gap:10px;align-items:center;padding:12px;border-radius:14px;border:1px solid rgba(229,231,235,.9);background:#fff;box-shadow:0 18px 40px rgba(17,24,39,.14);min-width:260px;max-width:min(420px,calc(100vw - 24px));overflow:hidden}
+    .ui-toast__close{border:0;background:transparent;cursor:pointer;font-size:18px;line-height:1;color:#9ca3af}
+    .ui-confirm-overlay{position:fixed;inset:0;z-index:99998;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.42);backdrop-filter:blur(2px);opacity:0;transition:opacity 200ms ease}
+    .ui-confirm-overlay.ui-confirm--visible{opacity:1}
+    .ui-confirm-box{width:min(520px,100%);border-radius:20px;background:#fff;border:1px solid rgba(229,231,235,.95);box-shadow:0 25px 50px rgba(0,0,0,.25);padding:18px;transform:translateY(10px) scale(.98);transition:transform 220ms cubic-bezier(.22,1,.36,1)}
+    .ui-confirm-overlay.ui-confirm--visible .ui-confirm-box{transform:translateY(0) scale(1)}
+    .ui-confirm-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+    .ui-confirm-btn-cancel,.ui-confirm-btn-ok{min-height:42px;padding:10px 14px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer}
+    .ui-confirm-btn-cancel{background:#fff;color:#64748b;border:2px solid #e2e8f0}
+    .ui-confirm-btn-ok{border:0;color:#fff;background:linear-gradient(135deg,#b33131,#8f2323)}
+    .ui-confirm-btn-ok--danger{background:linear-gradient(135deg,#ef4444,#dc2626)}
+  `;
+  document.head.appendChild(style);
+}
+
 function getToastContainer(): HTMLElement {
+  ensureUiOverlayStyles();
   let el = document.getElementById("ui-toast-container");
   if (!el) {
     el = document.createElement("div");
@@ -67,6 +91,7 @@ export type ConfirmOptions = {
 export function showConfirm(
   messageOrOptions: string | ConfirmOptions
 ): Promise<boolean> {
+  ensureUiOverlayStyles();
   const opts: ConfirmOptions =
     typeof messageOrOptions === "string"
       ? { message: messageOrOptions }
@@ -130,7 +155,14 @@ export function showConfirm(
 
     function handleKey(e: KeyboardEvent) {
       if (e.key === "Escape") close(false);
-      if (e.key === "Enter")  { e.preventDefault(); close(true); }
+      if (e.key === "Enter")  {
+        // Evita cierres instantáneos si el Enter viene de un submit previo fuera del modal
+        const active = document.activeElement;
+        if (active && overlay.contains(active)) {
+          e.preventDefault();
+          close(true);
+        }
+      }
     }
     document.addEventListener("keydown", handleKey);
   });

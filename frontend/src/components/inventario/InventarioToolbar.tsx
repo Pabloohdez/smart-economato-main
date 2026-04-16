@@ -46,14 +46,14 @@ export default function InventarioToolbar({
   limpiarFiltros,
 }: Props) {
   return (
-    <div className="panel-controles">
-      <div className="campo-busqueda-inventario">
-        <span className="icono-busqueda" aria-hidden="true">
+    <div className="bg-[var(--color-bg-surface)] p-[var(--space-6)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] mb-[var(--space-6)] border border-[var(--color-border-default)]">
+      <div className="flex items-center gap-3 relative mb-5 max-[820px]:flex-col max-[820px]:items-stretch">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] text-[15px] pointer-events-none flex items-center max-[820px]:hidden" aria-hidden="true">
           <i className="fa-solid fa-magnifying-glass" />
         </span>
 
         <input
-          className="input-busqueda-inventario"
+          className="flex-1 py-[var(--space-4)] px-[18px] pl-12 border-2 border-[var(--color-border-default)] rounded-[var(--radius-md)] text-[15px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow] duration-150 focus:bg-[var(--color-bg-surface)] focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none box-border"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Buscar producto por nombre o código..."
@@ -61,8 +61,7 @@ export default function InventarioToolbar({
         />
 
         <button
-          id="btnEscanearInventario"
-          className="btn-scan-inventario"
+          className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-xl bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] inline-flex items-center justify-center cursor-pointer shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
           type="button"
           onClick={onScanBarcode}
           aria-label="Escanear codigo de barras"
@@ -72,9 +71,11 @@ export default function InventarioToolbar({
         </button>
       </div>
 
-      <div className="controles-filtros">
-        <div className="grupo-filtro">
-          <label className="label-filtro"><i className="fa-solid fa-tag" /> Categoría</label>
+      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))] gap-5 mb-5 max-[768px]:grid-cols-1">
+        <div className="flex flex-col gap-2">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase flex items-center gap-1.5">
+            <i className="fa-solid fa-tag" /> Categoría
+          </label>
           <UiSelect
             value={catId}
             onChange={setCatId}
@@ -86,8 +87,10 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="grupo-filtro">
-          <label className="label-filtro"><i className="fa-solid fa-truck" /> Proveedor</label>
+        <div className="flex flex-col gap-2">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase flex items-center gap-1.5">
+            <i className="fa-solid fa-truck" /> Proveedor
+          </label>
           <UiSelect
             value={provId}
             onChange={setProvId}
@@ -99,8 +102,10 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="grupo-filtro">
-          <label className="label-filtro"><i className="fa-solid fa-arrow-up-short-wide" /> Ordenar</label>
+        <div className="flex flex-col gap-2">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase flex items-center gap-1.5">
+            <i className="fa-solid fa-arrow-up-short-wide" /> Ordenar
+          </label>
           <UiSelect
             value={orden}
             onChange={(v) => setOrden(v as "asc" | "desc")}
@@ -112,9 +117,13 @@ export default function InventarioToolbar({
         </div>
       </div>
 
-      <div className="controles-acciones">
+      <div className="flex gap-3 flex-wrap">
         <button
-          className={`btn-accion-inventario btn-stock ${onlyStockBajo ? "is-on" : ""}`}
+          className={`min-h-11 px-6 py-3 rounded-[10px] font-semibold cursor-pointer transition-[transform,filter] duration-200 inline-flex items-center gap-2 border-2 ${
+            onlyStockBajo
+              ? "bg-[#fed7d7] text-[#9b2c2c] border-[#f56565]"
+              : "bg-[#fff5f5] text-[var(--color-danger-500)] border-[#fc8181]"
+          } hover:-translate-y-0.5 hover:brightness-95 max-[768px]:w-full max-[768px]:justify-center`}
           type="button"
           onClick={() => setOnlyStockBajo(!onlyStockBajo)}
         >
@@ -122,7 +131,11 @@ export default function InventarioToolbar({
         </button>
 
         <button
-          className={`btn-accion-inventario btn-caducar ${onlyProximoCaducar ? "is-on" : ""}`}
+          className={`min-h-11 px-6 py-3 rounded-[10px] font-semibold cursor-pointer transition-[transform,filter] duration-200 inline-flex items-center gap-2 border-2 ${
+            onlyProximoCaducar
+              ? "bg-[#fde68a] text-[#9a3412] border-[#f59e0b]"
+              : "bg-[#fffaf0] text-[#c05621] border-[#f6ad55]"
+          } hover:-translate-y-0.5 hover:brightness-95 max-[768px]:w-full max-[768px]:justify-center`}
           type="button"
           onClick={() => setOnlyProximoCaducar(!onlyProximoCaducar)}
         >
@@ -130,7 +143,7 @@ export default function InventarioToolbar({
         </button>
 
         <button
-          className="btn-accion-inventario btn-limpiar"
+          className="min-h-11 px-6 py-3 rounded-[10px] font-semibold cursor-pointer transition-[transform,filter] duration-200 inline-flex items-center gap-2 border-2 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:-translate-y-0.5 hover:brightness-95 max-[768px]:w-full max-[768px]:justify-center"
           type="button"
           onClick={limpiarFiltros}
         >

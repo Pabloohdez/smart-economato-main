@@ -234,6 +234,20 @@ export async function apiFetch<T>(
     return queueOfflineResponse<T>(path, options);
   }
 
+  // Sanitización defensiva: algunos endpoints del backend rechazan props extra (whitelist estricto).
+  // Si por caché/HMR/cola se cuela `usuarioId` en /bajas, lo eliminamos aquí para evitar 400.
+  if (path === "/bajas" && typeof requestOptions.body === "string") {
+    try {
+      const parsed = JSON.parse(requestOptions.body) as Record<string, unknown>;
+      if (parsed && typeof parsed === "object") {
+        delete (parsed as any).usuarioId;
+        requestOptions.body = JSON.stringify(parsed);
+      }
+    } catch {
+      // si no es JSON válido, no tocamos nada
+    }
+  }
+
   try {
     return await executeApiRequest<T>(path, requestOptions, retryOnUnauthorized);
   } catch (error) {

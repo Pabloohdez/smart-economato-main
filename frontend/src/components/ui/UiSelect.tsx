@@ -74,9 +74,12 @@ export default function UiSelect(props: UiSelectProps) {
   }
 
   return (
-    <div ref={wrapRef} className={`ui-select ${className ?? ""}`.trim()}>
+    <div ref={wrapRef} className={className ?? ""}>
       {label && (
-        <label htmlFor={id} className="ui-select__label">
+        <label
+          htmlFor={id}
+          className="block mb-1.5 text-[12px] font-bold text-[var(--color-text-muted)] tracking-wide uppercase"
+        >
           {label}
         </label>
       )}
@@ -84,16 +87,20 @@ export default function UiSelect(props: UiSelectProps) {
       <button
         id={id}
         type="button"
-        className="ui-select__trigger"
+        className="w-full min-h-11 flex items-center justify-between gap-2.5 text-[14px] text-[var(--color-text-default)] bg-[var(--color-bg-soft)] border border-[var(--color-border-default)] rounded-[10px] px-3 py-2.5 outline-none cursor-pointer transition-[border-color,box-shadow,background,opacity] duration-150 hover:bg-[var(--color-bg-surface)] focus-visible:border-[var(--color-brand-500)] focus-visible:bg-[var(--color-bg-surface)] focus-visible:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] disabled:opacity-60 disabled:cursor-not-allowed"
         onClick={() => !disabled && setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
         disabled={disabled}
       >
-        <span className={`ui-select__value ${selected ? "" : "ui-select__value--placeholder"}`}>
+        <span
+          className={`min-w-0 overflow-hidden text-ellipsis whitespace-nowrap text-left ${
+            selected ? "" : "text-[var(--color-text-muted)] opacity-90"
+          }`}
+        >
           {selected ? selected.label : placeholder}
         </span>
-        <span className="ui-select__chev" aria-hidden="true">
+        <span className="flex-0 text-[#64748b] text-[12px]" aria-hidden="true">
           <i className="fa-solid fa-chevron-down" />
         </span>
       </button>
@@ -101,7 +108,7 @@ export default function UiSelect(props: UiSelectProps) {
       {open && menuPos
         ? createPortal(
             <div
-              className="ui-select__menu ui-select__menu--portal"
+              className="z-[99999] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[0_14px_34px_rgba(0,0,0,0.14)] max-h-[280px] overflow-auto p-1.5"
               role="listbox"
               aria-label={label ?? "selector"}
               ref={menuRef}
@@ -124,13 +131,18 @@ export default function UiSelect(props: UiSelectProps) {
                     type="button"
                     role="option"
                     aria-selected={isSelected}
-                    className={`ui-select__item ${isSelected ? "is-selected" : ""} ${opt.disabled ? "is-disabled" : ""}`.trim()}
+                    className={[
+                      "w-full flex items-center justify-between gap-2.5 border-0 bg-transparent px-3 py-2.5 rounded-[10px] text-left cursor-pointer text-[13px] transition-colors",
+                      "hover:bg-[var(--color-bg-soft)]",
+                      isSelected ? "bg-[rgba(179,49,49,0.08)] text-[var(--color-text-strong)]" : "text-[var(--color-text-default)]",
+                      opt.disabled ? "opacity-50 cursor-not-allowed hover:bg-transparent" : "",
+                    ].join(" ").trim()}
                     onClick={() => choose(opt)}
                     disabled={opt.disabled}
                   >
-                    <span className="ui-select__item-label">{opt.label}</span>
+                    <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{opt.label}</span>
                     {isSelected && (
-                      <span className="ui-select__item-check" aria-hidden="true">
+                      <span className="text-[var(--color-brand-500)] text-[12px]" aria-hidden="true">
                         <i className="fa-solid fa-check" />
                       </span>
                     )}

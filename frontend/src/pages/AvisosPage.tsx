@@ -10,7 +10,6 @@ import {
   type Producto,
   type Proveedor,
 } from "../services/productosService";
-import "../styles/avisos.css";
 import Spinner from "../components/ui/Spinner";
 import { useAuth } from "../contexts/AuthContext";
 import { getGastosMensuales, type GastoMensual } from "../services/informesService";
@@ -236,7 +235,6 @@ export default function AvisosPage() {
           cantidad: cantidadModal,
           tipoBaja: "Caducado",
           motivo: "Caducidad registrada desde Centro de Avisos",
-          usuarioId: String(user?.id ?? "admin"),
         });
 
         mostrarToast("Baja registrada correctamente", "success");
@@ -299,90 +297,99 @@ export default function AvisosPage() {
   }, [caducados, stockBajo]);
 
   return (
-    <div className="avisos-page">
-      <div className="avisos-header">
+    <div className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
+      <div className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="avisos-titulo">
+          <h1 className="text-[28px] font-semibold text-[#111827] m-0 mb-1 flex items-center gap-3">
             <i className="fa-solid fa-bell"></i> Centro de Avisos
           </h1>
-          <p className="avisos-subtitulo">Resumen de alertas y notificaciones del sistema</p>
+          <p className="text-[#6b7280] text-[14px] m-0">Resumen de alertas y notificaciones del sistema</p>
         </div>
 
-        <div className="avisos-header-meta">
-          <div className="avisos-date-chip">
-            <i className="fa-solid fa-calendar"></i>
+        <div className="flex items-center gap-3 flex-wrap max-[768px]:w-full">
+          <div className="inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] bg-[var(--color-bg-surface)] border border-[#e5e7eb] shadow-[0_2px_8px_rgba(15,23,42,0.05)] text-[#4b5563] text-[13px] font-semibold max-[768px]:w-full max-[768px]:justify-center">
+            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
             <span>{hoyES()}</span>
           </div>
 
-          {timestamp ? <div className="avisos-timestamp">{timestamp}</div> : null}
+          {timestamp ? (
+            <div className="text-[12px] text-[#6b7280] px-3.5 py-2.5 bg-[#f9fafb] rounded-[10px] border border-[#e5e7eb] max-[768px]:w-full max-[768px]:text-center">
+              {timestamp}
+            </div>
+          ) : null}
         </div>
       </div>
 
-      <div className="avisos-metricas">
-        <div className="metrica-card metrica-total">
-          <div className="metrica-icono">
+      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
+        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+          <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fef3c7] text-[#d97706]">
             <i className="fa-solid fa-triangle-exclamation"></i>
           </div>
-          <div className="metrica-info">
-            <span className="metrica-numero">{loading ? "-" : totalAlertas}</span>
-            <span className="metrica-label">Alertas Activas</span>
+          <div className="flex-1">
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : totalAlertas}</span>
+            <span className="block text-[13px] text-[#6b7280] mt-0.5">Alertas Activas</span>
           </div>
         </div>
 
-        <div className="metrica-card metrica-critico">
-          <div className="metrica-icono">
+        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+          <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fee2e2] text-[#dc2626]">
             <i className="fa-solid fa-skull-crossbones"></i>
           </div>
-          <div className="metrica-info">
-            <span className="metrica-numero">{loading ? "-" : caducados.length}</span>
-            <span className="metrica-label">Productos Caducados</span>
+          <div className="flex-1">
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : caducados.length}</span>
+            <span className="block text-[13px] text-[#6b7280] mt-0.5">Productos Caducados</span>
           </div>
         </div>
 
-        <div className="metrica-card metrica-valor">
-          <div className="metrica-icono">
+        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+          <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#dbeafe] text-[#2563eb]">
             <i className="fa-solid fa-coins"></i>
           </div>
-          <div className="metrica-info">
-            <span className="metrica-numero">{loading ? "-" : `${valorRiesgo.toFixed(2)} €`}</span>
-            <span className="metrica-label">Valor en Riesgo</span>
+          <div className="flex-1">
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : `${valorRiesgo.toFixed(2)} €`}</span>
+            <span className="block text-[13px] text-[#6b7280] mt-0.5">Valor en Riesgo</span>
           </div>
         </div>
       </div>
 
-      <section className="avisos-seccion">
-        <div className="seccion-header seccion-header--danger">
-          <div className="seccion-titulo">
-            <i className="fa-solid fa-calendar-xmark"></i>
-            <h2>Productos Caducados</h2>
+      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+        <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
+          <div className="flex items-center gap-2.5">
+            <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Productos Caducados</h2>
           </div>
-          <span className="seccion-contador">{caducados.length}</span>
+          <span className="bg-[var(--color-bg-surface)] text-[#374151] px-3 py-1 rounded-xl text-[13px] font-semibold border border-[#e5e7eb]">
+            {caducados.length}
+          </span>
         </div>
 
-        <div className="seccion-body">
+        <div>
           {loading ? (
-            <div className="avisos-vacio"><Spinner label="Cargando caducados..." /></div>
+            <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Cargando caducados..." /></div>
           ) : caducados.length === 0 ? (
-            <div className="aviso-ok">
-              <i className="fa-solid fa-circle-check"></i>
+            <div className="py-10 text-center text-[#10b981]">
+              <i className="fa-solid fa-circle-check block text-[32px] mb-2"></i>
               <span>No hay productos caducados</span>
             </div>
           ) : (
             caducados.map((p) => (
-              <div className="alerta-item" key={`cad-${p.id}`}>
-                <div className="alerta-indicador alerta-indicador--danger"></div>
+              <div
+                className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
+                key={`cad-${p.id}`}
+              >
+                <div className="w-1 h-10 rounded bg-[#dc2626]"></div>
 
-                <div className="alerta-contenido">
-                  <p className="alerta-titulo">{p.nombre}</p>
-                  <p className="alerta-detalle">
+                <div className="min-w-0 flex flex-col gap-0.5">
+                  <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{p.nombre}</p>
+                  <p className="m-0 text-[13px] text-[#6b7280]">
                     {p.nombreCategoria} · Stock: {p.stockNum}
                   </p>
                 </div>
 
-                <div className="alerta-acciones">
+                <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                   <button
                     type="button"
-                    className="btn-accion-alert btn-baja"
+                    className="h-8 px-3.5 rounded-md text-[13px] font-medium cursor-pointer inline-flex items-center gap-1.5 border border-[#fca5a5] bg-[#fef2f2] text-[#991b1b] transition-[transform,box-shadow,background,border-color,color] duration-150 hover:bg-[#fee2e2] hover:border-[#f87171] hover:text-[#7f1d1d] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(220,38,38,0.1)] whitespace-nowrap"
                     onClick={() => abrirModalBaja(p)}
                   >
                     <i className="fa-solid fa-trash-can"></i>
@@ -390,7 +397,7 @@ export default function AvisosPage() {
                   </button>
                 </div>
 
-                <div className="alerta-meta">
+                <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
                   <strong>{p.precioNum.toFixed(2)} €</strong>
                   <br />
                   {tiempoRelativo(p.diasCaducado || 0)}
@@ -401,21 +408,23 @@ export default function AvisosPage() {
         </div>
       </section>
 
-      <section className="avisos-seccion">
-        <div className="seccion-header seccion-header--warning">
-          <div className="seccion-titulo">
-            <i className="fa-solid fa-box-open"></i>
-            <h2>Stock por Debajo del Mínimo</h2>
+      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+        <div className="px-5 py-4 border-l-4 border-l-[#f59e0b] flex justify-between items-center bg-[linear-gradient(90deg,#fffbeb_0%,#f9fafb_100%)]">
+          <div className="flex items-center gap-2.5">
+            <i className="fa-solid fa-box-open text-[16px] text-[#6b7280]"></i>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Stock por Debajo del Mínimo</h2>
           </div>
-          <span className="seccion-contador">{stockBajo.length}</span>
+          <span className="bg-[var(--color-bg-surface)] text-[#374151] px-3 py-1 rounded-xl text-[13px] font-semibold border border-[#e5e7eb]">
+            {stockBajo.length}
+          </span>
         </div>
 
-        <div className="seccion-body">
+        <div>
           {loading ? (
-            <div className="avisos-vacio"><Spinner label="Cargando stock..." /></div>
+            <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Cargando stock..." /></div>
           ) : stockBajo.length === 0 ? (
-            <div className="aviso-ok">
-              <i className="fa-solid fa-circle-check"></i>
+            <div className="py-10 text-center text-[#10b981]">
+              <i className="fa-solid fa-circle-check block text-[32px] mb-2"></i>
               <span>Todos los productos tienen stock suficiente</span>
             </div>
           ) : (
@@ -423,28 +432,31 @@ export default function AvisosPage() {
               const pct = Math.min(100, Math.round((p.stockNum / p.stockMinimoNum) * 100));
               const barClass =
                 pct <= 25
-                  ? "stock-bar-fill--danger"
+                  ? "bg-[linear-gradient(90deg,#dc2626,#ef4444)]"
                   : pct <= 75
-                  ? "stock-bar-fill--warning"
-                  : "stock-bar-fill--ok";
+                  ? "bg-[linear-gradient(90deg,#f59e0b,#fbbf24)]"
+                  : "bg-[linear-gradient(90deg,#10b981,#34d399)]";
 
               const cantidadSugerida = Math.max(1, p.stockMinimoNum * 2 - p.stockNum);
 
               return (
-                <div className="alerta-item" key={`stock-${p.id}`}>
-                  <div className="alerta-indicador alerta-indicador--warning"></div>
+                <div
+                  className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
+                  key={`stock-${p.id}`}
+                >
+                  <div className="w-1 h-10 rounded bg-[#f59e0b]"></div>
 
-                  <div className="alerta-contenido">
-                    <p className="alerta-titulo">{p.nombre}</p>
-                    <p className="alerta-detalle">
+                  <div className="min-w-0 flex flex-col gap-0.5">
+                    <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{p.nombre}</p>
+                    <p className="m-0 text-[13px] text-[#6b7280]">
                       {p.nombreCategoria} · {p.nombreProveedor}
                     </p>
                   </div>
 
-                  <div className="alerta-acciones">
+                  <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                     <button
                       type="button"
-                      className="btn-accion-alert btn-pedir"
+                      className="h-8 px-3.5 rounded-md text-[13px] font-medium cursor-pointer inline-flex items-center gap-1.5 border border-[#93c5fd] bg-[#eff6ff] text-[#1e40af] transition-[transform,box-shadow,background,border-color,color] duration-150 hover:bg-[#dbeafe] hover:border-[#60a5fa] hover:text-[#1e3a8a] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(37,99,235,0.1)] whitespace-nowrap"
                       onClick={() => abrirModalPedido(p, cantidadSugerida)}
                     >
                       <i className="fa-solid fa-truck-fast"></i>
@@ -452,11 +464,11 @@ export default function AvisosPage() {
                     </button>
                   </div>
 
-                  <div className="stock-bar-container" title={`${p.stockNum} / ${p.stockMinimoNum}`}>
-                    <div className={`stock-bar-fill ${barClass}`} style={{ width: `${pct}%` }}></div>
+                  <div className="w-[120px] h-1.5 bg-[#f3f4f6] rounded overflow-hidden max-[768px]:col-start-2 max-[768px]:w-full max-[768px]:mt-2" title={`${p.stockNum} / ${p.stockMinimoNum}`}>
+                    <div className={`h-full rounded transition-[width] duration-300 ${barClass}`} style={{ width: `${pct}%` }}></div>
                   </div>
 
-                  <div className="alerta-meta">
+                  <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
                     <strong>{p.stockNum}</strong> / {p.stockMinimoNum}
                   </div>
                 </div>
@@ -466,39 +478,39 @@ export default function AvisosPage() {
         </div>
       </section>
 
-      <section className="avisos-seccion">
-        <div className="seccion-header seccion-header--info">
-          <div className="seccion-titulo">
-            <i className="fa-solid fa-chart-line"></i>
-            <h2>Resumen Financiero</h2>
+      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+        <div className="px-5 py-4 border-l-4 border-l-[#2563eb] flex justify-between items-center bg-[linear-gradient(90deg,#eff6ff_0%,#f9fafb_100%)]">
+          <div className="flex items-center gap-2.5">
+            <i className="fa-solid fa-chart-line text-[16px] text-[#6b7280]"></i>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Resumen Financiero</h2>
           </div>
         </div>
 
-        <div className="seccion-body">
+        <div>
           {loading ? (
-            <div className="avisos-vacio"><Spinner label="Calculando..." /></div>
+            <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Calculando..." /></div>
           ) : (
-            <div className="financiero-grid">
-              <div className="financiero-item">
-                <div className="financiero-label">Pérdida por Caducidad</div>
-                <div className="financiero-valor financiero-valor--danger">
+            <div className="grid [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))] gap-4 p-5">
+              <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6]">
+                <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Pérdida por Caducidad</div>
+                <div className="text-[18px] font-bold text-[#dc2626]">
                   {financieroResumen.valorCaducado.toFixed(2)} €
                 </div>
               </div>
 
-              <div className="financiero-item">
-                <div className="financiero-label">Valor en Stock Bajo</div>
-                <div className="financiero-valor financiero-valor--warning">
+              <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6]">
+                <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Valor en Stock Bajo</div>
+                <div className="text-[18px] font-bold text-[#f59e0b]">
                   {financieroResumen.valorStockBajo.toFixed(2)} €
                 </div>
               </div>
 
               {financieroResumen.masCaro && (
-                <div className="financiero-item" style={{ gridColumn: "1 / -1" }}>
-                  <div className="financiero-label">Producto en Riesgo de Mayor Valor</div>
-                  <div className="financiero-valor">
+                <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6] col-span-full">
+                  <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Producto en Riesgo de Mayor Valor</div>
+                  <div className="text-[18px] font-bold text-[#111827]">
                     {financieroResumen.masCaro.nombre}{" "}
-                    <span style={{ fontWeight: 400, fontSize: "13px", color: "#6B7280" }}>
+                    <span className="font-normal text-[13px] text-[#6B7280]">
                       — {(financieroResumen.masCaro.precioNum * financieroResumen.masCaro.stockNum).toFixed(2)} €
                     </span>
                   </div>
@@ -509,46 +521,46 @@ export default function AvisosPage() {
         </div>
       </section>
 
-      <section className="avisos-seccion">
-        <div className="seccion-header seccion-header--success">
-          <div className="seccion-titulo">
-            <i className="fa-solid fa-bell"></i>
-            <h2>Gastos Mensuales por Profesor</h2>
+      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+        <div className="px-5 py-4 border-l-4 border-l-[#10b981] flex justify-between items-center bg-[linear-gradient(90deg,#ecfdf5_0%,#f9fafb_100%)]">
+          <div className="flex items-center gap-2.5">
+            <i className="fa-solid fa-bell text-[16px] text-[#10b981]"></i>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Gastos Mensuales por Profesor</h2>
           </div>
         </div>
 
-        <div className="seccion-body">
-          <div className="card-table-wrapper">
-            <table className="table-avisos">
+        <div>
+          <div className="px-5 pb-5 pt-2.5 max-[768px]:px-2.5 max-[768px]:overflow-x-auto">
+            <table className="w-full border-separate border-spacing-0 text-[14px] bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-lg overflow-hidden">
               <thead>
                 <tr>
-                  <th>Mes</th>
-                  <th>Profesor</th>
-                  <th className="text-center">Pedidos</th>
-                  <th className="text-right">Total</th>
+                  <th className="text-left p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Mes</th>
+                  <th className="text-left p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Profesor</th>
+                  <th className="text-center p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Pedidos</th>
+                  <th className="text-right p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Total</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={4} style={{ padding: "16px 0" }}>
+                    <td colSpan={4} className="py-4 px-0">
                       <Spinner size="sm" label="Cargando datos financieros..." />
                     </td>
                   </tr>
                 ) : gastosMensuales.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center">
+                    <td colSpan={4} className="text-center p-5 text-[#6b7280]">
                       No hay datos de gastos registrados
                     </td>
                   </tr>
                 ) : (
                   gastosMensuales.map((g, idx) => (
-                    <tr key={`${g.mes}-${g.nombre_usuario}-${idx}`}>
-                      <td>{formatearMes(g.mes)}</td>
-                      <td>{g.nombre_usuario}</td>
-                      <td className="text-center">{g.num_pedidos}</td>
-                      <td className="text-right">
-                        <strong>{Number(g.total_mes).toFixed(2)} €</strong>
+                    <tr key={`${g.mes}-${g.nombre_usuario}-${idx}`} className="hover:[&>td]:bg-[#fdfdfd]">
+                      <td className="p-3 border-b border-b-[#f3f4f6] text-[#374151]">{formatearMes(g.mes)}</td>
+                      <td className="p-3 border-b border-b-[#f3f4f6] text-[#374151]">{g.nombre_usuario}</td>
+                      <td className="p-3 border-b border-b-[#f3f4f6] text-center text-[#374151]">{g.num_pedidos}</td>
+                      <td className="p-3 border-b border-b-[#f3f4f6] text-right text-[#374151]">
+                        <strong className="text-[#111827] font-semibold">{Number(g.total_mes).toFixed(2)} €</strong>
                       </td>
                     </tr>
                   ))
@@ -559,19 +571,19 @@ export default function AvisosPage() {
         </div>
       </section>
 
-      <div className={`modal-overlay-avisos ${modalOpen ? "active" : ""}`}>
-        <div className={`avisos-modal-card ${accionActual === "baja" ? "modo-danger" : "modo-success"}`}>
-          <div className="avisos-modal-header">
+      <div className={`fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000] transition-opacity duration-200 ${modalOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
+        <div className={`bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${modalOpen ? "translate-y-0 scale-100" : "translate-y-5 scale-95"}`}>
+          <div className="flex justify-between items-center px-5 py-4 border-b border-b-[#f3f4f6]">
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
             </h3>
-            <button type="button" className="avisos-modal-close" onClick={cerrarModal}>
+            <button type="button" className="bg-transparent border-0 text-[#9ca3af] cursor-pointer text-[16px] p-1 rounded hover:bg-[#f3f4f6] hover:text-[#374151]" onClick={cerrarModal}>
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
 
-          <div className="avisos-modal-body">
-            <p className="avisos-modal-texto">
+          <div className="p-5">
+            <p className="m-0 mb-5 text-[#4b5563] text-[14px] leading-relaxed">
               {accionActual === "baja" && productoSeleccionado && (
                 <>
                   Vas a dar de baja <strong>{productoSeleccionado.nombre}</strong> por caducidad.
@@ -589,12 +601,12 @@ export default function AvisosPage() {
               )}
             </p>
 
-            <div className="avisos-input-grupo">
-              <label htmlFor="modal-cantidad">Cantidad</label>
-              <div className="avisos-input-wrapper">
+            <div>
+              <label htmlFor="modal-cantidad" className="block text-[12px] font-medium text-[#374151] mb-1.5">Cantidad</label>
+              <div className="flex items-center border border-[#d1d5db] rounded-lg overflow-hidden">
                 <button
                   type="button"
-                  className="btn-cantidad"
+                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-r border-r-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
                   onClick={() => setCantidadModal((v) => Math.max(1, v - 1))}
                 >
                   -
@@ -607,11 +619,12 @@ export default function AvisosPage() {
                   max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
                   onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
+                  className="flex-1 border-0 text-center text-[16px] font-semibold py-2 outline-none [appearance:textfield]"
                 />
 
                 <button
                   type="button"
-                  className="btn-cantidad"
+                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-l border-l-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
                   onClick={() => {
                     const max =
                       accionActual === "baja"
@@ -624,7 +637,7 @@ export default function AvisosPage() {
                 </button>
               </div>
 
-              <span className="avisos-modal-hint">
+              <span className="block mt-1.5 text-[11px] text-[#6b7280]">
                 {accionActual === "baja" && productoSeleccionado
                   ? `Stock actual: ${productoSeleccionado.stockNum} unidades`
                   : accionActual === "pedido" && productoSeleccionado
@@ -634,32 +647,38 @@ export default function AvisosPage() {
             </div>
           </div>
 
-          <div className="avisos-modal-footer">
-            <button type="button" className="avisos-btn-modal avisos-btn-cancelar" onClick={cerrarModal}>
+          <div className="px-5 py-4 bg-[#f9fafb] border-t border-t-[#f3f4f6] flex justify-end gap-3 rounded-b-xl">
+            <button type="button" className="px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer border border-[#d1d5db] bg-[var(--color-bg-surface)] text-[#374151] hover:bg-[#f3f4f6]" onClick={cerrarModal}>
               Cancelar
             </button>
 
             <button
               type="button"
-              className={`avisos-btn-modal avisos-btn-confirmar ${confirmando ? "loading" : ""}`}
+              className={`px-4 py-2 rounded-md text-[13px] font-medium cursor-pointer border border-transparent text-white inline-flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed ${
+                accionActual === "baja"
+                  ? "bg-[#dc2626] hover:bg-[#b91c1c]"
+                  : "bg-[#2563eb] hover:bg-[#1d4ed8]"
+              }`}
               onClick={confirmarAccion}
               disabled={confirmando}
             >
-              <span className="avisos-btn-texto">Confirmar</span>
-              <span className="avisos-btn-loader">
-                <i className="fa-solid fa-circle-notch fa-spin"></i>
-              </span>
+              {confirmando ? <i className="fa-solid fa-circle-notch fa-spin"></i> : null}
+              <span>Confirmar</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className={`toast toast-${toastTipo} ${toastOpen ? "active" : ""}`}>
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-[100px] opacity-0 bg-[#111827] text-white px-5 py-2.5 rounded-[30px] flex items-center gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] z-[2000] text-[13px] font-medium transition-[transform,opacity] duration-400 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${
+          toastOpen ? "translate-y-0 opacity-100" : ""
+        }`}
+      >
         <i
           className={
             toastTipo === "success"
-              ? "fa-solid fa-circle-check"
-              : "fa-solid fa-circle-xmark"
+              ? "fa-solid fa-circle-check text-[#34d399]"
+              : "fa-solid fa-circle-xmark text-[#f87171]"
           }
         ></i>
         <span>{toastMensaje}</span>

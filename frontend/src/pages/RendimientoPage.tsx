@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
   getProductos,
 } from "../services/productosService";
 import type { Categoria, Producto } from "../types";
-import "../styles/rendimiento.css";
-import "../components/ui/ui.css";
 import { apiFetch } from "../services/apiClient";
 import { showConfirm } from "../utils/notifications";
 import { queryKeys } from "../lib/queryClient";
@@ -118,10 +116,20 @@ export default function RendimientoPage() {
     },
   });
 
-  const productosDisponibles = productosQuery.data ?? [];
-  const categoriasDisponibles = categoriasQuery.data ?? [];
-  const historialRendimiento = historialQuery.data ?? [];
+  const productosDisponibles = useMemo(
+    () => productosQuery.data ?? [],
+    [productosQuery.data],
+  );
+  const categoriasDisponibles = useMemo(
+    () => categoriasQuery.data ?? [],
+    [categoriasQuery.data],
+  );
+  const historialRendimiento = useMemo(
+    () => historialQuery.data ?? [],
+    [historialQuery.data],
+  );
   const loadingHistorial = historialQuery.isLoading;
+  const lastHistorialErrorRef = useRef<string>("");
 
   useEffect(() => {
     setFechaActual(
@@ -136,8 +144,12 @@ export default function RendimientoPage() {
 
   useEffect(() => {
     if (historialQuery.error instanceof Error) {
-      console.error("Error API historial:", historialQuery.error);
-      mostrarMensaje("Error cargando historial", "error");
+      const key = historialQuery.error.message || "historial-error";
+      if (lastHistorialErrorRef.current !== key) {
+        lastHistorialErrorRef.current = key;
+        console.error("Error API historial:", historialQuery.error);
+        mostrarMensaje("Error cargando historial", "error");
+      }
     }
   }, [historialQuery.error]);
 
@@ -145,7 +157,7 @@ export default function RendimientoPage() {
     const texto = busqueda.toLowerCase().trim();
 
     if (!texto || texto.length < 2) {
-      setResultadosSugerencias([]);
+      setResultadosSugerencias((prev) => (prev.length ? [] : prev));
       return;
     }
 
@@ -159,7 +171,12 @@ export default function RendimientoPage() {
       })
       .slice(0, 8);
 
-    setResultadosSugerencias(sugerencias);
+    setResultadosSugerencias((prev) => {
+      if (prev.length === sugerencias.length && prev.every((p, i) => p.id === sugerencias[i]?.id)) {
+        return prev;
+      }
+      return sugerencias;
+    });
   }, [busqueda, productosDisponibles]);
 
   function mostrarMensaje(texto: string, tipo: "exito" | "error") {
@@ -413,65 +430,63 @@ export default function RendimientoPage() {
   }, [registrosRendimiento, historialRendimiento]);
 
   function getClaseRendimiento(valor: number) {
-    if (valor >= 75) return "rendimiento-alto";
-    if (valor >= 50) return "rendimiento-medio";
-    return "rendimiento-bajo";
+    if (valor >= 75) return "text-[#38a169] font-bold";
+    if (valor >= 50) return "text-[#dd6b20] font-bold";
+    return "text-[#e53e3e] font-bold";
   }
 
   function getClaseMerma(valor: number) {
-    if (valor >= 40) return "rendimiento-bajo";
-    if (valor >= 25) return "rendimiento-medio";
-    return "rendimiento-alto";
+    if (valor >= 40) return "text-[#e53e3e] font-bold";
+    if (valor >= 25) return "text-[#dd6b20] font-bold";
+    return "text-[#38a169] font-bold";
   }
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto", width: "100%" }}>
+    <div className="max-w-[1400px] mx-auto w-full">
       <div
-        className="header-rendimiento"
+        className="flex justify-between items-start mb-[25px] flex-wrap gap-4 max-[768px]:flex-col"
         data-print-date={new Date().toLocaleString("es-ES")}
       >
         <div>
-          <h1 className="titulo-rendimiento">
+          <h1 className="text-[1.8rem] font-extrabold text-[var(--color-text-strong)] m-0 mb-1 flex items-center gap-3 max-[768px]:text-[1.4rem]">
             <i className="fa-solid fa-chart-pie"></i> Rendimiento
           </h1>
-          <p className="subtitulo">
+          <p className="text-[14px] text-[var(--color-text-muted)] m-0 italic">
             Toda materia prima susceptible de manipulación o preelaboración
             tendrá una merma y un rendimiento real
           </p>
         </div>
 
-        <div className="acciones-header-rend">
-          <div className="info-fecha">
+        <div className="flex gap-4 items-center flex-wrap max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
+          <div className="flex items-center gap-2 bg-[var(--color-bg-surface)] px-4 py-2.5 rounded-xl text-[var(--color-text-muted)] text-[14px] border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] max-[768px]:justify-center">
             <i className="fa-solid fa-calendar"></i>
             <span>{fechaActual}</span>
           </div>
 
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, color: "#4a5568" }}>
+          <div className="flex gap-2.5 items-center flex-wrap max-[768px]:justify-center">
+            <span className="text-[12px] text-[#4a5568]">
               Báscula:{" "}
               <strong>
                 {scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}
               </strong>
             </span>
             {!scale.supported ? (
-              <span style={{ fontSize: 12, color: "#e53e3e" }}>
+              <span className="text-[12px] text-[#e53e3e]">
                 (Web Serial no soportado)
               </span>
             ) : scale.connected ? (
               <button
                 type="button"
-                className="btn-secundario-rend"
+                className="bg-[linear-gradient(135deg,#334155_0%,#1f2937_100%)] text-white border-0 px-[18px] py-2.5 rounded-xl font-bold text-[14px] cursor-pointer shadow-[0_4px_12px_rgba(31,41,55,0.24)] transition-[transform,box-shadow] duration-200 inline-flex items-center gap-2 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(31,41,55,0.32)]"
                 onClick={scale.disconnect}
-                style={{ padding: "8px 10px" }}
               >
                 <i className="fa-solid fa-plug-circle-xmark"></i> Desconectar
               </button>
             ) : (
               <button
                 type="button"
-                className="btn-secundario-rend"
+                className="bg-[linear-gradient(135deg,#334155_0%,#1f2937_100%)] text-white border-0 px-[18px] py-2.5 rounded-xl font-bold text-[14px] cursor-pointer shadow-[0_4px_12px_rgba(31,41,55,0.24)] transition-[transform,box-shadow] duration-200 inline-flex items-center gap-2 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(31,41,55,0.32)]"
                 onClick={scale.connect}
-                style={{ padding: "8px 10px" }}
               >
                 <i className="fa-solid fa-plug"></i> Conectar báscula
               </button>
@@ -480,7 +495,7 @@ export default function RendimientoPage() {
 
           <button
             type="button"
-            className="btn-secundario-rend"
+            className="bg-[linear-gradient(135deg,#334155_0%,#1f2937_100%)] text-white border-0 px-[18px] py-2.5 rounded-xl font-bold text-[14px] cursor-pointer shadow-[0_4px_12px_rgba(31,41,55,0.24)] transition-[transform,box-shadow] duration-200 inline-flex items-center gap-2 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(31,41,55,0.32)]"
             onClick={imprimir}
           >
             <i className="fa-solid fa-print"></i> Imprimir / PDF
@@ -488,62 +503,62 @@ export default function RendimientoPage() {
         </div>
       </div>
 
-      <div className="stats-container-rend">
-        <div className="stat-card-rend stat-ingredientes">
-          <div className="stat-icon-rend">
+      <div className="grid grid-cols-4 gap-4 mb-[25px] max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
           </div>
-          <div className="stat-info-rend">
-            <span className="stat-label-rend">Ingredientes Analizados</span>
-            <span className="stat-valor-rend">{estadisticas.ingredientes}</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Ingredientes Analizados</span>
+            <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">{estadisticas.ingredientes}</span>
           </div>
         </div>
 
-        <div className="stat-card-rend stat-rendimiento-avg">
-          <div className="stat-icon-rend">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#f0fff4] text-[#38a169]">
             <i className="fa-solid fa-arrow-trend-up"></i>
           </div>
-          <div className="stat-info-rend">
-            <span className="stat-label-rend">Rendimiento Medio</span>
-            <span className="stat-valor-rend">
+          <div className="flex flex-col gap-1">
+            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Rendimiento Medio</span>
+            <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
               {estadisticas.rendimientoMedio.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="stat-card-rend stat-merma-avg">
-          <div className="stat-icon-rend">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-arrow-trend-down"></i>
           </div>
-          <div className="stat-info-rend">
-            <span className="stat-label-rend">Merma Media</span>
-            <span className="stat-valor-rend">
+          <div className="flex flex-col gap-1">
+            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Merma Media</span>
+            <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
               {estadisticas.mermaMedia.toFixed(1)}%
             </span>
           </div>
         </div>
 
-        <div className="stat-card-rend stat-desperdicio-total">
-          <div className="stat-icon-rend">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+          <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
             <i className="fa-solid fa-trash-can"></i>
           </div>
-          <div className="stat-info-rend">
-            <span className="stat-label-rend">Desperdicio Total</span>
-            <span className="stat-valor-rend">
+          <div className="flex flex-col gap-1">
+            <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Desperdicio Total</span>
+            <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
               {estadisticas.desperdicioTotal.toFixed(2)} kg
             </span>
           </div>
         </div>
       </div>
 
-      <div className="panel-registro-rend">
-        <div className="controles-registro-rend">
-          <div className="grupo-herramientas-izq">
-            <div className="campo-busqueda-rend">
-              <i className="fa-solid fa-search icono-busqueda"></i>
+      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+        <div className="flex justify-between items-center gap-5 max-[768px]:flex-col max-[768px]:items-stretch">
+          <div className="flex gap-4 flex-1 items-center max-[768px]:flex-col max-[768px]:items-stretch">
+            <div className="flex gap-2.5 items-stretch flex-1 relative">
+              <i className="fa-solid fa-search absolute left-3 top-3 text-[#a0aec0]"></i>
               <input
                 type="text"
-                className="input-busqueda-rend"
+                className="flex-1 pl-9 pr-[18px] py-3 border border-[var(--color-border-default)] rounded-xl text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
                 placeholder="Buscar ingrediente..."
                 aria-label="Buscar ingrediente"
                 value={busqueda}
@@ -562,10 +577,10 @@ export default function RendimientoPage() {
             />
           </div>
 
-          <div className="filtros-rend">
+          <div className="flex gap-2.5 items-center flex-wrap max-[768px]:w-full">
             <button
               type="button"
-              className="btn-nuevo-rend"
+              className="ml-auto bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 px-6 py-2.5 rounded-xl font-bold text-[14px] cursor-pointer shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,box-shadow,filter] duration-200 inline-flex items-center gap-2 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(56,161,105,0.4)] hover:brightness-105 max-[768px]:w-full max-[768px]:justify-center max-[768px]:ml-0"
               onClick={abrirModal}
             >
               <i className="fa-solid fa-plus"></i> Nuevo Análisis
@@ -574,21 +589,12 @@ export default function RendimientoPage() {
         </div>
 
         <div
-          className={`resultados-busqueda-rend ${resultadosSugerencias.length === 0 ? "oculto" : ""}`}
+          className={`mt-4 max-h-[200px] overflow-y-auto border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-surface)] ${resultadosSugerencias.length === 0 ? "hidden" : ""}`}
         >
           {resultadosSugerencias.length > 0 && (
             <>
               <div
-                style={{
-                  padding: "10px 15px",
-                  background: "#f8fafc",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  color: "#718096",
-                  borderBottom: "2px solid #edf2f7",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
+                className="px-4 py-2.5 bg-[#f8fafc] text-[11px] font-bold text-[#718096] border-b-2 border-b-[#edf2f7] uppercase tracking-wide"
               >
                 Sugerencias del Maestro de Productos
               </div>
@@ -596,18 +602,18 @@ export default function RendimientoPage() {
               {resultadosSugerencias.map((p) => (
                 <div
                   key={String(p.id)}
-                  className="resultado-sugerencia-rend"
+                  className="px-[18px] py-3 cursor-pointer border-b border-b-[#f0f4f8] flex justify-between items-center transition-colors hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] last:border-b-0"
                   onClick={() => seleccionarProductoMaster(p.nombre)}
                 >
-                  <div className="prod-nombre">
+                  <div className="font-semibold text-[14px]">
                     <i
                       className="fa-solid fa-plus-circle"
                       style={{ color: "#38a169", marginRight: "8px" }}
                     ></i>
                     {p.nombre}
                   </div>
-                  <div className="prod-meta">
-                    <span className="prod-tag">
+                  <div className="text-[11px] text-[var(--color-text-muted)]">
+                    <span className="bg-[#f1f5f9] px-2 py-0.5 rounded-[10px] font-bold uppercase ml-2.5">
                       {(p as any).categoria_nombre ||
                         p.categoria?.nombre ||
                         "General"}
@@ -620,37 +626,37 @@ export default function RendimientoPage() {
         </div>
       </div>
 
-      <div className="panel-tabla-rend">
-        <h3 className="titulo-seccion-rend">
+      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+        <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-table"></i> Registro de Rendimiento Actual
         </h3>
 
-        <div className="tabla-wrapper-rend">
-          <table className="tabla-rendimiento">
+        <div className="overflow-x-auto rounded-xl border border-[var(--color-border-default)]">
+          <table className="w-full border-separate border-spacing-0">
             <caption className="visually-hidden">
               Tabla de análisis de rendimiento de ingredientes
             </caption>
             <thead>
               <tr>
-                <th>Ingrediente</th>
-                <th>Peso Bruto (kg)</th>
-                <th>Peso Neto (kg)</th>
-                <th>Desperdicio (kg)</th>
-                <th>% Total</th>
-                <th>% Rendimiento</th>
-                <th>% Merma</th>
-                <th>Acción</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Ingrediente</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Peso Bruto (kg)</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Peso Neto (kg)</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Desperdicio (kg)</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Total</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Rendimiento</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Merma</th>
+                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Acción</th>
               </tr>
             </thead>
 
             <tbody>
               {registrosRendimiento.length === 0 ? (
-                <tr className="fila-vacia-rend">
+                <tr>
                   <td colSpan={8}>
-                    <div className="mensaje-vacio-rend">
-                      <i className="fa-solid fa-inbox"></i>
-                      <p>No hay registros de rendimiento</p>
-                      <small>Haz clic en "Nuevo Análisis" para comenzar</small>
+                    <div className="text-center py-10 text-[#a0aec0] flex flex-col items-center gap-2">
+                      <i className="fa-solid fa-inbox text-[2rem] opacity-50"></i>
+                      <p className="m-0 font-semibold">No hay registros de rendimiento</p>
+                      <small className="text-[12px]">Haz clic en "Nuevo Análisis" para comenzar</small>
                     </div>
                   </td>
                 </tr>
@@ -662,24 +668,24 @@ export default function RendimientoPage() {
                       : 0;
 
                   return (
-                    <tr key={reg.id}>
-                      <td>
+                    <tr key={reg.id} className="hover:[&>td]:bg-[#fafbfc]">
+                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
                         <strong>{reg.ingrediente}</strong>
                       </td>
-                      <td>{reg.pesoBruto.toFixed(3)}</td>
-                      <td>{reg.pesoNeto.toFixed(3)}</td>
-                      <td>{reg.desperdicio.toFixed(3)}</td>
-                      <td>{porcTotal.toFixed(1)}%</td>
-                      <td className={getClaseRendimiento(reg.rendimiento)}>
+                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.pesoBruto.toFixed(3)}</td>
+                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.pesoNeto.toFixed(3)}</td>
+                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.desperdicio.toFixed(3)}</td>
+                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{porcTotal.toFixed(1)}%</td>
+                      <td className={`px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] ${getClaseRendimiento(reg.rendimiento)}`}>
                         {reg.rendimiento.toFixed(1)}%
                       </td>
-                      <td className={getClaseMerma(reg.merma)}>
+                      <td className={`px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] ${getClaseMerma(reg.merma)}`}>
                         {reg.merma.toFixed(1)}%
                       </td>
                       <td>
                         <button
                           type="button"
-                          className="btn-eliminar-rend"
+                          className="bg-[#fff5f5] border border-[#fca5a5] text-[#e53e3e] w-8 h-8 rounded-lg inline-flex items-center justify-center cursor-pointer transition-transform duration-200 hover:bg-[#fed7d7] hover:scale-110"
                           title="Eliminar registro"
                           onClick={() => eliminarRegistro(index)}
                         >
@@ -693,46 +699,46 @@ export default function RendimientoPage() {
             </tbody>
 
             <tfoot
-              className={registrosRendimiento.length === 0 ? "oculto" : ""}
+              className={registrosRendimiento.length === 0 ? "hidden" : ""}
             >
-              <tr className="fila-total-rend">
-                <td>
+              <tr className="bg-[linear-gradient(to_right,#f7fafc,var(--color-border-default))]">
+                <td className="px-4 py-3 font-bold text-[14px] text-[var(--color-text-strong)] border-t-2 border-t-[var(--color-border-strong)]">
                   <strong>TOTALES</strong>
                 </td>
-                <td className="total-valor-rend">
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
                   {totalesActuales.pesoBruto.toFixed(3)}
                 </td>
-                <td className="total-valor-rend">
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
                   {totalesActuales.pesoNeto.toFixed(3)}
                 </td>
-                <td className="total-valor-rend">
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
                   {totalesActuales.desperdicio.toFixed(3)}
                 </td>
-                <td className="total-valor-rend">100%</td>
-                <td className="total-valor-rend">
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">100%</td>
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
                   {totalesActuales.rendimiento.toFixed(1)}%
                 </td>
-                <td className="total-valor-rend">
+                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
                   {totalesActuales.merma.toFixed(1)}%
                 </td>
-                <td></td>
+                <td className="px-4 py-3 border-t-2 border-t-[var(--color-border-strong)]"></td>
               </tr>
             </tfoot>
           </table>
         </div>
       </div>
 
-      <div className="panel-acciones-rend">
-        <div className="campo-observaciones-rend">
+      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+        <div>
           <label
-            className="label-observaciones-rend"
+            className="font-semibold text-[var(--color-text-muted)] flex items-center gap-2 mb-2"
             htmlFor="textareaObservacionesRend"
           >
             <i className="fa-solid fa-note-sticky"></i> Observaciones
           </label>
           <textarea
             id="textareaObservacionesRend"
-            className="textarea-observaciones-rend"
+            className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-[10px] text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none resize-y"
             placeholder="Añade notas sobre este análisis de rendimiento (opcional)..."
             rows={3}
             aria-label="Observaciones del análisis"
@@ -741,10 +747,10 @@ export default function RendimientoPage() {
           />
         </div>
 
-        <div className="botones-finales-rend">
+        <div className="flex gap-3 justify-end mt-5 max-[768px]:flex-col">
           <button
             type="button"
-            className="btn-accion-rend btn-cancelar-rend"
+            className="px-7 py-3 rounded-xl font-bold text-[14px] cursor-pointer inline-flex items-center gap-2 transition-opacity bg-[var(--color-border-default)] text-[var(--color-text-muted)] disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center"
             onClick={limpiarTodo}
             disabled={registrosRendimiento.length === 0}
           >
@@ -753,7 +759,7 @@ export default function RendimientoPage() {
 
           <button
             type="button"
-            className="btn-accion-rend btn-guardar-rend"
+            className="px-7 py-3 rounded-xl font-bold text-[14px] cursor-pointer inline-flex items-center gap-2 transition-[transform,box-shadow,filter] duration-200 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white shadow-[0_4px_12px_rgba(56,161,105,0.3)] hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(56,161,105,0.4)] hover:brightness-105 disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center"
             onClick={guardarAnalisis}
             disabled={registrosRendimiento.length === 0}
           >
@@ -762,18 +768,27 @@ export default function RendimientoPage() {
         </div>
       </div>
 
-      <div className={`mensaje-estado-rend ${mensajeTipo}`}>
-        {mensajeEstado}
-      </div>
+      {mensajeEstado ? (
+        <div
+          className={`px-5 py-3 rounded-[10px] mb-5 font-semibold border ${
+            mensajeTipo === "exito"
+              ? "bg-[#f0fff4] text-[#276749] border-[#c6f6d5]"
+              : mensajeTipo === "error"
+              ? "bg-[#fff5f5] text-[#9b2c2c] border-[#fed7d7]"
+              : "bg-transparent border-transparent"
+          }`}
+        >
+          {mensajeEstado}
+        </div>
+      ) : null}
 
-      <div className="panel-historial-rend">
-        <div className="header-historial-rend">
-          <h3 className="titulo-seccion-rend">
-            <i className="fa-solid fa-clock-rotate-left"></i> Historial de
-            Análisis
+      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+        <div className="flex justify-between items-center flex-wrap gap-4 mb-4 max-[768px]:flex-col max-[768px]:items-stretch">
+          <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
+            <i className="fa-solid fa-clock-rotate-left"></i> Historial de Análisis
           </h3>
 
-          <div className="filtros-historial-rend">
+          <div className="flex gap-2.5">
             <UiSelect
               value={filtroCategoriaHistorial}
               onChange={setFiltroCategoriaHistorial}
@@ -786,46 +801,50 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="contenedor-historial-rend">
+        <div className="max-h-[400px] overflow-y-auto">
           {loadingHistorial ? (
-            <p style={{ textAlign: "center", color: "black", padding: "20px" }}>
-              Cargando historial...
-            </p>
+            <p className="text-center text-black p-5 m-0">Cargando historial...</p>
           ) : registrosFiltradosHistorial.length === 0 ? (
-            <p style={{ textAlign: "center", color: "black", padding: "20px" }}>
-              El historial de análisis aparecerá aquí
-            </p>
+            <p className="text-center text-black p-5 m-0">El historial de análisis aparecerá aquí</p>
           ) : (
             registrosFiltradosHistorial.map((item) => {
               const claseRend =
-                item.rendimiento >= 75 ? "badge-rendimiento" : "";
-              const claseMerma = item.merma >= 30 ? "badge-merma" : "";
+                item.rendimiento >= 75
+                  ? "bg-[#f0fff4] text-[#38a169]"
+                  : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]";
+              const claseMerma =
+                item.merma >= 30
+                  ? "bg-[#fff5f5] text-[#e53e3e]"
+                  : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]";
 
               return (
-                <div key={item.id} className="historial-item-rend">
-                  <div className="historial-info-rend">
-                    <span className="historial-nombre-rend">
+                <div
+                  key={item.id}
+                  className="flex justify-between items-center px-4 py-3 border-b border-b-[#f0f4f8] transition-colors hover:bg-[#fafbfc] last:border-b-0 max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-2.5"
+                >
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-bold text-[var(--color-text-strong)]">
                       {item.ingrediente}
                     </span>
-                    <span className="historial-detalle-rend">
-                      {item.fecha} · Bruto: {Number(item.pesoBruto).toFixed(3)}{" "}
-                      kg → Neto: {Number(item.pesoNeto).toFixed(3)} kg
+                    <span className="text-[12px] text-[var(--color-text-muted)]">
+                      {item.fecha} · Bruto: {Number(item.pesoBruto).toFixed(3)} kg → Neto:{" "}
+                      {Number(item.pesoNeto).toFixed(3)} kg
                       {item.observaciones ? ` · ${item.observaciones}` : ""}
                     </span>
                   </div>
 
-                  <div className="historial-valores-rend">
-                    <span className={`historial-badge-rend ${claseRend}`}>
+                  <div className="flex gap-5 items-center max-[768px]:w-full max-[768px]:justify-start">
+                    <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${claseRend}`}>
                       <i className="fa-solid fa-arrow-up"></i>{" "}
                       {Number(item.rendimiento).toFixed(1)}%
                     </span>
-                    <span className={`historial-badge-rend ${claseMerma}`}>
+                    <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${claseMerma}`}>
                       <i className="fa-solid fa-arrow-down"></i>{" "}
                       {Number(item.merma).toFixed(1)}%
                     </span>
                     <button
                       type="button"
-                      className="btn-eliminar-rend"
+                      className="bg-[#fff5f5] border border-[#fca5a5] text-[#e53e3e] w-8 h-8 rounded-lg inline-flex items-center justify-center cursor-pointer transition-transform duration-200 hover:bg-[#fed7d7] hover:scale-110"
                       title="Eliminar del historial"
                       onClick={() => eliminarRegistroHistorial(item.id)}
                     >
@@ -840,41 +859,41 @@ export default function RendimientoPage() {
       </div>
 
       <div
-        className={`modal-overlay-rend ${modalOpen ? "" : "oculto"}`}
+        className={`fixed inset-0 bg-black/50 [backdrop-filter:blur(4px)] flex justify-center items-center z-[1000] ${modalOpen ? "" : "hidden"}`}
         onClick={(e) => {
           if (e.target === e.currentTarget) cerrarModal();
         }}
       >
-        <div className="modal-contenido-rend">
-          <h3>
+        <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[30px] max-w-[500px] w-[90%] shadow-[0_25px_50px_rgba(0,0,0,0.25)]">
+          <h3 className="m-0 mb-5 text-[1.3rem] text-[var(--color-text-strong)] flex items-center gap-2.5">
             <i className="fa-solid fa-chart-pie"></i>
             Análisis de Rendimiento
           </h3>
 
-          <p className="modal-ingrediente-nombre">
+          <p className="font-semibold text-[var(--color-text-muted)] m-0 mb-5 px-4 py-2.5 bg-[var(--color-bg-soft)] rounded-lg border-l-[3px] border-l-[var(--color-brand-500)]">
             {modalIngrediente || "Nuevo ingrediente"}
           </p>
 
-          <div className="modal-campos-rend">
-            <div className="modal-campo-rend">
-              <label htmlFor="modalInputIngrediente">Ingrediente:</label>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="modalInputIngrediente" className="font-semibold text-[13px] text-[var(--color-text-muted)]">Ingrediente:</label>
               <input
                 type="text"
                 id="modalInputIngrediente"
-                className="modal-input-rend"
+                className="px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
                 placeholder="Nombre del ingrediente..."
                 value={modalIngrediente}
                 onChange={(e) => setModalIngrediente(e.target.value)}
               />
             </div>
 
-            <div className="modal-campo-rend">
-              <label htmlFor="modalInputPesoBruto">Peso Bruto (kg):</label>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="modalInputPesoBruto" className="font-semibold text-[13px] text-[var(--color-text-muted)]">Peso Bruto (kg):</label>
+              <div className="flex gap-2 items-center">
                 <input
                   type="number"
                   id="modalInputPesoBruto"
-                  className="modal-input-rend"
+                  className="flex-1 px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
                   min="0.001"
                   step="0.001"
                   placeholder="0.000"
@@ -883,27 +902,26 @@ export default function RendimientoPage() {
                 />
                 <button
                   type="button"
-                  className="btn-modal-rend"
+                  className="px-3 py-2.5 rounded-[10px] font-bold text-[14px] cursor-pointer transition-opacity bg-[var(--color-border-default)] text-[var(--color-text-muted)] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center"
                   onClick={() => {
                     const kg = scale.captureKg();
                     if (kg != null) setModalPesoBruto(String(kg.toFixed(3)));
                   }}
                   disabled={!scale.connected || scale.weightKg == null}
                   title="Usar lectura actual de la báscula"
-                  style={{ padding: "10px 12px" }}
                 >
                   <i className="fa-solid fa-scale-balanced"></i>
                 </button>
               </div>
             </div>
 
-            <div className="modal-campo-rend">
-              <label htmlFor="modalInputPesoNeto">Peso Neto (kg):</label>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="modalInputPesoNeto" className="font-semibold text-[13px] text-[var(--color-text-muted)]">Peso Neto (kg):</label>
+              <div className="flex gap-2 items-center">
                 <input
                   type="number"
                   id="modalInputPesoNeto"
-                  className="modal-input-rend"
+                  className="flex-1 px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
                   min="0"
                   step="0.001"
                   placeholder="0.000"
@@ -912,55 +930,52 @@ export default function RendimientoPage() {
                 />
                 <button
                   type="button"
-                  className="btn-modal-rend"
+                  className="px-3 py-2.5 rounded-[10px] font-bold text-[14px] cursor-pointer transition-opacity bg-[var(--color-border-default)] text-[var(--color-text-muted)] disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center justify-center"
                   onClick={() => {
                     const kg = scale.captureKg();
                     if (kg != null) setModalPesoNeto(String(kg.toFixed(3)));
                   }}
                   disabled={!scale.connected || scale.weightKg == null}
                   title="Usar lectura actual de la báscula"
-                  style={{ padding: "10px 12px" }}
                 >
                   <i className="fa-solid fa-scale-balanced"></i>
                 </button>
               </div>
             </div>
 
-            <div className="modal-resultados-rend">
-              <div className="modal-resultado-item">
-                <span className="resultado-label">Desperdicio:</span>
-                <span className="resultado-valor">
+            <div className="bg-[linear-gradient(135deg,#f7fafc_0%,var(--color-border-default)_100%)] p-[18px] rounded-xl flex flex-col gap-2.5 border border-[var(--color-border-default)] mt-1">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[13px] text-[var(--color-text-muted)]">Desperdicio:</span>
+                <span className="font-extrabold text-[1.1rem] text-[var(--color-text-strong)]">
                   {calculoModal.desperdicio.toFixed(3)} kg
                 </span>
               </div>
-              <div className="modal-resultado-item">
-                <span className="resultado-label">% Rendimiento:</span>
-                <span
-                  className={`resultado-valor ${getClaseRendimiento(calculoModal.rendimiento)}`}
-                >
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[13px] text-[var(--color-text-muted)]">% Rendimiento:</span>
+                <span className={`font-extrabold text-[1.1rem] ${getClaseRendimiento(calculoModal.rendimiento)}`}>
                   {calculoModal.rendimiento.toFixed(1)}%
                 </span>
               </div>
-              <div className="modal-resultado-item">
-                <span className="resultado-label">% Merma:</span>
-                <span className="resultado-valor resultado-merma">
+              <div className="flex justify-between items-center">
+                <span className="font-semibold text-[13px] text-[var(--color-text-muted)]">% Merma:</span>
+                <span className="font-extrabold text-[1.1rem] text-[#e53e3e]">
                   {calculoModal.merma.toFixed(1)}%
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="modal-botones-rend">
+          <div className="flex gap-3 mt-6">
             <button
               type="button"
-              className="btn-modal-rend btn-modal-cancelar-rend"
+              className="flex-1 px-5 py-3 rounded-[10px] font-bold text-[14px] cursor-pointer transition-colors bg-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-strong)]"
               onClick={cerrarModal}
             >
               Cancelar
             </button>
             <button
               type="button"
-              className="btn-modal-rend btn-modal-confirmar-rend"
+              className="flex-1 px-5 py-3 rounded-[10px] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-200 text-white bg-[linear-gradient(135deg,var(--color-brand-500)_0%,#9c2b2b_100%)] shadow-[0_4px_12px_rgba(179,49,49,0.3)] hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(179,49,49,0.4)] hover:brightness-105"
               onClick={confirmarRegistro}
             >
               Añadir Registro

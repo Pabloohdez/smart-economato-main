@@ -1,6 +1,5 @@
 // frontend/src/pages/Distribucion.tsx
 import { useEffect, useMemo, useRef, useState } from "react";
-import "../styles/distribucion.css";
 import Spinner from "../components/ui/Spinner";
 
 import { showConfirm, showNotification } from "../utils/notifications";
@@ -44,12 +43,12 @@ function hoyES() {
 
 function badgeDestinoClass(motivoRaw?: string) {
   const motivo = (motivoRaw || "Sin especificar").toLowerCase();
-  if (motivo.includes("cocina")) return "badge-cocina";
-  if (motivo.includes("bar") || motivo.includes("cafetería") || motivo.includes("cafeteria")) return "badge-bar";
-  if (motivo.includes("eventos")) return "badge-eventos";
-  if (motivo.includes("caducidad") || motivo.includes("merma")) return "badge-merma";
-  if (motivo.includes("donación") || motivo.includes("donacion")) return "badge-donacion";
-  return "badge-default";
+  if (motivo.includes("cocina")) return "bg-[linear-gradient(135deg,#fed7d7_0%,#feb2b2_100%)] text-[#c53030]";
+  if (motivo.includes("bar") || motivo.includes("cafetería") || motivo.includes("cafeteria")) return "bg-[linear-gradient(135deg,#feebc8_0%,#fbd38d_100%)] text-[#c05621]";
+  if (motivo.includes("eventos")) return "bg-[linear-gradient(135deg,#e9d8fd_0%,#d6bcfa_100%)] text-[#6b46c1]";
+  if (motivo.includes("caducidad") || motivo.includes("merma")) return "bg-[linear-gradient(135deg,#fed7e2_0%,#fbb6ce_100%)] text-[#97266d]";
+  if (motivo.includes("donación") || motivo.includes("donacion")) return "bg-[linear-gradient(135deg,#c6f6d5_0%,#9ae6b4_100%)] text-[#22543d]";
+  return "bg-[linear-gradient(135deg,var(--color-border-default)_0%,var(--color-border-strong)_100%)] text-[var(--color-text-strong)]";
 }
 
 function normalizarUnidad(raw?: string) {
@@ -381,61 +380,70 @@ export default function DistribucionPage() {
 
   return (
     <div>
-      <div className="content-header content-header--split">
+      <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
         <div>
-          <h2>
-            <i className="fa-solid fa-truck" /> Distribución / Salida de Stock
+          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
+            <i className="fa-solid fa-truck text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
           </h2>
-          <p className="text-muted">Registra la salida de productos hacia cocina, bar u otros departamentos.</p>
+          <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
+            Registra la salida de productos hacia cocina, bar u otros departamentos.
+          </p>
         </div>
 
-        <div className="header-date-chip">
-          <i className="fa-solid fa-calendar" />
+        <div className="inline-flex items-center gap-2.5 px-[18px] py-3 rounded-[12px] text-[#50596D] font-bold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:w-full max-[768px]:justify-center">
+          <i className="fa-solid fa-calendar text-[var(--color-brand-500)]" />
           <span>{hoyES()}</span>
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
+        <div className="flex gap-3 items-center flex-wrap justify-between">
+          <div className="flex gap-2.5 items-center flex-wrap">
             <strong>Báscula</strong>
-            <span style={{ fontSize: 13, color: "#4a5568" }}>
-              Lectura:{" "}
-              <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
+            <span className="text-[13px] text-[#4a5568]">
+              Lectura: <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
             </span>
             {!scale.supported ? (
-              <span style={{ fontSize: 12, color: "#e53e3e" }}>(Web Serial no soportado)</span>
+              <span className="text-[12px] text-[#e53e3e]">(Web Serial no soportado)</span>
             ) : scale.connected ? (
-              <button type="button" className="btn-secondary" onClick={scale.disconnect}>
+              <button
+                type="button"
+                className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                onClick={scale.disconnect}
+              >
                 <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
               </button>
             ) : (
-              <button type="button" className="btn-secondary" onClick={scale.connect}>
+              <button
+                type="button"
+                className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                onClick={scale.connect}
+              >
                 <i className="fa-solid fa-plug" /> Conectar
               </button>
             )}
           </div>
-          <div style={{ fontSize: 12, color: "#718096" }}>
+          <div className="text-[12px] text-[#718096]">
             Tip: en “Cantidad a retirar” puedes usar decimales (kg).
           </div>
         </div>
       </div>
 
-      <div className="distribucion-container">
+      <div className="grid grid-cols-2 gap-[25px] mt-6 max-[768px]:grid-cols-1">
         {/* Panel Izq */}
-        <div className="card panel-seleccion" ref={buscadorWrapRef}>
-          <h3>
+        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col" ref={buscadorWrapRef}>
+          <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
             <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
           </h3>
 
           {/* Buscador con ghost text */}
-          <div className="busq-wrap">
-            <div className="busq-input-wrap">
+          <div className="flex gap-2.5 items-stretch mb-1">
+            <div className="relative flex-1 flex items-center">
               {/* Ghost suggestion behind input */}
               {resultadosAutocomplete.length > 0 &&
                 term.length >= 2 &&
                 resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) && (
-                  <div className="busq-ghost" aria-hidden="true">
+                  <div className="absolute left-0 top-0 w-full h-12 px-4 border-2 border-transparent text-[15px] pointer-events-none z-[2] flex items-center whitespace-pre overflow-hidden" aria-hidden="true">
                     <span style={{ visibility: "hidden" }}>{term}</span>
                     <span style={{ color: "#a0aec0" }}>
                       {resultadosAutocomplete[0].nombre.slice(term.length)}
@@ -445,7 +453,7 @@ export default function DistribucionPage() {
               <input
                 type="text"
                 id="buscadorProd"
-                className="busq-input"
+                className="relative z-[1] flex-1 w-full h-12 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-transparent transition-[border-color,box-shadow,background] duration-200 box-border focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
                 placeholder="Escribe nombre o código de barras..."
                 autoComplete="off"
                 value={term}
@@ -474,20 +482,18 @@ export default function DistribucionPage() {
                 }}
               />
             </div>
-
-
           </div>
 
           {/* Dropdown de resultados */}
           {resultadosOpen && (
-            <div id="listaResultados" className="lista-resultados">
+            <div id="listaResultados" className="border-2 border-[var(--color-border-default)] border-t-0 max-h-[220px] overflow-y-auto bg-white rounded-b-[10px] shadow-[0_8px_20px_rgba(0,0,0,0.08)] mt-[-2px]">
               {loadingProductos ? (
-                <div className="item-resultado item-resultado--muted">
+                <div className="flex items-center justify-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)] text-[var(--color-text-muted)] italic">
                   <Spinner size="sm" label="Cargando productos..." />
                 </div>
               ) : resultadosRender.length === 0 ? (
                 term.trim().length >= 2 ? (
-                  <div className="item-resultado item-resultado--muted">
+                  <div className="flex items-center justify-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)] text-[var(--color-text-muted)] italic">
                     Sin resultados para «{term.trim()}»
                   </div>
                 ) : null
@@ -495,7 +501,7 @@ export default function DistribucionPage() {
                 resultadosRender.map((p) => (
                   <div
                     key={String(p.id)}
-                    className="item-resultado"
+                    className="flex items-center justify-between gap-3 px-4 py-[11px] border-b border-[var(--color-border-default)] cursor-pointer transition-[background,padding-left,border-left] duration-150 hover:bg-[#fff5f5] hover:border-l-[3px] hover:border-l-[var(--color-brand-500)] hover:pl-[13px]"
                     role="button"
                     tabIndex={0}
                     onClick={() => seleccionarProducto(p)}
@@ -503,8 +509,10 @@ export default function DistribucionPage() {
                       if (e.key === "Enter") seleccionarProducto(p);
                     }}
                   >
-                    <span className="item-resultado__nombre">{p.nombre}</span>
-                    <span className="item-resultado__stock">Stock: {p.stock}</span>
+                    <span className="font-semibold text-[var(--color-text-strong)] text-[14px]">{p.nombre}</span>
+                    <span className="text-[12px] text-[var(--color-text-muted)] whitespace-nowrap bg-[var(--color-bg-soft)] px-2 py-0.5 rounded-full font-medium">
+                      Stock: {p.stock}
+                    </span>
                   </div>
                 ))
               )}
@@ -513,11 +521,11 @@ export default function DistribucionPage() {
 
           {/* ── Tarjeta del producto seleccionado ── */}
           {productoActual && (
-            <div className="prod-card">
-              <div className="prod-card__header">
-                <i className="fa-solid fa-box-open prod-card__ico" />
+            <div className="mt-5 border-2 border-[var(--color-border-default)] rounded-[14px] overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+              <div className="flex items-center gap-4 px-5 py-[18px] bg-[linear-gradient(135deg,#fff5f5_0%,#fff_100%)] border-b border-[var(--color-border-default)]">
+                <i className="fa-solid fa-box-open text-[28px] text-[var(--color-brand-500)] flex-shrink-0" />
                 <div>
-                  <p className="prod-card__nombre">{productoActual.nombre}</p>
+                  <p className="text-[18px] font-bold text-[var(--color-text-strong)] m-0 mb-1">{productoActual.nombre}</p>
                   {productoActual && (
                     <div
                       dangerouslySetInnerHTML={{ __html: generarBadgesProducto(productoActual) }}
@@ -526,17 +534,17 @@ export default function DistribucionPage() {
                 </div>
               </div>
 
-              <div className="prod-card__stock">
+              <div className="flex items-center justify-center gap-2.5 px-5 py-4 text-[14px] text-[var(--color-text-muted)] border-b border-[var(--color-border-default)] bg-[var(--color-bg-soft)]">
                 <i className="fa-solid fa-cubes" />
                 Stock disponible: <strong>{productoActual.stock}</strong> {normalizarUnidad(productoActual.unidadMedida)}
               </div>
 
-              <div className="prod-card__cant-wrap">
-                <label className="prod-card__cant-label">Cantidad a retirar</label>
-                <div className="prod-card__cant">
+              <div className="px-5 py-6 border-b border-[var(--color-border-default)] flex flex-col items-center bg-white">
+                <label className="block text-[13px] font-bold text-[var(--color-text-muted)] mb-4">Cantidad a retirar</label>
+                <div className="flex items-center border border-[var(--color-border-default)] rounded-lg bg-white overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                   <button
                     type="button"
-                    className="prod-card__cant-btn"
+                    className="w-11 h-11 bg-transparent border-0 cursor-pointer text-[16px] text-[#2b4c7e] inline-flex items-center justify-center transition-colors hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)]"
                     onClick={() => ajustarCant(-1)}
                     aria-label="Disminuir"
                   >
@@ -545,7 +553,7 @@ export default function DistribucionPage() {
                   <input
                     type="number"
                     id="cantidadSalida"
-                    className="prod-card__cant-input"
+                    className="w-[65px] h-11 text-center border-0 border-l border-r border-[var(--color-border-default)] text-[18px] font-extrabold text-[#1a365d] outline-none bg-transparent [appearance:textfield]"
                     value={cantidadSalida}
                     min={stepDeUnidad(productoActual.unidadMedida)}
                     step={stepDeUnidad(productoActual.unidadMedida)}
@@ -562,7 +570,7 @@ export default function DistribucionPage() {
                   />
                   <button
                     type="button"
-                    className="prod-card__cant-btn"
+                    className="w-11 h-11 bg-transparent border-0 cursor-pointer text-[16px] text-[#2b4c7e] inline-flex items-center justify-center transition-colors hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] disabled:opacity-60 disabled:cursor-not-allowed"
                     onClick={() => {
                       const kg = scale.captureKg();
                       const step = stepDeUnidad(productoActual.unidadMedida);
@@ -576,7 +584,7 @@ export default function DistribucionPage() {
                   </button>
                   <button
                     type="button"
-                    className="prod-card__cant-btn"
+                    className="w-11 h-11 bg-transparent border-0 cursor-pointer text-[16px] text-[#2b4c7e] inline-flex items-center justify-center transition-colors hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)]"
                     onClick={() => ajustarCant(1)}
                     aria-label="Aumentar"
                   >
@@ -584,12 +592,12 @@ export default function DistribucionPage() {
                   </button>
                 </div>
                 {stepDeUnidad(productoActual.unidadMedida) !== 1 && (
-                  <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", fontSize: 12, color: "#718096" }}>
+                  <div className="mt-2 flex gap-2.5 items-center flex-wrap text-[12px] text-[#718096]">
                     <span>
                       Lectura:{" "}
                       <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
                     </span>
-                    <label style={{ display: "inline-flex", gap: 8, alignItems: "center", cursor: "pointer" }}>
+                    <label className="inline-flex gap-2 items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={modoBascula}
@@ -602,7 +610,7 @@ export default function DistribucionPage() {
               </div>
 
               <button
-                className="prod-card__add-btn"
+                className="w-full py-4 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 cursor-pointer text-[15px] font-bold inline-flex items-center justify-center gap-2.5 transition-[letter-spacing,filter] duration-200 hover:brightness-105 hover:tracking-wide"
                 type="button"
                 onClick={agregarAlCarrito}
               >
@@ -613,37 +621,42 @@ export default function DistribucionPage() {
         </div>
 
         {/* Panel Der */}
-        <div className="card panel-carrito">
-          <div className="carrito-header">
-            <h3>Lista de Salida</h3>
-            <span id="itemsCount" className="badge">
+        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col">
+          <div className="flex items-center justify-between gap-3 pb-[15px] mb-5 border-b-2 border-[var(--color-border-default)]">
+            <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Lista de Salida</h3>
+            <span className="inline-flex items-center justify-center min-h-7 px-3 py-1 rounded-full bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] font-bold text-[12px]">
               {carrito.length} items
             </span>
           </div>
 
-          <div className="carrito-body">
-            <table className="table-carrito">
+          <div className="flex-1">
+            <table className="w-full border-collapse mt-3.5">
               <thead>
                 <tr>
-                  <th scope="col">Producto</th>
-                  <th scope="col">Cant.</th>
-                  <th scope="col">Acción</th>
+                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Producto</th>
+                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Cant.</th>
+                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Acción</th>
                 </tr>
               </thead>
-              <tbody id="tablaCarrito">
+              <tbody>
                 {carrito.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="text-center">
+                    <td colSpan={3} className="text-center py-5 px-4 text-[var(--color-text-muted)]">
                       La lista está vacía
                     </td>
                   </tr>
                 ) : (
                   carrito.map((item, index) => (
                     <tr key={`${String(item.productoId)}-${index}`}>
-                      <td>{item.nombre}</td>
-                      <td>{item.cantidad} {item.unidad ?? ""}</td>
+                      <td className="p-3 border-b border-[var(--color-border-default)] text-[var(--color-text-strong)]">{item.nombre}</td>
+                      <td className="p-3 border-b border-[var(--color-border-default)] text-[var(--color-text-strong)]">{item.cantidad} {item.unidad ?? ""}</td>
                       <td>
-                        <button type="button" onClick={() => eliminarDelCarrito(index)} aria-label={`Eliminar ${item.nombre}`}>
+                        <button
+                          type="button"
+                          className="bg-[#fff5f5] text-[#e53e3e] w-8 h-8 rounded-md border-0 cursor-pointer inline-flex items-center justify-center transition-colors hover:bg-[#fed7d7]"
+                          onClick={() => eliminarDelCarrito(index)}
+                          aria-label={`Eliminar ${item.nombre}`}
+                        >
                           <i className="fa-solid fa-trash" />
                         </button>
                       </td>
@@ -654,9 +667,11 @@ export default function DistribucionPage() {
             </table>
           </div>
 
-          <div className="carrito-footer">
-            <div className="form-group">
-              <label htmlFor="motivoSalida">Destino / Motivo:</label>
+          <div className="mt-auto pt-5 border-t-2 border-[var(--color-border-default)]">
+            <div className="mb-4">
+              <label htmlFor="motivoSalida" className="block mb-2 font-semibold text-[#50596D] text-[14px]">
+                Destino / Motivo:
+              </label>
               <UiSelect
                 id="motivoSalida"
                 value={motivo}
@@ -671,7 +686,11 @@ export default function DistribucionPage() {
               />
             </div>
 
-            <button className="btn-success btn-block" type="button" onClick={confirmarSalida}>
+            <button
+              className="w-full mt-3.5 py-[14px] rounded-[10px] border-0 cursor-pointer font-semibold text-white bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] inline-flex items-center justify-center gap-2"
+              type="button"
+              onClick={confirmarSalida}
+            >
               <i className="fa-solid fa-check" /> Confirmar Salida
             </button>
           </div>
@@ -679,33 +698,45 @@ export default function DistribucionPage() {
       </div>
 
       {/* Historial */}
-      <div className="card" style={{ marginTop: 20 }}>
-        <h3>
+      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mt-5">
+        <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
           <i className="fa-solid fa-clock-rotate-left" /> Historial de Movimientos
         </h3>
 
-        <div className="table-responsive" style={{ maxHeight: 400, overflowY: "auto" }}>
-          <table className="table" id="tablaHistorialMovimientos">
-            <thead style={{ position: "sticky", top: 0, background: "white", zIndex: 1 }}>
+        <div className="rounded-[10px] border border-[var(--color-border-default)] max-h-[400px] overflow-y-auto overflow-x-auto">
+          <table className="w-full min-w-[760px] border-collapse text-[14px]">
+            <thead className="sticky top-0 bg-white z-[1]">
               <tr>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Destino</th>
-                <th>Usuario</th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                  Fecha
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                  Hora
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)]">
+                  Producto
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                  Cantidad
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)]">
+                  Destino
+                </th>
+                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
+                  Usuario
+                </th>
               </tr>
             </thead>
-            <tbody id="tbodyHistorialMovimientos">
+            <tbody>
               {loadingHistorial ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: "16px 0" }}>
+                  <td colSpan={6} className="py-4 px-0">
                     <Spinner size="sm" label="Cargando historial..." />
                   </td>
                 </tr>
               ) : historial.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center" style={{ padding: 20, color: "#666" }}>
+                  <td colSpan={6} className="text-center py-5 px-4 text-[#666]">
                     No hay salidas registradas
                   </td>
                 </tr>
@@ -716,16 +747,20 @@ export default function DistribucionPage() {
                   const cls = badgeDestinoClass(motivoTxt);
 
                   return (
-                    <tr key={idx}>
-                      <td data-label="Fecha">{fecha}</td>
-                      <td data-label="Hora">{hora}</td>
-                      <td data-label="Producto">{mov.producto_nombre || "Producto desconocido"}</td>
-                      <td data-label="Cantidad">{mov.cantidad}</td>
-                      <td data-label="Destino">
-                        <span className={`badge-destino ${cls}`}>{motivoTxt}</span>
+                    <tr key={idx} className="transition-[background,box-shadow] duration-150 border-b border-[var(--color-border-default)] hover:bg-[#fff5f5] hover:shadow-[-4px_0_0_0_var(--color-brand-500)]">
+                      <td data-label="Fecha" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{fecha}</td>
+                      <td data-label="Hora" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{hora}</td>
+                      <td data-label="Producto" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{mov.producto_nombre || "Producto desconocido"}</td>
+                      <td data-label="Cantidad" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{mov.cantidad}</td>
+                      <td data-label="Destino" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">
+                        <span className={`inline-block px-3 py-1.5 rounded-[20px] text-[12px] font-normal uppercase tracking-[0.5px] ${cls}`}>
+                          {motivoTxt}
+                        </span>
                       </td>
-                      <td data-label="Usuario">
-                        <span className="usuario-badge">{mov.usuario_nombre || "Desconocido"}</span>
+                      <td data-label="Usuario" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--color-border-default)] rounded-xl text-[12px] text-[var(--color-text-muted)] font-normal">
+                          {mov.usuario_nombre || "Desconocido"}
+                        </span>
                       </td>
                     </tr>
                   );
