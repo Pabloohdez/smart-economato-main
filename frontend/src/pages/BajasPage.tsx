@@ -6,6 +6,7 @@ import Spinner from "../components/ui/Spinner";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import UiSelect from "../components/ui/UiSelect";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 type ProductoBaja = Producto & {
   tipoBaja: "Rotura" | "Caducado" | "Merma" | "Ajuste" | "Otro";
@@ -420,8 +421,9 @@ export default function BajasPage() {
   }, [historial, filtroTipoHistorial]);
 
   return (
-    <div>
+    <StaggerPage>
       {/* HEADER */}
+      <StaggerItem>
       <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
         <div>
           <h1 className="text-[#c53030] text-[28px] font-bold m-0 mb-2 flex items-center gap-3">
@@ -434,8 +436,10 @@ export default function BajasPage() {
           <span id="fechaActualBajas">{fechaActual}</span>
         </div>
       </div>
+      </StaggerItem>
 
       {/* STATS */}
+      <StaggerItem>
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
@@ -485,8 +489,10 @@ export default function BajasPage() {
           </div>
         </div>
       </div>
+      </StaggerItem>
 
       {/* PANEL REGISTRO */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-clipboard-list" /> Registrar Nueva Baja
@@ -592,8 +598,10 @@ export default function BajasPage() {
           )}
         </div>
       </div>
+      </StaggerItem>
 
       {/* BAJA ACTIVA */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
         <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-file-lines" /> Registro de Baja Actual
@@ -682,8 +690,10 @@ export default function BajasPage() {
           </table>
         </div>
       </div>
+      </StaggerItem>
 
       {/* ACCIONES */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
@@ -730,8 +740,10 @@ export default function BajasPage() {
           </button>
         </div>
       </div>
+      </StaggerItem>
 
       {/* MENSAJE ESTADO */}
+      <StaggerItem>
       <div
         id="mensajeEstadoBajas"
         className="text-center font-semibold min-h-6 text-[14px] p-3 rounded-lg mt-5 border-2"
@@ -759,8 +771,10 @@ export default function BajasPage() {
       >
         {mensajeEstado?.text ?? ""}
       </div>
+      </StaggerItem>
 
       {/* HISTORIAL */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
         <div className="flex justify-between items-center mb-5 max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-3">
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
@@ -846,6 +860,7 @@ export default function BajasPage() {
           )}
         </div>
       </div>
+      </StaggerItem>
 
       {/* MODAL */}
       <div
@@ -953,6 +968,6 @@ export default function BajasPage() {
           </div>
         </div>
       </div>
-    </div>
+    </StaggerPage>
   );
 }

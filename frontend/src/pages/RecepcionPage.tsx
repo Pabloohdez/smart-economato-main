@@ -13,6 +13,7 @@ import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -475,8 +476,9 @@ export default function Recepcion() {
   }, [recepcion]);
 
   return (
-    <div>
+    <StaggerPage>
       {/* Header */}
+      <StaggerItem>
       <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
           <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
@@ -491,7 +493,9 @@ export default function Recepcion() {
           <span>{hoyES()}</span>
         </div>
       </div>
+      </StaggerItem>
 
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
         <div className="flex gap-3 items-center flex-wrap justify-between">
           <div className="flex gap-2.5 items-center flex-wrap">
@@ -547,8 +551,10 @@ export default function Recepcion() {
           </div>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Panel búsqueda */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5" ref={buscadorWrapRef}>
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
@@ -688,6 +694,7 @@ export default function Recepcion() {
           </button>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
@@ -874,6 +881,7 @@ export default function Recepcion() {
         document.body
       )}
       {/* Panel recepción actual */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5 max-[1024px]:p-[18px]">
         <div className="flex items-center justify-between gap-3 mb-5 flex-wrap max-[1024px]:items-start">
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
@@ -955,8 +963,10 @@ export default function Recepcion() {
           </table>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Observaciones + acciones */}
+      <StaggerItem>
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]">
@@ -992,6 +1002,7 @@ export default function Recepcion() {
           )}
         </div>
       </div>
+      </StaggerItem>
 
       {/* Modal Cantidad (usando Portal) */}
       {modalCantidadOpen && createPortal(
@@ -1119,6 +1130,6 @@ export default function Recepcion() {
         </div>,
         document.body
       )}
-    </div>
+    </StaggerPage>
   );
 }

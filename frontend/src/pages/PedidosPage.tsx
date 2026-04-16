@@ -12,6 +12,7 @@ import { queryKeys } from "../lib/queryClient";
 import { crearPedidoHistorial, getPedidos } from "../services/pedidosService";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import UiSelect from "../components/ui/UiSelect";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -371,59 +372,68 @@ export default function PedidosPage() {
   );
 
   return (
-    <div>
-      <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
-        <div>
-          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-            <i className="fa-solid fa-file-invoice-dollar text-[var(--color-brand-500)]"></i>
-            Pedidos y Compras
-          </h2>
-          <p className="mt-2 mb-0 text-[14px] text-[var(--color-text-muted)]">Historial de compras y generación de pedidos por proveedor.</p>
-        </div>
-
-        <div className="flex gap-[15px] flex-wrap items-center max-[900px]:w-full">
-          <div className="inline-flex items-center gap-2.5 px-4 py-3 border border-[var(--color-border-default)] rounded-[12px] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[var(--color-text-muted)] font-semibold max-[900px]:w-full max-[900px]:justify-center">
-            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
-            <span>{hoyES()}</span>
+    <StaggerPage>
+      <StaggerItem>
+        <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
+          <div>
+            <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
+              <i className="fa-solid fa-file-invoice-dollar text-[var(--color-brand-500)]"></i>
+              Pedidos y Compras
+            </h2>
+            <p className="mt-2 mb-0 text-[14px] text-[var(--color-text-muted)]">Historial de compras y generación de pedidos por proveedor.</p>
           </div>
 
-          <button
-            type="button"
-            className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background] duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)] max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5"
-            onClick={irANuevoPedido}
-          >
-            <i className="fa-solid fa-plus"></i> Nuevo Pedido
-          </button>
+          <div className="flex gap-[15px] flex-wrap items-center max-[900px]:w-full">
+            <div className="inline-flex items-center gap-2.5 px-4 py-3 border border-[var(--color-border-default)] rounded-[12px] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[var(--color-text-muted)] font-semibold max-[900px]:w-full max-[900px]:justify-center">
+              <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
+              <span>{hoyES()}</span>
+            </div>
 
-          <button
-            type="button"
-            className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
-            onClick={irAHistorial}
-          >
-            <i className="fa-solid fa-list"></i> Ver Historial
-          </button>
+            <button
+              type="button"
+              className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background] duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)] max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5"
+              onClick={irANuevoPedido}
+            >
+              <i className="fa-solid fa-plus"></i> Nuevo Pedido
+            </button>
+
+            <button
+              type="button"
+              className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
+              onClick={irAHistorial}
+            >
+              <i className="fa-solid fa-list"></i> Ver Historial
+            </button>
+          </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
-        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
-        </article>
-        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Incompletos</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.incompletos}</strong>
-        </article>
-        <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Importe Histórico</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.importeTotal.toFixed(2)} €</strong>
-        </article>
-      </section>
+      <StaggerItem>
+        <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
+          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+            <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
+          </article>
+          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+            <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Incompletos</span>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.incompletos}</strong>
+          </article>
+          <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+            <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Importe Histórico</span>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.importeTotal.toFixed(2)} €</strong>
+          </article>
+        </section>
+      </StaggerItem>
 
-      {err && <Alert type="error">{err}</Alert>}
+      {err && (
+        <StaggerItem>
+          <Alert type="error">{err}</Alert>
+        </StaggerItem>
+      )}
 
       {vista === "lista" && (
-        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
+        <StaggerItem>
+          <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
           <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5">Historial de Pedidos</h3>
 
           {loadingPedidos && <Spinner label="Cargando pedidos..." />}
@@ -439,11 +449,13 @@ export default function PedidosPage() {
           {!loadingPedidos && pedidos.length > 0 && (
             <PedidosGrid pedidos={pedidos} onIrARecepcion={irARecepcion} />
           )}
-        </div>
+          </div>
+        </StaggerItem>
       )}
 
       {vista === "nuevo" && (
-        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
+        <StaggerItem>
+          <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
           <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 flex items-center gap-2">
             <i className="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido
           </h3>
@@ -613,8 +625,9 @@ export default function PedidosPage() {
               </div>
             </>
           )}
-        </div>
+          </div>
+        </StaggerItem>
       )}
-    </div>
+    </StaggerPage>
   );
 }
