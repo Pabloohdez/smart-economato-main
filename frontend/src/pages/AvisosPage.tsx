@@ -167,7 +167,7 @@ export default function AvisosPage() {
 
   const stockBajo = useMemo<ProductoAviso[]>(() => {
     return productos
-      .filter((p) => p.stockMinimoNum > 0 && p.stockNum > 0 && p.stockNum <= p.stockMinimoNum)
+      .filter((p) => p.stockMinimoNum > 0 && p.stockNum <= p.stockMinimoNum)
       .sort((a, b) => a.stockNum / a.stockMinimoNum - b.stockNum / b.stockMinimoNum);
   }, [productos]);
 

@@ -100,8 +100,17 @@ export default function IngresarProductoPage() {
   function agregarALista() {
     const nombreLimpio = nombre.trim();
     const precioNum = parseFloat(precio);
-    const stockNum = parseInt(stock, 10);
-    const stockMinNum = parseInt(stockMin, 10);
+    const parseNumber = (raw: string) => Number(String(raw || "").replace(",", "."));
+    const stockNumRaw = parseNumber(stock);
+    const stockMinNumRaw = parseNumber(stockMin);
+    const stockNum =
+      unidadMedida === "ud"
+        ? Math.max(0, Math.floor(Number.isFinite(stockNumRaw) ? stockNumRaw : 0))
+        : Math.max(0, Number.isFinite(stockNumRaw) ? stockNumRaw : 0);
+    const stockMinNum =
+      unidadMedida === "ud"
+        ? Math.max(0, Math.floor(Number.isFinite(stockMinNumRaw) ? stockMinNumRaw : 0))
+        : Math.max(0, Number.isFinite(stockMinNumRaw) ? stockMinNumRaw : 0);
 
     if (!nombreLimpio || !categoriaId || !proveedorId || Number.isNaN(precioNum)) {
       setMensajeEstado("Por favor completa todos los campos obligatorios.");
@@ -120,8 +129,8 @@ export default function IngresarProductoPage() {
       nombre: nombreLimpio,
       precio: precioNum,
       precioUnitario: unidadLabel,
-      stock: Number.isNaN(stockNum) ? 0 : stockNum,
-      stockMinimo: Number.isNaN(stockMinNum) ? 5 : stockMinNum,
+      stock: stockNum,
+      stockMinimo: stockMinNum,
       categoriaId,
       proveedorId,
       unidadMedida: unidadLabel,
@@ -303,6 +312,7 @@ export default function IngresarProductoPage() {
             type="number"
             className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="0"
+            step={unidadMedida === "ud" ? "1" : "0.001"}
             value={stock}
             onChange={(e) => setStock(e.target.value)}
           />
@@ -317,6 +327,7 @@ export default function IngresarProductoPage() {
             type="number"
             className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="5"
+            step={unidadMedida === "ud" ? "1" : "0.001"}
             value={stockMin}
             onChange={(e) => setStockMin(e.target.value)}
           />

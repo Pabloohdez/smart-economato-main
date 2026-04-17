@@ -66,6 +66,60 @@ export async function crearProducto(payload: CrearProductoPayload): Promise<unkn
   });
 }
 
+export type CrearProductoMinimoPayload = {
+  nombre: string;
+  precio: number;
+  unidadMedida: "ud" | "kg" | "l";
+  proveedorId: number | string;
+};
+
+export type ProductoMinimoCreado = {
+  id: string;
+  nombre: string;
+  precio: number;
+  unidadMedida?: string;
+  precioUnitario?: string;
+  proveedorId?: number | string | null;
+};
+
+export async function crearProductoMinimo(payload: CrearProductoMinimoPayload): Promise<ProductoMinimoCreado> {
+  // Creamos un producto mínimo para poder referenciarlo desde el pedido (FK).
+  // Lo dejamos con stock 0 y activo=true (para que sea visible y editable en inventario).
+  const body = {
+    nombre: payload.nombre,
+    precio: payload.precio,
+    stock: 0,
+    stockMinimo: 0,
+    proveedorId: payload.proveedorId,
+    categoriaId: null,
+    unidadMedida: payload.unidadMedida,
+    precioUnitario: payload.unidadMedida,
+    marca: "Pendiente",
+    codigoBarras: "",
+    fechaCaducidad: null,
+    descripcion: "Producto creado desde pedido manual",
+    imagen: "producto-generico.jpg",
+    alergenos: [],
+    activo: true,
+  };
+  return apiFetch("/productos", {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: JSON.stringify(body),
+  }) as Promise<ProductoMinimoCreado>;
+}
+
+export async function actualizarProducto(
+  id: number | string,
+  payload: Partial<CrearProductoPayload> & { nombre: string; precio: number },
+): Promise<unknown> {
+  return apiFetch(`/productos/${id}`, {
+    method: "PUT",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function crearProductosBatch(items: CrearProductoPayload[]): Promise<unknown> {
   return apiFetch("/productos/batch", {
     method: "POST",

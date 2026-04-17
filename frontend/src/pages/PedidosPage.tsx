@@ -12,6 +12,7 @@ import { queryKeys } from "../lib/queryClient";
 import { crearPedidoHistorial, getPedidos } from "../services/pedidosService";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import UiSelect from "../components/ui/UiSelect";
+import { crearProductoMinimo } from "../services/productosService";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -118,6 +119,11 @@ export default function PedidosPage() {
 
   const [proveedorId, setProveedorId] = useState("");
   const [itemsPedido, setItemsPedido] = useState<ItemPedido[]>([]);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualNombre, setManualNombre] = useState("");
+  const [manualUnidad, setManualUnidad] = useState<"ud" | "kg" | "l">("ud");
+  const [manualPrecio, setManualPrecio] = useState("");
+  const [manualCantidad, setManualCantidad] = useState("");
 
   const [err, setErr] = useState("");
 
@@ -173,6 +179,63 @@ export default function PedidosPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.pedidos });
       broadcastQueryInvalidation(queryKeys.pedidos);
+    },
+  });
+
+  const crearProductoManualMutation = useMutation({
+    mutationFn: async () => {
+      const nombre = manualNombre.trim();
+      const precio = Number(String(manualPrecio || "").replace(",", "."));
+      if (!proveedorId) throw new Error("Selecciona un proveedor antes.");
+      if (!nombre) throw new Error("Nombre de producto obligatorio.");
+      if (!Number.isFinite(precio) || precio < 0) throw new Error("Precio inválido.");
+      return crearProductoMinimo({
+        nombre,
+        precio,
+        unidadMedida: manualUnidad,
+        proveedorId,
+      });
+    },
+    onSuccess: async (created) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.productos });
+      const prodLike: Producto = {
+        id: created.id,
+        nombre: created.nombre,
+        precio: Number(created.precio ?? 0),
+        stock: 0,
+        proveedorId: Number.isFinite(Number(proveedorId)) ? Number(proveedorId) : (proveedorId as any),
+        unidadMedida: manualUnidad,
+        precioUnitario: manualUnidad,
+      } as any;
+      agregarItem(prodLike);
+
+      // si el usuario puso cantidad, la aplicamos al último item agregado
+      const cant = Number(String(manualCantidad || "").replace(",", "."));
+      if (Number.isFinite(cant) && cant > 0) {
+        setItemsPedido((prev) => {
+          let lastIdx = -1;
+          for (let i = prev.length - 1; i >= 0; i -= 1) {
+            if (String(prev[i].producto_id) === String(created.id)) {
+              lastIdx = i;
+              break;
+            }
+          }
+          if (lastIdx < 0) return prev;
+          const next = prev.slice();
+          next[lastIdx] = { ...next[lastIdx], cantidad: cant };
+          return next;
+        });
+      }
+
+      setManualOpen(false);
+      setManualNombre("");
+      setManualPrecio("");
+      setManualCantidad("");
+      setManualUnidad("ud");
+      showNotification("Producto manual creado y añadido al pedido.", "success");
+    },
+    onError: (e) => {
+      showNotification(e instanceof Error ? e.message : "Error creando producto manual", "error");
     },
   });
 
@@ -482,7 +545,22 @@ export default function PedidosPage() {
 
               <div className="grid grid-cols-[1fr_1.5fr] gap-[30px] mt-5 max-[900px]:grid-cols-1">
                 <div>
-                  <h4>Productos Disponibles</h4>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <h4 className="m-0">Productos Disponibles</h4>
+                    <button
+                      type="button"
+                      className="min-h-10 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                      onClick={() => {
+                        if (!proveedorId) {
+                          showNotification("Selecciona un proveedor antes.", "warning");
+                          return;
+                        }
+                        setManualOpen(true);
+                      }}
+                    >
+                      <i className="fa-solid fa-plus" /> Producto manual
+                    </button>
+                  </div>
 
                   <div className="border-2 border-[var(--color-border-default)] h-[400px] overflow-y-auto bg-white rounded-[10px]">
                     {!proveedorId && (
@@ -556,7 +634,7 @@ export default function PedidosPage() {
                                 <UiSelect
                                   value={unidad}
                                   onChange={(v) => cambiarUnidad(idx, v)}
-                                  options={UNIDADES_OPCIONES.map((u) => ({
+                                  options={opcionesUnidadParaBase(base).map((u) => ({
                                     value: u.value,
                                     label: u.label,
                                   }))}
@@ -613,6 +691,116 @@ export default function PedidosPage() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {manualOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && !crearProductoManualMutation.isPending && setManualOpen(false)}
+        >
+          <div className="w-full max-w-[560px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
+            <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex items-center justify-between gap-3">
+              <div className="font-extrabold text-[16px]">Añadir producto manual</div>
+              <button
+                type="button"
+                className="bg-white/20 border-0 text-white w-9 h-9 rounded-full cursor-pointer inline-flex items-center justify-center hover:bg-white/30 disabled:opacity-60"
+                onClick={() => setManualOpen(false)}
+                disabled={crearProductoManualMutation.isPending}
+                aria-label="Cerrar"
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+
+            <div className="p-6 grid gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                  Nombre
+                </label>
+                <input
+                  value={manualNombre}
+                  onChange={(e) => setManualNombre(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                  placeholder="Ej: Producto nuevo"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Unidad base
+                  </label>
+                  <UiSelect
+                    value={manualUnidad}
+                    onChange={(v) => setManualUnidad((v as any) || "ud")}
+                    options={[
+                      { value: "ud", label: "Unidades (ud)" },
+                      { value: "kg", label: "Peso (kg)" },
+                      { value: "l", label: "Volumen (l)" },
+                    ]}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Precio ({manualUnidad === "kg" ? "€/kg" : manualUnidad === "l" ? "€/l" : "€/ud"})
+                  </label>
+                  <input
+                    value={manualPrecio}
+                    onChange={(e) => setManualPrecio(e.target.value)}
+                    type="number"
+                    step="0.01"
+                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Cantidad inicial (opcional)
+                  </label>
+                  <input
+                    value={manualCantidad}
+                    onChange={(e) => setManualCantidad(e.target.value)}
+                    type="number"
+                    step={manualUnidad === "ud" ? "1" : "0.001"}
+                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    placeholder={manualUnidad === "ud" ? "1" : "0.001"}
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Proveedor
+                  </label>
+                  <div className="px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] font-semibold">
+                    {proveedores.find((p) => String(p.id) === String(proveedorId))?.nombre || "—"}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2 max-[640px]:flex-col">
+                <button
+                  type="button"
+                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)] max-[640px]:w-full disabled:opacity-60"
+                  onClick={() => setManualOpen(false)}
+                  disabled={crearProductoManualMutation.isPending}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white border-0 px-6 py-2.5 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.25)] hover:-translate-y-0.5 transition disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:w-full"
+                  onClick={() => crearProductoManualMutation.mutate()}
+                  disabled={crearProductoManualMutation.isPending}
+                >
+                  {crearProductoManualMutation.isPending ? "Creando..." : "Crear y añadir"}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -269,8 +269,8 @@ export default function Recepcion() {
 
   function capturarBasculaParaDetalle(detalleId: string, unidadRaw: string | undefined, maximo: number) {
     const unidad = normalizarUnidad(unidadRaw);
-    const step = stepDeUnidad(unidad === "kg" || unidad === "l" ? unidad : "ud");
-    if (step === 1) return;
+    // Solo tiene sentido capturar báscula para productos por peso (kg).
+    if (unidad !== "kg") return;
     const kg = scale.captureKg();
     if (kg == null) return;
     const v = Number(kg.toFixed(3));
@@ -364,7 +364,7 @@ export default function Recepcion() {
   }, [cerrandoDrawerPedidos, modalPedidosOpen]);
 
   const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
-    const TOLERANCIA = 0.05; // 50g/50ml aprox
+    const TOLERANCIA = 0.05; // 50g aprox (solo aplica a kg)
 
     const confirmado = await showConfirm({
       title: "Confirmar recepción",
@@ -379,7 +379,7 @@ export default function Recepcion() {
     for (const it of items) {
       const detalleId = String(it.id);
       const unidad = normalizarUnidad(it.unidad);
-      if (!(unidad === "kg" || unidad === "l")) continue;
+      if (unidad !== "kg") continue;
 
       const capt = verifCaptured[detalleId];
       if (capt == null) continue;
@@ -395,7 +395,7 @@ export default function Recepcion() {
 
       if (diffEsperado > TOLERANCIA || diffQty > TOLERANCIA) {
         discrepancias.push(
-          `${it.producto_nombre}: esperado ${maxRecibir.toFixed(3)} ${unidad}, báscula ${capt.toFixed(3)} kg, a recibir ${qty.toFixed(3)} ${unidad}`
+          `${it.producto_nombre}: esperado ${maxRecibir.toFixed(3)} kg, báscula ${capt.toFixed(3)} kg, a recibir ${qty.toFixed(3)} kg`
         );
       }
     }

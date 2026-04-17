@@ -1,7 +1,10 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { logout as logoutSession } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
+import { getProductos } from "../services/productosService";
+import { queryKeys } from "../lib/queryClient";
 
 const navItems = [
   { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house", roles: ["administrador", "profesor", "alumno"] },
@@ -45,6 +48,41 @@ export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Badge dinámico de avisos (caducados + stock bajo)
+  const productosQuery = useQuery({
+    queryKey: queryKeys.productos,
+    queryFn: getProductos,
+    refetchInterval: 60_000,
+  });
+
+  const avisosCount = useMemo(() => {
+    const productos: any[] = Array.isArray(productosQuery.data) ? productosQuery.data : [];
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    let caducados = 0;
+    let stockBajo = 0;
+
+    for (const p of productos) {
+      const stock = Number(p.stock ?? 0);
+      const stockMin = Number(p.stockMinimo ?? p.stockminimo ?? 0);
+      const fechaRaw = p.fechaCaducidad ?? p.fechacaducidad ?? null;
+
+      if (stockMin > 0 && stock <= stockMin) {
+        stockBajo += 1;
+      }
+
+      if (stock > 0 && fechaRaw && fechaRaw !== "NULL" && fechaRaw !== "Sin fecha") {
+        const fecha = new Date(String(fechaRaw));
+        if (!Number.isNaN(fecha.getTime()) && fecha < hoy) {
+          caducados += 1;
+        }
+      }
+    }
+
+    return caducados + stockBajo;
+  }, [productosQuery.data]);
 
   // Encontrar sección actual para el título
   const currentItem = navItems.find((it) => it.to === location.pathname) || {
@@ -145,9 +183,11 @@ export default function AppLayout() {
             aria-label="Ir a Avisos"
           >
             <i className="fa-regular fa-bell text-[18px]" aria-hidden="true" />
-            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-[#ef4444] text-white text-[11px] font-bold inline-flex items-center justify-center">
-              20
-            </span>
+            {avisosCount > 0 ? (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-[#ef4444] text-white text-[11px] font-bold inline-flex items-center justify-center px-1">
+                {avisosCount > 99 ? "99+" : avisosCount}
+              </span>
+            ) : null}
           </NavLink>
         </div>
 
@@ -228,9 +268,11 @@ export default function AppLayout() {
                   <i className="fa-solid fa-bell"></i>
                   <span>Centro de avisos</span>
                 </span>
-                <span className="bg-[#fde2e2] text-[#ef4444] font-extrabold text-[12px] min-w-7 h-7 px-2 rounded-full inline-flex items-center justify-center">
-                  15
-                </span>
+                {avisosCount > 0 ? (
+                  <span className="bg-[#fde2e2] text-[#ef4444] font-extrabold text-[12px] min-w-7 h-7 px-2 rounded-full inline-flex items-center justify-center">
+                    {avisosCount > 99 ? "99+" : avisosCount}
+                  </span>
+                ) : null}
               </button>
 
               <button
