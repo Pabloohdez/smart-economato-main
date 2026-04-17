@@ -41,6 +41,7 @@ function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno"
 export default function AppLayout() {
   const nav = useNavigate();
   const location = useLocation();
+  const isInicio = location.pathname === "/inicio";
   const { user } = useAuth();
   const userName = String(user?.nombre ?? "Administrador");
   const userEmail = String(user?.email ?? "").trim();
@@ -354,7 +355,11 @@ export default function AppLayout() {
         </header>
 
         <main
-          className="flex-1 w-full min-w-0 p-[30px] m-0 max-[520px]:p-4"
+          className={[
+            "flex-1 w-full min-w-0 p-[30px] m-0 max-[520px]:p-4",
+            // Inicio: sin scroll en escritorio; en móvil permitimos scroll
+            isInicio ? "overflow-hidden max-[768px]:overflow-auto" : "overflow-auto",
+          ].join(" ")}
           id="main-content"
         >
           <PageTransition pathname={location.pathname}>

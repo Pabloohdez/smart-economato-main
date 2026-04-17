@@ -17,7 +17,7 @@ export default function InicioPage() {
 
   return (
     <div className="w-full">
-      <div className="mb-6">
+      <div className="mb-5">
         <h1 className="m-0 text-[26px] font-extrabold text-[var(--color-text-strong)] tracking-[-0.02em]">
           Panel de inicio
         </h1>
@@ -26,11 +26,11 @@ export default function InicioPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-3 gap-[25px] w-full max-w-[1100px] max-[1100px]:grid-cols-2 max-[520px]:grid-cols-1 max-[520px]:gap-4">
+      <div className="grid grid-cols-3 gap-5 w-full max-w-[1100px] max-[1100px]:grid-cols-2 max-[520px]:grid-cols-1 max-[520px]:gap-4 max-[820px]:pb-6">
         {cards.map((c) => (
           <button
             key={c.to}
-            className="group bg-[var(--color-bg-surface)] rounded-2xl shadow-[var(--shadow-md)] border border-black/5 px-[25px] py-[30px] cursor-pointer text-left transition-[transform,box-shadow,border-color] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] flex w-full flex-col hover:-translate-y-[4px] hover:shadow-[var(--shadow-lg)] hover:border-[rgba(179,49,49,0.12)]"
+            className="group bg-[var(--color-bg-surface)] rounded-2xl shadow-[var(--shadow-md)] border border-black/5 px-6 py-6 cursor-pointer text-left transition-[transform,box-shadow,border-color] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] flex w-full flex-col hover:-translate-y-[4px] hover:shadow-[var(--shadow-lg)] hover:border-[rgba(179,49,49,0.12)]"
             type="button"
             onClick={() => nav(c.to)}
           >
