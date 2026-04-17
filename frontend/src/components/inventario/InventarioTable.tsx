@@ -22,6 +22,21 @@ function formatShortDate(d: Date): string {
   return new Intl.DateTimeFormat("es-ES").format(d);
 }
 
+function classBadgePorCaducidad(dias: number | null) {
+  if (dias == null) return "bg-slate-100 text-slate-700 border-slate-200";
+  if (dias < 0) return "bg-red-600 text-white border-red-600";
+  if (dias <= 30) return "bg-amber-50 text-amber-800 border-amber-300";
+  return "bg-emerald-50 text-emerald-800 border-emerald-300";
+}
+
+function labelCaducidad(dias: number | null, fecha: Date | null) {
+  if (dias == null || !fecha) return { title: "Sin fecha", subtitle: "" };
+  if (dias < 0) return { title: "Caducado", subtitle: `${Math.abs(dias)} día(s) tarde` };
+  if (dias === 0) return { title: "Caduca hoy", subtitle: formatShortDate(fecha) };
+  if (dias <= 30) return { title: `En ${dias} día(s)`, subtitle: formatShortDate(fecha) };
+  return { title: formatShortDate(fecha), subtitle: `En ${dias} día(s)` };
+}
+
 export default function InventarioTable({ items, lotes }: { items: Producto[]; lotes: LoteProducto[] }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -200,18 +215,23 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 }
 
                 const cadWrap = (
-                  <div className="flex flex-col gap-1">
-                    <div>{cadNode}</div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center">{cadNode}</span>
                     {lotesCount > 0 ? (
                       <button
                         type="button"
-                        className="text-[12px] font-semibold text-[var(--color-brand-600)] underline underline-offset-2 text-left"
+                        className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[12px] font-bold text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)] transition whitespace-nowrap"
                         onClick={() => abrirLotes(p)}
+                        title="Ver lotes"
                       >
-                        Ver {lotesCount} lote(s)
+                        <i className="fa-solid fa-layer-group text-[11px]" />
+                        {lotesCount} lote(s)
                       </button>
                     ) : (
-                      <span className="text-[12px] text-[var(--color-text-muted)]">Sin lotes</span>
+                      <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-[var(--color-border-default)] bg-white text-[12px] font-semibold text-[var(--color-text-muted)] whitespace-nowrap">
+                        <i className="fa-regular fa-circle-dot text-[11px] opacity-70" />
+                        Sin lotes
+                      </span>
                     )}
                   </div>
                 );
@@ -414,14 +434,17 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
           className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && cerrarLotes()}
         >
-          <div className="w-full max-w-[640px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
-            <div className="px-6 py-5 bg-[linear-gradient(135deg,#2d3748,#111827)] text-white flex items-center justify-between gap-3">
-              <div className="font-extrabold text-[16px]">
-                Lotes: {lotesProducto.nombre}
+          <div className="w-full max-w-[720px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_30px_70px_rgba(0,0,0,0.28)] overflow-hidden">
+            <div className="px-6 py-5 bg-[linear-gradient(135deg,#0f172a,#111827)] text-white flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-white/70">Lotes</div>
+                <div className="font-extrabold text-[18px] leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                  {lotesProducto.nombre}
+                </div>
               </div>
               <button
                 type="button"
-                className="bg-white/20 border-0 text-white w-9 h-9 rounded-full cursor-pointer inline-flex items-center justify-center hover:bg-white/30"
+                className="bg-white/15 border border-white/20 text-white w-10 h-10 rounded-full cursor-pointer inline-flex items-center justify-center hover:bg-white/25"
                 onClick={cerrarLotes}
                 aria-label="Cerrar"
               >
@@ -430,46 +453,92 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
             </div>
 
             <div className="p-6">
-              <div className="text-[13px] text-[var(--color-text-muted)] font-semibold mb-4">
-                Aquí se muestran los lotes registrados en recepción (caducidad + cantidad).
-              </div>
+              {(() => {
+                const pid = String(lotesProducto.id ?? "");
+                const lotesP = lotesPorProducto.get(pid) ?? [];
+                const unidad = String((lotesProducto as any).unidadMedida ?? "ud").toLowerCase() || "ud";
+                const total = lotesP.reduce((s, l) => s + Number(l.cantidad || 0), 0);
+                const nearest = lotesP.find((l) => l.fechaCaducidad)?.fechaCaducidad ? parseDate(lotesP.find((l) => l.fechaCaducidad)?.fechaCaducidad as any) : null;
+                const nearestDias = nearest ? daysFromNow(nearest) : null;
+                const nearestLabel = labelCaducidad(nearestDias, nearest);
 
-              <div className="border border-[var(--color-border-default)] rounded-[12px] overflow-hidden">
-                <table className="w-full text-[13px]">
-                  <thead className="bg-[var(--color-bg-soft)]">
-                    <tr>
-                      <th className="text-left px-4 py-3">Caducidad</th>
-                      <th className="text-left px-4 py-3">Cantidad</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const pid = String(lotesProducto.id ?? "");
-                      const lotesP = lotesPorProducto.get(pid) ?? [];
-                      const unidad = String((lotesProducto as any).unidadMedida ?? "ud").toLowerCase() || "ud";
-                      if (lotesP.length === 0) {
-                        return (
-                          <tr>
-                            <td colSpan={2} className="px-4 py-4 text-[var(--color-text-muted)]">
-                              Este producto no tiene lotes.
-                            </td>
-                          </tr>
-                        );
-                      }
-                      return lotesP.map((l) => (
-                        <tr key={String(l.id)} className="border-t border-[var(--color-border-default)]">
-                          <td className="px-4 py-3">
-                            {l.fechaCaducidad ? formatShortDate(new Date(l.fechaCaducidad)) : "Sin fecha"}
-                          </td>
-                          <td className="px-4 py-3">
-                            {Number(l.cantidad).toFixed(unidad === "ud" ? 0 : 3)} {unidad}
-                          </td>
-                        </tr>
-                      ));
-                    })()}
-                  </tbody>
-                </table>
-              </div>
+                return (
+                  <>
+                    <div className="flex items-start justify-between gap-3 flex-wrap mb-5">
+                      <div className="flex flex-col gap-1">
+                        <div className="text-[13px] text-[var(--color-text-muted)] font-semibold">
+                          Total en lotes
+                        </div>
+                        <div className="text-[22px] font-black text-[var(--color-text-strong)] leading-tight">
+                          {total.toFixed(unidad === "ud" ? 0 : 3)} <span className="text-[14px] font-bold text-[var(--color-text-muted)]">{unidad}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-[12px] font-extrabold ${classBadgePorCaducidad(nearestDias)}`}>
+                          <i className="fa-solid fa-calendar-days" />
+                          <span>{nearestLabel.title}</span>
+                        </span>
+                        {nearestLabel.subtitle ? (
+                          <span className="text-[12px] text-[var(--color-text-muted)] font-semibold">{nearestLabel.subtitle}</span>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {lotesP.length === 0 ? (
+                      <div className="rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] p-6 text-center">
+                        <div className="text-[42px] opacity-60 mb-2">
+                          <i className="fa-solid fa-box-open" />
+                        </div>
+                        <div className="font-extrabold text-[16px] text-[var(--color-text-strong)]">Este producto no tiene lotes</div>
+                        <div className="text-[13px] text-[var(--color-text-muted)] font-semibold mt-1">
+                          Los lotes se crean al recepcionar pedidos con caducidad por lote.
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        {lotesP.map((l) => {
+                          const fecha = l.fechaCaducidad ? parseDate(l.fechaCaducidad) : null;
+                          const dias = fecha ? daysFromNow(fecha) : null;
+                          const info = labelCaducidad(dias, fecha);
+                          const cantidad = Number(l.cantidad || 0);
+
+                          return (
+                            <div
+                              key={String(l.id)}
+                              className="rounded-2xl border border-[var(--color-border-default)] bg-white p-4 shadow-[0_10px_25px_rgba(15,23,42,0.06)] flex items-center justify-between gap-4"
+                            >
+                              <div className="min-w-0 flex items-center gap-3">
+                                <span className={`inline-flex items-center justify-center w-10 h-10 rounded-xl border ${classBadgePorCaducidad(dias)}`}>
+                                  <i className="fa-solid fa-hourglass-half" />
+                                </span>
+                                <div className="min-w-0">
+                                  <div className="font-extrabold text-[14px] text-[var(--color-text-strong)] whitespace-nowrap overflow-hidden text-ellipsis">
+                                    {info.title}
+                                  </div>
+                                  <div className="text-[12px] text-[var(--color-text-muted)] font-semibold">
+                                    {fecha ? formatShortDate(fecha) : "Sin fecha de caducidad"}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="text-right">
+                                <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--color-text-muted)]">
+                                  Cantidad
+                                </div>
+                                <div className="font-black text-[18px] text-[var(--color-text-strong)] leading-tight whitespace-nowrap">
+                                  {cantidad.toFixed(unidad === "ud" ? 0 : 3)}{" "}
+                                  <span className="text-[12px] font-extrabold text-[var(--color-text-muted)]">{unidad}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               <div className="flex justify-end pt-4">
                 <button
