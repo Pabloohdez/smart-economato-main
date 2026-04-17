@@ -24,7 +24,7 @@ type ProductoTemporal = {
   unidadMedida: string;
   marca: string;
   codigoBarras: string;
-  fechaCaducidad: string;
+  fechaCaducidad: string | null;
   alergenos: string[];
   descripcion: string;
   imagen: string;
@@ -136,7 +136,8 @@ export default function IngresarProductoPage() {
       unidadMedida: unidadLabel,
       marca: "Sin marca",
       codigoBarras: generarCodigoBarras(),
-      fechaCaducidad: "2024-12-31",
+      // Por defecto, sin fecha (evita que se cree "caducado" por un default antiguo).
+      fechaCaducidad: null,
       alergenos: [],
       descripcion: "",
       imagen: "producto-generico.jpg",
@@ -199,7 +200,7 @@ export default function IngresarProductoPage() {
             unidadMedida: producto.unidadMedida,
             marca: producto.marca,
             codigoBarras: producto.codigoBarras,
-            fechaCaducidad: producto.fechaCaducidad,
+            fechaCaducidad: producto.fechaCaducidad ?? null,
             alergenos: producto.alergenos,
             descripcion: producto.descripcion,
             imagen: producto.imagen,

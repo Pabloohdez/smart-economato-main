@@ -14,7 +14,7 @@ export type CrearProductoPayload = {
   unidadMedida: string;
   marca: string;
   codigoBarras: string;
-  fechaCaducidad: string;
+  fechaCaducidad: string | null;
   alergenos: string[];
   descripcion: string;
   imagen: string;
