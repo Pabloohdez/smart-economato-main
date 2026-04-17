@@ -9,6 +9,7 @@ import Alert from "../components/ui/Alert";
 import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { queryKeys } from "../lib/queryClient";
+import { getLotesProducto, type LoteProducto } from "../services/lotesService";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
   if (!raw) return null;
@@ -53,6 +54,12 @@ export default function InventarioPage() {
   const productosQuery = useQuery({
     queryKey: queryKeys.productos,
     queryFn: getProductos,
+    refetchInterval: 45_000,
+  });
+
+  const lotesQuery = useQuery<LoteProducto[]>({
+    queryKey: queryKeys.lotesProducto,
+    queryFn: getLotesProducto,
     refetchInterval: 45_000,
   });
 
@@ -195,7 +202,7 @@ export default function InventarioPage() {
       {loading && <Spinner label="Cargando productos..." />}
       {err && <Alert type="error" title="Error al cargar">{err}</Alert>}
 
-      {!loading && !err && <InventarioTable items={filtered} />}
+      {!loading && !err && <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />}
     </div>
   );
 }

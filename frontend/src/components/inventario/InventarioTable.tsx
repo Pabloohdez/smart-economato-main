@@ -6,6 +6,7 @@ import UiSelect from "../ui/UiSelect";
 import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
 import { showNotification } from "../../utils/notifications";
+import type { LoteProducto } from "../../services/lotesService";
 
 function parseDate(d?: string | null): Date | null {
   if (!d) return null;
@@ -21,7 +22,7 @@ function formatShortDate(d: Date): string {
   return new Intl.DateTimeFormat("es-ES").format(d);
 }
 
-export default function InventarioTable({ items }: { items: Producto[] }) {
+export default function InventarioTable({ items, lotes }: { items: Producto[]; lotes: LoteProducto[] }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const queryClient = useQueryClient();
@@ -32,6 +33,19 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
   const [editPrecio, setEditPrecio] = useState("0");
   const [editStock, setEditStock] = useState("0");
   const [editStockMin, setEditStockMin] = useState("0");
+
+  const [lotesOpen, setLotesOpen] = useState(false);
+  const [lotesProducto, setLotesProducto] = useState<Producto | null>(null);
+
+  function abrirLotes(p: Producto) {
+    setLotesProducto(p);
+    setLotesOpen(true);
+  }
+
+  function cerrarLotes() {
+    setLotesOpen(false);
+    setLotesProducto(null);
+  }
 
   const actualizarMutation = useMutation({
     mutationFn: async () => {
@@ -94,16 +108,39 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
     setEditProducto(null);
   }
 
+  const lotesPorProducto = useMemo(() => {
+    const map = new Map<string, LoteProducto[]>();
+    for (const l of lotes ?? []) {
+      const pid = String(l.productoId);
+      const arr = map.get(pid) ?? [];
+      arr.push(l);
+      map.set(pid, arr);
+    }
+    for (const [k, arr] of map.entries()) {
+      arr.sort((a, b) => {
+        const da = a.fechaCaducidad ? new Date(a.fechaCaducidad).getTime() : Number.POSITIVE_INFINITY;
+        const db = b.fechaCaducidad ? new Date(b.fechaCaducidad).getTime() : Number.POSITIVE_INFINITY;
+        return da - db;
+      });
+      map.set(k, arr);
+    }
+    return map;
+  }, [lotes]);
+
   const rows = useMemo(() => {
     return items.map((p) => {
       const stock = Number(p.stock ?? 0);
       const min = Number((p as any).stockMinimo ?? 0);
-      const cad = parseDate((p as any).fechaCaducidad);
+      const pid = String(p.id ?? "");
+      const lotesP = lotesPorProducto.get(pid) ?? [];
+      const cad = lotesP.find((x) => x.fechaCaducidad)?.fechaCaducidad
+        ? parseDate(lotesP.find((x) => x.fechaCaducidad)?.fechaCaducidad as any)
+        : parseDate((p as any).fechaCaducidad);
       const cadDias = cad ? daysFromNow(cad) : null;
       const alerta = stock <= min || (cadDias != null && cadDias < 0);
-      return { p, stock, min, cadDias, alerta };
+      return { p, stock, min, cadDias, alerta, lotesCount: lotesP.length, cadNearest: cad };
     });
-  }, [items]);
+  }, [items, lotesPorProducto]);
 
   const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
   const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -136,7 +173,7 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
                 </td>
               </tr>
             ) : (
-              visibleRows.map(({ p, stock, min, cadDias, alerta }) => {
+              visibleRows.map(({ p, stock, min, cadDias, alerta, lotesCount }) => {
                 const stockBajo = stock <= min;
                 let cadLabel = "—";
                 let cadNode: React.ReactNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
@@ -161,6 +198,23 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
                     cadNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
                   }
                 }
+
+                const cadWrap = (
+                  <div className="flex flex-col gap-1">
+                    <div>{cadNode}</div>
+                    {lotesCount > 0 ? (
+                      <button
+                        type="button"
+                        className="text-[12px] font-semibold text-[var(--color-brand-600)] underline underline-offset-2 text-left"
+                        onClick={() => abrirLotes(p)}
+                      >
+                        Ver {lotesCount} lote(s)
+                      </button>
+                    ) : (
+                      <span className="text-[12px] text-[var(--color-text-muted)]">Sin lotes</span>
+                    )}
+                  </div>
+                );
 
                 return (
                   <tr
@@ -199,20 +253,29 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
                       if (idx === 5) {
                         return (
                           <td key={idx} className={`${base} ${alertBg}`}>
-                            {cadNode}
+                            {cadWrap}
                           </td>
                         );
                       }
                       if (idx === 7) {
                         return (
                           <td key={idx} className={`${base} ${alertBg} text-right`}>
-                            <button
-                              type="button"
-                              className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
-                              onClick={() => abrirEdicion(p)}
-                            >
-                              <i className="fa-solid fa-pen" /> Editar
-                            </button>
+                            <div className="inline-flex items-center gap-2 justify-end flex-wrap">
+                              <button
+                                type="button"
+                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                                onClick={() => abrirLotes(p)}
+                              >
+                                <i className="fa-solid fa-calendar-days" /> Lotes
+                              </button>
+                              <button
+                                type="button"
+                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                                onClick={() => abrirEdicion(p)}
+                              >
+                                <i className="fa-solid fa-pen" /> Editar
+                              </button>
+                            </div>
                           </td>
                         );
                       }
@@ -339,6 +402,82 @@ export default function InventarioTable({ items }: { items: Producto[] }) {
                   disabled={actualizarMutation.isPending}
                 >
                   {actualizarMutation.isPending ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {lotesOpen && lotesProducto && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && cerrarLotes()}
+        >
+          <div className="w-full max-w-[640px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
+            <div className="px-6 py-5 bg-[linear-gradient(135deg,#2d3748,#111827)] text-white flex items-center justify-between gap-3">
+              <div className="font-extrabold text-[16px]">
+                Lotes: {lotesProducto.nombre}
+              </div>
+              <button
+                type="button"
+                className="bg-white/20 border-0 text-white w-9 h-9 rounded-full cursor-pointer inline-flex items-center justify-center hover:bg-white/30"
+                onClick={cerrarLotes}
+                aria-label="Cerrar"
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+
+            <div className="p-6">
+              <div className="text-[13px] text-[var(--color-text-muted)] font-semibold mb-4">
+                Aquí se muestran los lotes registrados en recepción (caducidad + cantidad).
+              </div>
+
+              <div className="border border-[var(--color-border-default)] rounded-[12px] overflow-hidden">
+                <table className="w-full text-[13px]">
+                  <thead className="bg-[var(--color-bg-soft)]">
+                    <tr>
+                      <th className="text-left px-4 py-3">Caducidad</th>
+                      <th className="text-left px-4 py-3">Cantidad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(() => {
+                      const pid = String(lotesProducto.id ?? "");
+                      const lotesP = lotesPorProducto.get(pid) ?? [];
+                      const unidad = String((lotesProducto as any).unidadMedida ?? "ud").toLowerCase() || "ud";
+                      if (lotesP.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={2} className="px-4 py-4 text-[var(--color-text-muted)]">
+                              Este producto no tiene lotes.
+                            </td>
+                          </tr>
+                        );
+                      }
+                      return lotesP.map((l) => (
+                        <tr key={String(l.id)} className="border-t border-[var(--color-border-default)]">
+                          <td className="px-4 py-3">
+                            {l.fechaCaducidad ? formatShortDate(new Date(l.fechaCaducidad)) : "Sin fecha"}
+                          </td>
+                          <td className="px-4 py-3">
+                            {Number(l.cantidad).toFixed(unidad === "ud" ? 0 : 3)} {unidad}
+                          </td>
+                        </tr>
+                      ));
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)]"
+                  onClick={cerrarLotes}
+                >
+                  Cerrar
                 </button>
               </div>
             </div>
