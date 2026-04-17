@@ -162,6 +162,7 @@ export default function AvisosPage() {
     const listaCaducados = productos.map((p) => {
       const pid = String((p as any).id ?? "");
       const lotesP = lotesPorProducto.get(pid) ?? [];
+      const tieneLotes = lotesP.length > 0;
 
       let cantidadCaducada = 0;
       let minFechaCaducada: Date | null = null;
@@ -176,7 +177,20 @@ export default function AvisosPage() {
         }
       }
 
-      if (cantidadCaducada <= 0) return null;
+      // Si hay lotes, el caducado viene SOLO de lotes (fuente de verdad)
+      if (tieneLotes) {
+        if (cantidadCaducada <= 0) return null;
+      } else {
+        // Fallback: productos antiguos sin lotes (todavía) -> usar fechaCaducidad del producto
+        // Si el stock ya está a 0, no tiene sentido mantener el aviso de "dar de baja"
+        if (p.stockNum <= 0) return null;
+        const raw = p.fechaCaducidadNormalizada;
+        if (!raw || raw === "NULL" || raw === "Sin fecha") return null;
+        const fecha = new Date(String(raw).replace(" ", "T"));
+        if (Number.isNaN(fecha.getTime()) || fecha >= hoy) return null;
+        cantidadCaducada = p.stockNum;
+        minFechaCaducada = fecha;
+      }
 
       const diasCaducado = minFechaCaducada
         ? Math.ceil((hoy.getTime() - minFechaCaducada.getTime()) / 86400000)
@@ -219,8 +233,17 @@ export default function AvisosPage() {
   }, [gastosMensualesQuery.dataUpdatedAt, productosQuery.dataUpdatedAt]);
 
   const valorRiesgo = useMemo(() => {
-    return caducados.reduce((sum, p) => sum + p.precioNum * p.stockNum, 0);
-  }, [caducados]);
+    // "Riesgo" = valor caducados + valor de stock bajo (evitando duplicar por id)
+    const map = new Map<string, ProductoAviso>();
+    for (const p of caducados) map.set(String(p.id), p);
+    for (const p of stockBajo) {
+      const id = String(p.id);
+      if (!map.has(id)) map.set(id, p);
+    }
+    let total = 0;
+    for (const p of map.values()) total += p.precioNum * p.stockNum;
+    return total;
+  }, [caducados, stockBajo]);
 
   const totalAlertas = caducados.length + stockBajo.length;
 
@@ -500,7 +523,7 @@ export default function AvisosPage() {
                     <div className={`h-full rounded transition-[width] duration-300 ${barClass}`} style={{ width: `${pct}%` }}></div>
                   </div>
 
-                  <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
+                  <div className="text-right text-[12px] text-[#6b7280] min-w-20 whitespace-nowrap max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
                     <strong>{p.stockNum}</strong> / {p.stockMinimoNum}
                   </div>
                 </div>
