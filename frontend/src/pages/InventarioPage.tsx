@@ -10,6 +10,7 @@ import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { queryKeys } from "../lib/queryClient";
 import { getLotesProducto, type LoteProducto } from "../services/lotesService";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
   if (!raw) return null;
@@ -153,56 +154,72 @@ export default function InventarioPage() {
   }
 
   return (
-    <div>
+    <StaggerPage>
       {/* Header como el compi */}
-      <div className="flex items-center justify-between gap-4 flex-wrap mb-[var(--space-7)] pb-[var(--space-5)] border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
-        <div>
-          <h1 className="m-0 mb-[var(--space-2)] flex items-center gap-[var(--space-3)] text-[28px] font-bold text-[var(--color-text-strong)]">
-            <i className="fa-solid fa-boxes-stacked text-[var(--color-brand-500)]" />
-            INVENTARIO
-          </h1>
-          <p className="m-0 text-[14px] text-[var(--color-text-muted)]">Gestiona y consulta el stock de productos</p>
-        </div>
-
-        <div className="flex items-center gap-[14px] max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
-          <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[12px] text-[var(--color-text-muted)] font-bold inline-flex items-center gap-2.5 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:justify-center">
-            <i className="fa-solid fa-calendar" />
-            <span>{hoyES()}</span>
+      <StaggerItem>
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-[var(--space-7)] pb-[var(--space-5)] border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
+          <div>
+            <h1 className="m-0 mb-[var(--space-2)] flex items-center gap-[var(--space-3)] text-[28px] font-bold text-[var(--color-text-strong)]">
+              <i className="fa-solid fa-boxes-stacked text-[var(--color-brand-500)]" />
+              INVENTARIO
+            </h1>
+            <p className="m-0 text-[14px] text-[var(--color-text-muted)]">Gestiona y consulta el stock de productos</p>
           </div>
 
-          <button
-            className="min-h-[44px] px-[22px] py-3 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[var(--radius-sm)] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
-            type="button"
-            onClick={() => nav("/inventario/nuevo")}
-          >
-            <i className="fa-solid fa-plus" /> Ingresar Producto
-          </button>
+          <div className="flex items-center gap-[14px] max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
+            <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[12px] text-[var(--color-text-muted)] font-bold inline-flex items-center gap-2.5 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:justify-center">
+              <i className="fa-solid fa-calendar" />
+              <span>{hoyES()}</span>
+            </div>
+
+            <button
+              className="min-h-[44px] px-[22px] py-3 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[var(--radius-sm)] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
+              type="button"
+              onClick={() => nav("/inventario/nuevo")}
+            >
+              <i className="fa-solid fa-plus" /> Ingresar Producto
+            </button>
+          </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <InventarioToolbar
-        q={q}
-        setQ={setQ}
-        cats={cats as any}
-        catId={catId}
-        setCatId={setCatId}
-        provs={provs as any}
-        provId={provId}
-        setProvId={setProvId}
-        orden={orden}
-        setOrden={setOrden}
-        onlyStockBajo={onlyStockBajo}
-        setOnlyStockBajo={setOnlyStockBajo}
-        onlyProximoCaducar={onlyProximoCaducar}
-        setOnlyProximoCaducar={setOnlyProximoCaducar}
-        onScanBarcode={escanearCodigoBarras}
-        limpiarFiltros={limpiarFiltros}
-      />
+      <StaggerItem>
+        <InventarioToolbar
+          q={q}
+          setQ={setQ}
+          cats={cats as any}
+          catId={catId}
+          setCatId={setCatId}
+          provs={provs as any}
+          provId={provId}
+          setProvId={setProvId}
+          orden={orden}
+          setOrden={setOrden}
+          onlyStockBajo={onlyStockBajo}
+          setOnlyStockBajo={setOnlyStockBajo}
+          onlyProximoCaducar={onlyProximoCaducar}
+          setOnlyProximoCaducar={setOnlyProximoCaducar}
+          onScanBarcode={escanearCodigoBarras}
+          limpiarFiltros={limpiarFiltros}
+        />
+      </StaggerItem>
 
-      {loading && <Spinner label="Cargando productos..." />}
-      {err && <Alert type="error" title="Error al cargar">{err}</Alert>}
+      {loading && (
+        <StaggerItem>
+          <Spinner label="Cargando productos..." />
+        </StaggerItem>
+      )}
+      {err && (
+        <StaggerItem>
+          <Alert type="error" title="Error al cargar">{err}</Alert>
+        </StaggerItem>
+      )}
 
-      {!loading && !err && <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />}
-    </div>
+      {!loading && !err && (
+        <StaggerItem>
+          <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />
+        </StaggerItem>
+      )}
+    </StaggerPage>
   );
 }

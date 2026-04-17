@@ -1,8 +1,10 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { logout as logoutSession } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
+import PageTransition from "../components/ui/PageTransition";
 import { getProductos } from "../services/productosService";
 import { queryKeys } from "../lib/queryClient";
 
@@ -83,13 +85,6 @@ export default function AppLayout() {
 
     return caducados + stockBajo;
   }, [productosQuery.data]);
-
-  // Encontrar sección actual para el título
-  const currentItem = navItems.find((it) => it.to === location.pathname) || {
-    label: "Panel de Control",
-    icon: "fa-solid fa-chart-line",
-  };
-
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target;
@@ -153,27 +148,28 @@ export default function AppLayout() {
 
       <aside
         id="app-sidebar"
-        className={`bg-white border-r border-[var(--color-border-default)] grid [grid-template-rows:auto_1fr_auto] p-[18px_14px_14px] gap-2.5 fixed top-0 left-0 bottom-0 w-[260px] h-[100dvh] overflow-hidden z-[100] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[280px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.15)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[240px] max-[520px]:p-[14px_12px_12px]`}
+        className={`grid [grid-template-rows:auto_1fr_auto] gap-3 fixed top-0 left-0 bottom-0 w-[286px] h-[100dvh] overflow-hidden z-[100] bg-white border-r border-[var(--color-border-default)] p-[18px_14px_14px] text-[var(--color-text-strong)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[300px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.14)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[252px] max-[520px]:p-[14px_12px_12px]`}
         aria-label="Navegacion principal"
       >
-        <div className="relative flex items-center justify-between gap-2 px-3 py-2.5 flex-shrink-0 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] border border-[#e6ebf2] rounded-2xl shadow-[var(--shadow-sm)] overflow-hidden">
-          <span className="absolute left-0 top-0 bottom-0 w-1 bg-[linear-gradient(180deg,var(--color-brand-500)_0%,#ef4444_100%)]" aria-hidden="true" />
-
+        <div className="flex items-center gap-3 px-2 py-2 flex-shrink-0 border-b border-[var(--color-border-default)]">
           <NavLink
             to="/inicio"
-            className="inline-flex items-center gap-2.5 flex-1 min-w-0 no-underline"
+            className="inline-flex items-center gap-3 flex-1 min-w-0 no-underline"
             aria-label="Ir a Inicio"
           >
             <img
               src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
               alt="CIFP Virgen de la Candelaria"
-              className="w-[44px] h-[44px] block object-contain rounded-xl border border-[#dbe4ef] bg-[linear-gradient(180deg,#ffffff_0%,#f4f7fb_100%)] p-0.5 [box-shadow:inset_0_1px_0_rgba(255,255,255,0.7)] max-[520px]:w-[38px] max-[520px]:h-[38px]"
+              className="block h-[50px] w-[50px] rounded-full border border-slate-200 bg-white object-contain p-1 shadow-[0_8px_18px_rgba(15,23,42,0.08)] max-[520px]:h-[44px] max-[520px]:w-[44px]"
             />
 
             <span className="flex flex-col min-w-0">
-              <strong className="text-[#2d3748] font-extrabold leading-tight text-[18px] tracking-[-0.01em] whitespace-normal max-[520px]:text-[14px]">
+              <strong className="text-[var(--color-text-strong)] font-extrabold leading-tight text-[18px] tracking-[-0.02em] whitespace-normal max-[520px]:text-[15px]">
                 Smart Economato
               </strong>
+              <span className="mt-0.5 text-[12px] font-medium uppercase tracking-[0.08em] text-[var(--color-text-muted)] max-[520px]:text-[11px]">
+                Backoffice
+              </span>
             </span>
           </NavLink>
 
@@ -191,44 +187,62 @@ export default function AppLayout() {
           </NavLink>
         </div>
 
-        <nav className="flex flex-col gap-1 mt-0 min-h-0 overflow-y-auto pr-1 [scrollbar-width:thin] max-[520px]:gap-0.5" aria-label="Secciones del sistema">
+        <nav className="flex flex-col gap-2 mt-2 min-h-0 overflow-y-auto pr-1 [scrollbar-width:thin] max-[520px]:gap-1.5" aria-label="Secciones del sistema">
           {navItems.map((it) => (
             <NavLink
               key={it.to}
               to={it.to}
               className={({ isActive }) =>
                 [
-                  "flex items-center gap-2.5 px-3 py-2.5 rounded-xl no-underline font-medium text-[13px] leading-[1.2] flex-shrink-0 transition-[background,color,box-shadow,font-weight] duration-200 text-[#4a5568] hover:bg-[#f1f5f9] hover:text-[var(--color-brand-500)]",
-                  isActive ? "bg-[var(--color-brand-500)] text-white shadow-[0_4px_12px_rgba(179,49,49,0.25)] font-semibold hover:bg-[var(--color-brand-500)] hover:text-white" : "",
-                  it.separated ? "mt-2.5" : "",
-                  "max-[520px]:px-2.5 max-[520px]:py-[9px] max-[520px]:text-[12px]",
+                  "group flex min-h-[48px] items-center gap-3 px-4 py-2.5 rounded-[18px] no-underline text-[15px] leading-[1.15] flex-shrink-0 font-semibold transition-[background,color,box-shadow] duration-200 text-[#334155] hover:bg-[#f8fafc] hover:text-[var(--color-brand-500)]",
+                  isActive ? "bg-[var(--color-brand-500)] text-white shadow-[0_10px_24px_rgba(127,29,29,0.22)] hover:bg-[var(--color-brand-500)] hover:text-white" : "",
+                  it.separated ? "mt-3" : "",
+                  "max-[520px]:min-h-[44px] max-[520px]:px-3.5 max-[520px]:py-2 max-[520px]:text-[14px]",
                 ].join(" ")
               }
               onClick={() => setSidebarOpen(false)}
             >
-              <span className={`w-5 min-w-5 inline-flex justify-center text-[14px] ${location.pathname === it.to ? "text-white" : "text-[var(--color-brand-500)]"} max-[520px]:text-[13px]`} aria-hidden="true">
-                <i className={it.icon} />
-              </span>
-              <span>{it.label}</span>
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={`inline-flex w-5 min-w-5 justify-center text-[16px] ${isActive ? "text-white" : "text-[var(--color-brand-500)] group-hover:text-[var(--color-brand-500)]"} max-[520px]:text-[15px]`}
+                    aria-hidden="true"
+                  >
+                    <i className={it.icon} />
+                  </span>
+                  <span className="tracking-[-0.01em]">{it.label}</span>
+                  <span className="ml-auto inline-flex w-4 items-center justify-center" aria-hidden="true">
+                    {isActive ? (
+                      <motion.span
+                        layoutId="active-arrow"
+                        className="inline-flex items-center justify-center text-[13px] text-white"
+                        transition={{ type: "spring", stiffness: 420, damping: 32, mass: 0.7 }}
+                      >
+                        <i className="fa-solid fa-chevron-right" />
+                      </motion.span>
+                    ) : null}
+                  </span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
 
-        <div className="relative pt-2.5 border-t border-[var(--color-border-default)]" ref={menuRef}>
+        <div className="relative pt-3 border-t border-[var(--color-border-default)]" ref={menuRef}>
           <button
             type="button"
-            className="w-full border border-[rgba(229,231,235,.95)] bg-[linear-gradient(180deg,#ffffff_0%,#fafbff_100%)] p-2.5 rounded-2xl cursor-pointer transition-[background,border-color] duration-200 flex items-center gap-2.5 shadow-[0_10px_24px_rgba(17,24,39,.06)] hover:bg-white hover:border-[rgba(209,213,219,.95)]"
+            className="w-full rounded-[20px] border border-[rgba(229,231,235,.95)] bg-[linear-gradient(180deg,#ffffff_0%,#fafbff_100%)] p-3 cursor-pointer transition-[background,border-color,transform] duration-200 flex items-center gap-3 shadow-[0_10px_24px_rgba(15,23,42,.06)] hover:bg-white hover:border-[rgba(209,213,219,.95)]"
             onClick={() => setMenuOpen((v) => !v)}
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             aria-controls="sidebar-user-dropdown"
           >
-            <div className="w-[34px] h-[34px] rounded-full bg-[var(--color-brand-500)] text-white flex items-center justify-center font-semibold text-[14px]" title="Usuario">
+            <div className="w-[40px] h-[40px] rounded-full bg-[var(--color-brand-500)] text-white flex items-center justify-center font-bold text-[15px]" title="Usuario">
               {userName.trim().charAt(0).toUpperCase()}
             </div>
 
             <span className="min-w-0 flex flex-col items-start gap-0.5 flex-1">
-              <span className="text-[#2d3748] text-[13px] font-bold whitespace-nowrap overflow-hidden text-ellipsis">{userName}</span>
+              <span className="text-[var(--color-text-strong)] text-[14px] font-bold whitespace-nowrap overflow-hidden text-ellipsis">{userName}</span>
               <span className="text-[var(--color-text-muted)] text-[11px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
                 {userEmail || userRole || "Gestor de Economato"}
               </span>
@@ -323,7 +337,7 @@ export default function AppLayout() {
         </div>
       </aside>
 
-      <div className="flex flex-col min-w-0 min-h-[100dvh] w-full pl-[260px] max-[820px]:pl-0">
+      <div className="flex flex-col min-w-0 min-h-[100dvh] w-full pl-[286px] max-[820px]:pl-0">
         <header className="hidden bg-white items-center justify-start shadow-[0_2px_10px_rgba(0,0,0,0.02)] z-10 max-[820px]:flex max-[820px]:p-[12px_16px]">
           <div className="flex items-center gap-3">
             <button
@@ -343,9 +357,9 @@ export default function AppLayout() {
           className="flex-1 w-full min-w-0 p-[30px] m-0 max-[520px]:p-4"
           id="main-content"
         >
-          <div className="w-full h-full min-h-full" key={location.pathname}>
+          <PageTransition pathname={location.pathname}>
             <Outlet />
-          </div>
+          </PageTransition>
         </main>
       </div>
     </div>

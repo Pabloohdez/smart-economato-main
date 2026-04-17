@@ -16,6 +16,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 type CarritoItem = {
   productoId: number | string;
@@ -379,57 +380,62 @@ export default function DistribucionPage() {
   }
 
   return (
-    <div>
-      <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
-        <div>
-          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-            <i className="fa-solid fa-truck text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
-          </h2>
-          <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
-            Registra la salida de productos hacia cocina, bar u otros departamentos.
-          </p>
-        </div>
-
-        <div className="inline-flex items-center gap-2.5 px-[18px] py-3 rounded-[12px] text-[#50596D] font-bold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:w-full max-[768px]:justify-center">
-          <i className="fa-solid fa-calendar text-[var(--color-brand-500)]" />
-          <span>{hoyES()}</span>
-        </div>
-      </div>
-
-      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
-        <div className="flex gap-3 items-center flex-wrap justify-between">
-          <div className="flex gap-2.5 items-center flex-wrap">
-            <strong>Báscula</strong>
-            <span className="text-[13px] text-[#4a5568]">
-              Lectura: <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
-            </span>
-            {!scale.supported ? (
-              <span className="text-[12px] text-[#e53e3e]">(Web Serial no soportado)</span>
-            ) : scale.connected ? (
-              <button
-                type="button"
-                className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
-                onClick={scale.disconnect}
-              >
-                <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
-                onClick={scale.connect}
-              >
-                <i className="fa-solid fa-plug" /> Conectar
-              </button>
-            )}
+    <StaggerPage>
+      <StaggerItem>
+        <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
+          <div>
+            <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
+              <i className="fa-solid fa-truck text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
+            </h2>
+            <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
+              Registra la salida de productos hacia cocina, bar u otros departamentos.
+            </p>
           </div>
-          <div className="text-[12px] text-[#718096]">
-            Tip: en “Cantidad a retirar” puedes usar decimales (kg).
+
+          <div className="inline-flex items-center gap-2.5 px-[18px] py-3 rounded-[12px] text-[#50596D] font-bold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:w-full max-[768px]:justify-center">
+            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]" />
+            <span>{hoyES()}</span>
           </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="grid grid-cols-2 gap-[25px] mt-6 max-[768px]:grid-cols-1">
+      <StaggerItem>
+        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
+          <div className="flex gap-3 items-center flex-wrap justify-between">
+            <div className="flex gap-2.5 items-center flex-wrap">
+              <strong>Báscula</strong>
+              <span className="text-[13px] text-[#4a5568]">
+                Lectura: <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
+              </span>
+              {!scale.supported ? (
+                <span className="text-[12px] text-[#e53e3e]">(Web Serial no soportado)</span>
+              ) : scale.connected ? (
+                <button
+                  type="button"
+                  className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                  onClick={scale.disconnect}
+                >
+                  <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                  onClick={scale.connect}
+                >
+                  <i className="fa-solid fa-plug" /> Conectar
+                </button>
+              )}
+            </div>
+            <div className="text-[12px] text-[#718096]">
+              Tip: en “Cantidad a retirar” puedes usar decimales (kg).
+            </div>
+          </div>
+        </div>
+      </StaggerItem>
+
+      <StaggerItem>
+        <div className="grid grid-cols-2 gap-[25px] mt-6 max-[768px]:grid-cols-1">
         {/* Panel Izq */}
         <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col" ref={buscadorWrapRef}>
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
@@ -769,7 +775,8 @@ export default function DistribucionPage() {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+        </div>
+      </StaggerItem>
+    </StaggerPage>
   );
 }
