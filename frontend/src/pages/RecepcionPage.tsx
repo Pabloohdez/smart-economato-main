@@ -121,6 +121,13 @@ export default function Recepcion() {
   const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
   const [verifCaptured, setVerifCaptured] = useState<Record<string, number>>({}); // detalle_id -> kg capturados
+  const [verifLotes, setVerifLotes] = useState<Record<string, Array<{ fecha: string; cantidad: number }>>>({});
+  const [lotesModalOpen, setLotesModalOpen] = useState(false);
+  const [lotesDetalleId, setLotesDetalleId] = useState<string>("");
+  const [lotesUnidad, setLotesUnidad] = useState<string>("ud");
+  const [lotesMax, setLotesMax] = useState<number>(0);
+  const [loteFecha, setLoteFecha] = useState<string>("");
+  const [loteCantidad, setLoteCantidad] = useState<string>("");
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
@@ -167,7 +174,7 @@ export default function Recepcion() {
   });
 
   const recibirPedidoMutation = useMutation({
-    mutationFn: ({ pedidoId, items }: { pedidoId: number | string; items: Array<{ detalle_id: number | string; cantidad_recibida: number }> }) =>
+    mutationFn: ({ pedidoId, items }: { pedidoId: number | string; items: Array<{ detalle_id: number | string; cantidad_recibida: number; lotes?: Array<{ fecha_caducidad?: string | null; cantidad: number }> }> }) =>
       recibirPedido(pedidoId, items),
     onSuccess: async () => {
       await Promise.all([
@@ -265,6 +272,56 @@ export default function Recepcion() {
   function actualizarCantidadVerificada(detalleId: string, siguiente: number, maximo: number) {
     const safe = Math.max(0, Math.min(maximo, siguiente));
     setVerifQty((prev) => ({ ...prev, [detalleId]: safe }));
+  }
+
+  function abrirLotes(detalleId: string, unidad: string | undefined, maximo: number) {
+    setLotesDetalleId(detalleId);
+    setLotesUnidad(normalizarUnidad(unidad));
+    setLotesMax(maximo);
+    setLoteFecha("");
+    setLoteCantidad("");
+    setLotesModalOpen(true);
+  }
+
+  function cerrarLotes() {
+    setLotesModalOpen(false);
+    setLotesDetalleId("");
+  }
+
+  function agregarLote() {
+    if (!lotesDetalleId) return;
+    const fecha = loteFecha.trim();
+    const cant = Number(String(loteCantidad || "").replace(",", "."));
+    if (!fecha) {
+      showNotification("Selecciona una fecha de caducidad.", "warning");
+      return;
+    }
+    if (!Number.isFinite(cant) || cant <= 0) {
+      showNotification("Cantidad de lote inválida.", "warning");
+      return;
+    }
+
+    const currentQty = Number(verifQty[lotesDetalleId] ?? 0);
+    const sum = (verifLotes[lotesDetalleId] ?? []).reduce((s, l) => s + Number(l.cantidad || 0), 0);
+    if (sum + cant > currentQty + 0.0005) {
+      showNotification("La suma de lotes supera la cantidad a recibir ahora.", "warning");
+      return;
+    }
+
+    setVerifLotes((prev) => ({
+      ...prev,
+      [lotesDetalleId]: [...(prev[lotesDetalleId] ?? []), { fecha, cantidad: cant }],
+    }));
+    setLoteFecha("");
+    setLoteCantidad("");
+  }
+
+  function eliminarLote(index: number) {
+    if (!lotesDetalleId) return;
+    setVerifLotes((prev) => ({
+      ...prev,
+      [lotesDetalleId]: (prev[lotesDetalleId] ?? []).filter((_, i) => i !== index),
+    }));
   }
 
   function capturarBasculaParaDetalle(detalleId: string, unidadRaw: string | undefined, maximo: number) {
@@ -413,10 +470,29 @@ export default function Recepcion() {
       if (!okDiscrep) return;
     }
 
-    const itemsToReceive = items.map((it) => ({
-      detalle_id: it.id,
-      cantidad_recibida: Number(verifQty[String(it.id)] ?? 0),
-    })).filter(item => item.cantidad_recibida > 0); // Only send items with received quantity > 0
+    const itemsToReceive = items.map((it) => {
+      const detalleId = String(it.id);
+      return {
+        detalle_id: it.id,
+        cantidad_recibida: Number(verifQty[detalleId] ?? 0),
+        lotes: (verifLotes[detalleId] ?? []).map((l) => ({
+          fecha_caducidad: l.fecha,
+          cantidad: l.cantidad,
+        })),
+      };
+    }).filter(item => item.cantidad_recibida > 0); // Only send items with received quantity > 0
+
+    // Validación: si hay lotes, deben sumar exactamente lo recibido
+    for (const it of itemsToReceive) {
+      if (it.lotes && it.lotes.length > 0) {
+        const sum = it.lotes.reduce((s, l) => s + Number(l.cantidad || 0), 0);
+        const diff = Math.abs(sum - Number(it.cantidad_recibida || 0));
+        if (diff > 0.0005) {
+          showNotification("La suma de lotes no coincide con la cantidad a recibir.", "warning");
+          return;
+        }
+      }
+    }
 
     if (itemsToReceive.length === 0) {
       showNotification("No se ha especificado ninguna cantidad a recibir.", "warning");
@@ -818,6 +894,15 @@ export default function Recepcion() {
                                           </button>
                                           <button
                                             type="button"
+                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
+                                            aria-label={`Gestionar lotes de ${it.producto_nombre}`}
+                                            title="Lotes (caducidad)"
+                                            onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
+                                          >
+                                            <i className="fa-solid fa-calendar-days" />
+                                          </button>
+                                          <button
+                                            type="button"
                                             className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
                                             aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
@@ -870,6 +955,108 @@ export default function Recepcion() {
               </button>
             </div>
           </aside>
+        </div>,
+        document.body
+      )}
+
+      {lotesModalOpen && createPortal(
+        <div
+          className="fixed inset-0 bg-black/50 z-[11000] flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && cerrarLotes()}
+        >
+          <div className="w-full max-w-[560px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
+            <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex items-center justify-between gap-3">
+              <div className="font-extrabold text-[16px]">Lotes por caducidad</div>
+              <button
+                type="button"
+                className="bg-white/20 border-0 text-white w-9 h-9 rounded-full cursor-pointer inline-flex items-center justify-center hover:bg-white/30"
+                onClick={cerrarLotes}
+                aria-label="Cerrar"
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+            </div>
+            <div className="p-6 grid gap-4">
+              <div className="text-[13px] text-[var(--color-text-muted)] font-semibold">
+                Cantidad a recibir ahora:{" "}
+                <strong>{Number(verifQty[lotesDetalleId] ?? 0).toFixed(3)} {lotesUnidad}</strong>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Caducidad</label>
+                  <input
+                    type="date"
+                    value={loteFecha}
+                    onChange={(e) => setLoteFecha(e.target.value)}
+                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Cantidad ({lotesUnidad})</label>
+                  <input
+                    type="number"
+                    value={loteCantidad}
+                    onChange={(e) => setLoteCantidad(e.target.value)}
+                    step={lotesUnidad === "ud" ? "1" : "0.001"}
+                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)]"
+                onClick={agregarLote}
+              >
+                <i className="fa-solid fa-plus" /> Añadir lote
+              </button>
+
+              <div className="border border-[var(--color-border-default)] rounded-[12px] overflow-hidden">
+                <table className="w-full text-[13px]">
+                  <thead className="bg-[var(--color-bg-soft)]">
+                    <tr>
+                      <th className="text-left px-4 py-3">Caducidad</th>
+                      <th className="text-left px-4 py-3">Cantidad</th>
+                      <th className="text-right px-4 py-3">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(verifLotes[lotesDetalleId] ?? []).length === 0 ? (
+                      <tr><td colSpan={3} className="px-4 py-4 text-[var(--color-text-muted)]">No hay lotes añadidos.</td></tr>
+                    ) : (
+                      (verifLotes[lotesDetalleId] ?? []).map((l, idx) => (
+                        <tr key={idx} className="border-t border-[var(--color-border-default)]">
+                          <td className="px-4 py-3">{l.fecha}</td>
+                          <td className="px-4 py-3">{Number(l.cantidad).toFixed(3)} {lotesUnidad}</td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              type="button"
+                              className="bg-[#fff5f5] text-[#e53e3e] border-0 w-9 h-9 rounded-lg cursor-pointer"
+                              onClick={() => eliminarLote(idx)}
+                              aria-label="Eliminar lote"
+                            >
+                              <i className="fa-solid fa-trash" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white border-0 px-6 py-2.5 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.25)] hover:-translate-y-0.5 transition"
+                  onClick={cerrarLotes}
+                >
+                  Listo
+                </button>
+              </div>
+            </div>
+          </div>
         </div>,
         document.body
       )}

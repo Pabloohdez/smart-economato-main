@@ -19,6 +19,7 @@ import { HealthModule } from './health/health.module';
 import { AlergenosModule } from './alergenos/alergenos.module';
 import { EscandallosModule } from './escandallos/escandallos.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { LotesModule } from './lotes/lotes.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     AlergenosModule,
     EscandallosModule,
     RealtimeModule,
+    LotesModule,
     HealthModule,
   ],
   providers: [

@@ -67,7 +67,7 @@ export async function crearPedidoHistorial(payload: CrearPedidoPayload): Promise
 
 export async function recibirPedido(
   pedidoId: number | string,
-  items: Array<{ detalle_id: number | string; cantidad_recibida: number }>,
+  items: Array<{ detalle_id: number | string; cantidad_recibida: number; lotes?: Array<{ fecha_caducidad?: string | null; cantidad: number }> }>,
 ): Promise<string> {
   const json = await apiFetch<{ data?: { message?: string } }>(`/pedidos/${pedidoId}`, {
     method: "PUT",

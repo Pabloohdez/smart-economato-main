@@ -78,6 +78,17 @@ export const detallesPedido = pgTable('detalles_pedido', {
   precioUnitario: numeric('precio_unitario', { precision: 10, scale: 2, mode: 'number' }).notNull(),
 });
 
+// Lotes por caducidad (para recepciones con múltiples fechas por línea)
+export const lotesProducto = pgTable('lotes_producto', {
+  id: serial('id').primaryKey(),
+  productoId: text('producto_id').notNull().references(() => productos.id),
+  pedidoId: integer('pedido_id').references(() => pedidos.id),
+  detalleId: integer('detalle_id').references(() => detallesPedido.id),
+  fechaCaducidad: date('fecha_caducidad', { mode: 'string' }),
+  cantidad: numeric('cantidad', { precision: 14, scale: 3, mode: 'number' }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'string' }).defaultNow(),
+});
+
 export const movimientos = pgTable('movimientos', {
   id: serial('id').primaryKey(),
   productoId: text('producto_id').references(() => productos.id),
@@ -177,6 +188,7 @@ export const schema = {
   productos,
   pedidos,
   detallesPedido,
+  lotesProducto,
   movimientos,
   alergenos,
   productoAlergenos,

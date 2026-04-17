@@ -13,6 +13,7 @@ import {
 import Spinner from "../components/ui/Spinner";
 import { useAuth } from "../contexts/AuthContext";
 import { getGastosMensuales, type GastoMensual } from "../services/informesService";
+import { getLotesProducto, type LoteProducto } from "../services/lotesService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 
@@ -78,6 +79,12 @@ export default function AvisosPage() {
     refetchInterval: 60_000,
   });
 
+  const lotesQuery = useQuery<LoteProducto[]>({
+    queryKey: queryKeys.lotesProducto,
+    queryFn: getLotesProducto,
+    refetchInterval: 45_000,
+  });
+
   const bajaMutation = useMutation({
     mutationFn: registrarBaja,
     onSuccess: async () => {
@@ -106,7 +113,8 @@ export default function AvisosPage() {
     productosQuery.isLoading
     || categoriasQuery.isLoading
     || proveedoresQuery.isLoading
-    || gastosMensualesQuery.isLoading;
+    || gastosMensualesQuery.isLoading
+    || lotesQuery.isLoading;
 
   const productos = useMemo<ProductoAviso[]>(() => {
     const productosRaw = productosQuery.data ?? [];
@@ -142,28 +150,48 @@ export default function AvisosPage() {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
-    const listaCaducados = productos
-      .filter((p) =>
-        p.fechaCaducidadNormalizada
-        && p.fechaCaducidadNormalizada !== "NULL"
-        && p.fechaCaducidadNormalizada !== "Sin fecha",
-      )
-      .map((p) => {
-        // Si el stock ya está a 0, no tiene sentido mantener el aviso de "dar de baja"
-        if (p.stockNum <= 0) {
-          return null;
+    const lotes = lotesQuery.data ?? [];
+    const lotesPorProducto = new Map<string, LoteProducto[]>();
+    for (const l of lotes) {
+      const pid = String(l.productoId);
+      const arr = lotesPorProducto.get(pid) ?? [];
+      arr.push(l);
+      lotesPorProducto.set(pid, arr);
+    }
+
+    const listaCaducados = productos.map((p) => {
+      const pid = String((p as any).id ?? "");
+      const lotesP = lotesPorProducto.get(pid) ?? [];
+
+      let cantidadCaducada = 0;
+      let minFechaCaducada: Date | null = null;
+
+      for (const l of lotesP) {
+        if (!l.fechaCaducidad) continue;
+        const fecha = new Date(l.fechaCaducidad);
+        if (Number.isNaN(fecha.getTime())) continue;
+        if (fecha < hoy && Number(l.cantidad) > 0) {
+          cantidadCaducada += Number(l.cantidad);
+          if (!minFechaCaducada || fecha < minFechaCaducada) minFechaCaducada = fecha;
         }
-        const fecha = new Date(p.fechaCaducidadNormalizada as string);
-        if (Number.isNaN(fecha.getTime()) || fecha >= hoy) {
-          return null;
-        }
-        const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
-        return { ...p, diasCaducado };
-      })
-      .filter(Boolean) as ProductoAviso[];
+      }
+
+      if (cantidadCaducada <= 0) return null;
+
+      const diasCaducado = minFechaCaducada
+        ? Math.ceil((hoy.getTime() - minFechaCaducada.getTime()) / 86400000)
+        : 0;
+
+      // Para acciones/valorización, usamos el "stock caducado" (suma de lotes caducados)
+      return {
+        ...p,
+        stockNum: Number(cantidadCaducada.toFixed(3)),
+        diasCaducado,
+      };
+    }).filter(Boolean) as ProductoAviso[];
 
     return listaCaducados.sort((a, b) => (b.diasCaducado ?? 0) - (a.diasCaducado ?? 0));
-  }, [productos]);
+  }, [lotesQuery.data, productos]);
 
   const stockBajo = useMemo<ProductoAviso[]>(() => {
     return productos

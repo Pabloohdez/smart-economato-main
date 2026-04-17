@@ -44,6 +44,7 @@ export default function IngresarProductoPage() {
   const [stock, setStock] = useState("");
   const [stockMin, setStockMin] = useState("");
   const [proveedorId, setProveedorId] = useState("");
+  const [fechaCaducidad, setFechaCaducidad] = useState<string>("");
 
   const [listaTemporal, setListaTemporal] = useState<ProductoTemporal[]>([]);
   const [guardando, setGuardando] = useState(false);
@@ -95,6 +96,7 @@ export default function IngresarProductoPage() {
     setStock("");
     setStockMin("");
     setProveedorId("");
+    setFechaCaducidad("");
   }
 
   function agregarALista() {
@@ -124,6 +126,7 @@ export default function IngresarProductoPage() {
       proveedores.find((p) => String(p.id) === String(proveedorId))?.nombre ?? "";
 
     const unidadLabel = unidadMedida === "kg" ? "kg" : unidadMedida === "l" ? "l" : "ud";
+    const fechaCad = fechaCaducidad.trim() ? fechaCaducidad.trim() : null;
 
     const nuevoProducto: ProductoTemporal = {
       nombre: nombreLimpio,
@@ -136,8 +139,8 @@ export default function IngresarProductoPage() {
       unidadMedida: unidadLabel,
       marca: "Sin marca",
       codigoBarras: generarCodigoBarras(),
-      // Por defecto, sin fecha (evita que se cree "caducado" por un default antiguo).
-      fechaCaducidad: null,
+      // Fecha opcional; si no se rellena, se guarda null.
+      fechaCaducidad: fechaCad,
       alergenos: [],
       descripcion: "",
       imagen: "producto-generico.jpg",
@@ -348,6 +351,19 @@ export default function IngresarProductoPage() {
               { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
               ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
             ]}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 flex-grow min-w-[170px] flex-[1.2]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputFechaCaducidad">
+            Caducidad (opcional)
+          </label>
+          <input
+            id="inputFechaCaducidad"
+            type="date"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+            value={fechaCaducidad}
+            onChange={(e) => setFechaCaducidad(e.target.value)}
           />
         </div>
 

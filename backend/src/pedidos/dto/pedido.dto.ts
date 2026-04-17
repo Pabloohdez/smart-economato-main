@@ -58,6 +58,23 @@ export class RecepcionItemDto {
   @IsNumber()
   @Min(0.001)
   cantidad_recibida: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RecepcionLoteDto)
+  lotes?: RecepcionLoteDto[];
+}
+
+export class RecepcionLoteDto {
+  @IsOptional()
+  @IsString()
+  fecha_caducidad?: string | null;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0.001)
+  cantidad: number;
 }
 
 export class UpdatePedidoDto {

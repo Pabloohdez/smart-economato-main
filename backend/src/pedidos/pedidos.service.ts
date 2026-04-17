@@ -4,8 +4,27 @@ import { DatabaseService } from '../database/database.service';
 @Injectable()
 export class PedidosService {
   private hasUnidadColumn: boolean | null = null;
+  private hasLotesTable: boolean | null = null;
 
   constructor(private readonly db: DatabaseService) {}
+
+  private async ensureLotesTable(client?: { query: (sql: string, params?: unknown[]) => any }) {
+    if (this.hasLotesTable) return;
+    const runner = client ?? this.db;
+    // Intento defensivo: crea la tabla si no existe (en entornos donde el usuario DB tenga permiso).
+    await runner.query(`
+      CREATE TABLE IF NOT EXISTS lotes_producto (
+        id SERIAL PRIMARY KEY,
+        producto_id VARCHAR NOT NULL REFERENCES productos(id),
+        pedido_id INTEGER NULL REFERENCES pedidos(id),
+        detalle_id INTEGER NULL REFERENCES detalles_pedido(id),
+        fecha_caducidad DATE NULL,
+        cantidad NUMERIC(14,3) NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    this.hasLotesTable = true;
+  }
 
   private async supportsUnidadColumn(): Promise<boolean> {
     if (this.hasUnidadColumn != null) {
@@ -148,12 +167,14 @@ export class PedidosService {
     body: {
       accion?: string;
       estado?: string;
-      items?: Array<{ detalle_id: number; cantidad_recibida: number }>;
+      items?: Array<{ detalle_id: number; cantidad_recibida: number; lotes?: Array<{ fecha_caducidad?: string | null; cantidad: number }> }>;
     },
   ) {
     if (body.accion === 'RECIBIR') {
       if (body.items?.length) {
         return this.db.transaction(async (client) => {
+          await this.ensureLotesTable(client as any);
+
           for (const item of body.items!) {
             const cant = Number(item.cantidad_recibida);
             if (cant > 0) {
@@ -163,6 +184,38 @@ export class PedidosService {
               );
               if (rows.length > 0) {
                 const prodId = (rows[0] as { producto_id: string }).producto_id;
+
+                // Si vienen lotes, validamos y los registramos
+                if (Array.isArray(item.lotes) && item.lotes.length > 0) {
+                  const sumLotes = item.lotes.reduce((s, l) => s + Number(l.cantidad || 0), 0);
+                  const diff = Math.abs(sumLotes - cant);
+                  if (diff > 0.0005) {
+                    throw new Error(`La suma de lotes (${sumLotes}) no coincide con lo recibido (${cant})`);
+                  }
+
+                  for (const lote of item.lotes) {
+                    const lcant = Number(lote.cantidad);
+                    if (!Number.isFinite(lcant) || lcant <= 0) continue;
+                    await client.query(
+                      `INSERT INTO lotes_producto (producto_id, pedido_id, detalle_id, fecha_caducidad, cantidad)
+                       VALUES ($1, $2, $3, $4, $5)`,
+                      [prodId, id, item.detalle_id, lote.fecha_caducidad ?? null, lcant],
+                    );
+                  }
+
+                  // Actualizar fechaCaducidad del producto a la más próxima de los lotes con cantidad>0
+                  const { rows: minRows } = await client.query(
+                    `SELECT MIN(fecha_caducidad) as min_fecha
+                     FROM lotes_producto
+                     WHERE producto_id = $1 AND cantidad > 0 AND fecha_caducidad IS NOT NULL`,
+                    [prodId],
+                  );
+                  const minFecha = (minRows?.[0] as any)?.min_fecha ?? null;
+                  await client.query(
+                    `UPDATE productos SET fechacaducidad = $1 WHERE id = $2`,
+                    [minFecha, prodId],
+                  );
+                }
 
                 await client.query(
                   'UPDATE productos SET stock = stock + $1 WHERE id = $2',

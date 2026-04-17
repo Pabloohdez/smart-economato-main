@@ -17,6 +17,7 @@ export const queryKeys = {
   alergenosCatalogo: ["alergenos", "catalogo"] as const,
   misAlergias: ["alergenos", "mine"] as const,
   productos: ["productos"] as const,
+  lotesProducto: ["lotes", "producto"] as const,
   categorias: ["categorias"] as const,
   proveedores: ["proveedores"] as const,
   pedidos: ["pedidos"] as const,
