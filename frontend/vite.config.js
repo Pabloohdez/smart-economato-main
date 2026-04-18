@@ -7,10 +7,6 @@ const pollingInterval = Number(process.env.CHOKIDAR_INTERVAL ?? 300)
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  define: {
-    // Forzamos el API base en dev/proxy para evitar valores “fantasma” en import.meta.env
-    "import.meta.env.VITE_API_URL": JSON.stringify("/api"),
-  },
   server: {
     host: true,
     port: 8081,

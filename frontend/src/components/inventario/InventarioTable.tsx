@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import type { Producto } from "../../services/productosService";
 import TablePagination from "../ui/TablePagination";
 import UiSelect from "../ui/UiSelect";
@@ -7,6 +8,7 @@ import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
 import { showNotification } from "../../utils/notifications";
 import type { LoteProducto } from "../../services/lotesService";
+import { CalendarDays, Layers3, PackageSearch, PencilLine } from "lucide-react";
 
 function parseDate(d?: string | null): Date | null {
   if (!d) return null;
@@ -165,7 +167,17 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
   }, [rows, safePage, pageSize]);
 
   return (
-    <div className="bg-[var(--color-bg-surface)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] overflow-hidden">
+    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] overflow-hidden">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--color-border-default)] px-5 py-4 max-[640px]:flex-col max-[640px]:items-start">
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Vista de inventario</div>
+          <div className="mt-1 text-[18px] font-bold text-[var(--color-text-strong)]">Stock, caducidad y lotes en una sola tabla</div>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(179,49,49,0.14)] bg-[rgba(179,49,49,0.08)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-brand-500)]">
+          <PackageSearch className="h-4 w-4" /> {rows.length} producto(s)
+        </div>
+      </div>
+
       <div className="w-full overflow-x-auto">
         <table className="w-full border-separate border-spacing-0 text-[14px]">
           <thead>
@@ -188,20 +200,20 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 </td>
               </tr>
             ) : (
-              visibleRows.map(({ p, stock, min, cadDias, alerta, lotesCount }) => {
+              visibleRows.map(({ p, stock, min, cadDias, alerta, lotesCount }, index) => {
                 const stockBajo = stock <= min;
                 let cadLabel = "—";
                 let cadNode: React.ReactNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
                 if (cadDias != null) {
                   if (cadDias < 0) {
-                    cadLabel = "⚠ CADUCADO";
+                    cadLabel = "Caducado";
                     cadNode = (
-                      <span className="bg-[#c53030] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold inline-flex items-center animate-pulse">
+                      <span className="bg-[#c53030] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold inline-flex items-center">
                         {cadLabel}
                       </span>
                     );
                   } else if (cadDias <= 30) {
-                    cadLabel = `⏰ ${cadDias}d`;
+                    cadLabel = `${cadDias}d`;
                     cadNode = (
                       <span className="bg-[#fffaf0] text-[#c05621] px-3 py-1.5 rounded-lg border-2 border-[#f6ad55] text-[11px] font-bold inline-flex items-center">
                         {cadLabel}
@@ -224,7 +236,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                         onClick={() => abrirLotes(p)}
                         title="Ver lotes"
                       >
-                        <i className="fa-solid fa-layer-group text-[11px]" />
+                        <Layers3 className="h-3.5 w-3.5" />
                         {lotesCount} lote(s)
                       </button>
                     ) : (
@@ -237,9 +249,12 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 );
 
                 return (
-                  <tr
+                  <motion.tr
                     key={String(p.id)}
                     className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
                   >
                     {(
                       [
@@ -261,7 +276,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                             <span
                               className={
                                 stockBajo
-                                  ? "bg-[#fff5f5] text-[#c53030] px-3 py-1 rounded-full font-bold border border-[#feb2b2] inline-block animate-pulse"
+                                  ? "bg-[#fff5f5] text-[#c53030] px-3 py-1 rounded-full font-bold border border-[#feb2b2] inline-block"
                                   : "bg-[#f0fff4] text-[#2f855a] px-3 py-1 rounded-full font-bold inline-block"
                               }
                             >
@@ -283,17 +298,17 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                             <div className="inline-flex items-center gap-2 justify-end flex-wrap">
                               <button
                                 type="button"
-                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border-default)] px-4 py-2 rounded-[12px] font-semibold cursor-pointer transition-[background,border-color,box-shadow] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] inline-flex items-center gap-2"
                                 onClick={() => abrirLotes(p)}
                               >
-                                <i className="fa-solid fa-calendar-days" /> Lotes
+                                <CalendarDays className="h-4 w-4" /> Lotes
                               </button>
                               <button
                                 type="button"
-                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border-default)] px-4 py-2 rounded-[12px] font-semibold cursor-pointer transition-[background,border-color,box-shadow] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] inline-flex items-center gap-2"
                                 onClick={() => abrirEdicion(p)}
                               >
-                                <i className="fa-solid fa-pen" /> Editar
+                                <PencilLine className="h-4 w-4" /> Editar
                               </button>
                             </div>
                           </td>
@@ -305,7 +320,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                         </td>
                       );
                     })}
-                  </tr>
+                  </motion.tr>
                 );
               })
             )}

@@ -2,6 +2,25 @@ import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
+import {
+  Bell,
+  BellRing,
+  CalendarDays,
+  ChartPie,
+  ChefHat,
+  ChevronDown,
+  ChevronRight,
+  ClipboardList,
+  Boxes,
+  Building2,
+  HandCoins,
+  House,
+  LogOut,
+  Menu,
+  PackagePlus,
+  Settings,
+  Truck,
+} from "lucide-react";
 import { logout as logoutSession } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
 import PageTransition from "../components/ui/PageTransition";
@@ -9,24 +28,24 @@ import { getProductos } from "../services/productosService";
 import { queryKeys } from "../lib/queryClient";
 
 const navItems = [
-  { to: "/inicio", label: "Inicio", icon: "fa-solid fa-house", roles: ["administrador", "profesor", "alumno"] },
-  { to: "/recepcion", label: "Recepción", icon: "fa-solid fa-truck-ramp-box", roles: ["administrador", "profesor"] },
-  { to: "/distribucion", label: "Distribución", icon: "fa-solid fa-truck", roles: ["administrador", "profesor"] },
-  { to: "/inventario", label: "Inventario", icon: "fa-solid fa-boxes-stacked", roles: ["administrador", "profesor", "alumno"] },
-  { to: "/bajas", label: "Bajas", icon: "fa-solid fa-ban", roles: ["administrador", "profesor"] },
-  { to: "/proveedores", label: "Proveedores", icon: "fa-solid fa-building", roles: ["administrador"] },
-  { to: "/pedidos", label: "Pedidos", icon: "fa-solid fa-file-invoice", roles: ["administrador", "profesor"] },
-  { to: "/escandallos", label: "Escandallos", icon: "fa-solid fa-utensils", roles: ["administrador", "profesor", "alumno"] },
-  { to: "/rendimiento", label: "Rendimiento", icon: "fa-solid fa-chart-pie", roles: ["administrador", "profesor"] },
-  { to: "/avisos", label: "Avisos", icon: "fa-solid fa-bell", roles: ["administrador", "profesor", "alumno"] },
+  { to: "/inicio", label: "Inicio", icon: House, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/recepcion", label: "Recepción", icon: PackagePlus, roles: ["administrador", "profesor"] },
+  { to: "/distribucion", label: "Distribución", icon: Truck, roles: ["administrador", "profesor"] },
+  { to: "/inventario", label: "Inventario", icon: Boxes, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/bajas", label: "Bajas", icon: HandCoins, roles: ["administrador", "profesor"] },
+  { to: "/proveedores", label: "Proveedores", icon: Building2, roles: ["administrador"] },
+  { to: "/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["administrador", "profesor"] },
+  { to: "/escandallos", label: "Escandallos", icon: ChefHat, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor"] },
+  { to: "/avisos", label: "Avisos", icon: BellRing, roles: ["administrador", "profesor", "alumno"] },
   {
     to: "/configuracion",
     label: "Configuración",
-    icon: "fa-solid fa-gear",
+    icon: Settings,
     separated: true,
     roles: ["administrador", "profesor"],
   },
-  { to: "/auditoria", label: "Auditoría", icon: "fa-solid fa-clipboard-list", roles: ["administrador"] },
+  { to: "/auditoria", label: "Auditoría", icon: ClipboardList, roles: ["administrador"] },
 ];
 
 function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno" | "usuario" {
@@ -86,6 +105,11 @@ export default function AppLayout() {
 
     return caducados + stockBajo;
   }, [productosQuery.data]);
+  const visibleNavItems = useMemo(
+    () => navItems.filter((item) => item.roles.includes(normalizedRole)),
+    [normalizedRole],
+  );
+
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target;
@@ -179,7 +203,7 @@ export default function AppLayout() {
             className="relative inline-flex items-center justify-center text-[var(--color-brand-500)] no-underline px-2 py-2 rounded-xl hover:bg-[#f1f5f9] transition"
             aria-label="Ir a Avisos"
           >
-            <i className="fa-regular fa-bell text-[18px]" aria-hidden="true" />
+            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
             {avisosCount > 0 ? (
               <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-[#ef4444] text-white text-[11px] font-bold inline-flex items-center justify-center px-1">
                 {avisosCount > 99 ? "99+" : avisosCount}
@@ -189,7 +213,7 @@ export default function AppLayout() {
         </div>
 
         <nav className="flex flex-col gap-2 mt-2 min-h-0 overflow-y-auto pr-1 [scrollbar-width:thin] max-[520px]:gap-1.5" aria-label="Secciones del sistema">
-          {navItems.map((it) => (
+          {visibleNavItems.map((it) => (
             <NavLink
               key={it.to}
               to={it.to}
@@ -205,13 +229,15 @@ export default function AppLayout() {
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    className={`inline-flex w-5 min-w-5 justify-center text-[16px] ${isActive ? "text-white" : "text-[var(--color-brand-500)] group-hover:text-[var(--color-brand-500)]"} max-[520px]:text-[15px]`}
+                  <it.icon
+                    className={`h-[18px] w-[18px] ${isActive ? "text-white" : "text-[var(--color-brand-500)] group-hover:text-[var(--color-brand-500)]"}`}
                     aria-hidden="true"
+                  />
+                  <span
+                    className="tracking-[-0.01em]"
                   >
-                    <i className={it.icon} />
+                    {it.label}
                   </span>
-                  <span className="tracking-[-0.01em]">{it.label}</span>
                   <span className="ml-auto inline-flex w-4 items-center justify-center" aria-hidden="true">
                     {isActive ? (
                       <motion.span
@@ -219,7 +245,7 @@ export default function AppLayout() {
                         className="inline-flex items-center justify-center text-[13px] text-white"
                         transition={{ type: "spring", stiffness: 420, damping: 32, mass: 0.7 }}
                       >
-                        <i className="fa-solid fa-chevron-right" />
+                        <ChevronRight className="h-[14px] w-[14px]" />
                       </motion.span>
                     ) : null}
                   </span>
@@ -250,7 +276,7 @@ export default function AppLayout() {
             </span>
 
             <span className="ml-auto text-[#9ca3af] text-[12px]" aria-hidden="true">
-              {menuOpen ? "▴" : "▾"}
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${menuOpen ? "rotate-180" : "rotate-0"}`} />
             </span>
           </button>
 
@@ -280,7 +306,7 @@ export default function AppLayout() {
                 }}
               >
                 <span className="inline-flex items-center gap-3">
-                  <i className="fa-solid fa-bell"></i>
+                  <BellRing className="h-4 w-4" />
                   <span>Centro de avisos</span>
                 </span>
                 {avisosCount > 0 ? (
@@ -300,14 +326,14 @@ export default function AppLayout() {
                 }}
               >
                 <span className="inline-flex items-center gap-3">
-                  <i className="fa-solid fa-gear"></i>
+                  <Settings className="h-4 w-4" />
                   <span>Configuración</span>
                 </span>
               </button>
 
               <div className="px-[18px] py-3 flex items-center justify-between gap-3 text-[var(--color-text-muted)] border-t border-[#f1f5f9]">
                 <span className="inline-flex items-center gap-3 text-[var(--color-text-muted)]">
-                  <i className="fa-solid fa-clock"></i>
+                  <Bell className="h-4 w-4" />
                   <span>Sesión iniciada</span>
                 </span>
                 <span className="font-bold text-[#374151]">hoy</span>
@@ -315,7 +341,7 @@ export default function AppLayout() {
 
               <div className="px-[18px] py-3 flex items-center justify-between gap-3 text-[var(--color-text-muted)] border-t border-[#f1f5f9]">
                 <span className="inline-flex items-center gap-3 text-[var(--color-text-muted)]">
-                  <i className="fa-solid fa-calendar-days"></i>
+                  <CalendarDays className="h-4 w-4" />
                   <span>Fecha</span>
                 </span>
                 <span className="font-bold text-[#374151]">
@@ -330,7 +356,7 @@ export default function AppLayout() {
               <div className="h-px bg-[var(--color-border-default)]" />
 
               <button className="w-full text-left px-[18px] py-4 bg-transparent border-0 cursor-pointer font-black text-[#dc2626] flex items-center gap-3 hover:bg-[#fff5f5]" type="button" onClick={logout}>
-                <i className="fa-solid fa-right-from-bracket"></i>
+                <LogOut className="h-4 w-4" />
                 <span>Cerrar sesión</span>
               </button>
             </div>
@@ -349,7 +375,7 @@ export default function AppLayout() {
               aria-controls="app-sidebar"
               aria-expanded={sidebarOpen}
             >
-              <i className="fa-solid fa-bars" />
+              <Menu className="h-[18px] w-[18px]" />
             </button>
           </div>
         </header>

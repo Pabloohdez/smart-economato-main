@@ -1,3 +1,6 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+
 type Props = {
   totalItems: number;
   page: number;
@@ -64,11 +67,11 @@ export default function TablePagination({
   const pageItems = buildPageItems(safePage, totalPages);
 
   return (
-    <div className="mt-3.5 flex items-center justify-between gap-3.5 flex-wrap">
-      <div className="inline-flex items-center gap-2 text-[var(--color-text-muted)] text-[14px]">
+    <div className="mt-4 flex items-center justify-between gap-4 flex-wrap rounded-[18px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-4 py-3 shadow-[var(--shadow-sm)]">
+      <div className="inline-flex items-center gap-2 text-[var(--color-text-muted)] text-[14px] font-medium">
         <span>Mostrando</span>
         <select
-          className="border border-[var(--color-border-default)] rounded-[10px] py-[7px] px-2.5 bg-white text-[var(--color-text-default)] font-semibold"
+          className="border border-[var(--color-border-default)] rounded-[12px] py-[9px] px-3 bg-white text-[var(--color-text-default)] font-semibold shadow-[var(--shadow-sm)] transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.08)] focus:outline-none"
           value={pageSize}
           onChange={(e) => {
             onPageSizeChange(Number(e.target.value));
@@ -89,59 +92,73 @@ export default function TablePagination({
 
       <div className="inline-flex items-center gap-1.5 flex-wrap" aria-label="Paginación de tabla">
         <button
-          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          className="min-w-10 h-10 rounded-[12px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color,box-shadow,transform] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
           type="button"
           onClick={() => onPageChange(1)}
           disabled={safePage <= 1}
         >
-          «
+          <ChevronsLeft className="mx-auto h-4 w-4" />
         </button>
         <button
-          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          className="min-w-10 h-10 rounded-[12px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color,box-shadow,transform] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
           type="button"
           onClick={() => onPageChange(safePage - 1)}
           disabled={safePage <= 1}
         >
-          ‹
+          <ChevronLeft className="mx-auto h-4 w-4" />
         </button>
 
-        {pageItems.map((item, index) =>
-          item === "dots" ? (
-            <span className="px-1.5 text-[var(--color-text-muted)]" key={`dots-${index}`}>
-              ...
-            </span>
-          ) : (
-            <button
-              type="button"
-              key={item}
-              className={
-                item === safePage
-                  ? "min-w-9 h-9 rounded-[10px] border border-transparent bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white font-semibold cursor-pointer shadow-[0_6px_16px_rgba(179,49,49,0.25)]"
-                  : "min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
-              }
-              onClick={() => onPageChange(item)}
-              aria-current={item === safePage ? "page" : undefined}
-            >
-              {item}
-            </button>
-          ),
-        )}
+        <AnimatePresence mode="popLayout" initial={false}>
+          {pageItems.map((item, index) =>
+            item === "dots" ? (
+              <motion.span
+                className="px-1.5 text-[var(--color-text-muted)]"
+                key={`dots-${index}`}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.18 }}
+              >
+                ...
+              </motion.span>
+            ) : (
+              <motion.button
+                type="button"
+                key={item}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className={
+                  item === safePage
+                    ? "min-w-10 h-10 rounded-[12px] border border-transparent bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white font-semibold cursor-pointer shadow-[0_10px_22px_rgba(179,49,49,0.24)]"
+                    : "min-w-10 h-10 rounded-[12px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color,box-shadow,transform] duration-150 hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
+                }
+                onClick={() => onPageChange(item)}
+                aria-current={item === safePage ? "page" : undefined}
+              >
+                {item}
+              </motion.button>
+            ),
+          )}
+        </AnimatePresence>
 
         <button
-          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          className="min-w-10 h-10 rounded-[12px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color,box-shadow,transform] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
           type="button"
           onClick={() => onPageChange(safePage + 1)}
           disabled={safePage >= totalPages}
         >
-          ›
+          <ChevronRight className="mx-auto h-4 w-4" />
         </button>
         <button
-          className="min-w-9 h-9 rounded-[10px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]"
+          className="min-w-10 h-10 rounded-[12px] border border-[var(--color-border-default)] bg-white text-[#4a5568] font-semibold cursor-pointer transition-[background,border-color,box-shadow,transform] duration-150 disabled:opacity-45 disabled:cursor-not-allowed hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] hover:-translate-y-px"
           type="button"
           onClick={() => onPageChange(totalPages)}
           disabled={safePage >= totalPages}
         >
-          »
+          <ChevronsRight className="mx-auto h-4 w-4" />
         </button>
       </div>
     </div>

@@ -7,8 +7,11 @@ export class LoginService {
   constructor(private readonly db: DatabaseService) {}
 
   async login(username: string, password: string) {
-    const normalizedUsername = username.trim().toLowerCase();
-    const rows = await this.findSessionUsers('LOWER(u.username) = $1', [normalizedUsername]);
+    const normalizedIdentifier = username.trim().toLowerCase();
+    const rows = await this.findSessionUsers(
+      'LOWER(u.username) = $1 OR LOWER(COALESCE(u.email, \'\')) = $1',
+      [normalizedIdentifier],
+    );
 
     if (rows.length === 0) {
       throw new UnauthorizedException('Usuario o contraseña incorrectos');

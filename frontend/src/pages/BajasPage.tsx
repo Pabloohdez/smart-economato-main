@@ -1,8 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
+import { AlertCircle, CalendarDays, Camera, ClipboardList, Clock3, FileText, History, Mail, Scale, Search, Trash2, Wallet, Wrench } from "lucide-react";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import UiSelect from "../components/ui/UiSelect";
@@ -62,6 +65,7 @@ export default function BajasPage() {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loadingDatos, setLoadingDatos] = useState(true);
+  const [errorDatos, setErrorDatos] = useState("");
 
   // fecha
   const [fechaActual] = useState(() => formatFechaLargaES(new Date()));
@@ -70,6 +74,7 @@ export default function BajasPage() {
   const [stats, setStats] = useState({ roturas: 0, caducados: 0, mermas: 0, valorPerdido: 0 });
   const [historial, setHistorial] = useState<BajaHistorialItem[]>([]);
   const [loadingHistorial, setLoadingHistorial] = useState(true);
+  const [errorHistorial, setErrorHistorial] = useState("");
   const [filtroTipoHistorial, setFiltroTipoHistorial] = useState("");
 
   // búsqueda + filtros
@@ -94,6 +99,7 @@ export default function BajasPage() {
 
   async function cargarDatos() {
     setLoadingDatos(true);
+    setErrorDatos("");
     try {
       const [pJson, cJson] = await Promise.all([
         apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
@@ -122,6 +128,7 @@ export default function BajasPage() {
       setCategorias(cats);
     } catch (e) {
       console.error(e);
+      setErrorDatos("No se pudieron cargar productos o categorías.");
       showNotification("Error de conexión: no se pudieron cargar productos/categorías.", "error");
       setProductos([]);
       setCategorias([]);
@@ -166,6 +173,7 @@ export default function BajasPage() {
 
   async function cargarHistorialBajas() {
     setLoadingHistorial(true);
+    setErrorHistorial("");
     try {
       const hoy = new Date();
       const mes = hoy.getMonth() + 1;
@@ -183,19 +191,41 @@ export default function BajasPage() {
       setHistorial(json.data as BajaHistorialItem[]);
     } catch (e) {
       console.error(e);
+      setErrorHistorial("No se pudo cargar el historial de bajas.");
       setHistorial([]);
     } finally {
       setLoadingHistorial(false);
     }
   }
 
-  useEffect(() => {
-    (async () => {
-      await cargarDatos();
-      await cargarEstadisticasMes();
-      await cargarHistorialBajas();
-    })();
+  const recargarBajas = useCallback(async () => {
+    await cargarDatos();
+    await cargarEstadisticasMes();
+    await cargarHistorialBajas();
   }, []);
+
+  useEffect(() => {
+    void recargarBajas();
+  }, [recargarBajas]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      void recargarBajas();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void recargarBajas();
+      }
+    };
+
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [recargarBajas]);
 
   const resultados = useMemo(() => {
     let list = [...productos];
@@ -427,23 +457,37 @@ export default function BajasPage() {
       <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
         <div>
           <h1 className="text-[#c53030] text-[28px] font-bold m-0 mb-2 flex items-center gap-3">
-            <i className="fa-solid fa-circle-exclamation" /> GESTIÓN DE BAJAS
+            <AlertCircle className="h-7 w-7" /> GESTIÓN DE BAJAS
           </h1>
           <p className="text-[#50596D] text-[14px] m-0">Registra roturas, caducados, mermas y ajustes de inventario</p>
         </div>
         <div className="bg-[var(--color-bg-soft)] px-5 py-3 rounded-[10px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] max-[768px]:w-full max-[768px]:justify-center">
-          <i className="fa-solid fa-calendar" />
+          <CalendarDays className="h-4 w-4" />
           <span id="fechaActualBajas">{fechaActual}</span>
         </div>
       </div>
       </StaggerItem>
+
+      {(errorDatos || errorHistorial) && (
+        <StaggerItem>
+          <div className="mb-5 flex flex-col gap-4">
+            {errorDatos ? <Alert type="error" title="Error en datos base">{errorDatos}</Alert> : null}
+            {errorHistorial ? <Alert type="warning" title="Historial no disponible">{errorHistorial}</Alert> : null}
+            <div>
+              <Button type="button" variant="secondary" onClick={recargarBajas}>
+                Reintentar carga
+              </Button>
+            </div>
+          </div>
+        </StaggerItem>
+      )}
 
       {/* STATS */}
       <StaggerItem>
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
-            <i className="fa-solid fa-hammer" />
+            <Wrench className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Roturas del Mes</span>
@@ -455,7 +499,7 @@ export default function BajasPage() {
 
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fffaf0] text-[#dd6b20]">
-            <i className="fa-solid fa-clock" />
+            <Clock3 className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Productos Caducados</span>
@@ -467,7 +511,7 @@ export default function BajasPage() {
 
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fefcbf] text-[#d69e2e]">
-            <i className="fa-solid fa-scale-unbalanced" />
+            <Scale className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Mermas Registradas</span>
@@ -479,7 +523,7 @@ export default function BajasPage() {
 
         <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#c53030]">
-            <i className="fa-solid fa-euro-sign" />
+            <Wallet className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Valor Perdido Total</span>
@@ -493,9 +537,9 @@ export default function BajasPage() {
 
       {/* PANEL REGISTRO */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
-          <i className="fa-solid fa-clipboard-list" /> Registrar Nueva Baja
+          <ClipboardList className="h-5 w-5 text-[var(--color-brand-500)]" /> Registrar Nueva Baja
         </h2>
 
         <div className="flex flex-col gap-4">
@@ -527,7 +571,7 @@ export default function BajasPage() {
               aria-label="Escanear codigo de barras"
               title="Escanear codigo"
             >
-              <i className="fa-solid fa-camera" />
+              <Camera className="h-4 w-4" />
             </button>
           </div>
 
@@ -553,7 +597,7 @@ export default function BajasPage() {
               type="button"
               onClick={mostrarProductosCaducados}
             >
-              <i className="fa-solid fa-clock" /> Ver Productos Próximos a Caducar
+              <Clock3 className="h-4 w-4" /> Ver Productos Próximos a Caducar
             </button>
           </div>
         </div>
@@ -569,7 +613,7 @@ export default function BajasPage() {
             </div>
           ) : resultados.length === 0 ? (
             <div className="text-center p-5 text-[#a0aec0]">
-              <i className="fa-solid fa-search text-[32px] mb-2.5" />
+              <Search className="h-8 w-8 mb-2.5 mx-auto" />
               <p className="m-0">No se encontraron productos</p>
             </div>
           ) : (
@@ -602,9 +646,9 @@ export default function BajasPage() {
 
       {/* BAJA ACTIVA */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
         <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
-          <i className="fa-solid fa-file-lines" /> Registro de Baja Actual
+          <FileText className="h-5 w-5 text-[var(--color-brand-500)]" /> Registro de Baja Actual
         </h3>
 
         <div className="overflow-x-auto">
@@ -668,7 +712,7 @@ export default function BajasPage() {
                         onClick={() => eliminarProductoBaja(index)}
                         aria-label={`Eliminar ${p.nombre}`}
                       >
-                        <i className="fa-solid fa-trash" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </td>
                   </tr>
@@ -694,10 +738,10 @@ export default function BajasPage() {
 
       {/* ACCIONES */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
-            <i className="fa-solid fa-message" /> Motivo / Descripción Detallada
+            <Mail className="h-4 w-4" /> Motivo / Descripción Detallada
           </label>
           <textarea
             id="textareaMotivoBaja"
@@ -775,10 +819,10 @@ export default function BajasPage() {
 
       {/* HISTORIAL */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)]">
         <div className="flex justify-between items-center mb-5 max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-3">
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
-            <i className="fa-solid fa-clock-rotate-left" /> Historial de Bajas
+            <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Bajas
           </h3>
 
           <div className="flex gap-2.5">

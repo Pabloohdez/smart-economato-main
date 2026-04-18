@@ -1,6 +1,9 @@
 // frontend/src/pages/Distribucion.tsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
+import { Boxes, CalendarDays, Check, History, Minus, PackageSearch, Plus, Plug, PlugZap, Scale, ShoppingCart, Trash2, Truck } from "lucide-react";
 
 import { showConfirm, showNotification } from "../utils/notifications";
 import {
@@ -77,9 +80,11 @@ export default function DistribucionPage() {
 
   const [loadingProductos, setLoadingProductos] = useState(true);
   const [productosBase, setProductosBase] = useState<Producto[]>([]);
+  const [errorProductos, setErrorProductos] = useState("");
 
   const [historial, setHistorial] = useState<Movimiento[]>([]);
   const [loadingHistorial, setLoadingHistorial] = useState(true);
+  const [errorHistorial, setErrorHistorial] = useState("");
 
   const [term, setTerm] = useState("");
   const [resultadosOpen, setResultadosOpen] = useState(false);
@@ -99,6 +104,7 @@ export default function DistribucionPage() {
 
   async function cargarProductos() {
     setLoadingProductos(true);
+    setErrorProductos("");
     try {
       const json = await apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
@@ -122,6 +128,7 @@ export default function DistribucionPage() {
       setProductosBase(list);
     } catch (e) {
       console.error(e);
+      setErrorProductos("No se pudieron cargar los productos de distribución.");
       showNotification("Error de conexión con el servidor (productos).", "error");
       setProductosBase([]);
     } finally {
@@ -131,6 +138,7 @@ export default function DistribucionPage() {
 
   async function cargarHistorial() {
     setLoadingHistorial(true);
+    setErrorHistorial("");
     try {
       const json = await apiFetch<{ success?: boolean; data?: any[] }>("/movimientos", {
         headers: { "X-Requested-With": "XMLHttpRequest" },
@@ -145,16 +153,40 @@ export default function DistribucionPage() {
       setHistorial(salidas);
     } catch (e) {
       console.error(e);
+      setErrorHistorial("No se pudo cargar el historial de movimientos.");
       setHistorial([]);
     } finally {
       setLoadingHistorial(false);
     }
   }
 
-  useEffect(() => {
-    cargarProductos();
-    cargarHistorial();
+  const recargarDistribucion = useCallback(async () => {
+    await cargarProductos();
+    await cargarHistorial();
   }, []);
+
+  useEffect(() => {
+    void recargarDistribucion();
+  }, [recargarDistribucion]);
+
+  useEffect(() => {
+    const onOnline = () => {
+      void recargarDistribucion();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void recargarDistribucion();
+      }
+    };
+
+    window.addEventListener("online", onOnline);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [recargarDistribucion]);
 
   // Si el producto es por kg/l y hay báscula conectada, rellena la cantidad con la lectura
   useEffect(() => {
@@ -385,7 +417,7 @@ export default function DistribucionPage() {
         <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
           <div>
             <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-              <i className="fa-solid fa-truck text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
+              <Truck className="h-7 w-7 text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
             </h2>
             <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
               Registra la salida de productos hacia cocina, bar u otros departamentos.
@@ -393,14 +425,28 @@ export default function DistribucionPage() {
           </div>
 
           <div className="inline-flex items-center gap-2.5 px-[18px] py-3 rounded-[12px] text-[#50596D] font-bold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:w-full max-[768px]:justify-center">
-            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]" />
+            <CalendarDays className="h-4 w-4 text-[var(--color-brand-500)]" />
             <span>{hoyES()}</span>
           </div>
         </div>
       </StaggerItem>
 
+      {(errorProductos || errorHistorial) && (
+        <StaggerItem>
+          <div className="mb-5 flex flex-col gap-4">
+            {errorProductos ? <Alert type="error" title="Error en productos">{errorProductos}</Alert> : null}
+            {errorHistorial ? <Alert type="warning" title="Historial no disponible">{errorHistorial}</Alert> : null}
+            <div>
+              <Button type="button" variant="secondary" onClick={recargarDistribucion}>
+                Reintentar carga
+              </Button>
+            </div>
+          </div>
+        </StaggerItem>
+      )}
+
       <StaggerItem>
-        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
+        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4">
           <div className="flex gap-3 items-center flex-wrap justify-between">
             <div className="flex gap-2.5 items-center flex-wrap">
               <strong>Báscula</strong>
@@ -415,7 +461,7 @@ export default function DistribucionPage() {
                   className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
                   onClick={scale.disconnect}
                 >
-                  <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
+                  <PlugZap className="h-4 w-4" /> Desconectar
                 </button>
               ) : (
                 <button
@@ -423,7 +469,7 @@ export default function DistribucionPage() {
                   className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
                   onClick={scale.connect}
                 >
-                  <i className="fa-solid fa-plug" /> Conectar
+                  <Plug className="h-4 w-4" /> Conectar
                 </button>
               )}
             </div>
@@ -437,9 +483,9 @@ export default function DistribucionPage() {
       <StaggerItem>
         <div className="grid grid-cols-2 gap-[25px] mt-6 max-[768px]:grid-cols-1">
         {/* Panel Izq */}
-        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col" ref={buscadorWrapRef}>
+        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col" ref={buscadorWrapRef}>
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
-            <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
+            <PackageSearch className="h-5 w-5 text-[var(--color-brand-500)]" /> Buscar Producto
           </h3>
 
           {/* Buscador con ghost text */}
@@ -529,7 +575,7 @@ export default function DistribucionPage() {
           {productoActual && (
             <div className="mt-5 border-2 border-[var(--color-border-default)] rounded-[14px] overflow-hidden bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
               <div className="flex items-center gap-4 px-5 py-[18px] bg-[linear-gradient(135deg,#fff5f5_0%,#fff_100%)] border-b border-[var(--color-border-default)]">
-                <i className="fa-solid fa-box-open text-[28px] text-[var(--color-brand-500)] flex-shrink-0" />
+                <Boxes className="h-7 w-7 text-[var(--color-brand-500)] flex-shrink-0" />
                 <div>
                   <p className="text-[18px] font-bold text-[var(--color-text-strong)] m-0 mb-1">{productoActual.nombre}</p>
                   {productoActual && (
@@ -541,7 +587,7 @@ export default function DistribucionPage() {
               </div>
 
               <div className="flex items-center justify-center gap-2.5 px-5 py-4 text-[14px] text-[var(--color-text-muted)] border-b border-[var(--color-border-default)] bg-[var(--color-bg-soft)]">
-                <i className="fa-solid fa-cubes" />
+                <Boxes className="h-4 w-4" />
                 Stock disponible: <strong>{productoActual.stock}</strong> {normalizarUnidad(productoActual.unidadMedida)}
               </div>
 
@@ -554,7 +600,7 @@ export default function DistribucionPage() {
                     onClick={() => ajustarCant(-1)}
                     aria-label="Disminuir"
                   >
-                    <i className="fa-solid fa-minus" />
+                    <Minus className="h-4 w-4" />
                   </button>
                   <input
                     type="number"
@@ -586,7 +632,7 @@ export default function DistribucionPage() {
                     title="Usar lectura de báscula"
                     disabled={!scale.connected || scale.weightKg == null}
                   >
-                    <i className="fa-solid fa-scale-balanced" />
+                    <Scale className="h-4 w-4" />
                   </button>
                   <button
                     type="button"
@@ -594,7 +640,7 @@ export default function DistribucionPage() {
                     onClick={() => ajustarCant(1)}
                     aria-label="Aumentar"
                   >
-                    <i className="fa-solid fa-plus" />
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
                 {stepDeUnidad(productoActual.unidadMedida) !== 1 && (
@@ -620,14 +666,14 @@ export default function DistribucionPage() {
                 type="button"
                 onClick={agregarAlCarrito}
               >
-                <i className="fa-solid fa-cart-plus" /> Añadir a la Lista de Salida
+                <ShoppingCart className="h-4 w-4" /> Añadir a la Lista de Salida
               </button>
             </div>
           )}
         </div>
 
         {/* Panel Der */}
-        <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col">
+        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col">
           <div className="flex items-center justify-between gap-3 pb-[15px] mb-5 border-b-2 border-[var(--color-border-default)]">
             <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Lista de Salida</h3>
             <span className="inline-flex items-center justify-center min-h-7 px-3 py-1 rounded-full bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] font-bold text-[12px]">
@@ -663,7 +709,7 @@ export default function DistribucionPage() {
                           onClick={() => eliminarDelCarrito(index)}
                           aria-label={`Eliminar ${item.nombre}`}
                         >
-                          <i className="fa-solid fa-trash" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
                       </td>
                     </tr>
@@ -697,16 +743,16 @@ export default function DistribucionPage() {
               type="button"
               onClick={confirmarSalida}
             >
-              <i className="fa-solid fa-check" /> Confirmar Salida
+              <Check className="h-4 w-4" /> Confirmar Salida
             </button>
           </div>
         </div>
       </div>
 
       {/* Historial */}
-      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mt-5">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] mt-5">
         <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
-          <i className="fa-solid fa-clock-rotate-left" /> Historial de Movimientos
+          <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Movimientos
         </h3>
 
         <div className="rounded-[10px] border border-[var(--color-border-default)] max-h-[400px] overflow-y-auto overflow-x-auto">

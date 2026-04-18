@@ -14,6 +14,10 @@ import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
+import Spinner from "../components/ui/Spinner";
+import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Truck } from "lucide-react";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -91,6 +95,9 @@ export default function Recepcion() {
     productosQuery.isLoading
     || categoriasQuery.isLoading
     || proveedoresQuery.isLoading;
+  const recepcionBaseError = [productosQuery.error, categoriasQuery.error, proveedoresQuery.error]
+    .find((error): error is Error => error instanceof Error)
+    ?.message ?? "";
 
   const {
     term,
@@ -544,12 +551,21 @@ export default function Recepcion() {
   }, [verifQty, verifCaptured, productos, abrirModalPedidos, recibirPedidoMutation, scale]);
 
   const pedidosPendientes = pedidosPendientesQuery.data ?? [];
+  const pedidosPendientesError = pedidosPendientesQuery.error instanceof Error ? pedidosPendientesQuery.error.message : "";
 
   const nombreProveedorActual = useMemo(() => {
     if (!recepcion.length) return "Sin seleccionar";
     // Si hay varios, mostramos el primero (igual que vuestro HTML simple)
     return recepcion[0].proveedor;
   }, [recepcion]);
+
+  async function reintentarDatosBase() {
+    await Promise.all([
+      productosQuery.refetch(),
+      categoriasQuery.refetch(),
+      proveedoresQuery.refetch(),
+    ]);
+  }
 
   return (
     <StaggerPage>
@@ -558,24 +574,46 @@ export default function Recepcion() {
       <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
           <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
-            <i className="fa-solid fa-truck-ramp-box text-[var(--color-brand-500)]" /> RECEPCIÓN DE MERCANCÍA
+            <Truck className="h-7 w-7 text-[var(--color-brand-500)]" /> RECEPCIÓN DE MERCANCÍA
           </h1>
           <p className="m-0 text-[14px] text-[#50596D]">
             Registra las entregas de proveedores y actualiza el inventario
           </p>
         </div>
-        <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[10px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
-          <i className="fa-solid fa-calendar" />
+        <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[14px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
+          <CalendarDays className="h-4 w-4" />
           <span>{hoyES()}</span>
         </div>
       </div>
       </StaggerItem>
 
+      {loading && (
+        <StaggerItem>
+          <Spinner label="Cargando datos de recepcion..." />
+        </StaggerItem>
+      )}
+
+      {!loading && recepcionBaseError && (
+        <StaggerItem>
+          <div className="flex flex-col gap-4">
+            <Alert type="error" title="Error al cargar recepcion">{recepcionBaseError}</Alert>
+            <div>
+              <Button type="button" variant="secondary" onClick={reintentarDatosBase}>
+                Reintentar carga
+              </Button>
+            </div>
+          </div>
+        </StaggerItem>
+      )}
+
+      {!loading && !recepcionBaseError && (
+        <>
+
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-6 shadow-[var(--shadow-sm)] mb-4">
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[20px] p-6 shadow-[var(--shadow-sm)] mb-4">
         <div className="flex gap-3 items-center flex-wrap justify-between">
           <div className="flex gap-2.5 items-center flex-wrap">
-            <strong>Báscula</strong>
+            <strong className="inline-flex items-center gap-2"><Scale className="h-4 w-4 text-[var(--color-brand-500)]" /> Báscula</strong>
             <span className="text-[13px] text-[#4a5568]">
               Lectura:{" "}
               <strong>{scale.weightKg == null ? "—" : `${scale.weightKg.toFixed(3)} kg`}</strong>
@@ -585,18 +623,18 @@ export default function Recepcion() {
             ) : scale.connected ? (
               <button
                 type="button"
-                className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition"
+                className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition inline-flex items-center gap-2"
                 onClick={scale.disconnect}
               >
-                <i className="fa-solid fa-plug-circle-xmark" /> Desconectar
+                <PlugZap className="h-4 w-4" /> Desconectar
               </button>
             ) : (
               <button
                 type="button"
-                className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition"
+                className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition inline-flex items-center gap-2"
                 onClick={scale.connect}
               >
-                <i className="fa-solid fa-plug" /> Conectar
+                <Plug className="h-4 w-4" /> Conectar
               </button>
             )}
           </div>
@@ -614,7 +652,7 @@ export default function Recepcion() {
             />
             <button
               type="button"
-              className="px-4 py-2 rounded-[10px] font-semibold border-2 border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] transition disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-[12px] font-semibold border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[var(--color-text-default)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] transition disabled:opacity-60 disabled:cursor-not-allowed inline-flex items-center gap-2"
               onClick={() => {
                 const kg = scale.captureKg();
                 if (kg != null) setExpectedKg(String(kg.toFixed(3)));
@@ -622,7 +660,7 @@ export default function Recepcion() {
               disabled={!scale.connected || scale.weightKg == null}
               title="Copiar lectura a kg esperados"
             >
-              <i className="fa-solid fa-copy" /> Usar lectura
+              <Copy className="h-4 w-4" /> Usar lectura
             </button>
           </div>
         </div>
@@ -631,9 +669,9 @@ export default function Recepcion() {
 
       {/* Panel búsqueda */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5" ref={buscadorWrapRef}>
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]" ref={buscadorWrapRef}>
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
-          <i className="fa-solid fa-magnifying-glass" /> Buscar Producto
+          <PackageSearch className="h-5 w-5 text-[var(--color-brand-500)]" /> Buscar Producto
         </h2>
 
         <div className="flex flex-col gap-[15px]">
@@ -693,13 +731,13 @@ export default function Recepcion() {
 
 
               <button
-                className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-xl bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] inline-flex items-center justify-center cursor-pointer shadow-[var(--shadow-sm)] active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 touch-manipulation"
+                className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-[14px] bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] inline-flex items-center justify-center cursor-pointer shadow-[var(--shadow-sm)] active:scale-[0.97] hover:shadow-[var(--shadow-md)] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 touch-manipulation"
                 type="button"
                 onClick={escanearCodigoBarras}
                 aria-label="Escanear codigo de barras"
                 title="Escanear codigo"
               >
-                <i className="fa-solid fa-camera" />
+                <ScanLine className="h-4 w-4" />
               </button>
             </div>
 
@@ -762,11 +800,11 @@ export default function Recepcion() {
         </div>
         <div className="text-right mt-[15px]">
           <button
-            className="h-12 px-7 bg-[#2d3748] text-white border-0 rounded-[10px] font-semibold cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2 shadow-[0_4px_15px_rgba(45,55,72,0.25)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(45,55,72,0.35)]"
+            className="h-12 px-7 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 rounded-[14px] font-semibold cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2 shadow-[0_10px_24px_rgba(179,49,49,0.24)] hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(179,49,49,0.28)]"
             style={{ display: "inline-flex" }}
             onClick={abrirModalPedidos}
           >
-            <i className="fa-solid fa-cloud-arrow-down" /> Importar/Recibir Pedido
+            <Import className="h-4 w-4" /> Importar/Recibir Pedido
           </button>
         </div>
       </div>
@@ -784,7 +822,7 @@ export default function Recepcion() {
           >
             <div className="flex items-center justify-between gap-3 mb-5">
               <h3 className="m-0 flex items-center gap-2">
-                <i className="fa-solid fa-cloud-arrow-down" /> Importar Pedido Pendiente
+                <Import className="h-5 w-5 text-[var(--color-brand-500)]" /> Importar Pedido Pendiente
               </h3>
               <button
                 type="button"
@@ -798,7 +836,24 @@ export default function Recepcion() {
 
             <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1">
 
-            {pedidosPendientes.length === 0 ? (
+            {pedidosPendientesQuery.isLoading || pedidosPendientesQuery.isFetching ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Spinner label="Cargando pedidos pendientes..." />
+              </div>
+            ) : pedidosPendientesError ? (
+              <div className="py-2">
+                <Alert type="error" title="Error al cargar pedidos pendientes">
+                  <div className="flex flex-col gap-4">
+                    <span>{pedidosPendientesError}</span>
+                    <div>
+                      <Button type="button" variant="secondary" onClick={() => pedidosPendientesQuery.refetch()}>
+                        Reintentar pedidos
+                      </Button>
+                    </div>
+                  </div>
+                </Alert>
+              </div>
+            ) : pedidosPendientes.length === 0 ? (
               <div className="flex-1 flex items-center justify-center text-center text-[var(--color-text-muted)]">
                 <p>No hay pedidos pendientes o incompletos.</p>
               </div>
@@ -964,6 +1019,9 @@ export default function Recepcion() {
           </aside>
         </div>,
         document.body
+      )}
+
+      </>
       )}
 
       {lotesModalOpen && createPortal(

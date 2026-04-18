@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import { useNavigate } from "react-router-dom";
+import { Boxes, CalendarDays, Plus } from "lucide-react";
 import InventarioTable from "../components/inventario/InventarioTable";
 import InventarioToolbar from "../components/inventario/InventarioToolbar";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
 import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { queryKeys } from "../lib/queryClient";
@@ -66,7 +68,8 @@ export default function InventarioPage() {
 
   const items: Producto[] = productosQuery.data ?? [];
   const loading = productosQuery.isLoading;
-  const err = productosQuery.error instanceof Error ? productosQuery.error.message : "";
+  const productosError = productosQuery.error instanceof Error ? productosQuery.error.message : "";
+  const lotesError = lotesQuery.error instanceof Error ? lotesQuery.error.message : "";
 
   // “cats” y “provs” para el toolbar (con id fake = nombre)
   const cats = useMemo(() => {
@@ -153,6 +156,10 @@ export default function InventarioPage() {
     showNotification(`Codigo leido: ${code}`, "success");
   }
 
+  async function reintentarCarga() {
+    await Promise.all([productosQuery.refetch(), lotesQuery.refetch()]);
+  }
+
   return (
     <StaggerPage>
       {/* Header como el compi */}
@@ -160,7 +167,7 @@ export default function InventarioPage() {
         <div className="flex items-center justify-between gap-4 flex-wrap mb-[var(--space-7)] pb-[var(--space-5)] border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
           <div>
             <h1 className="m-0 mb-[var(--space-2)] flex items-center gap-[var(--space-3)] text-[28px] font-bold text-[var(--color-text-strong)]">
-              <i className="fa-solid fa-boxes-stacked text-[var(--color-brand-500)]" />
+              <Boxes className="h-7 w-7 text-[var(--color-brand-500)]" />
               INVENTARIO
             </h1>
             <p className="m-0 text-[14px] text-[var(--color-text-muted)]">Gestiona y consulta el stock de productos</p>
@@ -168,16 +175,16 @@ export default function InventarioPage() {
 
           <div className="flex items-center gap-[14px] max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
             <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[12px] text-[var(--color-text-muted)] font-bold inline-flex items-center gap-2.5 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:justify-center">
-              <i className="fa-solid fa-calendar" />
+              <CalendarDays className="h-4 w-4" />
               <span>{hoyES()}</span>
             </div>
 
             <button
-              className="min-h-[44px] px-[22px] py-3 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[var(--radius-sm)] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] hover:brightness-110 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] max-[768px]:w-full max-[768px]:justify-center"
+              className="min-h-[46px] px-[22px] py-3 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 rounded-[14px] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_10px_24px_rgba(179,49,49,0.24)] hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(179,49,49,0.28)] max-[768px]:w-full max-[768px]:justify-center"
               type="button"
               onClick={() => nav("/inventario/nuevo")}
             >
-              <i className="fa-solid fa-plus" /> Ingresar Producto
+              <Plus className="h-4 w-4" /> Ingresar Producto
             </button>
           </div>
         </div>
@@ -209,13 +216,35 @@ export default function InventarioPage() {
           <Spinner label="Cargando productos..." />
         </StaggerItem>
       )}
-      {err && (
+      {productosError && (
         <StaggerItem>
-          <Alert type="error" title="Error al cargar">{err}</Alert>
+          <div className="flex flex-col gap-4">
+            <Alert type="error" title="Error al cargar inventario">{productosError}</Alert>
+            <div>
+              <Button type="button" variant="secondary" onClick={reintentarCarga}>
+                Reintentar carga
+              </Button>
+            </div>
+          </div>
         </StaggerItem>
       )}
 
-      {!loading && !err && (
+      {!loading && !productosError && lotesError && (
+        <StaggerItem>
+          <div className="flex flex-col gap-4">
+            <Alert type="warning" title="Lotes no disponibles">
+              {lotesError}. El inventario base sigue disponible, pero la informacion de lotes puede estar incompleta.
+            </Alert>
+            <div>
+              <Button type="button" variant="secondary" onClick={() => lotesQuery.refetch()}>
+                Reintentar lotes
+              </Button>
+            </div>
+          </div>
+        </StaggerItem>
+      )}
+
+      {!loading && !productosError && (
         <StaggerItem>
           <InventarioTable items={filtered} lotes={lotesQuery.data ?? []} />
         </StaggerItem>

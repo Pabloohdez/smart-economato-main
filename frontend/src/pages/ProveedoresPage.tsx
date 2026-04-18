@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Building2, CalendarDays, Plus } from "lucide-react";
 import Spinner from "../components/ui/Spinner";
+import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 import { showNotification, showConfirm } from "../utils/notifications";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
@@ -62,6 +66,7 @@ export default function ProveedoresPage() {
   const proveedores = proveedoresQuery.data ?? [];
   const loading = proveedoresQuery.isLoading;
   const guardandoProveedor = saveProveedorMutation.isPending;
+  const proveedoresError = proveedoresQuery.error instanceof Error ? proveedoresQuery.error.message : "";
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -99,6 +104,10 @@ export default function ProveedoresPage() {
       showNotification("Error de conexión cargando proveedores", "error");
     }
   }, [proveedoresQuery.error]);
+
+  async function reintentarCarga() {
+    await proveedoresQuery.refetch();
+  }
 
   function abrirModal() {
     setForm({
@@ -184,11 +193,12 @@ export default function ProveedoresPage() {
   // ----------------------------
 
   return (
-    <div>
+    <StaggerPage>
+      <StaggerItem>
       <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
         <div>
           <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-            <i className="fa-solid fa-truck-field text-[var(--color-brand-500)]"></i>
+            <Building2 className="h-7 w-7 text-[var(--color-brand-500)]" />
             Gestión de Proveedores
           </h2>
           <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
@@ -198,7 +208,7 @@ export default function ProveedoresPage() {
 
         <div className="flex items-center gap-[15px] flex-wrap max-[900px]:w-full">
           <div className="inline-flex items-center gap-2.5 px-4 py-3 rounded-[12px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[#50596D] font-semibold max-[900px]:w-full max-[900px]:justify-center">
-            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
+            <CalendarDays className="h-4 w-4 text-[var(--color-brand-500)]" />
             <span>{hoyES()}</span>
           </div>
 
@@ -207,12 +217,14 @@ export default function ProveedoresPage() {
             onClick={abrirModal}
             type="button"
           >
-            <i className="fa-solid fa-plus"></i>
+            <Plus className="h-4 w-4" />
             Nuevo Proveedor
           </button>
         </div>
       </div>
+      </StaggerItem>
 
+      <StaggerItem>
       <section className="grid grid-cols-3 gap-3 mb-[14px] max-[900px]:grid-cols-1" aria-label="Resumen de proveedores">
         <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
           <span className="text-[#50596D] text-[13px] font-semibold">Proveedores Totales</span>
@@ -227,8 +239,23 @@ export default function ProveedoresPage() {
           <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.conEmail}</strong>
         </article>
       </section>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)]">
+      {proveedoresError && (
+        <StaggerItem>
+          <div className="mb-4 flex flex-col gap-4">
+            <Alert type="error" title="Error al cargar proveedores">{proveedoresError}</Alert>
+            <div>
+              <Button type="button" variant="secondary" onClick={reintentarCarga}>
+                Reintentar carga
+              </Button>
+            </div>
+          </div>
+        </StaggerItem>
+      )}
+
+      <StaggerItem>
+      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)]">
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
@@ -397,6 +424,7 @@ export default function ProveedoresPage() {
           </div>
         </div>
       )}
-    </div>
+      </StaggerItem>
+    </StaggerPage>
   );
 }
