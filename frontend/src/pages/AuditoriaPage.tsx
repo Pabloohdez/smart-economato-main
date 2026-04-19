@@ -5,6 +5,10 @@ import Alert from "../components/ui/Alert";
 import type { UsuarioActivo } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import UiSelect from "../components/ui/UiSelect";
+import SearchInput from "../components/ui/SearchInput";
+import TablePagination from "../components/ui/TablePagination";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import { Eye } from "lucide-react";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -270,17 +274,17 @@ export default function AuditoriaPage() {
   }
 
   return (
-    <div>
-      <div className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
+    <StaggerPage className="w-full">
+      <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
         <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
           <i className="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
         </h1>
         <p className="text-[14px] text-[var(--color-text-muted)] m-0">
           Historial completo de actividades del sistema
         </p>
-      </div>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] p-6 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] mb-6 border border-[var(--color-border-default)]">
+      <StaggerItem className="se-card mb-6 p-6">
         <div className="flex flex-wrap gap-5 items-end">
           <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
             <label htmlFor="filtroAccion" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
@@ -368,43 +372,42 @@ export default function AuditoriaPage() {
             </button>
           </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="flex gap-4 mb-5 flex-wrap max-[768px]:flex-col">
-        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
+      <StaggerItem className="flex gap-4 mb-5 flex-wrap max-[768px]:flex-col">
+        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-list-ol"></i>
           <span>
             <strong>{resumen.total}</strong> registros
           </span>
         </div>
-        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
+        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-calendar-days"></i>
           <span>{resumen.rangoFechas}</span>
         </div>
-        <div className="flex items-center gap-3 bg-[var(--color-bg-surface)] px-5 py-4 rounded-[var(--radius-sm)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
+        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
           <i className="fa-solid fa-users"></i>
           <span>
             <strong>{resumen.usuariosUnicos}</strong> usuario
             {resumen.usuariosUnicos !== 1 ? "s" : ""}
           </span>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] p-6 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)]">
+      <StaggerItem className="se-card p-6">
         {loading && <Spinner label="Cargando auditoría..." />}
         {!loading && errorMsg && (
           <Alert type="error" title="Error al cargar">{errorMsg}</Alert>
         )}
         {!loading && !errorMsg && (
           <>
-            <div className="flex gap-2.5 items-center mb-3 flex-wrap">
-              <input
-                type="text"
+            <div className="mb-4 flex gap-3 items-center justify-between flex-wrap">
+              <SearchInput
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Buscar..."
-                aria-label="Buscar en auditoría"
-                className="w-full max-w-[360px] px-4 py-2.5 border-2 border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
+                onChange={setQ}
+                placeholder="Buscar en auditoría..."
+                ariaLabel="Buscar en auditoría"
+                maxWidthClassName="max-w-[380px]"
               />
               <span className="text-[#718096] text-[13px]">
                 Mostrando <strong>{visible.length}</strong> de <strong>{filtrados.length}</strong>
@@ -412,21 +415,21 @@ export default function AuditoriaPage() {
               </span>
             </div>
 
-            <div className="overflow-x-auto rounded-[12px] border border-[var(--color-border-default)]">
-              <table className="w-full border-collapse bg-white">
+            <div className="se-table-shell">
+              <table className="se-table">
                 <thead>
-                  <tr className="bg-[var(--color-bg-soft)]">
-                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Fecha/Hora</th>
-                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Usuario</th>
-                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Acción</th>
-                    <th className="text-left px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Entidad</th>
-                    <th className="text-right px-4 py-3 text-[12px] uppercase tracking-wide text-[var(--color-text-muted)] font-semibold whitespace-nowrap">Detalles</th>
+                  <tr>
+                    <th className="text-left">Fecha/Hora</th>
+                    <th className="text-left">Usuario</th>
+                    <th className="text-left">Acción</th>
+                    <th className="text-left">Entidad</th>
+                    <th className="text-right">Detalles</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visible.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center p-5 text-[#718096]">
+                      <td colSpan={5} className="se-table-empty">
                         No hay registros.
                       </td>
                     </tr>
@@ -434,22 +437,24 @@ export default function AuditoriaPage() {
                     visible.map((reg) => {
                       const badge = getAccionBadge(reg.accion);
                       return (
-                        <tr key={String(reg.id)} className="border-t border-[var(--color-border-default)] hover:bg-[var(--color-bg-soft)]">
-                          <td className="px-4 py-3 whitespace-nowrap text-[14px] text-[var(--color-text-strong)]">{formatearFecha(reg.fecha)}</td>
-                          <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{reg.usuario_nombre || reg.usuario_id || "—"}</td>
+                        <tr key={String(reg.id)}>
+                          <td className="whitespace-nowrap font-medium text-[var(--color-text-strong)]">{formatearFecha(reg.fecha)}</td>
+                          <td className="text-[var(--color-text-strong)]">{reg.usuario_nombre || reg.usuario_id || "—"}</td>
                           <td>
                             <span className={`px-3 py-1.5 rounded-md text-[12px] font-semibold inline-flex items-center gap-1.5 ${badge.clase}`}>
                               <i className={`fa-solid ${badge.icono}`} /> {badge.texto}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{reg.entidad || "—"}</td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="text-[var(--color-text-strong)]">{reg.entidad || "—"}</td>
+                          <td className="text-right">
                             <button
                               type="button"
-                              className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
+                              className="se-icon-btn se-icon-btn--primary"
                               onClick={() => abrirModal(reg)}
+                              title="Ver detalle"
+                              aria-label="Ver detalle"
                             >
-                              <i className="fa-solid fa-eye" /> Ver
+                              <Eye strokeWidth={1.5} size={18} />
                             </button>
                           </td>
                         </tr>
@@ -460,32 +465,18 @@ export default function AuditoriaPage() {
               </table>
             </div>
 
-            <div className="flex justify-end mt-3">
-              <div className="flex gap-2 items-center">
-                <button
-                  type="button"
-                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color,opacity] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={pageSafe <= 1}
-                >
-                  Anterior
-                </button>
-                <span className="text-[13px] text-[#4a5568]">
-                  {pageSafe} / {totalPages}
-                </span>
-                <button
-                  type="button"
-                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color,opacity] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={pageSafe >= totalPages}
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
+            <TablePagination
+              totalItems={filtrados.length}
+              page={pageSafe}
+              pageSize={pageSize}
+              onPageChange={setPage}
+              onPageSizeChange={() => {}}
+              pageSizeOptions={[pageSize]}
+              label="registros"
+            />
           </>
         )}
-      </div>
+      </StaggerItem>
 
       {modalOpen && registroSeleccionado && (
         <div
@@ -570,7 +561,7 @@ export default function AuditoriaPage() {
           </div>
         </div>
       )}
-    </div>
+    </StaggerPage>
   );
 }
 

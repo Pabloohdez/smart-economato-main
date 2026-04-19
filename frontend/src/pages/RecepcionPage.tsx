@@ -17,7 +17,7 @@ import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
 import Spinner from "../components/ui/Spinner";
-import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Truck } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Trash2, Truck } from "lucide-react";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -95,6 +95,13 @@ export default function Recepcion() {
     productosQuery.isLoading
     || categoriasQuery.isLoading
     || proveedoresQuery.isLoading;
+  const recargarBaseRecepcion = useCallback(async () => {
+    await Promise.all([
+      productosQuery.refetch(),
+      categoriasQuery.refetch(),
+      proveedoresQuery.refetch(),
+    ]);
+  }, [categoriasQuery, productosQuery, proveedoresQuery]);
   const recepcionBaseError = [productosQuery.error, categoriasQuery.error, proveedoresQuery.error]
     .find((error): error is Error => error instanceof Error)
     ?.message ?? "";
@@ -202,6 +209,32 @@ export default function Recepcion() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    void recargarBaseRecepcion();
+
+    const onOnline = () => {
+      void recargarBaseRecepcion();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void recargarBaseRecepcion();
+      }
+    };
+    const onPageShow = () => {
+      void recargarBaseRecepcion();
+    };
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [recargarBaseRecepcion]);
 
   // cerrar dropdown si clic fuera
   useEffect(() => {
@@ -669,7 +702,7 @@ export default function Recepcion() {
 
       {/* Panel búsqueda */}
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]" ref={buscadorWrapRef}>
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm" ref={buscadorWrapRef}>
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <PackageSearch className="h-5 w-5 text-[var(--color-brand-500)]" /> Buscar Producto
         </h2>
@@ -683,7 +716,7 @@ export default function Recepcion() {
                   term.length >= 2 &&
                   resultadosAutocomplete[0].nombre.toLowerCase().startsWith(term.toLowerCase()) &&
                   resultadosAutocomplete[0].nombre.toLowerCase() !== term.toLowerCase() && (
-                    <div className="absolute left-0 top-0 w-full h-12 px-4 border-2 border-transparent text-[15px] pointer-events-none z-[2] flex items-center whitespace-pre overflow-hidden" aria-hidden="true">
+                    <div className="absolute left-0 top-0 z-[2] flex h-12 w-full items-center overflow-hidden whitespace-pre rounded-[18px] border border-transparent px-3 pl-10 text-sm pointer-events-none" aria-hidden="true">
                       <span style={{ visibility: "hidden" }}>{term}</span>
                       <span style={{ color: "#a0aec0" }}>
                         {resultadosAutocomplete[0].nombre.slice(term.length)}
@@ -692,7 +725,7 @@ export default function Recepcion() {
                   )}
                 <input
                   id="inputRecepcion"
-                  className="relative z-[1] flex-1 w-full h-12 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-transparent transition-[border-color,box-shadow,background] duration-200 box-border focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus:bg-[var(--color-bg-surface)]"
+                  className="relative z-[1] h-12 w-full flex-1 rounded-[18px] border border-gray-300 bg-white px-3 pl-10 text-sm text-gray-900 shadow-sm transition-[border-color,box-shadow] duration-150 box-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   value={term}
                   autoComplete="off"
                   onChange={(e) => {
@@ -731,7 +764,7 @@ export default function Recepcion() {
 
 
               <button
-                className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-[14px] bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] inline-flex items-center justify-center cursor-pointer shadow-[var(--shadow-sm)] active:scale-[0.97] hover:shadow-[var(--shadow-md)] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 touch-manipulation"
+                className="inline-flex h-12 w-12 min-w-12 items-center justify-center rounded-[18px] border border-gray-300 bg-white text-gray-400 shadow-sm cursor-pointer transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 touch-manipulation"
                 type="button"
                 onClick={escanearCodigoBarras}
                 aria-label="Escanear codigo de barras"
@@ -743,7 +776,7 @@ export default function Recepcion() {
 
             {/* Dropdown de resultados */}
             {resultadosOpen && (
-              <div id="listaResultados" className="absolute top-full left-0 right-0 z-50 border-2 border-[var(--color-border-default)] border-t-0 max-h-[220px] overflow-y-auto bg-white rounded-b-[10px] shadow-[0_8px_20px_rgba(0,0,0,0.08)] mt-[-2px]">
+              <div id="listaResultados" className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[220px] overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-sm">
                 {loading ? (
                   <div className="flex items-center justify-center gap-3 px-4 py-3 border-b border-[var(--color-border-default)] text-[#718096] italic">
                     <i className="fa-solid fa-spinner fa-spin" /> Cargando...
@@ -758,7 +791,7 @@ export default function Recepcion() {
                   resultadosRender.map((p) => (
                     <div
                       key={String(p.id)}
-                      className="flex items-center justify-between gap-3 px-4 py-[11px] border-b border-[var(--color-border-default)] cursor-pointer transition-[background,padding-left,border-left] duration-150 hover:bg-[#fff5f5] hover:border-l-[3px] hover:border-l-[var(--color-brand-500)] hover:pl-[13px]"
+                      className="flex cursor-pointer items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 transition-colors duration-150 hover:bg-gray-50"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -798,9 +831,9 @@ export default function Recepcion() {
             />
           </div>
         </div>
-        <div className="text-right mt-[15px]">
+        <div className="mt-[15px] text-right">
           <button
-            className="h-12 px-7 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 rounded-[14px] font-semibold cursor-pointer transition-[transform,box-shadow,background] duration-200 inline-flex items-center gap-2 shadow-[0_10px_24px_rgba(179,49,49,0.24)] hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(179,49,49,0.28)]"
+            className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
             style={{ display: "inline-flex" }}
             onClick={abrirModalPedidos}
           >
@@ -1101,7 +1134,7 @@ export default function Recepcion() {
                               onClick={() => eliminarLote(idx)}
                               aria-label="Eliminar lote"
                             >
-                              <i className="fa-solid fa-trash" />
+                              <Trash2 strokeWidth={1.5} size={18} />
                             </button>
                           </td>
                         </tr>
@@ -1127,7 +1160,7 @@ export default function Recepcion() {
       )}
       {/* Panel recepción actual */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5 max-[1024px]:p-[18px]">
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm max-[1024px]:p-[18px]">
         <div className="flex items-center justify-between gap-3 mb-5 flex-wrap max-[1024px]:items-start">
           <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
             <i className="fa-solid fa-clipboard-check" /> Recepción Actual
@@ -1140,18 +1173,18 @@ export default function Recepcion() {
         </div>
 
         <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[760px] border-separate border-spacing-0 bg-[var(--color-bg-surface)] max-[1024px]:min-w-0">
+          <table className="w-full min-w-[760px] border-separate border-spacing-0 bg-white max-[1024px]:min-w-0">
             <thead>
               <tr>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Producto</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:hidden">Proveedor</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Stock Actual</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Unidad</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Cantidad Recibida</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Nuevo Stock</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:hidden">Precio</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Subtotal</th>
-                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] p-[14px] text-left font-semibold text-[13px] border-b-2 border-[var(--color-border-default)] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">Acción</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Producto</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:hidden">Proveedor</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Stock Actual</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Unidad</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Cantidad Recibida</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Nuevo Stock</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:hidden">Precio</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Subtotal</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Acción</th>
               </tr>
             </thead>
 
@@ -1170,23 +1203,23 @@ export default function Recepcion() {
                 </tr>
               ) : (
                 recepcion.map((r, idx) => (
-                  <tr key={`${String(r.producto_id)}-${idx}`} className="hover:bg-[var(--color-bg-soft)]">
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.nombre}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:hidden">{r.proveedor}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] whitespace-nowrap max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.cantidadRecibida}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[#2f855a] font-bold text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:hidden">{formatEUR(r.precio)}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] text-[var(--color-text-strong)] text-[14px] max-[1024px]:py-3 max-[1024px]:px-2 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</td>
-                    <td className="p-[14px] border-b border-[var(--color-border-default)] max-[1024px]:py-3 max-[1024px]:px-2">
+                  <tr key={`${String(r.producto_id)}-${idx}`} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.nombre}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:hidden">{r.proveedor}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap max-[1024px]:px-2 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.cantidadRecibida}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-primary max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:hidden">{formatEUR(r.precio)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</td>
+                    <td className="px-4 py-3 max-[1024px]:px-2">
                       <button
-                        className="bg-[#fff5f5] text-[#e53e3e] border-0 w-9 h-9 rounded-lg cursor-pointer transition-[transform,background] duration-200 inline-flex items-center justify-center hover:bg-[#fed7d7] hover:scale-110 max-[1024px]:w-11 max-[1024px]:h-11"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 max-[1024px]:h-11 max-[1024px]:w-11"
                         onClick={() => eliminarFila(idx)}
                         title="Eliminar"
                         type="button"
                       >
-                        <i className="fa-solid fa-trash" />
+                        <Trash2 strokeWidth={1.5} size={18} />
                       </button>
                     </td>
                   </tr>
@@ -1212,13 +1245,13 @@ export default function Recepcion() {
 
       {/* Observaciones + acciones */}
       <StaggerItem>
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[var(--shadow-sm)] mb-[25px] border border-black/5">
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]">
             <i className="fa-solid fa-note-sticky" /> Observaciones / Notas
           </label>
           <textarea
-            className="w-full py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[14px] resize-y bg-[var(--color-bg-surface)] transition-[border-color,background] duration-200 focus:border-[var(--color-brand-500)] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm resize-y transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder="Añade notas sobre esta recepción (opcional)..."
             rows={3}
             value={obs}

@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../services/alergenosService";
 import { queryKeys } from "../lib/queryClient";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -362,17 +363,17 @@ export default function ConfiguracionPage() {
   );
 
   return (
-    <div>
-      <div className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
+    <StaggerPage>
+      <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
         <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
           <i className="fa-solid fa-gear text-[var(--color-brand-500)]" /> CONFIGURACIÓN DE PERFIL
         </h1>
         <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
           Gestiona tu información personal y configuración de alergias
         </p>
-      </div>
+      </StaggerItem>
 
-      <div
+      <StaggerItem
         className="flex gap-2.5 mb-[30px] border-b-2 border-[var(--color-border-default)] pb-2.5 max-[768px]:flex-col"
         role="tablist"
         aria-label="Secciones de configuración"
@@ -424,10 +425,10 @@ export default function ConfiguracionPage() {
         >
           <i className="fa-solid fa-bell"></i> Notificaciones
         </button>
-      </div>
+      </StaggerItem>
 
       {tabActiva === "perfil" && (
-        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+        <StaggerItem className="se-card p-[30px]">
           <h2 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-id-card" /> Información Personal
           </h2>
@@ -524,12 +525,12 @@ export default function ConfiguracionPage() {
               <i className="fa-solid fa-save" /> Guardar Cambios
             </button>
           </div>
-        </div>
+        </StaggerItem>
       )}
 
       {tabActiva === "alergias" && (
         <>
-          <div className="bg-[linear-gradient(135deg,#fff5f5_0%,#fed7d7_100%)] border-l-4 border-l-[#c53030] p-5 rounded-[10px] flex items-start gap-[15px] mb-[30px]">
+          <StaggerItem className="bg-[linear-gradient(135deg,#fff5f5_0%,#fed7d7_100%)] border-l-4 border-l-[#c53030] p-5 rounded-[10px] flex items-start gap-[15px] mb-[30px]">
             <i className="fa-solid fa-shield-halved text-[24px] text-[#c53030] mt-0.5" />
             <div>
               <strong className="block text-[16px] text-[#742a2a] mb-1">
@@ -540,9 +541,9 @@ export default function ConfiguracionPage() {
                 información es crítica para tu seguridad.
               </p>
             </div>
-          </div>
+          </StaggerItem>
 
-          <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+          <StaggerItem className="se-card p-[30px]">
             <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
               <i className="fa-solid fa-triangle-exclamation" /> Mis Alergias Registradas
             </h3>
@@ -629,12 +630,12 @@ export default function ConfiguracionPage() {
             >
               <i className="fa-solid fa-shield-heart" /> Guardar Configuración de Alergias
             </button>
-          </div>
+          </StaggerItem>
         </>
       )}
 
       {tabActiva === "notificaciones" && (
-        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-xl shadow-[var(--shadow-sm)] border border-black/5">
+        <StaggerItem className="se-card p-[30px]">
           <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-bell" /> Preferencias de Alertas
           </h3>
@@ -770,10 +771,10 @@ export default function ConfiguracionPage() {
           >
             <i className="fa-solid fa-save" /> Guardar Preferencias
           </button>
-        </div>
+        </StaggerItem>
       )}
 
-      <div
+      <StaggerItem
         id="mensajeEstadoConfig"
         className={[
           "text-center font-semibold min-h-6 text-[14px] px-3 py-3 rounded-lg mt-5 transition-opacity",
@@ -788,7 +789,7 @@ export default function ConfiguracionPage() {
         ].join(" ")}
       >
         {mensajeEstado}
-      </div>
-    </div>
+            </StaggerItem>
+          </StaggerPage>
   );
 }

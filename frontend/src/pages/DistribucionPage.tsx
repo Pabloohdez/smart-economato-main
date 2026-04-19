@@ -161,8 +161,7 @@ export default function DistribucionPage() {
   }
 
   const recargarDistribucion = useCallback(async () => {
-    await cargarProductos();
-    await cargarHistorial();
+    await Promise.all([cargarProductos(), cargarHistorial()]);
   }, []);
 
   useEffect(() => {
@@ -178,12 +177,17 @@ export default function DistribucionPage() {
         void recargarDistribucion();
       }
     };
+    const onPageShow = () => {
+      void recargarDistribucion();
+    };
 
     window.addEventListener("online", onOnline);
+    window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       window.removeEventListener("online", onOnline);
+      window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [recargarDistribucion]);

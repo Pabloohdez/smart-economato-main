@@ -1,6 +1,41 @@
 import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import type { PedidoHistorial } from "../../types";
+import SearchInput from "../ui/SearchInput";
 import TablePagination from "../ui/TablePagination";
+
+const paginatedBodyVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      staggerDirection: -1,
+    },
+  },
+} as const;
+
+const paginatedRowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.24, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+} as const;
 
 type Props = {
   pedidos: PedidoHistorial[];
@@ -32,18 +67,17 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
   }, [filtered, safePage, pageSize]);
 
   return (
-    <div>
-      <div className="flex gap-2.5 items-center mb-2.5 flex-wrap">
-        <input
-          type="text"
+    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex gap-2.5 items-center flex-wrap">
+        <SearchInput
           value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
+          onChange={(value) => {
+            setQ(value);
             setPage(1);
           }}
           placeholder="Buscar..."
-          aria-label="Buscar pedidos"
-          className="w-full max-w-[320px] py-2.5 px-3.5 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
+          ariaLabel="Buscar pedidos"
+          maxWidthClassName="max-w-[320px]"
         />
       </div>
 
@@ -51,50 +85,63 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
         <table className="w-full border-separate border-spacing-0 text-[14px]">
           <thead>
             <tr>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">ID</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Proveedor</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Estado</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Total</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Acciones</th>
+              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">ID</th>
+              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Proveedor</th>
+              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Estado</th>
+              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total</th>
+              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {visible.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
-                  No hay pedidos que coincidan.
-                </td>
-              </tr>
-            ) : (
-              visible.map((p) => {
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.tbody
+              key={`pedidos-page-${safePage}-${pageSize}`}
+              variants={paginatedBodyVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {visible.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
+                    No hay pedidos que coincidan.
+                  </td>
+                </tr>
+              ) : (
+                visible.map((p) => {
                 const estado = String(p.estado ?? "").toUpperCase();
                 const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
                 return (
-                  <tr key={String(p.id)} className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]">
-                    <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.id}</td>
-                    <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.proveedor_nombre}</td>
-                    <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.estado}</td>
-                    <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{Number(p.total ?? 0).toFixed(2)} €</td>
-                    <td className="px-4 py-3 border-b border-[var(--color-border-default)]">
+                  <motion.tr
+                    key={String(p.id)}
+                    variants={paginatedRowVariants}
+                    className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.id}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.proveedor_nombre}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{p.estado}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{Number(p.total ?? 0).toFixed(2)} €</td>
+                    <td className="px-4 py-3">
                       {canReceive ? (
                         <button
                           type="button"
-                          className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
+                          className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
                           onClick={() => onIrARecepcion(p.id)}
                         >
+                          <ArrowRight className="h-4 w-4" />
                           Ir a Recepción
                         </button>
                       ) : (
-                        <span className="inline-block bg-[#c6f6d5] text-[#22543d] px-3 py-1.5 rounded-full font-semibold text-[12px] whitespace-nowrap">
+                        <span className="inline-block rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 whitespace-nowrap">
                           Completado
                         </span>
                       )}
                     </td>
-                  </tr>
+                  </motion.tr>
                 );
-              })
-            )}
-          </tbody>
+                })
+              )}
+            </motion.tbody>
+          </AnimatePresence>
         </table>
       </div>
 

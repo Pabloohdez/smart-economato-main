@@ -28,6 +28,7 @@ export type ApiFetchOptions = RequestInit & {
 };
 
 let refreshPromise: Promise<boolean> | null = null;
+const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
 
 function normalizeHeaders(headers: HeadersInit | undefined): Record<string, string> {
   if (!headers) {
@@ -53,6 +54,44 @@ function isOffline() {
 
 function isNetworkError(error: unknown) {
   return error instanceof TypeError || (error instanceof Error && !("status" in error));
+}
+
+function isAbortError(error: unknown) {
+  return error instanceof DOMException && error.name === "AbortError";
+}
+
+function createTimedAbortSignal(timeoutMs: number, externalSignal?: AbortSignal) {
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const onExternalAbort = () => {
+    controller.abort();
+  };
+
+  if (externalSignal?.aborted) {
+    controller.abort();
+  } else if (externalSignal) {
+    externalSignal.addEventListener("abort", onExternalAbort);
+  }
+
+  if (timeoutMs > 0) {
+    timeoutId = setTimeout(() => {
+      controller.abort();
+    }, timeoutMs);
+  }
+
+  return {
+    signal: controller.signal,
+    cleanup: () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+
+      if (externalSignal) {
+        externalSignal.removeEventListener("abort", onExternalAbort);
+      }
+    },
+  };
 }
 
 function extractApiErrorMessage(data: unknown, status: number): string {
@@ -91,14 +130,30 @@ async function refreshAccessToken(): Promise<boolean> {
 
   if (!refreshPromise) {
     refreshPromise = (async () => {
-      const res = await fetch(`${API_URL}/login/refresh`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest",
-        },
-        body: JSON.stringify({ refreshToken }),
-      });
+      const { signal, cleanup } = createTimedAbortSignal(DEFAULT_REQUEST_TIMEOUT_MS);
+      let res: Response;
+
+      try {
+        res = await fetch(`${API_URL}/login/refresh`, {
+          method: "POST",
+          cache: "no-store",
+          signal,
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      } catch (error) {
+        if (isAbortError(error)) {
+          clearSession();
+          return false;
+        }
+
+        throw error;
+      } finally {
+        cleanup();
+      }
 
       const text = await res.text();
       const data = text ? JSON.parse(text) : null;
@@ -126,15 +181,31 @@ async function executeApiRequest<T>(
   const url = `${API_URL}${path}`;
   const token = getToken();
   const optionHeaders = (options.headers ?? {}) as HeadersInit;
+  const method = String(options.method ?? "GET").toUpperCase();
+  const { signal: callerSignal, cache: callerCache, ...requestOptions } = options;
+  const { signal, cleanup } = createTimedAbortSignal(DEFAULT_REQUEST_TIMEOUT_MS, callerSignal ?? undefined);
+  let res: Response;
 
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...optionHeaders,
-    },
-  });
+  try {
+    res = await fetch(url, {
+      ...requestOptions,
+      cache: callerCache ?? (method === "GET" ? "no-store" : undefined),
+      signal,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...optionHeaders,
+      },
+    });
+  } catch (error) {
+    if (isAbortError(error) && !callerSignal?.aborted) {
+      throw new Error("Tiempo de espera agotado al conectar con el servidor");
+    }
+
+    throw error;
+  } finally {
+    cleanup();
+  }
 
   const text = await res.text();
   let data: unknown = null;

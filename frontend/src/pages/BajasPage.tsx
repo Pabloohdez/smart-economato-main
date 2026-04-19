@@ -199,9 +199,11 @@ export default function BajasPage() {
   }
 
   const recargarBajas = useCallback(async () => {
-    await cargarDatos();
-    await cargarEstadisticasMes();
-    await cargarHistorialBajas();
+    await Promise.all([
+      cargarDatos(),
+      cargarEstadisticasMes(),
+      cargarHistorialBajas(),
+    ]);
   }, []);
 
   useEffect(() => {
@@ -217,12 +219,17 @@ export default function BajasPage() {
         void recargarBajas();
       }
     };
+    const onPageShow = () => {
+      void recargarBajas();
+    };
 
     window.addEventListener("online", onOnline);
+    window.addEventListener("pageshow", onPageShow);
     document.addEventListener("visibilitychange", onVisible);
 
     return () => {
       window.removeEventListener("online", onOnline);
+      window.removeEventListener("pageshow", onPageShow);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [recargarBajas]);
@@ -537,7 +544,7 @@ export default function BajasPage() {
 
       {/* PANEL REGISTRO */}
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <ClipboardList className="h-5 w-5 text-[var(--color-brand-500)]" /> Registrar Nueva Baja
         </h2>
@@ -547,7 +554,7 @@ export default function BajasPage() {
             <input
               type="text"
               id="inputBusquedaBaja"
-              className="flex-1 px-[18px] py-[14px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-200 focus:bg-[var(--color-bg-surface)] focus:border-[#c53030] focus:shadow-[0_0_0_4px_rgba(197,48,48,0.1)] focus:outline-none"
+              className="h-12 flex-1 rounded-[18px] border border-gray-300 bg-white px-4 text-sm text-gray-900 shadow-sm transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
               placeholder="Buscar producto por nombre o código de barras..."
               aria-label="Buscar producto por nombre o código de barras"
               value={q}
@@ -565,7 +572,7 @@ export default function BajasPage() {
 
             <button
               id="btnEscanearBaja"
-              className="w-12 min-w-12 h-12 border border-[var(--color-border-default)] rounded-xl bg-[var(--color-bg-surface)] text-[var(--color-brand-500)] shadow-[var(--shadow-sm)] inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
+              className="inline-flex h-12 w-12 min-w-12 items-center justify-center rounded-[18px] border border-gray-300 bg-white text-gray-400 shadow-sm cursor-pointer transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
               type="button"
               onClick={escanearCodigoBarras}
               aria-label="Escanear codigo de barras"
@@ -593,7 +600,7 @@ export default function BajasPage() {
 
             <button
               id="btnProductosCaducados"
-              className="px-5 py-3 rounded-[10px] font-semibold cursor-pointer inline-flex items-center gap-2 whitespace-nowrap border-0 text-white bg-[linear-gradient(135deg,#ed8936_0%,#dd6b20_100%)] shadow-[0_4px_12px_rgba(221,107,32,0.3)] transition-transform duration-200 hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
               type="button"
               onClick={mostrarProductosCaducados}
             >
@@ -646,24 +653,24 @@ export default function BajasPage() {
 
       {/* BAJA ACTIVA */}
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <FileText className="h-5 w-5 text-[var(--color-brand-500)]" /> Registro de Baja Actual
         </h3>
 
         <div className="overflow-x-auto">
-          <table id="tablaBajas" className="w-full border-separate border-spacing-0 bg-[var(--color-bg-surface)]">
+          <table id="tablaBajas" className="w-full border-separate border-spacing-0 bg-white">
             <caption className="visually-hidden">Listado de productos dados de baja en la sesión actual</caption>
             <thead>
               <tr>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Producto</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Tipo de Baja</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Stock Actual</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Cantidad Baja</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Stock Final</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Precio Unit.</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Valor Perdido</th>
-                <th className="bg-[#fff5f5] text-[#742a2a] p-4 pr-[14px] text-left font-semibold text-[13px] border-b-2 border-b-[#fed7d7] whitespace-nowrap">Acción</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Producto</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Tipo de Baja</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Stock Actual</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Cantidad Baja</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Stock Final</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Precio Unit.</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Valor Perdido</th>
+                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Acción</th>
               </tr>
             </thead>
 
@@ -680,34 +687,34 @@ export default function BajasPage() {
                 </tr>
               ) : (
                 productosBaja.map((p, index) => (
-                  <tr key={`${String(p.id)}-${index}`} className="hover:bg-[#fffaf0]">
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                  <tr key={`${String(p.id)}-${index}`} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       <strong>{p.nombre}</strong>
                       <br />
-                      <small className="text-[#718096]">{p.nombreCategoria}</small>
+                      <small className="text-sm text-gray-500">{p.nombreCategoria}</small>
                     </td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       <span className={`inline-block px-3 py-1.5 rounded-lg text-[12px] font-semibold ${claseTipoBaja(p.tipoBaja)}`}>{p.tipoBaja}</span>
                     </td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{p.stock}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{p.stock}</td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
-                      <strong className="text-[#c53030]">{p.cantidadBaja}</strong>
+                    <td className="px-4 py-3 text-sm font-medium text-primary">
+                      <strong className="text-primary">{p.cantidadBaja}</strong>
                     </td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] font-bold text-[#c53030]">{Number(p.stock) - Number(p.cantidadBaja)}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-primary">{Number(p.stock) - Number(p.cantidadBaja)}</td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{Number(p.precio ?? 0).toFixed(2)} €</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{Number(p.precio ?? 0).toFixed(2)} €</td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
-                      <strong className="text-[#c53030]">{p.valorPerdido.toFixed(2)} €</strong>
+                    <td className="px-4 py-3 text-sm font-medium text-primary">
+                      <strong className="text-primary">{p.valorPerdido.toFixed(2)} €</strong>
                     </td>
 
-                    <td className="p-[18px_14px] border-b border-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                    <td className="px-4 py-3 text-sm text-gray-900">
                       <button
-                        className="bg-[#fff5f5] text-[#e53e3e] border-0 w-11 h-11 min-w-11 min-h-11 p-0 rounded-xl cursor-pointer transition-colors inline-flex items-center justify-center hover:bg-[#fed7d7] active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgba(179,49,49,0.35)]"
+                        className="inline-flex h-9 w-9 min-h-9 min-w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                         type="button"
                         onClick={() => eliminarProductoBaja(index)}
                         aria-label={`Eliminar ${p.nombre}`}
@@ -738,14 +745,14 @@ export default function BajasPage() {
 
       {/* ACCIONES */}
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] mb-[25px] border border-[var(--color-border-default)]">
+      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
             <Mail className="h-4 w-4" /> Motivo / Descripción Detallada
           </label>
           <textarea
             id="textareaMotivoBaja"
-            className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] text-[14px] resize-y bg-[var(--color-bg-soft)] transition-[border-color,background] duration-200 focus:bg-[var(--color-bg-surface)] focus:border-[#c53030] focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm resize-y transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
             placeholder="Describe el motivo de las bajas (opcional pero recomendado)..."
             rows={3}
             aria-label="Motivo o descripción detallada de la baja"

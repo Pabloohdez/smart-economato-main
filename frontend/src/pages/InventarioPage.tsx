@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import { useNavigate } from "react-router-dom";
@@ -160,31 +160,63 @@ export default function InventarioPage() {
     await Promise.all([productosQuery.refetch(), lotesQuery.refetch()]);
   }
 
+  useEffect(() => {
+    void reintentarCarga();
+
+    const onOnline = () => {
+      void reintentarCarga();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        void reintentarCarga();
+      }
+    };
+    const onPageShow = () => {
+      void reintentarCarga();
+    };
+
+    window.addEventListener("online", onOnline);
+    window.addEventListener("pageshow", onPageShow);
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("pageshow", onPageShow);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
+
   return (
-    <StaggerPage>
-      {/* Header como el compi */}
+    <StaggerPage className="mx-auto w-full max-w-[1440px] px-6 pb-8 pt-6 max-[768px]:px-4">
       <StaggerItem>
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-[var(--space-7)] pb-[var(--space-5)] border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
-          <div>
-            <h1 className="m-0 mb-[var(--space-2)] flex items-center gap-[var(--space-3)] text-[28px] font-bold text-[var(--color-text-strong)]">
-              <Boxes className="h-7 w-7 text-[var(--color-brand-500)]" />
-              INVENTARIO
-            </h1>
-            <p className="m-0 text-[14px] text-[var(--color-text-muted)]">Gestiona y consulta el stock de productos</p>
+        <div className="mb-8 flex items-center justify-between gap-4 max-[880px]:flex-col max-[880px]:items-start">
+          <div className="flex items-start gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,rgba(179,49,49,0.12),rgba(179,49,49,0.04))] text-[var(--color-brand-500)] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+              <Boxes className="h-8 w-8" strokeWidth={1.8} />
+            </div>
+
+            <div>
+              <h1 className="m-0 text-[40px] font-bold tracking-[-0.03em] text-slate-900 max-[768px]:text-[32px]">
+                Productos
+              </h1>
+              <p className="mt-1 text-[15px] text-slate-500">
+                Gestiona los productos del catálogo, el stock y su presentación comercial.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-[14px] max-[768px]:w-full max-[768px]:flex-col max-[768px]:items-stretch">
-            <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[12px] text-[var(--color-text-muted)] font-bold inline-flex items-center gap-2.5 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] whitespace-nowrap max-[768px]:justify-center">
+          <div className="flex items-center gap-3 max-[880px]:w-full max-[880px]:flex-col max-[880px]:items-stretch">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-slate-500 shadow-sm max-[880px]:justify-center">
               <CalendarDays className="h-4 w-4" />
               <span>{hoyES()}</span>
             </div>
 
             <button
-              className="min-h-[46px] px-[22px] py-3 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 rounded-[14px] font-bold text-[14px] cursor-pointer transition-[transform,box-shadow,filter] duration-150 inline-flex items-center gap-[var(--space-3)] shadow-[0_10px_24px_rgba(179,49,49,0.24)] hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_16px_30px_rgba(179,49,49,0.28)] max-[768px]:w-full max-[768px]:justify-center"
+              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--color-brand-500)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-[transform,box-shadow,filter] duration-150 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(179,49,49,0.24)] max-[880px]:w-full"
               type="button"
               onClick={() => nav("/inventario/nuevo")}
             >
-              <Plus className="h-4 w-4" /> Ingresar Producto
+              <Plus className="h-4 w-4" strokeWidth={2.2} /> Nuevo Producto
             </button>
           </div>
         </div>

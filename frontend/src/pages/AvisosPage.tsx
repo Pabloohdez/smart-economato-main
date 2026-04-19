@@ -16,6 +16,8 @@ import { getGastosMensuales, type GastoMensual } from "../services/informesServi
 import { getLotesProducto, type LoteProducto } from "../services/lotesService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import { Trash2, Truck } from "lucide-react";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -352,8 +354,8 @@ export default function AvisosPage() {
   }, [caducados, stockBajo]);
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
-      <div className="flex justify-between items-start mb-6 gap-4 flex-wrap">
+    <StaggerPage className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
+      <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="text-[28px] font-semibold text-[#111827] m-0 mb-1 flex items-center gap-3">
             <i className="fa-solid fa-bell"></i> Centro de Avisos
@@ -373,9 +375,9 @@ export default function AvisosPage() {
             </div>
           ) : null}
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
+      <StaggerItem className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
         <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
           <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fef3c7] text-[#d97706]">
             <i className="fa-solid fa-triangle-exclamation"></i>
@@ -405,9 +407,9 @@ export default function AvisosPage() {
             <span className="block text-[13px] text-[#6b7280] mt-0.5">Valor en Riesgo</span>
           </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+      <StaggerItem className="se-card mb-6 overflow-hidden">
         <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
@@ -444,11 +446,12 @@ export default function AvisosPage() {
                 <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                   <button
                     type="button"
-                    className="h-8 px-3.5 rounded-md text-[13px] font-medium cursor-pointer inline-flex items-center gap-1.5 border border-[#fca5a5] bg-[#fef2f2] text-[#991b1b] transition-[transform,box-shadow,background,border-color,color] duration-150 hover:bg-[#fee2e2] hover:border-[#f87171] hover:text-[#7f1d1d] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(220,38,38,0.1)] whitespace-nowrap"
+                    className="se-icon-btn se-icon-btn--danger"
                     onClick={() => abrirModalBaja(p)}
+                    title="Dar de baja"
+                    aria-label={`Dar de baja ${p.nombre}`}
                   >
-                    <i className="fa-solid fa-trash-can"></i>
-                    <span>Dar de Baja</span>
+                    <Trash2 strokeWidth={1.5} size={18} />
                   </button>
                 </div>
 
@@ -461,9 +464,9 @@ export default function AvisosPage() {
             ))
           )}
         </div>
-      </section>
+      </StaggerItem>
 
-      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+      <StaggerItem className="se-card mb-6 overflow-hidden">
         <div className="px-5 py-4 border-l-4 border-l-[#f59e0b] flex justify-between items-center bg-[linear-gradient(90deg,#fffbeb_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-box-open text-[16px] text-[#6b7280]"></i>
@@ -511,11 +514,12 @@ export default function AvisosPage() {
                   <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                     <button
                       type="button"
-                      className="h-8 px-3.5 rounded-md text-[13px] font-medium cursor-pointer inline-flex items-center gap-1.5 border border-[#93c5fd] bg-[#eff6ff] text-[#1e40af] transition-[transform,box-shadow,background,border-color,color] duration-150 hover:bg-[#dbeafe] hover:border-[#60a5fa] hover:text-[#1e3a8a] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(37,99,235,0.1)] whitespace-nowrap"
+                      className="se-icon-btn se-icon-btn--primary"
                       onClick={() => abrirModalPedido(p, cantidadSugerida)}
+                      title="Solicitar pedido"
+                      aria-label={`Solicitar pedido para ${p.nombre}`}
                     >
-                      <i className="fa-solid fa-truck-fast"></i>
-                      <span>Pedir</span>
+                      <Truck strokeWidth={1.5} size={18} />
                     </button>
                   </div>
 
@@ -531,9 +535,9 @@ export default function AvisosPage() {
             })
           )}
         </div>
-      </section>
+      </StaggerItem>
 
-      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+      <StaggerItem className="se-card mb-6 overflow-hidden">
         <div className="px-5 py-4 border-l-4 border-l-[#2563eb] flex justify-between items-center bg-[linear-gradient(90deg,#eff6ff_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-chart-line text-[16px] text-[#6b7280]"></i>
@@ -574,9 +578,9 @@ export default function AvisosPage() {
             </div>
           )}
         </div>
-      </section>
+      </StaggerItem>
 
-      <section className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] mb-6 overflow-hidden">
+      <StaggerItem className="se-card mb-6 overflow-hidden">
         <div className="px-5 py-4 border-l-4 border-l-[#10b981] flex justify-between items-center bg-[linear-gradient(90deg,#ecfdf5_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-bell text-[16px] text-[#10b981]"></i>
@@ -586,13 +590,14 @@ export default function AvisosPage() {
 
         <div>
           <div className="px-5 pb-5 pt-2.5 max-[768px]:px-2.5 max-[768px]:overflow-x-auto">
-            <table className="w-full border-separate border-spacing-0 text-[14px] bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-lg overflow-hidden">
+            <div className="se-table-shell">
+              <table className="se-table">
               <thead>
                 <tr>
-                  <th className="text-left p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Mes</th>
-                  <th className="text-left p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Profesor</th>
-                  <th className="text-center p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Pedidos</th>
-                  <th className="text-right p-3 text-[#6b7280] font-semibold text-[12px] uppercase tracking-wide border-b-2 border-b-[#f3f4f6] bg-[#f9fafb]">Total</th>
+                  <th className="text-left">Mes</th>
+                  <th className="text-left">Profesor</th>
+                  <th className="text-center">Pedidos</th>
+                  <th className="text-right">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -604,27 +609,28 @@ export default function AvisosPage() {
                   </tr>
                 ) : gastosMensuales.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center p-5 text-[#6b7280]">
+                    <td colSpan={4} className="se-table-empty">
                       No hay datos de gastos registrados
                     </td>
                   </tr>
                 ) : (
                   gastosMensuales.map((g, idx) => (
-                    <tr key={`${g.mes}-${g.nombre_usuario}-${idx}`} className="hover:[&>td]:bg-[#fdfdfd]">
-                      <td className="p-3 border-b border-b-[#f3f4f6] text-[#374151]">{formatearMes(g.mes)}</td>
-                      <td className="p-3 border-b border-b-[#f3f4f6] text-[#374151]">{g.nombre_usuario}</td>
-                      <td className="p-3 border-b border-b-[#f3f4f6] text-center text-[#374151]">{g.num_pedidos}</td>
-                      <td className="p-3 border-b border-b-[#f3f4f6] text-right text-[#374151]">
+                    <tr key={`${g.mes}-${g.nombre_usuario}-${idx}`}>
+                      <td className="text-[#374151]">{formatearMes(g.mes)}</td>
+                      <td className="text-[#374151]">{g.nombre_usuario}</td>
+                      <td className="text-center text-[#374151]">{g.num_pedidos}</td>
+                      <td className="text-right text-[#374151]">
                         <strong className="text-[#111827] font-semibold">{Number(g.total_mes).toFixed(2)} €</strong>
                       </td>
                     </tr>
                   ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </div>
-      </section>
+      </StaggerItem>
 
       <div className={`fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000] transition-opacity duration-200 ${modalOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
         <div className={`bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${modalOpen ? "translate-y-0 scale-100" : "translate-y-5 scale-95"}`}>
@@ -738,6 +744,6 @@ export default function AvisosPage() {
         ></i>
         <span>{toastMensaje}</span>
       </div>
-    </div>
+    </StaggerPage>
   );
 }

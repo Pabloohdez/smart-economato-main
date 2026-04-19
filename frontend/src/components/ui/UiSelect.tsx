@@ -88,7 +88,7 @@ export default function UiSelect(props: UiSelectProps) {
       <button
         id={id}
         type="button"
-        className="w-full min-h-12 flex items-center justify-between gap-3 text-[14px] text-[var(--color-text-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[16px] px-4 py-3 outline-none cursor-pointer transition-[border-color,box-shadow,background,opacity,transform] duration-150 hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-sm)] focus-visible:border-[var(--color-brand-500)] focus-visible:bg-[var(--color-bg-surface)] focus-visible:shadow-[0_0_0_4px_rgba(179,49,49,0.08)] disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full min-h-[48px] flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-sm outline-none cursor-pointer transition-[border-color,box-shadow,transform] duration-150 hover:border-gray-300 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 disabled:opacity-60 disabled:cursor-not-allowed"
         onClick={() => !disabled && setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -101,7 +101,7 @@ export default function UiSelect(props: UiSelectProps) {
         >
           {selected ? selected.label : placeholder}
         </span>
-        <span className={`flex-0 text-[#64748b] text-[12px] transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`} aria-hidden="true">
+        <span className={`flex-0 text-[#94a3b8] text-[12px] transition-transform duration-200 ${open ? "rotate-180" : "rotate-0"}`} aria-hidden="true">
           <ChevronDown className="h-4 w-4" />
         </span>
       </button>
@@ -109,7 +109,7 @@ export default function UiSelect(props: UiSelectProps) {
       {open && menuPos
         ? createPortal(
             <div
-              className="z-[99999] rounded-[18px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] shadow-[0_18px_40px_rgba(15,23,42,0.14)] max-h-[280px] overflow-auto p-2"
+              className="z-[99999] rounded-2xl border border-gray-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.14)] max-h-[280px] overflow-auto p-2"
               role="listbox"
               aria-label={label ?? "selector"}
               ref={menuRef}
@@ -133,9 +133,9 @@ export default function UiSelect(props: UiSelectProps) {
                     role="option"
                     aria-selected={isSelected}
                     className={[
-                      "w-full flex items-center justify-between gap-2.5 border-0 bg-transparent px-3 py-2.5 rounded-[10px] text-left cursor-pointer text-[13px] transition-colors",
-                      "hover:bg-[var(--color-bg-soft)] hover:translate-x-[2px]",
-                      isSelected ? "bg-[rgba(179,49,49,0.08)] text-[var(--color-text-strong)] font-semibold" : "text-[var(--color-text-default)]",
+                      "w-full flex items-center justify-between gap-2.5 border-0 bg-transparent px-3 py-2.5 rounded-xl text-left cursor-pointer text-[13px] transition-colors",
+                      "hover:bg-gray-50",
+                      isSelected ? "bg-primary/5 text-primary font-semibold" : "text-gray-700",
                       opt.disabled ? "opacity-50 cursor-not-allowed hover:bg-transparent" : "",
                     ].join(" ").trim()}
                     onClick={() => choose(opt)}
@@ -143,8 +143,8 @@ export default function UiSelect(props: UiSelectProps) {
                   >
                     <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{opt.label}</span>
                     {isSelected && (
-                      <span className="text-[var(--color-brand-500)] text-[12px]" aria-hidden="true">
-                        <Check className="h-4 w-4" />
+                      <span className="text-primary" aria-hidden="true">
+                        <Check className="h-3.5 w-3.5" />
                       </span>
                     )}
                   </button>

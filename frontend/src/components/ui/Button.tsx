@@ -17,26 +17,26 @@ export default function Button({
 }: ButtonProps) {
   const sizeClass =
     size === "sm"
-      ? "px-4 py-2 text-[13px]"
+      ? "px-4 py-2 text-sm"
       : size === "lg"
-        ? "px-7 py-3.5 text-[15px]"
-        : "px-[22px] py-3 text-[14px]";
+        ? "px-5 py-2.5 text-sm"
+        : "px-4 py-2 text-sm";
 
   const variantClass =
     variant === "primary"
-      ? "bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white shadow-[0_4px_14px_rgba(179,49,49,0.28)] hover:brightness-110 hover:shadow-[0_6px_20px_rgba(179,49,49,0.38)]"
+      ? "bg-primary text-white shadow-sm hover:opacity-90"
       : variant === "success"
-        ? "bg-[linear-gradient(135deg,#48bb78,#38a169)] text-white shadow-[0_4px_14px_rgba(56,161,105,0.28)] hover:brightness-110 hover:shadow-[0_6px_20px_rgba(56,161,105,0.38)]"
+        ? "bg-[#2f9e63] text-white shadow-sm hover:opacity-90"
         : variant === "danger"
-          ? "bg-[linear-gradient(135deg,#e53e3e,#c53030)] text-white shadow-[0_4px_14px_rgba(197,48,48,0.28)] hover:brightness-110"
+          ? "bg-[#dc2626] text-white shadow-sm hover:opacity-90"
           : variant === "ghost"
-            ? "bg-transparent text-[var(--color-text-muted)] px-[var(--space-3)] hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-text-default)]"
-            : "bg-[var(--color-bg-surface)] text-[var(--color-text-default)] border border-[var(--color-border-default)] shadow-[var(--shadow-sm)] hover:bg-[var(--color-bg-soft)] hover:border-[var(--color-border-strong)]";
+            ? "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+            : "bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300";
 
   return (
     <button
       className={[
-        "inline-flex items-center justify-center gap-[var(--space-2)] rounded-[var(--radius-sm)] font-semibold whitespace-nowrap no-underline leading-none transition-[transform,box-shadow,filter,background] duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2",
+        "inline-flex items-center justify-center gap-[var(--space-2)] rounded-lg font-medium whitespace-nowrap no-underline leading-none transition-[transform,box-shadow,opacity,background] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary",
         sizeClass,
         variantClass,
         (disabled || loading) ? "opacity-60 cursor-not-allowed pointer-events-none" : "cursor-pointer",

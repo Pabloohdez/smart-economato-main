@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, CalendarDays, Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Building2, CalendarDays, Pencil, Plus, Trash2 } from "lucide-react";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
@@ -13,6 +14,39 @@ import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import type { Proveedor } from "../types";
 import TablePagination from "../components/ui/TablePagination";
+import SearchInput from "../components/ui/SearchInput";
+
+const paginatedBodyVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      staggerDirection: -1,
+    },
+  },
+} as const;
+
+const paginatedRowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.24, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+} as const;
 
 function hoyES() {
   const fecha = new Date();
@@ -255,21 +289,20 @@ export default function ProveedoresPage() {
       )}
 
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)]">
+      <div className="rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
             <div className="flex gap-2.5 items-center mb-3 flex-wrap">
-              <input
-                type="text"
+              <SearchInput
                 value={q}
-                onChange={(e) => {
-                  setQ(e.target.value);
+                onChange={(value) => {
+                  setQ(value);
                   setPage(1);
                 }}
                 placeholder="Buscar proveedor..."
-                aria-label="Buscar proveedor"
-                className="w-full max-w-[360px] py-2.5 px-3.5 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
+                ariaLabel="Buscar proveedor"
+                maxWidthClassName="max-w-[360px]"
               />
             </div>
 
@@ -277,32 +310,39 @@ export default function ProveedoresPage() {
               <table className="w-full border-separate border-spacing-0 text-[14px]">
                 <thead>
                   <tr>
-                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Nombre</th>
-                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Contacto</th>
-                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Teléfono</th>
-                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Email</th>
-                    <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-right whitespace-nowrap sticky top-0 z-[1]">Acciones</th>
+                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Nombre</th>
+                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contacto</th>
+                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Teléfono</th>
+                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Email</th>
+                    <th className="bg-gray-50/50 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {visible.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
-                        No hay proveedores para mostrar.
-                      </td>
-                    </tr>
-                  ) : (
-                    visible.map((p) => (
-                      <tr key={String(p.id)} className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]">
-                        <td className="px-4 py-3 border-b border-[var(--color-border-default)] font-bold">{p.nombre}</td>
-                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.contacto || "-"}</td>
-                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.telefono || "-"}</td>
-                        <td className="px-4 py-3 border-b border-[var(--color-border-default)]">{p.email || "-"}</td>
-                        <td className="px-4 py-3 border-b border-[var(--color-border-default)] text-right">
-                          <div className="inline-flex gap-2">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.tbody
+                    key={`proveedores-page-${safePage}-${pageSize}`}
+                    variants={paginatedBodyVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                  >
+                    {visible.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
+                          No hay proveedores para mostrar.
+                        </td>
+                      </tr>
+                    ) : (
+                      visible.map((p) => (
+                      <motion.tr key={String(p.id)} variants={paginatedRowVariants} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.nombre}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{p.contacto || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{p.telefono || "-"}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{p.email || "-"}</td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="inline-flex gap-1">
                             <button
                               type="button"
-                              className="bg-[#ebf8ff] text-[#3182ce] border-0 w-9 h-9 rounded-lg cursor-pointer inline-flex items-center justify-center transition-[transform,background,color] duration-150 hover:bg-[#bee3f8] hover:text-[#2c5282] hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-[#3182ce] focus-visible:outline-offset-2"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-primary"
                               title="Editar"
                               onClick={() => {
                                 setForm({
@@ -315,22 +355,23 @@ export default function ProveedoresPage() {
                                 setModalOpen(true);
                               }}
                             >
-                              <i className="fa-solid fa-pen" />
+                              <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
                             <button
                               type="button"
-                              className="bg-[#fff5f5] text-[#c53030] border border-[#fc8181] w-9 h-9 rounded-lg cursor-pointer inline-flex items-center justify-center transition-[transform,background,color,border-color,box-shadow] duration-150 hover:bg-[#fed7d7] hover:text-[#9b2c2c] hover:border-[#f56565] hover:-translate-y-px hover:shadow-[0_2px_4px_rgba(220,38,38,0.1)]"
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
                               title="Eliminar"
                               onClick={() => eliminarProveedor(String(p.id))}
                             >
-                              <i className="fa-solid fa-trash-can" />
+                              <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))
                   )}
-                </tbody>
+                  </motion.tbody>
+                </AnimatePresence>
               </table>
             </div>
 

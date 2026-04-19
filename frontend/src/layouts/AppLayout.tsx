@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate, useLocation, useOutlet } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -24,6 +24,7 @@ import {
 import { logout as logoutSession } from "../services/authService";
 import { useAuth } from "../contexts/AuthContext";
 import PageTransition from "../components/ui/PageTransition";
+import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import { getProductos } from "../services/productosService";
 import { queryKeys } from "../lib/queryClient";
 
@@ -60,7 +61,9 @@ function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno"
 export default function AppLayout() {
   const nav = useNavigate();
   const location = useLocation();
+  const outlet = useOutlet();
   const isInicio = location.pathname === "/inicio";
+  const transitionKey = location.pathname;
   const { user } = useAuth();
   const userName = String(user?.nombre ?? "Administrador");
   const userEmail = String(user?.email ?? "").trim();
@@ -219,10 +222,10 @@ export default function AppLayout() {
               to={it.to}
               className={({ isActive }) =>
                 [
-                  "group flex min-h-[48px] items-center gap-3 px-4 py-2.5 rounded-[18px] no-underline text-[15px] leading-[1.15] flex-shrink-0 font-semibold transition-[background,color,box-shadow] duration-200 text-[#334155] hover:bg-[#f8fafc] hover:text-[var(--color-brand-500)]",
-                  isActive ? "bg-[var(--color-brand-500)] text-white shadow-[0_10px_24px_rgba(127,29,29,0.22)] hover:bg-[var(--color-brand-500)] hover:text-white" : "",
+                  "group flex min-h-[44px] items-center gap-3 px-3.5 py-2.5 rounded-lg no-underline text-[14px] leading-[1.15] flex-shrink-0 font-medium transition-[background,color] duration-150 text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+                  isActive ? "bg-primary/10 text-primary font-semibold hover:bg-primary/10 hover:text-primary" : "",
                   it.separated ? "mt-3" : "",
-                  "max-[520px]:min-h-[44px] max-[520px]:px-3.5 max-[520px]:py-2 max-[520px]:text-[14px]",
+                  "max-[520px]:min-h-[40px] max-[520px]:px-3 max-[520px]:py-2 max-[520px]:text-[13px]",
                 ].join(" ")
               }
               onClick={() => setSidebarOpen(false)}
@@ -230,7 +233,7 @@ export default function AppLayout() {
               {({ isActive }) => (
                 <>
                   <it.icon
-                    className={`h-[18px] w-[18px] ${isActive ? "text-white" : "text-[var(--color-brand-500)] group-hover:text-[var(--color-brand-500)]"}`}
+                    className={`h-[17px] w-[17px] flex-shrink-0 ${isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-600"}`}
                     aria-hidden="true"
                   />
                   <span
@@ -242,7 +245,7 @@ export default function AppLayout() {
                     {isActive ? (
                       <motion.span
                         layoutId="active-arrow"
-                        className="inline-flex items-center justify-center text-[13px] text-white"
+                        className="inline-flex items-center justify-center text-[13px] text-primary"
                         transition={{ type: "spring", stiffness: 420, damping: 32, mass: 0.7 }}
                       >
                         <ChevronRight className="h-[14px] w-[14px]" />
@@ -388,9 +391,11 @@ export default function AppLayout() {
           ].join(" ")}
           id="main-content"
         >
-          <PageTransition pathname={location.pathname}>
-            <Outlet />
-          </PageTransition>
+          <RouteErrorBoundary resetKey={transitionKey}>
+            <PageTransition transitionKey={transitionKey}>
+              {outlet}
+            </PageTransition>
+          </RouteErrorBoundary>
         </main>
       </div>
     </div>

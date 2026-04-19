@@ -11,6 +11,9 @@ import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
+import SearchInput from "../components/ui/SearchInput";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import { Trash2 } from "lucide-react";
 
 type RegistroRendimiento = {
   id: number;
@@ -442,8 +445,8 @@ export default function RendimientoPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full">
-      <div
+    <StaggerPage className="max-w-[1400px] mx-auto w-full">
+      <StaggerItem
         className="flex justify-between items-start mb-[25px] flex-wrap gap-4 max-[768px]:flex-col"
         data-print-date={new Date().toLocaleString("es-ES")}
       >
@@ -501,9 +504,9 @@ export default function RendimientoPage() {
             <i className="fa-solid fa-print"></i> Imprimir / PDF
           </button>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="grid grid-cols-4 gap-4 mb-[25px] max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+      <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
         <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
@@ -540,7 +543,7 @@ export default function RendimientoPage() {
 
         <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
-            <i className="fa-solid fa-trash-can"></i>
+            <Trash2 strokeWidth={1.5} size={22} />
           </div>
           <div className="flex flex-col gap-1">
             <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Desperdicio Total</span>
@@ -549,22 +552,18 @@ export default function RendimientoPage() {
             </span>
           </div>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
         <div className="flex justify-between items-center gap-5 max-[768px]:flex-col max-[768px]:items-stretch">
           <div className="flex gap-4 flex-1 items-center max-[768px]:flex-col max-[768px]:items-stretch">
-            <div className="flex gap-2.5 items-stretch flex-1 relative">
-              <i className="fa-solid fa-search absolute left-3 top-3 text-[#a0aec0]"></i>
-              <input
-                type="text"
-                className="flex-1 pl-9 pr-[18px] py-3 border border-[var(--color-border-default)] rounded-xl text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-[var(--color-bg-surface)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
-                placeholder="Buscar ingrediente..."
-                aria-label="Buscar ingrediente"
-                value={busqueda}
-                onChange={(e) => setBusquedаInterna(e.target.value)}
-              />
-            </div>
+            <SearchInput
+              value={busqueda}
+              onChange={setBusquedаInterna}
+              placeholder="Buscar ingrediente..."
+              ariaLabel="Buscar ingrediente"
+              className="flex-1"
+            />
 
             <UiSelect
               value={filtroCategoria}
@@ -624,28 +623,28 @@ export default function RendimientoPage() {
             </>
           )}
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
         <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <i className="fa-solid fa-table"></i> Registro de Rendimiento Actual
         </h3>
 
-        <div className="overflow-x-auto rounded-xl border border-[var(--color-border-default)]">
-          <table className="w-full border-separate border-spacing-0">
+        <div className="se-table-shell">
+          <table className="se-table">
             <caption className="visually-hidden">
               Tabla de análisis de rendimiento de ingredientes
             </caption>
             <thead>
               <tr>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Ingrediente</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Peso Bruto (kg)</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Peso Neto (kg)</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Desperdicio (kg)</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Total</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Rendimiento</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">% Merma</th>
-                <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] px-4 py-3 text-left font-bold text-[12px] uppercase tracking-wide border-b-2 border-b-[var(--color-border-default)] whitespace-nowrap">Acción</th>
+                <th className="text-left">Ingrediente</th>
+                <th className="text-left">Peso Bruto (kg)</th>
+                <th className="text-left">Peso Neto (kg)</th>
+                <th className="text-left">Desperdicio (kg)</th>
+                <th className="text-left">% Total</th>
+                <th className="text-left">% Rendimiento</th>
+                <th className="text-left">% Merma</th>
+                <th className="text-left">Acción</th>
               </tr>
             </thead>
 
@@ -668,28 +667,28 @@ export default function RendimientoPage() {
                       : 0;
 
                   return (
-                    <tr key={reg.id} className="hover:[&>td]:bg-[#fafbfc]">
-                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">
+                    <tr key={reg.id}>
+                      <td className="text-[var(--color-text-strong)]">
                         <strong>{reg.ingrediente}</strong>
                       </td>
-                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.pesoBruto.toFixed(3)}</td>
-                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.pesoNeto.toFixed(3)}</td>
-                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{reg.desperdicio.toFixed(3)}</td>
-                      <td className="px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] text-[var(--color-text-strong)]">{porcTotal.toFixed(1)}%</td>
-                      <td className={`px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] ${getClaseRendimiento(reg.rendimiento)}`}>
+                      <td className="text-[var(--color-text-strong)]">{reg.pesoBruto.toFixed(3)}</td>
+                      <td className="text-[var(--color-text-strong)]">{reg.pesoNeto.toFixed(3)}</td>
+                      <td className="text-[var(--color-text-strong)]">{reg.desperdicio.toFixed(3)}</td>
+                      <td className="text-[var(--color-text-strong)]">{porcTotal.toFixed(1)}%</td>
+                      <td className={getClaseRendimiento(reg.rendimiento)}>
                         {reg.rendimiento.toFixed(1)}%
                       </td>
-                      <td className={`px-4 py-3 border-b border-b-[var(--color-border-default)] text-[14px] ${getClaseMerma(reg.merma)}`}>
+                      <td className={getClaseMerma(reg.merma)}>
                         {reg.merma.toFixed(1)}%
                       </td>
                       <td>
                         <button
                           type="button"
-                          className="bg-[#fff5f5] border border-[#fca5a5] text-[#e53e3e] w-8 h-8 rounded-lg inline-flex items-center justify-center cursor-pointer transition-transform duration-200 hover:bg-[#fed7d7] hover:scale-110"
+                          className="se-icon-btn se-icon-btn--danger"
                           title="Eliminar registro"
                           onClick={() => eliminarRegistro(index)}
                         >
-                          <i className="fa-solid fa-trash-can"></i>
+                          <Trash2 strokeWidth={1.5} size={18} />
                         </button>
                       </td>
                     </tr>
@@ -726,9 +725,9 @@ export default function RendimientoPage() {
             </tfoot>
           </table>
         </div>
-      </div>
+      </StaggerItem>
 
-      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
         <div>
           <label
             className="font-semibold text-[var(--color-text-muted)] flex items-center gap-2 mb-2"
@@ -766,7 +765,7 @@ export default function RendimientoPage() {
             <i className="fa-solid fa-save"></i> GUARDAR ANÁLISIS
           </button>
         </div>
-      </div>
+      </StaggerItem>
 
       {mensajeEstado ? (
         <div
@@ -782,7 +781,7 @@ export default function RendimientoPage() {
         </div>
       ) : null}
 
-      <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[25px] mb-[25px] shadow-[var(--shadow-sm)] border border-black/5 w-full box-border">
+      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
         <div className="flex justify-between items-center flex-wrap gap-4 mb-4 max-[768px]:flex-col max-[768px]:items-stretch">
           <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
             <i className="fa-solid fa-clock-rotate-left"></i> Historial de Análisis
@@ -844,11 +843,11 @@ export default function RendimientoPage() {
                     </span>
                     <button
                       type="button"
-                      className="bg-[#fff5f5] border border-[#fca5a5] text-[#e53e3e] w-8 h-8 rounded-lg inline-flex items-center justify-center cursor-pointer transition-transform duration-200 hover:bg-[#fed7d7] hover:scale-110"
+                      className="se-icon-btn se-icon-btn--danger"
                       title="Eliminar del historial"
                       onClick={() => eliminarRegistroHistorial(item.id)}
                     >
-                      <i className="fa-solid fa-trash-can"></i>
+                      <Trash2 strokeWidth={1.5} size={18} />
                     </button>
                   </div>
                 </div>
@@ -856,7 +855,7 @@ export default function RendimientoPage() {
             })
           )}
         </div>
-      </div>
+      </StaggerItem>
 
       <div
         className={`fixed inset-0 bg-black/50 [backdrop-filter:blur(4px)] flex justify-center items-center z-[1000] ${modalOpen ? "" : "hidden"}`}
@@ -983,6 +982,6 @@ export default function RendimientoPage() {
           </div>
         </div>
       </div>
-    </div>
+    </StaggerPage>
   );
 }

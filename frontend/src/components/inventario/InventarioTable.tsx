@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { Producto } from "../../services/productosService";
 import TablePagination from "../ui/TablePagination";
 import UiSelect from "../ui/UiSelect";
@@ -8,7 +8,7 @@ import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
 import { showNotification } from "../../utils/notifications";
 import type { LoteProducto } from "../../services/lotesService";
-import { CalendarDays, Layers3, PackageSearch, PencilLine } from "lucide-react";
+import { CalendarDays, Pencil } from "lucide-react";
 
 function parseDate(d?: string | null): Date | null {
   if (!d) return null;
@@ -38,6 +38,40 @@ function labelCaducidad(dias: number | null, fecha: Date | null) {
   if (dias <= 30) return { title: `En ${dias} día(s)`, subtitle: formatShortDate(fecha) };
   return { title: formatShortDate(fecha), subtitle: `En ${dias} día(s)` };
 }
+
+const paginatedBodyVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.035,
+      delayChildren: 0.04,
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.16, ease: "easeInOut" },
+  },
+} as const;
+
+const paginatedRowVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] },
+  },
+} as const;
+
+function formatMoney(value: number) {
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+
 
 export default function InventarioTable({ items, lotes }: { items: Producto[]; lotes: LoteProducto[] }) {
   const [page, setPage] = useState(1);
@@ -167,165 +201,124 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
   }, [rows, safePage, pageSize]);
 
   return (
-    <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] rounded-[var(--radius-lg)] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)] overflow-hidden">
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--color-border-default)] px-5 py-4 max-[640px]:flex-col max-[640px]:items-start">
-        <div>
-          <div className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Vista de inventario</div>
-          <div className="mt-1 text-[18px] font-bold text-[var(--color-text-strong)]">Stock, caducidad y lotes en una sola tabla</div>
-        </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(179,49,49,0.14)] bg-[rgba(179,49,49,0.08)] px-3 py-1.5 text-[12px] font-semibold text-[var(--color-brand-500)]">
-          <PackageSearch className="h-4 w-4" /> {rows.length} producto(s)
-        </div>
-      </div>
-
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-separate border-spacing-0 text-[14px]">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="w-full overflow-x-auto px-3 pb-3">
+        <table className="w-full min-w-[960px] border-separate border-spacing-0 text-[14px]">
           <thead>
-            <tr>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">ID</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Producto</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Categoría</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Precio</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Stock</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Caducidad</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-left whitespace-nowrap sticky top-0 z-[1]">Proveedor</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] text-[11px] font-bold uppercase tracking-[0.06em] px-4 py-[14px] border-b-2 border-[var(--color-border-default)] text-right whitespace-nowrap sticky top-0 z-[1]">Acciones</th>
+            <tr className="bg-slate-50/80">
+              <th className="rounded-l-2xl border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">ID</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Producto</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Categoría</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Precio</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Stock</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Caducidad</th>
+              <th className="border-b border-gray-100 px-4 py-4 text-left text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Proveedor</th>
+              <th className="rounded-r-2xl border-b border-gray-100 px-4 py-4 text-right text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {visibleRows.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-5 px-4 text-[#718096]">
-                  No hay productos para mostrar.
-                </td>
-              </tr>
-            ) : (
-              visibleRows.map(({ p, stock, min, cadDias, alerta, lotesCount }, index) => {
-                const stockBajo = stock <= min;
-                let cadLabel = "—";
-                let cadNode: React.ReactNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
-                if (cadDias != null) {
-                  if (cadDias < 0) {
-                    cadLabel = "Caducado";
-                    cadNode = (
-                      <span className="bg-[#c53030] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold inline-flex items-center">
-                        {cadLabel}
-                      </span>
-                    );
-                  } else if (cadDias <= 30) {
-                    cadLabel = `${cadDias}d`;
-                    cadNode = (
-                      <span className="bg-[#fffaf0] text-[#c05621] px-3 py-1.5 rounded-lg border-2 border-[#f6ad55] text-[11px] font-bold inline-flex items-center">
-                        {cadLabel}
-                      </span>
-                    );
-                  } else {
-                    const fecha = new Date(Date.now() + cadDias * 24 * 60 * 60 * 1000);
-                    cadLabel = formatShortDate(fecha);
-                    cadNode = <span className="text-[#4a5568] text-[0.95em] font-medium">{cadLabel}</span>;
-                  }
-                }
+        </table>
 
-                const cadWrap = (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="inline-flex items-center">{cadNode}</span>
-                    {lotesCount > 0 ? (
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[12px] font-bold text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)] transition whitespace-nowrap"
-                        onClick={() => abrirLotes(p)}
-                        title="Ver lotes"
-                      >
-                        <Layers3 className="h-3.5 w-3.5" />
-                        {lotesCount} lote(s)
-                      </button>
-                    ) : (
-                      <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-[var(--color-border-default)] bg-white text-[12px] font-semibold text-[var(--color-text-muted)] whitespace-nowrap">
-                        <i className="fa-regular fa-circle-dot text-[11px] opacity-70" />
-                        Sin lotes
-                      </span>
-                    )}
-                  </div>
-                );
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={`inventario-page-${safePage}-${pageSize}`}
+            className="overflow-hidden rounded-[24px] border border-gray-100 bg-white"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            <table className="w-full min-w-[960px] border-separate border-spacing-0 text-[14px]">
+              <motion.tbody variants={paginatedBodyVariants} initial="hidden" animate="visible" exit="exit">
+              {visibleRows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-500">
+                    No hay productos para mostrar.
+                  </td>
+                </tr>
+              ) : (
+                visibleRows.map(({ p, stock, min, cadDias, lotesCount, cadNearest }) => {
+                const stockBajo = stock <= min;
 
                 return (
                   <motion.tr
                     key={String(p.id)}
-                    className="transition-[background] duration-150 hover:bg-[rgba(179,49,49,0.02)]"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
+                    variants={paginatedRowVariants}
+                    className="group transition-[background] duration-150 hover:bg-slate-50/70"
                   >
-                    {(
-                      [
-                        String(p.id ?? ""),
-                        String(p.nombre ?? "—"),
-                        String(p.categoria?.nombre ?? "—"),
-                        `${Number(p.precio ?? 0).toFixed(2)} €/${String((p as any).unidadMedida ?? "ud").toLowerCase() || "ud"}`,
-                        null,
-                        null,
-                        String(p.proveedor?.nombre ?? "—"),
-                        null,
-                      ] as const
-                    ).map((value, idx) => {
-                      const base = "px-4 py-3 border-b border-[var(--color-border-default)] text-[var(--color-text-default)] align-middle";
-                      const alertBg = alerta ? "bg-[#fff5f5]" : "";
-                      if (idx === 4) {
-                        return (
-                          <td key={idx} className={`${base} ${alertBg}`}>
-                            <span
-                              className={
-                                stockBajo
-                                  ? "bg-[#fff5f5] text-[#c53030] px-3 py-1 rounded-full font-bold border border-[#feb2b2] inline-block"
-                                  : "bg-[#f0fff4] text-[#2f855a] px-3 py-1 rounded-full font-bold inline-block"
-                              }
-                            >
-                              {stock} {String((p as any).unidadMedida ?? "ud").toLowerCase() || "ud"}
-                            </span>
-                          </td>
-                        );
-                      }
-                      if (idx === 5) {
-                        return (
-                          <td key={idx} className={`${base} ${alertBg}`}>
-                            {cadWrap}
-                          </td>
-                        );
-                      }
-                      if (idx === 7) {
-                        return (
-                          <td key={idx} className={`${base} ${alertBg} text-right`}>
-                            <div className="inline-flex items-center gap-2 justify-end flex-wrap">
-                              <button
-                                type="button"
-                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border-default)] px-4 py-2 rounded-[12px] font-semibold cursor-pointer transition-[background,border-color,box-shadow] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] inline-flex items-center gap-2"
-                                onClick={() => abrirLotes(p)}
-                              >
-                                <CalendarDays className="h-4 w-4" /> Lotes
-                              </button>
-                              <button
-                                type="button"
-                                className="min-h-10 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border border-[var(--color-border-default)] px-4 py-2 rounded-[12px] font-semibold cursor-pointer transition-[background,border-color,box-shadow] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-sm)] inline-flex items-center gap-2"
-                                onClick={() => abrirEdicion(p)}
-                              >
-                                <PencilLine className="h-4 w-4" /> Editar
-                              </button>
-                            </div>
-                          </td>
-                        );
-                      }
-                      return (
-                        <td key={idx} className={`${base} ${alertBg}`}>
-                          {value}
-                        </td>
-                      );
-                    })}
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle font-mono text-[13px] text-slate-500">
+                      {String(p.id ?? "—")}
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle">
+                      <span className="text-[14px] font-semibold text-slate-900">{String(p.nombre ?? "—")}</span>
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle text-[13px] text-slate-600">
+                      {String(p.categoria?.nombre ?? "—")}
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle">
+                      <span className="text-[14px] font-bold text-slate-900">{formatMoney(Number(p.precio ?? 0))}</span>
+                      <span className="ml-1 text-[12px] text-slate-400">/{String((p as any).unidadMedida ?? "ud")}</span>
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle">
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-bold ${stockBajo ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>
+                        {stock} {String((p as any).unidadMedida ?? "ud").toLowerCase() || "ud"}
+                      </span>
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {cadDias == null ? (
+                          <span className="text-[13px] text-slate-400">Sin fecha</span>
+                        ) : cadDias < 0 ? (
+                          <span className="inline-flex animate-pulse items-center rounded-lg bg-red-600 px-3 py-1 text-[11px] font-bold text-white">
+                            ⚠ CADUCADO
+                          </span>
+                        ) : cadDias <= 30 ? (
+                          <span className="inline-flex items-center rounded-lg border-2 border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800">
+                            ⏰ {cadDias}d
+                          </span>
+                        ) : (
+                          <span className="text-[13px] text-slate-600">{cadNearest ? formatShortDate(cadNearest) : "—"}</span>
+                        )}
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2.5 py-1 text-[12px] font-semibold text-slate-500 transition-colors hover:bg-slate-50 hover:text-primary"
+                          onClick={() => abrirLotes(p)}
+                          title="Ver lotes"
+                        >
+                          <CalendarDays className="h-3.5 w-3.5" />
+                          {lotesCount} lote(s)
+                        </button>
+                      </div>
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 align-middle text-[13px] text-slate-600">
+                      {String(p.proveedor?.nombre ?? "—")}
+                    </td>
+
+                    <td className="border-b border-gray-100 px-4 py-3 text-right align-middle">
+                      <div className="inline-flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          title="Editar producto"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-white text-slate-400 shadow-sm transition-colors duration-150 hover:bg-slate-50 hover:text-primary"
+                          onClick={() => abrirEdicion(p)}
+                        >
+                          <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                        </button>
+                      </div>
+                    </td>
                   </motion.tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+                })
+              )}
+              </motion.tbody>
+            </table>
+          </motion.div>
+        </AnimatePresence>
       </div>
       <TablePagination
         totalItems={rows.length}
@@ -336,9 +329,9 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
         pageSizeOptions={[10, 25, 50, 100]}
         label="productos"
       />
-      <div className="px-[var(--space-6)] py-[var(--space-5)] bg-[linear-gradient(135deg,var(--color-bg-soft)_0%,var(--color-border-default)_100%)] border-t-2 border-[var(--color-border-default)] flex items-center justify-between font-semibold max-[768px]:flex-col max-[768px]:gap-2.5 max-[768px]:items-start">
+      <div className="border-t border-gray-100 bg-slate-50/60 px-6 py-4 flex items-center justify-between font-medium text-sm text-gray-600">
         <div>
-          Total productos: <span className="text-[var(--color-brand-500)] text-[18px]">{items.length}</span>
+          Total: <span className="text-primary font-bold">{items.length}</span> productos
         </div>
       </div>
 
@@ -388,7 +381,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                     onChange={(e) => setEditPrecio(e.target.value)}
                     type="number"
                     step="0.01"
-                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -403,7 +396,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                     onChange={(e) => setEditStock(e.target.value)}
                     type="number"
                     step={editUnidad === "ud" ? "1" : "0.001"}
-                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
 
@@ -416,7 +409,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                     onChange={(e) => setEditStockMin(e.target.value)}
                     type="number"
                     step={editUnidad === "ud" ? "1" : "0.001"}
-                    className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[10px] bg-white focus:outline-none focus:border-[var(--color-brand-500)]"
+                    className="w-full px-3.5 py-2.5 border border-gray-200 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   />
                 </div>
               </div>
@@ -424,7 +417,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
               <div className="flex justify-end gap-3 pt-2 max-[640px]:flex-col">
                 <button
                   type="button"
-                  className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)] max-[640px]:w-full"
+                  className="min-h-[42px] bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-lg font-semibold text-sm cursor-pointer hover:bg-gray-50 transition-colors max-[640px]:w-full"
                   onClick={cerrarEdicion}
                   disabled={actualizarMutation.isPending}
                 >
@@ -432,7 +425,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 </button>
                 <button
                   type="button"
-                  className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white border-0 px-6 py-2.5 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.25)] hover:-translate-y-0.5 transition disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:w-full"
+                  className="min-h-[42px] bg-primary text-white border-0 px-6 py-2.5 rounded-lg font-semibold text-sm cursor-pointer shadow-sm hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:w-full"
                   onClick={() => actualizarMutation.mutate()}
                   disabled={actualizarMutation.isPending}
                 >
