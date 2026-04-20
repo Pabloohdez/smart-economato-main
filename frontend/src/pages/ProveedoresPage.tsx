@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Building2, CalendarDays, Pencil, Plus, Trash2 } from "lucide-react";
+import { Building2, CalendarDays, Mail, MoreHorizontal, Pencil, Phone, Plus, Trash2 } from "lucide-react";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
@@ -15,6 +15,16 @@ import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import type { Proveedor } from "../types";
 import TablePagination from "../components/ui/TablePagination";
 import SearchInput from "../components/ui/SearchInput";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 
 const paginatedBodyVariants = {
   hidden: { opacity: 1 },
@@ -289,34 +299,59 @@ export default function ProveedoresPage() {
       )}
 
       <StaggerItem>
-      <div className="rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
-        {loading && <Spinner label="Cargando proveedores..." />}
-        {!loading && (
-          <>
-            <div className="flex gap-2.5 items-center mb-3 flex-wrap">
+      <BackofficeTablePanel
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                {filtered.length} proveedor(es)
+              </Badge>
+              <Badge variant="outline" className="border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600">
+                <Phone className="h-3.5 w-3.5" /> {proveedoresResumen.conTelefono} con teléfono
+              </Badge>
+              <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+                <Mail className="h-3.5 w-3.5" /> {proveedoresResumen.conEmail} con email
+              </Badge>
+            </div>
+            <div className="w-full max-w-[360px]">
               <SearchInput
                 value={q}
                 onChange={(value) => {
                   setQ(value);
                   setPage(1);
                 }}
-                placeholder="Buscar proveedor..."
+                placeholder="Buscar proveedor, contacto, teléfono o email..."
                 ariaLabel="Buscar proveedor"
-                maxWidthClassName="max-w-[360px]"
               />
             </div>
-
+          </div>
+        }
+        footer={
+          <TablePagination
+            totalItems={filtered.length}
+            page={safePage}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[10, 25, 50]}
+            label="proveedores"
+          />
+        }
+      >
+        {loading && <Spinner label="Cargando proveedores..." />}
+        {!loading && (
+          <>
             <div className="w-full overflow-x-auto">
-              <table className="w-full border-separate border-spacing-0 text-[14px]">
-                <thead>
-                  <tr>
-                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Nombre</th>
-                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Contacto</th>
-                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Teléfono</th>
-                    <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Email</th>
-                    <th className="bg-gray-50/50 px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">Acciones</th>
-                  </tr>
-                </thead>
+              <Table className="min-w-[840px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                <TableHeader>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                    <TableHead className="rounded-l-2xl">Proveedor</TableHead>
+                    <TableHead>Contacto</TableHead>
+                    <TableHead>Teléfono</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="rounded-r-2xl text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.tbody
                     key={`proveedores-page-${safePage}-${pageSize}`}
@@ -326,23 +361,33 @@ export default function ProveedoresPage() {
                     exit="exit"
                   >
                     {visible.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
+                      <TableRow>
+                        <TableCell colSpan={5} className="py-8 text-center text-slate-500">
                           No hay proveedores para mostrar.
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     ) : (
                       visible.map((p) => (
-                      <motion.tr key={String(p.id)} variants={paginatedRowVariants} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.nombre}</td>
-                        <td className="px-4 py-3 text-sm text-gray-500">{p.contacto || "-"}</td>
-                        <td className="px-4 py-3 text-sm text-gray-500">{p.telefono || "-"}</td>
-                        <td className="px-4 py-3 text-sm text-gray-500">{p.email || "-"}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="inline-flex gap-1">
+                      <motion.tr key={String(p.id)} variants={paginatedRowVariants} className="bo-table-row">
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-primary/10 bg-primary/5 text-primary">
+                              <Building2 className="h-4 w-4" />
+                            </span>
+                            <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold text-slate-900">{p.nombre}</div>
+                              <div className="mt-0.5 text-[12px] text-slate-500">Proveedor registrado</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-600">{p.contacto || "-"}</TableCell>
+                        <TableCell className="text-sm text-slate-600">{p.telefono || "-"}</TableCell>
+                        <TableCell className="text-sm text-slate-600">{p.email || "-"}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="inline-flex items-center gap-2">
                             <button
                               type="button"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-gray-100 hover:text-primary"
+                              className="bo-table-action-btn text-slate-500"
                               title="Editar"
                               onClick={() => {
                                 setForm({
@@ -357,40 +402,52 @@ export default function ProveedoresPage() {
                             >
                               <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
-                            <button
-                              type="button"
-                              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-                              title="Eliminar"
-                              onClick={() => eliminarProveedor(String(p.id))}
-                            >
-                              <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
-                            </button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  type="button"
+                                  className="bo-table-action-btn text-slate-500"
+                                  aria-label="Más acciones"
+                                >
+                                  <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem
+                                  onSelect={() => {
+                                    setForm({
+                                      id: String(p.id),
+                                      nombre: p.nombre,
+                                      contacto: p.contacto || "",
+                                      telefono: p.telefono || "",
+                                      email: p.email || "",
+                                    });
+                                    setModalOpen(true);
+                                  }}
+                                >
+                                  <Pencil className="h-4 w-4" /> Editar proveedor
+                                </DropdownMenuItem>
+                                <DropdownMenuItem variant="destructive" onSelect={() => eliminarProveedor(String(p.id))}>
+                                  <Trash2 className="h-4 w-4" /> Eliminar proveedor
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        </td>
+                        </TableCell>
                       </motion.tr>
                     ))
                   )}
                   </motion.tbody>
                 </AnimatePresence>
-              </table>
+              </Table>
             </div>
-
-            <TablePagination
-              totalItems={filtered.length}
-              page={safePage}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={setPageSize}
-              pageSizeOptions={[10, 25, 50]}
-              label="proveedores"
-            />
           </>
         )}
-      </div>
+      </BackofficeTablePanel>
 
       {modalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4">
-          <div className="relative bg-[var(--color-bg-surface)] p-[30px] rounded-2xl w-[90%] max-w-[500px] shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="relative w-[90%] max-w-[520px] rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-[30px] shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
             <button
               type="button"
               className="absolute top-3.5 right-3.5 w-[42px] h-[42px] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] inline-flex items-center justify-center text-[#50596D] shadow-[var(--shadow-sm)] hover:text-[var(--color-brand-500)] hover:bg-[var(--color-bg-soft)]"
@@ -404,11 +461,11 @@ export default function ProveedoresPage() {
               {form.id ? "Editar Proveedor" : "Nuevo Proveedor"}
             </h2>
 
-            <form onSubmit={guardarProveedor}>
+            <form onSubmit={guardarProveedor} className="grid gap-5">
               <div className="mb-5">
                 <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Nombre Empresa</label>
-                <input
-                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
+                <Input
+                  className="h-12 rounded-xl"
                   value={form.nombre}
                   onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                 />
@@ -416,8 +473,8 @@ export default function ProveedoresPage() {
 
               <div className="mb-5">
                 <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Persona de Contacto</label>
-                <input
-                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
+                <Input
+                  className="h-12 rounded-xl"
                   value={form.contacto}
                   onChange={(e) =>
                     setForm({ ...form, contacto: e.target.value })
@@ -427,8 +484,8 @@ export default function ProveedoresPage() {
 
               <div className="mb-5">
                 <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Teléfono</label>
-                <input
-                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
+                <Input
+                  className="h-12 rounded-xl"
                   value={form.telefono}
                   onChange={(e) =>
                     setForm({ ...form, telefono: e.target.value })
@@ -438,28 +495,21 @@ export default function ProveedoresPage() {
 
               <div className="mb-5">
                 <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Email</label>
-                <input
+                <Input
                   type="email"
-                  className="w-full py-3 px-4 text-[15px] border-2 border-[var(--color-border-default)] rounded-[10px] text-[var(--color-text-strong)] bg-white transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.25)] focus:outline-none"
+                  className="h-12 rounded-xl"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
               </div>
 
-              <div className="text-right mt-6">
-                <button
-                  className="bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-                  type="submit"
-                  disabled={guardandoProveedor}
-                >
-                  {guardandoProveedor ? (
-                    <>
-                      <i className="fa-solid fa-spinner fa-spin" /> Guardando...
-                    </>
-                  ) : (
-                    "Guardar Proveedor"
-                  )}
-                </button>
+              <div className="mt-2 flex justify-end gap-3">
+                <Button type="button" variant="secondary" onClick={cerrarModal}>
+                  Cancelar
+                </Button>
+                <Button type="submit" loading={guardandoProveedor}>
+                  Guardar Proveedor
+                </Button>
               </div>
             </form>
           </div>

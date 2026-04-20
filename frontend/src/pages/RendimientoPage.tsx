@@ -12,8 +12,12 @@ import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
 import SearchInput from "../components/ui/SearchInput";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import Button from "../components/ui/Button";
+import { Badge } from "../components/ui/badge";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
-import { Trash2 } from "lucide-react";
+import { Table2, Trash2 } from "lucide-react";
 
 type RegistroRendimiento = {
   id: number;
@@ -554,7 +558,7 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
+      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
         <div className="flex justify-between items-center gap-5 max-[768px]:flex-col max-[768px]:items-stretch">
           <div className="flex gap-4 flex-1 items-center max-[768px]:flex-col max-[768px]:items-stretch">
             <SearchInput
@@ -577,13 +581,14 @@ export default function RendimientoPage() {
           </div>
 
           <div className="flex gap-2.5 items-center flex-wrap max-[768px]:w-full">
-            <button
+            <Button
               type="button"
-              className="ml-auto bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 px-6 py-2.5 rounded-xl font-bold text-[14px] cursor-pointer shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,box-shadow,filter] duration-200 inline-flex items-center gap-2 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-[0_6px_18px_rgba(56,161,105,0.4)] hover:brightness-105 max-[768px]:w-full max-[768px]:justify-center max-[768px]:ml-0"
+              variant="success"
+              className="ml-auto max-[768px]:ml-0 max-[768px]:w-full max-[768px]:justify-center"
               onClick={abrirModal}
             >
               <i className="fa-solid fa-plus"></i> Nuevo Análisis
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -625,109 +630,115 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
-        <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
-          <i className="fa-solid fa-table"></i> Registro de Rendimiento Actual
-        </h3>
+      <StaggerItem>
+        <BackofficeTablePanel
+          header={
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="m-0 flex items-center gap-2.5 text-[1.1rem] font-bold text-[var(--color-text-strong)]">
+                  <Table2 className="h-5 w-5 text-primary" /> Registro de Rendimiento Actual
+                </h3>
+              </div>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                  {registrosRendimiento.length} registro(s)
+                </Badge>
+                <Badge variant="success" className="px-3 py-1 text-[11px] font-semibold">
+                  Rendimiento medio {estadisticas.rendimientoMedio.toFixed(1)}%
+                </Badge>
+                <Badge variant="warning" className="px-3 py-1 text-[11px] font-semibold">
+                  Merma media {estadisticas.mermaMedia.toFixed(1)}%
+                </Badge>
+              </div>
+            </div>
+          }
+        >
+          <div className="w-full overflow-x-auto">
+            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+              <TableHeader>
+                <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                  <TableHead className="rounded-l-2xl">Ingrediente</TableHead>
+                  <TableHead>Peso Bruto (kg)</TableHead>
+                  <TableHead>Peso Neto (kg)</TableHead>
+                  <TableHead>Desperdicio (kg)</TableHead>
+                  <TableHead>% Total</TableHead>
+                  <TableHead>% Rendimiento</TableHead>
+                  <TableHead>% Merma</TableHead>
+                  <TableHead className="rounded-r-2xl">Acción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {registrosRendimiento.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="py-10 text-center text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <Table2 className="h-8 w-8 opacity-50" />
+                        <p className="m-0 font-semibold text-slate-500">No hay registros de rendimiento</p>
+                        <small className="text-[12px] text-slate-400">Haz clic en "Nuevo Análisis" para comenzar</small>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  registrosRendimiento.map((reg, index) => {
+                    const porcTotal =
+                      totalesActuales.pesoBruto > 0
+                        ? (reg.pesoBruto / totalesActuales.pesoBruto) * 100
+                        : 0;
 
-        <div className="se-table-shell">
-          <table className="se-table">
-            <caption className="visually-hidden">
-              Tabla de análisis de rendimiento de ingredientes
-            </caption>
-            <thead>
-              <tr>
-                <th className="text-left">Ingrediente</th>
-                <th className="text-left">Peso Bruto (kg)</th>
-                <th className="text-left">Peso Neto (kg)</th>
-                <th className="text-left">Desperdicio (kg)</th>
-                <th className="text-left">% Total</th>
-                <th className="text-left">% Rendimiento</th>
-                <th className="text-left">% Merma</th>
-                <th className="text-left">Acción</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {registrosRendimiento.length === 0 ? (
-                <tr>
-                  <td colSpan={8}>
-                    <div className="text-center py-10 text-[#a0aec0] flex flex-col items-center gap-2">
-                      <i className="fa-solid fa-inbox text-[2rem] opacity-50"></i>
-                      <p className="m-0 font-semibold">No hay registros de rendimiento</p>
-                      <small className="text-[12px]">Haz clic en "Nuevo Análisis" para comenzar</small>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                registrosRendimiento.map((reg, index) => {
-                  const porcTotal =
-                    totalesActuales.pesoBruto > 0
-                      ? (reg.pesoBruto / totalesActuales.pesoBruto) * 100
-                      : 0;
-
-                  return (
-                    <tr key={reg.id}>
-                      <td className="text-[var(--color-text-strong)]">
-                        <strong>{reg.ingrediente}</strong>
-                      </td>
-                      <td className="text-[var(--color-text-strong)]">{reg.pesoBruto.toFixed(3)}</td>
-                      <td className="text-[var(--color-text-strong)]">{reg.pesoNeto.toFixed(3)}</td>
-                      <td className="text-[var(--color-text-strong)]">{reg.desperdicio.toFixed(3)}</td>
-                      <td className="text-[var(--color-text-strong)]">{porcTotal.toFixed(1)}%</td>
-                      <td className={getClaseRendimiento(reg.rendimiento)}>
-                        {reg.rendimiento.toFixed(1)}%
-                      </td>
-                      <td className={getClaseMerma(reg.merma)}>
-                        {reg.merma.toFixed(1)}%
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="se-icon-btn se-icon-btn--danger"
-                          title="Eliminar registro"
-                          onClick={() => eliminarRegistro(index)}
-                        >
-                          <Trash2 strokeWidth={1.5} size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-
-            <tfoot
-              className={registrosRendimiento.length === 0 ? "hidden" : ""}
-            >
-              <tr className="bg-[linear-gradient(to_right,#f7fafc,var(--color-border-default))]">
-                <td className="px-4 py-3 font-bold text-[14px] text-[var(--color-text-strong)] border-t-2 border-t-[var(--color-border-strong)]">
-                  <strong>TOTALES</strong>
-                </td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
-                  {totalesActuales.pesoBruto.toFixed(3)}
-                </td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
-                  {totalesActuales.pesoNeto.toFixed(3)}
-                </td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
-                  {totalesActuales.desperdicio.toFixed(3)}
-                </td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">100%</td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
-                  {totalesActuales.rendimiento.toFixed(1)}%
-                </td>
-                <td className="px-4 py-3 font-extrabold text-[var(--color-brand-500)] border-t-2 border-t-[var(--color-border-strong)]">
-                  {totalesActuales.merma.toFixed(1)}%
-                </td>
-                <td className="px-4 py-3 border-t-2 border-t-[var(--color-border-strong)]"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+                    return (
+                      <TableRow key={reg.id} className="bo-table-row">
+                        <TableCell className="text-slate-900">
+                          <strong>{reg.ingrediente}</strong>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-700">{reg.pesoBruto.toFixed(3)}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{reg.pesoNeto.toFixed(3)}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{reg.desperdicio.toFixed(3)}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{porcTotal.toFixed(1)}%</TableCell>
+                        <TableCell>
+                          <Badge variant={reg.rendimiento >= 75 ? "success" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                            {reg.rendimiento.toFixed(1)}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={reg.merma >= 30 ? "destructive" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                            {reg.merma.toFixed(1)}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <button
+                            type="button"
+                            className="bo-table-action-btn text-slate-500"
+                            title="Eliminar registro"
+                            onClick={() => eliminarRegistro(index)}
+                          >
+                            <Trash2 strokeWidth={1.5} size={18} />
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+              <TableFooter className={registrosRendimiento.length === 0 ? "hidden" : ""}>
+                <TableRow className="bg-[linear-gradient(to_right,#f8fafc,var(--color-border-default))] hover:bg-[linear-gradient(to_right,#f8fafc,var(--color-border-default))]">
+                  <TableCell className="font-bold text-[14px] text-[var(--color-text-strong)]">
+                    <strong>TOTALES</strong>
+                  </TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">{totalesActuales.pesoBruto.toFixed(3)}</TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">{totalesActuales.pesoNeto.toFixed(3)}</TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">{totalesActuales.desperdicio.toFixed(3)}</TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">100%</TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">{totalesActuales.rendimiento.toFixed(1)}%</TableCell>
+                  <TableCell className="font-extrabold text-[var(--color-brand-500)]">{totalesActuales.merma.toFixed(1)}%</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
+            </Table>
+          </div>
+        </BackofficeTablePanel>
       </StaggerItem>
 
-      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
+      <StaggerItem className="mb-[25px] w-full box-border rounded-[30px] border border-slate-200/90 bg-white p-[25px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
         <div>
           <label
             className="font-semibold text-[var(--color-text-muted)] flex items-center gap-2 mb-2"
@@ -781,80 +792,102 @@ export default function RendimientoPage() {
         </div>
       ) : null}
 
-      <StaggerItem className="se-card p-[25px] mb-[25px] w-full box-border">
-        <div className="flex justify-between items-center flex-wrap gap-4 mb-4 max-[768px]:flex-col max-[768px]:items-stretch">
-          <h3 className="text-[1.1rem] font-bold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
-            <i className="fa-solid fa-clock-rotate-left"></i> Historial de Análisis
-          </h3>
-
-          <div className="flex gap-2.5">
-            <UiSelect
-              value={filtroCategoriaHistorial}
-              onChange={setFiltroCategoriaHistorial}
-              placeholder="Todas las categorías"
-              options={[
-                { value: "", label: "Todas las categorías" },
-                ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
-              ]}
-            />
-          </div>
-        </div>
-
-        <div className="max-h-[400px] overflow-y-auto">
-          {loadingHistorial ? (
-            <p className="text-center text-black p-5 m-0">Cargando historial...</p>
-          ) : registrosFiltradosHistorial.length === 0 ? (
-            <p className="text-center text-black p-5 m-0">El historial de análisis aparecerá aquí</p>
-          ) : (
-            registrosFiltradosHistorial.map((item) => {
-              const claseRend =
-                item.rendimiento >= 75
-                  ? "bg-[#f0fff4] text-[#38a169]"
-                  : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]";
-              const claseMerma =
-                item.merma >= 30
-                  ? "bg-[#fff5f5] text-[#e53e3e]"
-                  : "bg-[var(--color-bg-soft)] text-[var(--color-text-muted)]";
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-center px-4 py-3 border-b border-b-[#f0f4f8] transition-colors hover:bg-[#fafbfc] last:border-b-0 max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-2.5"
-                >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-[var(--color-text-strong)]">
-                      {item.ingrediente}
-                    </span>
-                    <span className="text-[12px] text-[var(--color-text-muted)]">
-                      {item.fecha} · Bruto: {Number(item.pesoBruto).toFixed(3)} kg → Neto:{" "}
-                      {Number(item.pesoNeto).toFixed(3)} kg
-                      {item.observaciones ? ` · ${item.observaciones}` : ""}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-5 items-center max-[768px]:w-full max-[768px]:justify-start">
-                    <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${claseRend}`}>
-                      <i className="fa-solid fa-arrow-up"></i>{" "}
-                      {Number(item.rendimiento).toFixed(1)}%
-                    </span>
-                    <span className={`px-3 py-1 rounded-full text-[12px] font-bold ${claseMerma}`}>
-                      <i className="fa-solid fa-arrow-down"></i>{" "}
-                      {Number(item.merma).toFixed(1)}%
-                    </span>
-                    <button
-                      type="button"
-                      className="se-icon-btn se-icon-btn--danger"
-                      title="Eliminar del historial"
-                      onClick={() => eliminarRegistroHistorial(item.id)}
-                    >
-                      <Trash2 strokeWidth={1.5} size={18} />
-                    </button>
-                  </div>
+      <StaggerItem>
+        <BackofficeTablePanel
+          header={
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 className="m-0 flex items-center gap-2.5 text-[1.1rem] font-bold text-[var(--color-text-strong)]">
+                  <Table2 className="h-5 w-5 text-primary" /> Historial de Análisis
+                </h3>
+              </div>
+              <div className="flex items-center gap-2.5 max-[768px]:w-full">
+                <div className="min-w-[240px] max-[768px]:w-full">
+                  <UiSelect
+                    value={filtroCategoriaHistorial}
+                    onChange={setFiltroCategoriaHistorial}
+                    placeholder="Todas las categorías"
+                    options={[
+                      { value: "", label: "Todas las categorías" },
+                      ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
+                    ]}
+                  />
                 </div>
-              );
-            })
-          )}
-        </div>
+                <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                  {registrosFiltradosHistorial.length} registro(s)
+                </Badge>
+              </div>
+            </div>
+          }
+        >
+          <div className="w-full overflow-x-auto">
+            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+              <TableHeader>
+                <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                  <TableHead className="rounded-l-2xl">Ingrediente</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Bruto / Neto</TableHead>
+                  <TableHead>Rendimiento</TableHead>
+                  <TableHead>Merma</TableHead>
+                  <TableHead>Observaciones</TableHead>
+                  <TableHead className="rounded-r-2xl">Acción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingHistorial ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="py-8 text-center text-slate-500">
+                      Cargando historial...
+                    </TableCell>
+                  </TableRow>
+                ) : registrosFiltradosHistorial.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="py-8 text-center text-slate-500">
+                      El historial de análisis aparecerá aquí
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  registrosFiltradosHistorial.map((item) => (
+                    <TableRow key={item.id} className="bo-table-row">
+                      <TableCell className="text-slate-900">
+                        <strong>{item.ingrediente}</strong>
+                      </TableCell>
+                      <TableCell className="text-sm text-slate-700">{item.fecha}</TableCell>
+                      <TableCell className="text-sm text-slate-700">{item.categoria || "General"}</TableCell>
+                      <TableCell className="text-sm text-slate-700 whitespace-nowrap">
+                        {Number(item.pesoBruto).toFixed(3)} kg → {Number(item.pesoNeto).toFixed(3)} kg
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={item.rendimiento >= 75 ? "success" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                          {Number(item.rendimiento).toFixed(1)}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={item.merma >= 30 ? "destructive" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                          {Number(item.merma).toFixed(1)}%
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="max-w-[280px] truncate text-sm text-slate-600">
+                        {item.observaciones || "-"}
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn text-slate-500"
+                          title="Eliminar del historial"
+                          onClick={() => eliminarRegistroHistorial(item.id)}
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </BackofficeTablePanel>
       </StaggerItem>
 
       <div

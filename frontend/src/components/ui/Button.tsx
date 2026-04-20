@@ -1,60 +1,56 @@
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "success" | "danger" | "ghost";
-  size?: "sm" | "md" | "lg";
+import { cva, type VariantProps } from "class-variance-authority";
+import { forwardRef } from "react";
+import { cn } from "../../lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium leading-none transition-[transform,background-color,border-color,box-shadow,opacity] duration-150 outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  {
+    variants: {
+      variant: {
+        primary: "bg-primary text-white shadow-sm hover:bg-primary/95",
+        secondary: "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300",
+        success: "bg-[#2f9e63] text-white shadow-sm hover:brightness-95",
+        danger: "bg-[#dc2626] text-white shadow-sm hover:brightness-95",
+        ghost: "bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700",
+      },
+      size: {
+        sm: "h-9 px-4 text-sm",
+        md: "h-10 px-4 text-sm",
+        lg: "h-12 px-5 text-sm",
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  },
+);
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   loading?: boolean;
   icon?: string;
 }
 
-export default function Button({
-  variant = "primary",
-  size = "md",
-  loading = false,
-  icon,
-  children,
-  disabled,
-  className = "",
-  ...rest
-}: ButtonProps) {
-  const sizeClass =
-    size === "sm"
-      ? "px-4 py-2 text-sm"
-      : size === "lg"
-        ? "px-5 py-2.5 text-sm"
-        : "px-4 py-2 text-sm";
-
-  const variantClass =
-    variant === "primary"
-      ? "bg-primary text-white shadow-sm hover:opacity-90"
-      : variant === "success"
-        ? "bg-[#2f9e63] text-white shadow-sm hover:opacity-90"
-        : variant === "danger"
-          ? "bg-[#dc2626] text-white shadow-sm hover:opacity-90"
-          : variant === "ghost"
-            ? "bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-            : "bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-gray-300";
-
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant, size, loading = false, icon, children, disabled, className, ...rest },
+  ref,
+) {
   return (
     <button
-      className={[
-        "inline-flex items-center justify-center gap-[var(--space-2)] rounded-lg font-medium whitespace-nowrap no-underline leading-none transition-[transform,box-shadow,opacity,background] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary",
-        sizeClass,
-        variantClass,
-        (disabled || loading) ? "opacity-60 cursor-not-allowed pointer-events-none" : "cursor-pointer",
-        "active:scale-[0.97]",
-        className,
-      ].join(" ")}
+      ref={ref}
+      className={cn(buttonVariants({ variant, size }), className)}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       {...rest}
     >
       {loading ? (
         <span
-          className={[
-            "inline-block w-3.5 h-3.5 rounded-full border-2 animate-spin",
+          className={cn(
+            "inline-block h-3.5 w-3.5 animate-spin rounded-full border-2",
             variant === "secondary" || variant === "ghost"
               ? "border-[var(--color-border-default)] border-t-[var(--color-brand-500)]"
               : "border-white/40 border-t-white",
-          ].join(" ")}
+          )}
           aria-hidden="true"
         />
       ) : icon ? (
@@ -63,4 +59,6 @@ export default function Button({
       {children}
     </button>
   );
-}
+});
+
+export default Button;

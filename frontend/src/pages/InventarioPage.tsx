@@ -2,17 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import { useNavigate } from "react-router-dom";
-import { Boxes, CalendarDays, Plus } from "lucide-react";
+import { Boxes } from "lucide-react";
 import InventarioTable from "../components/inventario/InventarioTable";
 import InventarioToolbar from "../components/inventario/InventarioToolbar";
-import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
+import Skeleton from "../components/ui/Skeleton";
 import { showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
+import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import { queryKeys } from "../lib/queryClient";
 import { getLotesProducto, type LoteProducto } from "../services/lotesService";
-import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
   if (!raw) return null;
@@ -67,6 +67,10 @@ export default function InventarioPage() {
   });
 
   const items: Producto[] = productosQuery.data ?? [];
+  const activeItems = useMemo(
+    () => items.filter((item) => (item as any).activo !== false),
+    [items],
+  );
   const loading = productosQuery.isLoading;
   const productosError = productosQuery.error instanceof Error ? productosQuery.error.message : "";
   const lotesError = lotesQuery.error instanceof Error ? lotesQuery.error.message : "";
@@ -74,29 +78,29 @@ export default function InventarioPage() {
   // “cats” y “provs” para el toolbar (con id fake = nombre)
   const cats = useMemo(() => {
     const map = new Map<string, { id: string; nombre: string }>();
-    items.forEach((p) => {
+    activeItems.forEach((p) => {
       const nombre = String(p.categoria?.nombre ?? "").trim();
       if (!nombre) return;
       const key = nombre.toLowerCase();
       if (!map.has(key)) map.set(key, { id: key, nombre });
     });
     return Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }, [items]);
+  }, [activeItems]);
 
   const provs = useMemo(() => {
     const map = new Map<string, { id: string; nombre: string }>();
-    items.forEach((p) => {
+    activeItems.forEach((p) => {
       const nombre = String(p.proveedor?.nombre ?? "").trim();
       if (!nombre) return;
       const key = nombre.toLowerCase();
       if (!map.has(key)) map.set(key, { id: key, nombre });
     });
     return Array.from(map.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
-  }, [items]);
+  }, [activeItems]);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    let list = items.slice();
+    let list = activeItems.slice();
 
     if (onlyStockBajo) {
       list = list.filter((p) => Number(p.stock ?? 0) <= Number((p as any).stockMinimo ?? LOW_STOCK_THRESHOLD));
@@ -135,7 +139,7 @@ export default function InventarioPage() {
     });
 
     return list;
-  }, [items, q, catId, provId, orden, onlyStockBajo, onlyProximoCaducar]);
+  }, [activeItems, q, catId, provId, orden, onlyStockBajo, onlyProximoCaducar]);
 
   function limpiarFiltros() {
     setQ("");
@@ -158,6 +162,45 @@ export default function InventarioPage() {
 
   async function reintentarCarga() {
     await Promise.all([productosQuery.refetch(), lotesQuery.refetch()]);
+  }
+
+  const resumenInventario = useMemo(() => {
+    const total = activeItems.length;
+    const stockBajo = activeItems.filter((item) => Number(item.stock ?? 0) <= Number((item as any).stockMinimo ?? LOW_STOCK_THRESHOLD)).length;
+    const proximosCaducar = activeItems.filter((item) => {
+      const d = parseFechaCaducidad((item as any).fechaCaducidad);
+      if (!d) return false;
+      const diff = daysUntil(d);
+      return diff >= 0 && diff <= EXPIRING_DAYS_THRESHOLD;
+    }).length;
+    const valorCatalogo = activeItems.reduce((sum, item) => sum + Number(item.precio ?? 0) * Number(item.stock ?? 0), 0);
+
+    return { total, stockBajo, proximosCaducar, valorCatalogo };
+  }, [activeItems]);
+
+  function exportarProductos() {
+    const rows = filtered.map((item) => ({
+      Producto: String(item.nombre ?? ""),
+      Categoria: String(item.categoria?.nombre ?? ""),
+      Precio: Number(item.precio ?? 0),
+      Stock: Number(item.stock ?? 0),
+      Caducidad: String((item as any).fechaCaducidad ?? ""),
+      Proveedor: String(item.proveedor?.nombre ?? ""),
+    }));
+
+    const csv = [
+      Object.keys(rows[0] ?? { Producto: "", Categoria: "", Precio: "", Stock: "", Caducidad: "", Proveedor: "" }).join(";"),
+      ...rows.map((row) => Object.values(row).map((value) => `"${String(value).replace(/"/g, '""')}"`).join(";")),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `inventario-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showNotification("Inventario exportado correctamente.", "success");
   }
 
   useEffect(() => {
@@ -187,38 +230,20 @@ export default function InventarioPage() {
   }, []);
 
   return (
-    <StaggerPage className="mx-auto w-full max-w-[1440px] px-6 pb-8 pt-6 max-[768px]:px-4">
+    <StaggerPage className="mx-auto w-full max-w-[1440px] px-0 pb-8 pt-0">
       <StaggerItem>
-        <div className="mb-8 flex items-center justify-between gap-4 max-[880px]:flex-col max-[880px]:items-start">
-          <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-[22px] bg-[linear-gradient(135deg,rgba(179,49,49,0.12),rgba(179,49,49,0.04))] text-[var(--color-brand-500)] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-              <Boxes className="h-8 w-8" strokeWidth={1.8} />
+        <div className="mb-7">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[18px] border border-[rgba(179,49,49,0.14)] bg-[linear-gradient(145deg,rgba(179,49,49,0.12),rgba(255,255,255,0.96))] text-[var(--color-brand-500)] shadow-[0_8px_20px_rgba(179,49,49,0.12)]">
+              <Boxes className="h-6 w-6" strokeWidth={1.8} />
             </div>
-
-            <div>
-              <h1 className="m-0 text-[40px] font-bold tracking-[-0.03em] text-slate-900 max-[768px]:text-[32px]">
-                Productos
-              </h1>
-              <p className="mt-1 text-[15px] text-slate-500">
-                Gestiona los productos del catálogo, el stock y su presentación comercial.
-              </p>
-            </div>
+            <h1 className="text-[32px] font-extrabold leading-none tracking-[-0.04em] text-slate-900 max-[768px]:text-[26px]">
+              Inventario
+            </h1>
           </div>
-
-          <div className="flex items-center gap-3 max-[880px]:w-full max-[880px]:flex-col max-[880px]:items-stretch">
-            <div className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-slate-500 shadow-sm max-[880px]:justify-center">
-              <CalendarDays className="h-4 w-4" />
-              <span>{hoyES()}</span>
-            </div>
-
-            <button
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--color-brand-500)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-[transform,box-shadow,filter] duration-150 hover:brightness-105 hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(179,49,49,0.24)] max-[880px]:w-full"
-              type="button"
-              onClick={() => nav("/inventario/nuevo")}
-            >
-              <Plus className="h-4 w-4" strokeWidth={2.2} /> Nuevo Producto
-            </button>
-          </div>
+          <p className="mt-1.5 pl-[3.875rem] text-[13.5px] leading-snug text-slate-500">
+            Gestiona los productos del catálogo, el stock y su presentación comercial.
+          </p>
         </div>
       </StaggerItem>
 
@@ -239,13 +264,24 @@ export default function InventarioPage() {
           onlyProximoCaducar={onlyProximoCaducar}
           setOnlyProximoCaducar={setOnlyProximoCaducar}
           onScanBarcode={escanearCodigoBarras}
+          onExportProducts={exportarProductos}
+          onCreateProduct={() => nav("/inventario/nuevo")}
           limpiarFiltros={limpiarFiltros}
         />
       </StaggerItem>
 
       {loading && (
         <StaggerItem>
-          <Spinner label="Cargando productos..." />
+          <div className="space-y-4">
+            <div className="grid gap-3 xl:grid-cols-[minmax(420px,1.8fr)_210px_190px_auto_auto]">
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 rounded-2xl" />
+            </div>
+            <Skeleton className="h-[560px] rounded-[28px]" />
+          </div>
         </StaggerItem>
       )}
       {productosError && (

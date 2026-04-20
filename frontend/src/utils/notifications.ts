@@ -1,18 +1,14 @@
 // frontend/src/utils/notifications.ts
+import { toast } from "sonner";
+
 export type NotificationType = "success" | "error" | "warning" | "info";
+type ConfirmDialogHandler = (options: ConfirmOptions) => Promise<boolean>;
+
+let confirmDialogHandler: ConfirmDialogHandler | null = null;
 
 /* ================================================================
    TOAST — showNotification
    ================================================================ */
-const TOAST_TTL = 4500;
-
-const TOAST_ICONS: Record<NotificationType, string> = {
-  success: "fa-solid fa-circle-check",
-  error:   "fa-solid fa-circle-xmark",
-  warning: "fa-solid fa-triangle-exclamation",
-  info:    "fa-solid fa-circle-info",
-};
-
 function ensureUiOverlayStyles() {
   // Fallback defensivo: si por cualquier motivo el CSS global no cargó,
   // inyectamos estilos mínimos para que confirm/toast sigan siendo modales reales.
@@ -36,44 +32,23 @@ function ensureUiOverlayStyles() {
   document.head.appendChild(style);
 }
 
-function getToastContainer(): HTMLElement {
-  ensureUiOverlayStyles();
-  let el = document.getElementById("ui-toast-container");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "ui-toast-container";
-    document.body.appendChild(el);
-  }
-  return el;
-}
-
-function removeToast(el: HTMLElement) {
-  el.classList.add("ui-toast--hide");
-  setTimeout(() => el.parentNode?.removeChild(el), 320);
-}
-
 export function showNotification(message: string, type: NotificationType = "info") {
-  const container = getToastContainer();
+  const notify =
+    type === "success"
+      ? toast.success
+      : type === "error"
+        ? toast.error
+        : type === "warning"
+          ? toast.warning
+          : toast.info;
 
-  const toast = document.createElement("div");
-  toast.className = `ui-toast ui-toast--${type}`;
-  toast.setAttribute("role", type === "error" ? "alert" : "status");
-  toast.innerHTML = `
-    <i class="${TOAST_ICONS[type]} ui-toast__icon" aria-hidden="true"></i>
-    <span class="ui-toast__msg">${message}</span>
-    <button class="ui-toast__close" aria-label="Cerrar">&times;</button>
-    <span class="ui-toast__bar" aria-hidden="true"></span>
-  `;
-
-  const closeBtn = toast.querySelector(".ui-toast__close") as HTMLButtonElement;
-  const timer = setTimeout(() => removeToast(toast), TOAST_TTL);
-
-  closeBtn.addEventListener("click", () => {
-    clearTimeout(timer);
-    removeToast(toast);
+  notify(message, {
+    duration: 4500,
   });
+}
 
-  container.appendChild(toast);
+export function registerConfirmDialogHandler(handler: ConfirmDialogHandler | null) {
+  confirmDialogHandler = handler;
 }
 
 /* ================================================================
@@ -91,11 +66,16 @@ export type ConfirmOptions = {
 export function showConfirm(
   messageOrOptions: string | ConfirmOptions
 ): Promise<boolean> {
-  ensureUiOverlayStyles();
   const opts: ConfirmOptions =
     typeof messageOrOptions === "string"
       ? { message: messageOrOptions }
       : messageOrOptions;
+
+  if (confirmDialogHandler) {
+    return confirmDialogHandler(opts);
+  }
+
+  ensureUiOverlayStyles();
 
   const {
     title        = "¿Estás seguro?",

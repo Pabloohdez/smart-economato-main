@@ -5,6 +5,10 @@ import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import SearchInput from "../components/ui/SearchInput";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { AlertCircle, CalendarDays, Camera, ClipboardList, Clock3, FileText, History, Mail, Scale, Search, Trash2, Wallet, Wrench } from "lucide-react";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -43,6 +47,14 @@ function claseTipoBaja(tipo: string) {
     Otro: "bg-[var(--color-border-default)] text-[var(--color-text-muted)]",
   };
   return map[tipo] ?? "bg-[var(--color-border-default)] text-[var(--color-text-muted)]";
+}
+
+function variantTipoBaja(tipo: string): "default" | "secondary" | "success" | "warning" | "destructive" | "outline" {
+  if (tipo === "Rotura") return "destructive";
+  if (tipo === "Caducado") return "warning";
+  if (tipo === "Merma") return "warning";
+  if (tipo === "Ajuste") return "secondary";
+  return "outline";
 }
 
 function badgeCaducidad(fechaCaducidad?: string | null) {
@@ -551,21 +563,16 @@ export default function BajasPage() {
 
         <div className="flex flex-col gap-4">
           <div className="flex gap-3 max-[768px]:flex-col">
-            <input
-              type="text"
-              id="inputBusquedaBaja"
-              className="h-12 flex-1 rounded-[18px] border border-gray-300 bg-white px-4 text-sm text-gray-900 shadow-sm transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-              placeholder="Buscar producto por nombre o código de barras..."
-              aria-label="Buscar producto por nombre o código de barras"
+            <SearchInput
               value={q}
-              onChange={(e) => {
-                setQ(e.target.value);
+              onChange={(value) => {
+                setQ(value);
                 setResultadosOpen(true);
                 setModoCaducados(false);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") buscarProductos();
-              }}
+              placeholder="Buscar producto por nombre o código de barras..."
+              ariaLabel="Buscar producto por nombre o código de barras"
+              className="flex-1"
             />
 
 
@@ -598,14 +605,9 @@ export default function BajasPage() {
               ]}
             />
 
-            <button
-              id="btnProductosCaducados"
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
-              type="button"
-              onClick={mostrarProductosCaducados}
-            >
+            <Button id="btnProductosCaducados" type="button" onClick={mostrarProductosCaducados}>
               <Clock3 className="h-4 w-4" /> Ver Productos Próximos a Caducar
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -653,99 +655,100 @@ export default function BajasPage() {
 
       {/* BAJA ACTIVA */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
-        <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
-          <FileText className="h-5 w-5 text-[var(--color-brand-500)]" /> Registro de Baja Actual
-        </h3>
-
+      <BackofficeTablePanel
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+                <FileText className="h-5 w-5 text-[var(--color-brand-500)]" /> Registro de Baja Actual
+              </h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                {productosBaja.length} producto(s)
+              </Badge>
+              <Badge variant="destructive" className="px-3 py-1 text-[11px] font-semibold">
+                Pérdida {totalValorBajas.toFixed(2)} €
+              </Badge>
+            </div>
+          </div>
+        }
+      >
         <div className="overflow-x-auto">
-          <table id="tablaBajas" className="w-full border-separate border-spacing-0 bg-white">
-            <caption className="visually-hidden">Listado de productos dados de baja en la sesión actual</caption>
-            <thead>
-              <tr>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Producto</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Tipo de Baja</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Stock Actual</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Cantidad Baja</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Stock Final</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Precio Unit.</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Valor Perdido</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Acción</th>
-              </tr>
-            </thead>
-
-            <tbody id="tbodyBajas">
+          <Table id="tablaBajas" className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+            <TableHeader>
+              <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                <TableHead className="rounded-l-2xl">Producto</TableHead>
+                <TableHead>Tipo de Baja</TableHead>
+                <TableHead>Stock Actual</TableHead>
+                <TableHead>Cantidad Baja</TableHead>
+                <TableHead>Stock Final</TableHead>
+                <TableHead>Precio Unit.</TableHead>
+                <TableHead>Valor Perdido</TableHead>
+                <TableHead className="rounded-r-2xl">Acción</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody id="tbodyBajas">
               {productosBaja.length === 0 ? (
-                <tr>
-                  <td colSpan={8}>
-                    <div className="text-center text-[#a0aec0] py-[60px] px-5">
-                      <i className="fa-solid fa-inbox text-[48px] mb-[15px] opacity-50" />
-                      <p className="text-[16px] font-semibold m-0 mt-1.5 mb-0.5 text-black">No hay productos registrados en esta baja</p>
-                      <small className="block text-[13px] text-black">Busca y selecciona productos para comenzar</small>
+                <TableRow>
+                  <TableCell colSpan={8} className="py-10 text-center text-slate-400">
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText className="h-8 w-8 opacity-50" />
+                      <p className="m-0 text-[16px] font-semibold text-slate-500">No hay productos registrados en esta baja</p>
+                      <small className="block text-[13px] text-slate-400">Busca y selecciona productos para comenzar</small>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 productosBaja.map((p, index) => (
-                  <tr key={`${String(p.id)}-${index}`} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                  <TableRow key={`${String(p.id)}-${index}`} className="bo-table-row">
+                    <TableCell className="text-sm text-slate-900">
                       <strong>{p.nombre}</strong>
-                      <br />
-                      <small className="text-sm text-gray-500">{p.nombreCategoria}</small>
-                    </td>
-
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      <span className={`inline-block px-3 py-1.5 rounded-lg text-[12px] font-semibold ${claseTipoBaja(p.tipoBaja)}`}>{p.tipoBaja}</span>
-                    </td>
-
-                    <td className="px-4 py-3 text-sm text-gray-500">{p.stock}</td>
-
-                    <td className="px-4 py-3 text-sm font-medium text-primary">
-                      <strong className="text-primary">{p.cantidadBaja}</strong>
-                    </td>
-
-                    <td className="px-4 py-3 text-sm font-medium text-primary">{Number(p.stock) - Number(p.cantidadBaja)}</td>
-
-                    <td className="px-4 py-3 text-sm text-gray-500">{Number(p.precio ?? 0).toFixed(2)} €</td>
-
-                    <td className="px-4 py-3 text-sm font-medium text-primary">
-                      <strong className="text-primary">{p.valorPerdido.toFixed(2)} €</strong>
-                    </td>
-
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                      <div className="mt-0.5 text-xs text-slate-500">{p.nombreCategoria}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={variantTipoBaja(p.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                        {p.tipoBaja}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-slate-600">{p.stock}</TableCell>
+                    <TableCell className="text-sm font-semibold text-primary">{p.cantidadBaja}</TableCell>
+                    <TableCell className="text-sm font-semibold text-primary">{Number(p.stock) - Number(p.cantidadBaja)}</TableCell>
+                    <TableCell className="text-sm text-slate-600">{Number(p.precio ?? 0).toFixed(2)} €</TableCell>
+                    <TableCell className="text-sm font-semibold text-primary">{p.valorPerdido.toFixed(2)} €</TableCell>
+                    <TableCell>
                       <button
-                        className="inline-flex h-9 w-9 min-h-9 min-w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                        className="bo-table-action-btn text-slate-500"
                         type="button"
                         onClick={() => eliminarProductoBaja(index)}
                         aria-label={`Eliminar ${p.nombre}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-
-            <tfoot id="tfootBajas" className={productosBaja.length ? "" : "hidden"}>
-              <tr className="bg-[#fff5f5] text-[16px]">
-                <td colSpan={6}>
+            </TableBody>
+            <TableFooter id="tfootBajas" className={productosBaja.length ? "" : "hidden"}>
+              <TableRow className="bg-[#fff5f5] hover:bg-[#fff5f5]">
+                <TableCell colSpan={6} className="font-bold text-[var(--color-text-strong)]">
                   <strong>VALOR TOTAL DE BAJAS</strong>
-                </td>
-                <td id="totalValorBajas" className="text-[#c53030] text-[20px] font-bold">
+                </TableCell>
+                <TableCell id="totalValorBajas" className="text-[20px] font-bold text-[#c53030]">
                   {totalValorBajas.toFixed(2)} €
-                </td>
-                <td />
-              </tr>
-            </tfoot>
-          </table>
+                </TableCell>
+                <TableCell />
+              </TableRow>
+            </TableFooter>
+          </Table>
         </div>
-      </div>
+      </BackofficeTablePanel>
       </StaggerItem>
 
       {/* ACCIONES */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
+      <div className="mb-[25px] rounded-[24px] border border-[var(--color-border-default)] bg-white p-[25px] shadow-[var(--shadow-sm)]">
         <div className="mb-5">
           <label className="flex items-center gap-2 text-[var(--color-text-muted)] font-semibold mb-2.5 text-[14px]" htmlFor="textareaMotivoBaja">
             <Mail className="h-4 w-4" /> Motivo / Descripción Detallada
@@ -762,33 +765,27 @@ export default function BajasPage() {
         </div>
 
         <div className="flex justify-end gap-4 max-[768px]:flex-col">
-          <button
+          <Button
             id="btnCancelarBaja"
-            className={`px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer inline-flex items-center gap-2.5 border-2 border-[var(--color-border-default)] bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] transition-[transform,background,border-color] duration-200 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
+            variant="secondary"
+            className={`max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
             type="button"
             onClick={cancelarBaja}
             disabled={confirmando}
           >
             <i className="fa-solid fa-xmark" /> Cancelar Registro
-          </button>
+          </Button>
 
-          <button
+          <Button
             id="btnConfirmarBaja"
-            className={`px-[30px] py-[14px] rounded-[10px] font-semibold text-[15px] cursor-pointer inline-flex items-center gap-2.5 border-0 text-white bg-[linear-gradient(135deg,#e53e3e_0%,#c53030_100%)] shadow-[0_4px_15px_rgba(197,48,48,0.3)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(197,48,48,0.4)] disabled:opacity-60 disabled:cursor-not-allowed max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
+            variant="danger"
+            className={`max-[768px]:w-full max-[768px]:justify-center ${productosBaja.length ? "" : "hidden"}`}
             type="button"
             onClick={confirmarBaja}
-            disabled={confirmando}
+            loading={confirmando}
           >
-            {confirmando ? (
-              <>
-                <i className="fa-solid fa-spinner fa-spin" /> Procesando...
-              </>
-            ) : (
-              <>
-                <i className="fa-solid fa-triangle-exclamation" /> CONFIRMAR BAJAS
-              </>
-            )}
-          </button>
+            <i className="fa-solid fa-triangle-exclamation" /> CONFIRMAR BAJAS
+          </Button>
         </div>
       </div>
       </StaggerItem>
@@ -826,91 +823,91 @@ export default function BajasPage() {
 
       {/* HISTORIAL */}
       <StaggerItem>
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] p-[25px] rounded-[22px] shadow-[var(--shadow-sm)] border border-[var(--color-border-default)]">
-        <div className="flex justify-between items-center mb-5 max-[768px]:flex-col max-[768px]:items-stretch max-[768px]:gap-3">
-          <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
-            <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Bajas
-          </h3>
+      <BackofficeTablePanel
+        header={
+          <div className="flex justify-between items-center gap-3 max-[768px]:flex-col max-[768px]:items-stretch">
+            <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+              <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Bajas
+            </h3>
 
-          <div className="flex gap-2.5">
-            <UiSelect
-              id="selectFiltroTipoBaja"
-              value={filtroTipoHistorial}
-              onChange={setFiltroTipoHistorial}
-              options={[
-                { value: "", label: "Todos los tipos" },
-                { value: "Rotura", label: "Roturas" },
-                { value: "Caducado", label: "Caducados" },
-                { value: "Merma", label: "Mermas" },
-                { value: "Ajuste", label: "Ajustes" },
-                { value: "Otro", label: "Otros" },
-              ]}
-            />
+            <div className="flex items-center gap-2.5 max-[768px]:w-full">
+              <UiSelect
+                id="selectFiltroTipoBaja"
+                value={filtroTipoHistorial}
+                onChange={setFiltroTipoHistorial}
+                options={[
+                  { value: "", label: "Todos los tipos" },
+                  { value: "Rotura", label: "Roturas" },
+                  { value: "Caducado", label: "Caducados" },
+                  { value: "Merma", label: "Mermas" },
+                  { value: "Ajuste", label: "Ajustes" },
+                  { value: "Otro", label: "Otros" },
+                ]}
+              />
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                {historialFiltrado.length} registro(s)
+              </Badge>
+            </div>
           </div>
-        </div>
-
+        }
+      >
         <div id="contenedorHistorial" className="min-h-[200px]">
           {loadingHistorial ? (
             <div className="py-3">
               <Spinner size="sm" label="Cargando historial..." />
             </div>
           ) : historialFiltrado.length === 0 ? (
-            <p className="text-center text-[#666] p-5 m-0">
+            <p className="m-0 p-5 text-center text-[#666]">
               No hay bajas registradas este mes
             </p>
           ) : (
-            <div className="max-h-[400px] overflow-y-auto">
-              {historialFiltrado.map((baja, idx) => {
-                const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
-                const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
-                const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
-                const total = precio * cant;
+            <div className="overflow-x-auto">
+              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                <TableHeader>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                    <TableHead className="rounded-l-2xl">Producto</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead>Usuario</TableHead>
+                    <TableHead>Precio Ud.</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead className="rounded-r-2xl">Motivo</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {historialFiltrado.map((baja, idx) => {
+                    const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
+                    const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
+                    const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
+                    const total = precio * cant;
 
-                return (
-                  <div
-                    key={idx}
-                    className="bg-white border border-[#e2e8f0] rounded-lg p-[15px] mb-2.5"
-                  >
-                    <div className="flex justify-between items-start mb-2.5 gap-4">
-                      <div>
-                        <strong className="text-[16px]">{baja.producto_nombre || "Producto desconocido"}</strong>
-                        <div className="mt-1">
-                          <span className={`inline-block px-3 py-1.5 rounded-lg text-[12px] font-semibold ${claseTipoBaja(baja.tipoBaja)}`}>{baja.tipoBaja}</span>
-                        </div>
-                      </div>
-
-                      <div className="text-right text-[#718096] text-[14px]">
-                        <div>{fecha}</div>
-                        <div>{hora}</div>
-                      </div>
-                    </div>
-
-                    <div
-                      className="grid grid-cols-2 gap-2.5 text-[14px] text-[#4a5568] max-[640px]:grid-cols-1"
-                    >
-                      <div>
-                        <strong>Cantidad:</strong> {cant}
-                      </div>
-                      <div>
-                        <strong>Usuario:</strong> {baja.usuario_nombre || "Desconocido"}
-                      </div>
-                      <div>
-                        <strong>Precio Ud.:</strong> {precio.toFixed(2)} €
-                      </div>
-                      <div>
-                        <strong>Total:</strong> {total.toFixed(2)} €
-                      </div>
-                      <div className="col-span-2 max-[640px]:col-span-1">
-                        <strong>Motivo:</strong> {baja.motivo || "Sin especificar"}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    return (
+                      <TableRow key={idx} className="bo-table-row">
+                        <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
+                        <TableCell>
+                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                            {baja.tipoBaja}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-600">
+                          <div>{fecha}</div>
+                          <div className="text-xs text-slate-400">{hora}</div>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-700">{cant}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
+                        <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
+                        <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
-      </div>
+      </BackofficeTablePanel>
       </StaggerItem>
 
       {/* MODAL */}

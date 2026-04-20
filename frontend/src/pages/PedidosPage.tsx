@@ -14,6 +14,10 @@ import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import UiSelect from "../components/ui/UiSelect";
 import { crearProductoMinimo } from "../services/productosService";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import Button from "../components/ui/Button";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -452,21 +456,22 @@ export default function PedidosPage() {
               <span>{hoyES()}</span>
             </div>
 
-            <button
+            <Button
               type="button"
-              className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background] duration-200 hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-500)_100%)] max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5"
+              className="max-[900px]:w-full max-[900px]:justify-center"
               onClick={irANuevoPedido}
             >
               <i className="fa-solid fa-plus"></i> Nuevo Pedido
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
-              className="min-h-11 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-200 whitespace-nowrap max-[900px]:w-full max-[900px]:justify-center inline-flex items-center gap-2.5 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
+              variant="secondary"
+              className="max-[900px]:w-full max-[900px]:justify-center"
               onClick={irAHistorial}
             >
               <i className="fa-solid fa-list"></i> Ver Historial
-            </button>
+            </Button>
           </div>
         </div>
       </StaggerItem>
@@ -496,8 +501,8 @@ export default function PedidosPage() {
 
       {vista === "lista" && (
         <StaggerItem>
-          <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
-          <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5">Historial de Pedidos</h3>
+          <div className="mb-[25px]">
+          <h3 className="mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 text-[18px] text-[var(--color-text-strong)]">Historial de Pedidos</h3>
 
           {loadingPedidos && <Spinner label="Cargando pedidos..." />}
 
@@ -518,17 +523,32 @@ export default function PedidosPage() {
 
       {vista === "nuevo" && (
         <StaggerItem>
-          <div className="bg-[var(--color-bg-surface)] border border-black/5 rounded-xl p-[25px] shadow-[var(--shadow-sm)] mb-[25px]">
-          <h3 className="text-[18px] text-[var(--color-text-strong)] m-0 mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 flex items-center gap-2">
-            <i className="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido
-          </h3>
+          <BackofficeTablePanel
+            className="mb-[25px]"
+            header={
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="m-0 flex items-center gap-2 text-[18px] text-[var(--color-text-strong)]">
+                  <i className="fa-solid fa-cart-shopping"></i> Crear Nuevo Pedido
+                </h3>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <Badge variant="outline" className="px-3 py-1 text-[11px] font-semibold">
+                    {itemsPedido.length} item(s)
+                  </Badge>
+                  <Badge variant="secondary" className="px-3 py-1 text-[11px] font-semibold">
+                    Total: {totalPedido.toFixed(2)} €
+                  </Badge>
+                </div>
+              </div>
+            }
+            bodyClassName="space-y-5"
+          >
 
           {loadingNuevo && <Spinner label="Cargando datos..." />}
 
           {!loadingNuevo && (
             <>
-              <div className="form-row">
-                <div className="form-group" style={{ flex: 1 }}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex flex-col gap-2">
                   <label htmlFor="selectProveedor">Proveedor:</label>
                   <UiSelect
                     id="selectProveedor"
@@ -542,7 +562,7 @@ export default function PedidosPage() {
                   />
                 </div>
 
-                <div className="form-group" style={{ flex: 1 }}>
+                <div className="flex flex-col gap-2">
                   <label htmlFor="fechaPedido">Fecha:</label>
                   <input
                     type="date"
@@ -557,80 +577,88 @@ export default function PedidosPage() {
 
               <div className="grid grid-cols-[1fr_1.5fr] gap-[30px] mt-5 max-[900px]:grid-cols-1">
                 <div>
-                  <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <h4 className="m-0">Productos Disponibles</h4>
-                    <button
-                      type="button"
-                      className="min-h-10 bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-4 py-2 rounded-[10px] font-semibold cursor-pointer transition-[background,border-color] duration-150 whitespace-nowrap hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] inline-flex items-center gap-2"
-                      onClick={() => {
-                        if (!proveedorId) {
-                          showNotification("Selecciona un proveedor antes.", "warning");
-                          return;
-                        }
-                        setManualOpen(true);
-                      }}
-                    >
-                      <i className="fa-solid fa-plus" /> Producto manual
-                    </button>
-                  </div>
-
-                  <div className="border-2 border-[var(--color-border-default)] h-[400px] overflow-y-auto bg-white rounded-[10px]">
+                  <BackofficeTablePanel
+                    header={
+                      <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <h4 className="m-0 text-[16px] font-semibold text-[var(--color-text-strong)]">Productos Disponibles</h4>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => {
+                            if (!proveedorId) {
+                              showNotification("Selecciona un proveedor antes.", "warning");
+                              return;
+                            }
+                            setManualOpen(true);
+                          }}
+                        >
+                          <i className="fa-solid fa-plus" /> Producto manual
+                        </Button>
+                      </div>
+                    }
+                    bodyClassName="p-0"
+                  >
+                  <div className="h-[400px] overflow-y-auto bg-white">
                     {!proveedorId && (
-                      <p className="text-[var(--color-text-muted)] p-3">Selecciona un proveedor primero</p>
+                      <p className="p-4 text-[var(--color-text-muted)]">Selecciona un proveedor primero</p>
                     )}
 
                     {proveedorId && productosFiltrados.length === 0 && (
-                      <p className="text-[var(--color-text-muted)] p-3">No hay productos asociados a este proveedor</p>
+                      <p className="p-4 text-[var(--color-text-muted)]">No hay productos asociados a este proveedor</p>
                     )}
 
                     {proveedorId &&
                       productosFiltrados.map((p) => (
-                        <div className="flex justify-between items-center gap-3 px-[15px] py-4 border-b border-[var(--color-border-default)] text-[14px] hover:bg-[var(--color-bg-soft)]" key={String(p.id)}>
-                          <span className="flex-1">{p.nombre}</span>
-                          <strong className="whitespace-nowrap">{Number(p.precio).toFixed(2)} €</strong>
-                          <button className="bg-[var(--color-brand-500)] text-white border-0 w-11 min-w-11 h-11 rounded-lg font-bold cursor-pointer" type="button" onClick={() => agregarItem(p)}>
+                        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 text-[14px] transition-colors hover:bg-slate-50" key={String(p.id)}>
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate font-medium text-[var(--color-text-strong)]">{p.nombre}</div>
+                            <div className="mt-1 text-[12px] text-[var(--color-text-muted)]">{Number(p.precio).toFixed(2)} € / {normalizarUnidad((p as any).unidadMedida || "ud")}</div>
+                          </div>
+                          <Button type="button" className="h-11 w-11 min-w-11 px-0" onClick={() => agregarItem(p)}>
                             +
-                          </button>
+                          </Button>
                         </div>
                       ))}
                   </div>
+                  </BackofficeTablePanel>
                 </div>
 
                 <div>
-                  <h4>Items del Pedido</h4>
+                  <BackofficeTablePanel
+                    header={<h4 className="m-0 text-[16px] font-semibold text-[var(--color-text-strong)]">Items del Pedido</h4>}
+                    footer={
+                      <div className="p-4">
+                        <Button
+                          type="button"
+                          variant="success"
+                          className="w-full"
+                          onClick={guardarPedido}
+                          disabled={guardando}
+                        >
+                          {guardando ? "Guardando..." : "Confirmar Pedido"}
+                        </Button>
+                      </div>
+                    }
+                  >
+                    <Table className="min-w-[720px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                      <TableHeader>
+                        <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                          <TableHead className="rounded-l-2xl">Producto</TableHead>
+                          <TableHead>Unidad</TableHead>
+                          <TableHead>Cant.</TableHead>
+                          <TableHead>Precio</TableHead>
+                          <TableHead>Total</TableHead>
+                          <TableHead className="rounded-r-2xl">Acción</TableHead>
+                        </TableRow>
+                      </TableHeader>
 
-                  <div className="w-full overflow-x-auto rounded-[10px] border border-[var(--color-border-default)] bg-white">
-                    <table className="w-full min-w-[720px] border-collapse text-[14px]">
-                      <thead className="bg-[var(--color-bg-soft)]">
-                        <tr>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)]">
-                            Producto
-                          </th>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)]">
-                            Unidad
-                          </th>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                            Cant.
-                          </th>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                            Precio
-                          </th>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                            Total
-                          </th>
-                          <th className="text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] px-4 py-3 border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                            Acción
-                          </th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
+                      <TableBody>
                         {itemsPedido.length === 0 && (
-                          <tr>
-                            <td colSpan={6} className="px-4 py-5 text-[var(--color-text-muted)]">
+                          <TableRow>
+                            <TableCell colSpan={6} className="py-6 text-[var(--color-text-muted)]">
                               No hay productos añadidos al pedido.
-                            </td>
-                          </tr>
+                            </TableCell>
+                          </TableRow>
                         )}
 
                         {itemsPedido.map((item, idx) => {
@@ -640,9 +668,9 @@ export default function PedidosPage() {
                           const subtotal = item.cantidad * factor * item.precio;
 
                           return (
-                            <tr key={`${item.producto_id}-${idx}`} className="border-b border-[var(--color-border-default)] last:border-b-0">
-                              <td className="px-4 py-3">{item.nombre}</td>
-                              <td className="px-4 py-3 min-w-[180px]">
+                            <TableRow key={`${item.producto_id}-${idx}`} className="bo-table-row">
+                              <TableCell className="font-medium text-[var(--color-text-strong)]">{item.nombre}</TableCell>
+                              <TableCell className="min-w-[180px]">
                                 <UiSelect
                                   value={unidad}
                                   onChange={(v) => cambiarUnidad(idx, v)}
@@ -651,59 +679,51 @@ export default function PedidosPage() {
                                     label: u.label,
                                   }))}
                                 />
-                              </td>
-                              <td className="px-4 py-3">
+                              </TableCell>
+                              <TableCell>
                                 <input
                                   type="number"
                                   min={minDeUnidad(unidad)}
                                   step={stepDeUnidad(unidad)}
                                   value={item.cantidad}
-                                  className="w-[80px] py-1.5 px-2 border border-[var(--color-border-strong)] rounded-lg"
+                                  className="w-[96px] rounded-lg border border-[var(--color-border-strong)] px-3 py-2"
                                   onChange={(e) => cambiarCantidad(idx, e.target.value)}
                                 />
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap">{item.precio.toFixed(2)} €</td>
-                              <td className="px-4 py-3 whitespace-nowrap">{subtotal.toFixed(2)} €</td>
-                              <td className="px-4 py-3">
+                              </TableCell>
+                              <TableCell className="whitespace-nowrap">{item.precio.toFixed(2)} €</TableCell>
+                              <TableCell className="whitespace-nowrap font-semibold text-[var(--color-text-strong)]">{subtotal.toFixed(2)} €</TableCell>
+                              <TableCell>
                                 <button
                                   type="button"
-                                  className="bg-[#e53e3e] text-white border-0 w-11 min-w-11 h-11 rounded-lg cursor-pointer font-bold"
+                                  className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
                                   onClick={() => borrarItem(idx)}
+                                  aria-label={`Eliminar ${item.nombre}`}
                                 >
                                   x
                                 </button>
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
                           );
                         })}
-                      </tbody>
+                      </TableBody>
 
-                      <tfoot className="bg-[var(--color-bg-soft)]">
-                        <tr>
-                          <td colSpan={4} className="px-4 py-3 text-right font-semibold">
+                      <TableFooter>
+                        <TableRow className="hover:bg-[var(--color-bg-soft)]">
+                          <TableCell colSpan={4} className="text-right font-semibold">
                             Total Estimado:
-                          </td>
-                          <td colSpan={2} className="px-4 py-3 font-extrabold whitespace-nowrap">
+                          </TableCell>
+                          <TableCell colSpan={2} className="font-extrabold whitespace-nowrap text-[var(--color-text-strong)]">
                             {totalPedido.toFixed(2)} €
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="w-full mt-5 py-[15px] bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white border-0 rounded-[10px] font-semibold cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                    onClick={guardarPedido}
-                    disabled={guardando}
-                  >
-                    {guardando ? "Guardando..." : "Confirmar Pedido"}
-                  </button>
+                          </TableCell>
+                        </TableRow>
+                      </TableFooter>
+                    </Table>
+                  </BackofficeTablePanel>
                 </div>
               </div>
             </>
           )}
-          </div>
+          </BackofficeTablePanel>
         </StaggerItem>
       )}
 

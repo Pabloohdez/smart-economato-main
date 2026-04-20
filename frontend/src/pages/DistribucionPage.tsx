@@ -20,6 +20,9 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useScaleSerial } from "../hooks/useScaleSerial";
 import UiSelect from "../components/ui/UiSelect";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 
 type CarritoItem = {
   productoId: number | string;
@@ -677,53 +680,18 @@ export default function DistribucionPage() {
         </div>
 
         {/* Panel Der */}
-        <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] min-h-[500px] flex flex-col">
-          <div className="flex items-center justify-between gap-3 pb-[15px] mb-5 border-b-2 border-[var(--color-border-default)]">
-            <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Lista de Salida</h3>
-            <span className="inline-flex items-center justify-center min-h-7 px-3 py-1 rounded-full bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] font-bold text-[12px]">
-              {carrito.length} items
-            </span>
-          </div>
-
-          <div className="flex-1">
-            <table className="w-full border-collapse mt-3.5">
-              <thead>
-                <tr>
-                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Producto</th>
-                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Cant.</th>
-                  <th scope="col" className="text-left bg-white p-3 border-b-2 border-[var(--color-border-default)] text-[#50596D] font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {carrito.length === 0 ? (
-                  <tr>
-                    <td colSpan={3} className="text-center py-5 px-4 text-[var(--color-text-muted)]">
-                      La lista está vacía
-                    </td>
-                  </tr>
-                ) : (
-                  carrito.map((item, index) => (
-                    <tr key={`${String(item.productoId)}-${index}`}>
-                      <td className="p-3 border-b border-[var(--color-border-default)] text-[var(--color-text-strong)]">{item.nombre}</td>
-                      <td className="p-3 border-b border-[var(--color-border-default)] text-[var(--color-text-strong)]">{item.cantidad} {item.unidad ?? ""}</td>
-                      <td>
-                        <button
-                          type="button"
-                          className="bg-[#fff5f5] text-[#e53e3e] w-8 h-8 rounded-md border-0 cursor-pointer inline-flex items-center justify-center transition-colors hover:bg-[#fed7d7]"
-                          onClick={() => eliminarDelCarrito(index)}
-                          aria-label={`Eliminar ${item.nombre}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-auto pt-5 border-t-2 border-[var(--color-border-default)]">
+        <BackofficeTablePanel
+          className="min-h-[500px]"
+          header={
+            <div className="flex items-center justify-between gap-3">
+              <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Lista de Salida</h3>
+              <Badge variant="outline" className="px-3 py-1 text-[11px] font-semibold">
+                {carrito.length} items
+              </Badge>
+            </div>
+          }
+          footer={
+            <div className="p-4">
             <div className="mb-4">
               <label htmlFor="motivoSalida" className="block mb-2 font-semibold text-[#50596D] text-[14px]">
                 Destino / Motivo:
@@ -742,60 +710,91 @@ export default function DistribucionPage() {
               />
             </div>
 
-            <button
-              className="w-full mt-3.5 py-[14px] rounded-[10px] border-0 cursor-pointer font-semibold text-white bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] shadow-[0_4px_15px_rgba(56,161,105,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(56,161,105,0.4)] inline-flex items-center justify-center gap-2"
-              type="button"
-              onClick={confirmarSalida}
-            >
+            <Button className="w-full mt-3.5" variant="success" type="button" onClick={confirmarSalida}>
               <Check className="h-4 w-4" /> Confirmar Salida
-            </button>
+            </Button>
+            </div>
+          }
+        >
+          <div className="flex-1">
+            <Table className="mt-1 overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+              <TableHeader>
+                <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                  <TableHead className="rounded-l-2xl">Producto</TableHead>
+                  <TableHead>Cant.</TableHead>
+                  <TableHead className="rounded-r-2xl">Acción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {carrito.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="py-6 text-center text-[var(--color-text-muted)]">
+                      La lista está vacía
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  carrito.map((item, index) => (
+                    <TableRow key={`${String(item.productoId)}-${index}`} className="bo-table-row">
+                      <TableCell className="font-medium text-[var(--color-text-strong)]">{item.nombre}</TableCell>
+                      <TableCell className="text-[var(--color-text-strong)]">{item.cantidad} {item.unidad ?? ""}</TableCell>
+                      <TableCell>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
+                          onClick={() => eliminarDelCarrito(index)}
+                          aria-label={`Eliminar ${item.nombre}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        </div>
+        </BackofficeTablePanel>
       </div>
 
       {/* Historial */}
-      <div className="bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border border-[var(--color-border-default)] rounded-[22px] p-[25px] shadow-[var(--shadow-sm)] mt-5">
-        <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 pb-[15px] border-b-2 border-[var(--color-border-default)] flex items-center gap-2.5">
-          <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Movimientos
-        </h3>
-
-        <div className="rounded-[10px] border border-[var(--color-border-default)] max-h-[400px] overflow-y-auto overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-[14px]">
-            <thead className="sticky top-0 bg-white z-[1]">
-              <tr>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                  Fecha
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                  Hora
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)]">
-                  Producto
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                  Cantidad
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)]">
-                  Destino
-                </th>
-                <th className="px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] border-b-2 border-[var(--color-border-default)] whitespace-nowrap">
-                  Usuario
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+      <BackofficeTablePanel
+        className="mt-5"
+        header={
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+              <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Movimientos
+            </h3>
+            <Badge variant="outline" className="px-3 py-1 text-[11px] font-semibold">
+              {historial.length} registro(s)
+            </Badge>
+          </div>
+        }
+      >
+        <div className="max-h-[400px] overflow-y-auto">
+          <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+            <TableHeader className="sticky top-0 z-[1] bg-white">
+              <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                <TableHead className="rounded-l-2xl">Fecha</TableHead>
+                <TableHead>Hora</TableHead>
+                <TableHead>Producto</TableHead>
+                <TableHead>Cantidad</TableHead>
+                <TableHead>Destino</TableHead>
+                <TableHead className="rounded-r-2xl">Usuario</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {loadingHistorial ? (
-                <tr>
-                  <td colSpan={6} className="py-4 px-0">
+                <TableRow>
+                  <TableCell colSpan={6} className="py-4 text-center">
                     <Spinner size="sm" label="Cargando historial..." />
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : historial.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-5 px-4 text-[#666]">
+                <TableRow>
+                  <TableCell colSpan={6} className="py-6 text-center text-[#666]">
                     No hay salidas registradas
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 historial.map((mov, idx) => {
                   const { fecha, hora } = formatFechaHora(mov.fecha);
@@ -803,29 +802,29 @@ export default function DistribucionPage() {
                   const cls = badgeDestinoClass(motivoTxt);
 
                   return (
-                    <tr key={idx} className="transition-[background,box-shadow] duration-150 border-b border-[var(--color-border-default)] hover:bg-[#fff5f5] hover:shadow-[-4px_0_0_0_var(--color-brand-500)]">
-                      <td data-label="Fecha" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{fecha}</td>
-                      <td data-label="Hora" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{hora}</td>
-                      <td data-label="Producto" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{mov.producto_nombre || "Producto desconocido"}</td>
-                      <td data-label="Cantidad" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">{mov.cantidad}</td>
-                      <td data-label="Destino" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">
-                        <span className={`inline-block px-3 py-1.5 rounded-[20px] text-[12px] font-normal uppercase tracking-[0.5px] ${cls}`}>
+                    <TableRow key={idx} className="bo-table-row">
+                      <TableCell className="text-center text-[var(--color-text-muted)]">{fecha}</TableCell>
+                      <TableCell className="text-center text-[var(--color-text-muted)]">{hora}</TableCell>
+                      <TableCell className="text-center text-[var(--color-text-muted)]">{mov.producto_nombre || "Producto desconocido"}</TableCell>
+                      <TableCell className="text-center text-[var(--color-text-muted)]">{mov.cantidad}</TableCell>
+                      <TableCell className="text-center text-[var(--color-text-muted)]">
+                        <span className={`inline-block rounded-[20px] px-3 py-1.5 text-[12px] font-normal uppercase tracking-[0.5px] ${cls}`}>
                           {motivoTxt}
                         </span>
-                      </td>
-                      <td data-label="Usuario" className="py-[14px] px-5 text-[var(--color-text-muted)] text-center">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[var(--color-border-default)] rounded-xl text-[12px] text-[var(--color-text-muted)] font-normal">
+                      </TableCell>
+                      <TableCell className="text-center text-[var(--color-text-muted)]">
+                        <span className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-border-default)] px-2.5 py-1 text-[12px] font-normal text-[var(--color-text-muted)]">
                           {mov.usuario_nombre || "Desconocido"}
                         </span>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-        </div>
+      </BackofficeTablePanel>
       </StaggerItem>
     </StaggerPage>
   );

@@ -428,7 +428,7 @@ export default function ConfiguracionPage() {
       </StaggerItem>
 
       {tabActiva === "perfil" && (
-        <StaggerItem className="se-card p-[30px]">
+        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
           <h2 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-id-card" /> Información Personal
           </h2>
@@ -543,7 +543,7 @@ export default function ConfiguracionPage() {
             </div>
           </StaggerItem>
 
-          <StaggerItem className="se-card p-[30px]">
+          <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
             <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
               <i className="fa-solid fa-triangle-exclamation" /> Mis Alergias Registradas
             </h3>
@@ -635,7 +635,7 @@ export default function ConfiguracionPage() {
       )}
 
       {tabActiva === "notificaciones" && (
-        <StaggerItem className="se-card p-[30px]">
+        <StaggerItem className="rounded-[30px] border border-slate-200/90 bg-white p-[30px] shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
           <h3 className="m-0 mb-[25px] flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
             <i className="fa-solid fa-bell" /> Preferencias de Alertas
           </h3>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Alert from "../components/ui/Alert";
 import EmptyState from "../components/ui/EmptyState";
 import Button from "../components/ui/Button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { showConfirm } from "../utils/notifications";
 import UiSelect from "../components/ui/UiSelect";
 
@@ -387,52 +388,52 @@ export default function IngresarProductoPage() {
         </h3>
 
         <div className="overflow-x-auto rounded-xl border border-black/5 shadow-[var(--shadow-sm)]">
-          <table className="w-full border-separate border-spacing-0 bg-[var(--color-bg-surface)]">
-          <thead>
-            <tr>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Nombre</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Categoría</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Precio</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Stock</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-left font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Proveedor</th>
-              <th className="bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] p-4 text-center font-semibold text-[13px] border-b-2 border-b-[var(--color-border-default)]">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
+          <Table className="overflow-hidden rounded-xl bg-[var(--color-bg-surface)]">
+          <TableHeader>
+            <TableRow className="bg-[var(--color-bg-soft)] hover:bg-[var(--color-bg-soft)]">
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Nombre</TableHead>
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Categoría</TableHead>
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Precio</TableHead>
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Stock</TableHead>
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Proveedor</TableHead>
+              <TableHead className="text-center text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Acción</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {listaTemporal.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="p-5">
+              <TableRow>
+                <TableCell colSpan={6} className="p-5">
                   <EmptyState
                     icon="fa-solid fa-box-open"
                     title="Lista vacía"
                     description="Agrega productos para previsualizar antes de confirmar la importación."
                   />
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               listaTemporal.map((prod, index) => (
-                <tr key={`${prod.codigoBarras}-${index}`} className="border-b border-b-[var(--color-border-default)] last:border-b-0 hover:bg-[#fafbfc]">
-                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod.nombre}</td>
-                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod._tempCategoriaNombre}</td>
-                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">
+                <TableRow key={`${prod.codigoBarras}-${index}`} className="bo-table-row">
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.nombre}</TableCell>
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempCategoriaNombre}</TableCell>
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">
                     {prod.precio.toFixed(2)} €/{prod.unidadMedida || "ud"}
-                  </td>
-                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod.stock}</td>
-                  <td className="px-4 py-3 text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</td>
-                  <td className="px-4 py-3 text-center">
+                  </TableCell>
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.stock}</TableCell>
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</TableCell>
+                  <TableCell className="text-center">
                     <button
                       type="button"
-                      className="bg-[#fff5f5] text-[#e53e3e] border-0 w-8 h-8 rounded-lg cursor-pointer transition-transform duration-200 inline-flex items-center justify-center shadow-[0_2px_4px_rgba(229,62,62,0.1)] hover:bg-[#fed7d7] hover:scale-105"
+                      className="bo-table-action-btn inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#e53e3e] shadow-[0_2px_4px_rgba(229,62,62,0.1)] transition-transform duration-200 hover:scale-105 hover:bg-[#fed7d7]"
                       onClick={() => borrarFila(index)}
                     >
                       <i className="fa-solid fa-xmark"></i>
                     </button>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-          </table>
+          </TableBody>
+          </Table>
         </div>
       </div>
 

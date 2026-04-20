@@ -8,7 +8,12 @@ import UiSelect from "../components/ui/UiSelect";
 import SearchInput from "../components/ui/SearchInput";
 import TablePagination from "../components/ui/TablePagination";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
-import { Eye } from "lucide-react";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import Button from "../components/ui/Button";
+import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { CalendarDays, ClipboardList, Eye, Users } from "lucide-react";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -201,18 +206,17 @@ export default function AuditoriaPage() {
   }
 
   function getAccionBadge(accion: string) {
-    const badges: Record<string, { clase: string; icono: string; texto: string }> = {
-      MOVIMIENTO: { clase: "bg-[#e6f7ff] text-[#0066cc]", icono: "fa-arrows-rotate", texto: "Movimiento" },
-      PEDIDO: { clase: "bg-[#f0f9ff] text-[#0284c7]", icono: "fa-shopping-cart", texto: "Pedido" },
-      BAJA: { clase: "bg-[#fff1f2] text-[#e11d48]", icono: "fa-trash", texto: "Baja" },
-      CREAR_PRODUCTO: { clase: "bg-[#f0fdf4] text-[#16a34a]", icono: "fa-plus", texto: "Crear Producto" },
-      MODIFICAR_PRODUCTO: { clase: "bg-[#fef3c7] text-[#d97706]", icono: "fa-edit", texto: "Modificar Producto" },
-      ELIMINAR_PRODUCTO: { clase: "bg-[#fef2f2] text-[#dc2626]", icono: "fa-times", texto: "Eliminar Producto" },
+    const badges: Record<string, { variant: "default" | "secondary" | "success" | "warning" | "destructive" | "outline"; texto: string }> = {
+      MOVIMIENTO: { variant: "secondary", texto: "Movimiento" },
+      PEDIDO: { variant: "outline", texto: "Pedido" },
+      BAJA: { variant: "destructive", texto: "Baja" },
+      CREAR_PRODUCTO: { variant: "success", texto: "Crear Producto" },
+      MODIFICAR_PRODUCTO: { variant: "warning", texto: "Modificar Producto" },
+      ELIMINAR_PRODUCTO: { variant: "destructive", texto: "Eliminar Producto" },
     };
     return (
       badges[accion] ?? {
-        clase: "bg-[#e6f7ff] text-[#0066cc]",
-        icono: "fa-question",
+        variant: "outline",
         texto: accion,
       }
     );
@@ -257,7 +261,7 @@ export default function AuditoriaPage() {
       <div>
         <div className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
           <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
-            <i className="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
+            <ClipboardList className="h-7 w-7 text-primary" /> REGISTRO DE AUDITORÍA
           </h1>
           <p className="text-[14px] text-[var(--color-text-muted)] m-0">
             Historial completo de actividades del sistema
@@ -277,14 +281,14 @@ export default function AuditoriaPage() {
     <StaggerPage className="w-full">
       <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
         <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
-          <i className="fa-solid fa-clipboard-list"></i> REGISTRO DE AUDITORÍA
+          <ClipboardList className="h-7 w-7 text-primary" /> REGISTRO DE AUDITORÍA
         </h1>
         <p className="text-[14px] text-[var(--color-text-muted)] m-0">
           Historial completo de actividades del sistema
         </p>
       </StaggerItem>
 
-      <StaggerItem className="se-card mb-6 p-6">
+      <StaggerItem className="mb-6 rounded-[30px] border border-slate-200/90 bg-white p-6 shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
         <div className="flex flex-wrap gap-5 items-end">
           <div className="flex flex-col gap-2 flex-1 min-w-[220px] max-[768px]:min-w-0 max-[768px]:w-full">
             <label htmlFor="filtroAccion" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
@@ -327,10 +331,10 @@ export default function AuditoriaPage() {
             <label htmlFor="filtroFechaDesde" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-calendar"></i> Desde
             </label>
-            <input
+            <Input
               type="date"
               id="filtroFechaDesde"
-              className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[var(--radius-sm)] text-[14px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
+              className="h-12 rounded-xl"
               value={filtros.fechaDesde}
               onChange={(e) =>
                 setFiltros((prev) => ({ ...prev, fechaDesde: e.target.value }))
@@ -342,10 +346,10 @@ export default function AuditoriaPage() {
             <label htmlFor="filtroFechaHasta" className="font-semibold text-[13px] text-[var(--color-text-muted)] flex items-center gap-1.5">
               <i className="fa-solid fa-calendar"></i> Hasta
             </label>
-            <input
+            <Input
               type="date"
               id="filtroFechaHasta"
-              className="w-full px-4 py-3 border-2 border-[var(--color-border-default)] rounded-[var(--radius-sm)] text-[14px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-150 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_3px_rgba(179,49,49,0.1)] focus:outline-none"
+              className="h-12 rounded-xl"
               value={filtros.fechaHasta}
               onChange={(e) =>
                 setFiltros((prev) => ({ ...prev, fechaHasta: e.target.value }))
@@ -354,39 +358,38 @@ export default function AuditoriaPage() {
           </div>
 
           <div className="flex gap-3 items-stretch flex-wrap self-end max-[768px]:w-full max-[768px]:flex-col">
-            <button
+            <Button
               type="button"
               id="btnAplicarFiltros"
-              className="h-11 px-5 rounded-[var(--radius-sm)] font-semibold text-[14px] cursor-pointer inline-flex items-center gap-2 border-0 text-white bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] shadow-[0_4px_12px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(179,49,49,0.4)] hover:brightness-105 max-[768px]:w-full max-[768px]:justify-center"
               onClick={aplicarFiltros}
             >
               <i className="fa-solid fa-search"></i> Aplicar
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               id="btnLimpiarFiltros"
-              className="h-11 px-5 rounded-[var(--radius-sm)] font-semibold text-[14px] cursor-pointer inline-flex items-center gap-2 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] transition-[background,border-color] duration-150 hover:bg-[var(--color-border-default)] hover:border-[var(--color-border-strong)] max-[768px]:w-full max-[768px]:justify-center"
+              variant="secondary"
               onClick={limpiarFiltros}
             >
               <i className="fa-solid fa-eraser"></i> Limpiar
-            </button>
+            </Button>
           </div>
         </div>
       </StaggerItem>
 
       <StaggerItem className="flex gap-4 mb-5 flex-wrap max-[768px]:flex-col">
-        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
-          <i className="fa-solid fa-list-ol"></i>
+        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+          <ClipboardList className="h-4 w-4 text-primary" />
           <span>
             <strong>{resumen.total}</strong> registros
           </span>
         </div>
-        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
-          <i className="fa-solid fa-calendar-days"></i>
+        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+          <CalendarDays className="h-4 w-4 text-primary" />
           <span>{resumen.rangoFechas}</span>
         </div>
-        <div className="se-card flex items-center gap-3 px-5 py-4 text-[14px] text-[var(--color-text-muted)] flex-1 min-w-40">
-          <i className="fa-solid fa-users"></i>
+        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
+          <Users className="h-4 w-4 text-primary" />
           <span>
             <strong>{resumen.usuariosUnicos}</strong> usuario
             {resumen.usuariosUnicos !== 1 ? "s" : ""}
@@ -394,87 +397,97 @@ export default function AuditoriaPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card p-6">
+      <StaggerItem>
         {loading && <Spinner label="Cargando auditoría..." />}
         {!loading && errorMsg && (
           <Alert type="error" title="Error al cargar">{errorMsg}</Alert>
         )}
         {!loading && !errorMsg && (
-          <>
-            <div className="mb-4 flex gap-3 items-center justify-between flex-wrap">
-              <SearchInput
-                value={q}
-                onChange={setQ}
-                placeholder="Buscar en auditoría..."
-                ariaLabel="Buscar en auditoría"
-                maxWidthClassName="max-w-[380px]"
+          <BackofficeTablePanel
+            header={
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                    {filtrados.length} registro(s) visibles
+                  </Badge>
+                  {totalRegistros > filtrados.length ? (
+                    <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+                      Total remoto: {totalRegistros}
+                    </Badge>
+                  ) : null}
+                </div>
+                <div className="w-full max-w-[380px]">
+                  <SearchInput
+                    value={q}
+                    onChange={setQ}
+                    placeholder="Buscar por usuario, acción o entidad..."
+                    ariaLabel="Buscar en auditoría"
+                  />
+                </div>
+              </div>
+            }
+            footer={
+              <TablePagination
+                totalItems={filtrados.length}
+                page={pageSafe}
+                pageSize={pageSize}
+                onPageChange={setPage}
+                onPageSizeChange={() => {}}
+                pageSizeOptions={[pageSize]}
+                label="registros"
               />
-              <span className="text-[#718096] text-[13px]">
-                Mostrando <strong>{visible.length}</strong> de <strong>{filtrados.length}</strong>
-                {totalRegistros ? ` (total remoto: ${totalRegistros})` : ""}
-              </span>
-            </div>
-
-            <div className="se-table-shell">
-              <table className="se-table">
-                <thead>
-                  <tr>
-                    <th className="text-left">Fecha/Hora</th>
-                    <th className="text-left">Usuario</th>
-                    <th className="text-left">Acción</th>
-                    <th className="text-left">Entidad</th>
-                    <th className="text-right">Detalles</th>
-                  </tr>
-                </thead>
-                <tbody>
+            }
+          >
+            <div className="w-full overflow-x-auto">
+              <Table className="min-w-[920px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                <TableHeader>
+                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                    <TableHead className="rounded-l-2xl">Fecha/Hora</TableHead>
+                    <TableHead>Usuario</TableHead>
+                    <TableHead>Acción</TableHead>
+                    <TableHead>Entidad</TableHead>
+                    <TableHead className="rounded-r-2xl text-right">Detalles</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {visible.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="se-table-empty">
+                    <TableRow>
+                      <TableCell colSpan={5} className="py-8 text-center text-slate-500">
                         No hay registros.
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     visible.map((reg) => {
                       const badge = getAccionBadge(reg.accion);
                       return (
-                        <tr key={String(reg.id)}>
-                          <td className="whitespace-nowrap font-medium text-[var(--color-text-strong)]">{formatearFecha(reg.fecha)}</td>
-                          <td className="text-[var(--color-text-strong)]">{reg.usuario_nombre || reg.usuario_id || "—"}</td>
-                          <td>
-                            <span className={`px-3 py-1.5 rounded-md text-[12px] font-semibold inline-flex items-center gap-1.5 ${badge.clase}`}>
-                              <i className={`fa-solid ${badge.icono}`} /> {badge.texto}
-                            </span>
-                          </td>
-                          <td className="text-[var(--color-text-strong)]">{reg.entidad || "—"}</td>
-                          <td className="text-right">
+                        <TableRow key={String(reg.id)} className="bo-table-row">
+                          <TableCell className="whitespace-nowrap text-sm font-medium text-slate-900">{formatearFecha(reg.fecha)}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{reg.usuario_nombre || reg.usuario_id || "—"}</TableCell>
+                          <TableCell>
+                            <Badge variant={badge.variant} className="px-3 py-1 text-[11px] font-semibold">
+                              {badge.texto}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-700">{reg.entidad || "—"}</TableCell>
+                          <TableCell className="text-right">
                             <button
                               type="button"
-                              className="se-icon-btn se-icon-btn--primary"
+                              className="bo-table-action-btn text-slate-500"
                               onClick={() => abrirModal(reg)}
                               title="Ver detalle"
                               aria-label="Ver detalle"
                             >
                               <Eye strokeWidth={1.5} size={18} />
                             </button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       );
                     })
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
-
-            <TablePagination
-              totalItems={filtrados.length}
-              page={pageSafe}
-              pageSize={pageSize}
-              onPageChange={setPage}
-              onPageSizeChange={() => {}}
-              pageSizeOptions={[pageSize]}
-              label="registros"
-            />
-          </>
+          </BackofficeTablePanel>
         )}
       </StaggerItem>
 

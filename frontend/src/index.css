@@ -4,7 +4,7 @@
   :root {
     --font-family-base: "Poppins", sans-serif;
 
-    --color-bg-canvas: #f4f6fb;
+    --color-bg-canvas: #f8fafc;
     --color-bg-surface: #ffffff;
     --color-bg-soft: #f8fafc;
     --color-bg-elevated: #ffffff;
@@ -38,9 +38,9 @@
     --space-7: 28px;
     --space-8: 32px;
 
-    --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
-    --shadow-md: 0 10px 24px rgba(15, 23, 42, 0.08);
-    --shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.12);
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(226, 232, 240, 0.45);
+    --shadow-md: 0 8px 24px rgba(15, 23, 42, 0.06), 0 18px 45px rgba(226, 232, 240, 0.52);
+    --shadow-lg: 0 16px 40px rgba(15, 23, 42, 0.08), 0 24px 56px rgba(226, 232, 240, 0.55);
 
     --motion-fast: 180ms ease;
     --motion-base: 260ms ease;
@@ -109,7 +109,81 @@ a {
   color: inherit;
 }
 
+@layer base {
+  * {
+    border-color: var(--color-border-default);
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}
+
 @layer components {
+  .bo-input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm outline-none transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/20;
+  }
+
+  .bo-select {
+    @apply inline-flex min-h-12 w-full items-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm outline-none transition-[border-color,box-shadow,background-color] duration-150 hover:border-slate-300 focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-60;
+  }
+
+  .bo-toolbar-input {
+    @apply bo-input;
+  }
+
+  .bo-toolbar-select {
+    @apply bo-select;
+  }
+
+  .bo-toolbar-secondary {
+    @apply inline-flex min-h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
+  }
+
+  .bo-toolbar-primary {
+    @apply inline-flex min-h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/95;
+  }
+
+  .bo-segmented-btn {
+    @apply min-h-11 shrink-0 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
+  }
+
+  .bo-segmented-btn-active {
+    @apply border-primary bg-primary text-white hover:bg-primary/95;
+  }
+
+  .bo-table-row {
+    @apply border-b border-slate-100 bg-white transition-colors hover:bg-slate-50/50;
+  }
+
+  .bo-table-action-btn {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-800;
+  }
+
+  .bo-table-pagination {
+    @apply flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 bg-white px-4 py-3;
+  }
+
+  .bo-skeleton {
+    @apply relative overflow-hidden rounded-2xl bg-slate-100;
+  }
+
+  .bo-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.75) 50%, transparent 100%);
+    animation: bo-shimmer 1.25s infinite;
+  }
+
   /* ===== Toasts ===== */
   #ui-toast-container {
     position: fixed;
@@ -288,100 +362,10 @@ a {
     border-color: rgba(59, 130, 246, 0.16);
   }
 
-  .se-card {
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    background: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-  }
+}
 
-  .se-table-shell {
-    overflow-x: auto;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    background: #ffffff;
-  }
-
-  .se-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    background: #ffffff;
-  }
-
-  .se-table thead th {
-    padding: 16px;
-    background: rgba(249, 250, 251, 0.5);
-    border-bottom: 1px solid #f3f4f6;
-    color: #9ca3af;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .se-table tbody td {
-    padding: 16px;
-    border-bottom: 1px solid #f3f4f6;
-    color: #334155;
-    font-size: 14px;
-    vertical-align: middle;
-  }
-
-  .se-table tbody tr:hover td {
-    background: #fcfcfd;
-  }
-
-  .se-table tbody tr:last-child td {
-    border-bottom: 0;
-  }
-
-  .se-table-empty {
-    padding: 28px 16px;
-    text-align: center;
-    color: #64748b;
-  }
-
-  .se-icon-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #6b7280;
-    cursor: pointer;
-    transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-  }
-
-  .se-icon-btn:hover {
-    transform: translateY(-1px);
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #1f2937;
-  }
-
-  .se-icon-btn--primary:hover {
-    background: rgba(179, 49, 49, 0.08);
-    border-color: rgba(179, 49, 49, 0.22);
-    color: var(--color-brand-500);
-    box-shadow: 0 8px 20px rgba(179, 49, 49, 0.12);
-  }
-
-  .se-icon-btn--danger:hover {
-    background: #fef2f2;
-    border-color: #fca5a5;
-    color: #b91c1c;
-    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.12);
-  }
-
-  .se-toolbar {
-    border: 1px solid #e5e7eb;
-    border-radius: 24px;
-    background: #ffffff;
-    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+@keyframes bo-shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }

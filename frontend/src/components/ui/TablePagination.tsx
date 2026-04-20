@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import UiSelect from "./UiSelect";
 
 type Props = {
   totalItems: number;
@@ -92,33 +93,37 @@ export default function TablePagination({
   };
 
   return (
-    <div className="flex items-center justify-between gap-4 flex-wrap border-t border-gray-100 bg-white px-6 py-4">
-      <div className="inline-flex items-center gap-2 text-sm text-gray-500">
-        <span>Mostrando</span>
-        <select
-          className="h-9 rounded-xl border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 shadow-sm transition-[border-color,box-shadow] duration-150 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/10"
-          value={pageSize}
-          onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-          aria-label="Cantidad por página"
-        >
-          {pageSizeOptions.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
-        <span>por página</span>
-        <span className="font-medium text-gray-700">
-          {startItem}-{endItem}
-        </span>
-        <span>
-          de {totalItems} {label}
-        </span>
+    <div className="bo-table-pagination px-5 py-4 sm:px-6">
+      <div className="flex flex-1 flex-wrap items-center gap-4 text-sm text-slate-500">
+        <div className="hidden items-center gap-2 lg:flex">
+          <span className="font-medium">Filas por página</span>
+          <div className="w-24">
+            <UiSelect
+              value={String(pageSize)}
+              onChange={(next) => handlePageSizeChange(Number(next))}
+              ariaLabel="Cantidad por página"
+              options={pageSizeOptions.map((size) => ({ value: String(size), label: String(size) }))}
+            />
+          </div>
+        </div>
+
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-600">
+          <span>{startItem}-{endItem}</span>
+          <span className="text-slate-400">de</span>
+          <span>{totalItems} {label}</span>
+        </div>
+
+        <div className="inline-flex items-center gap-1 text-sm font-medium text-slate-700">
+          <span>Página</span>
+          <span>{safePage}</span>
+          <span className="text-slate-400">de</span>
+          <span>{totalPages}</span>
+        </div>
       </div>
 
       <div className="inline-flex items-center gap-1.5 flex-wrap" aria-label="Paginación de tabla">
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 lg:inline-flex"
           type="button"
           onClick={() => handlePageChange(1)}
           disabled={safePage <= 1}
@@ -126,7 +131,7 @@ export default function TablePagination({
           <ChevronsLeft className="h-4 w-4" />
         </button>
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
           type="button"
           onClick={() => handlePageChange(safePage - 1)}
           disabled={safePage <= 1}
@@ -138,15 +143,15 @@ export default function TablePagination({
           <motion.div
             key={`pagination-items-${safePage}-${pageSize}-${totalPages}`}
             className="inline-flex items-center gap-1.5"
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             {pageItems.map((item, index) =>
               item === "dots" ? (
                 <span
-                  className="inline-flex h-9 w-9 items-center justify-center text-sm text-gray-400"
+                  className="inline-flex h-9 w-9 items-center justify-center text-sm text-slate-400"
                   key={`dots-${index}`}
                 >
                   ...
@@ -157,8 +162,8 @@ export default function TablePagination({
                   key={item}
                   className={
                     item === safePage
-                      ? "inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white shadow-md"
-                      : "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-600 transition-colors duration-150 hover:bg-gray-50"
+                      ? "inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white shadow-sm"
+                      : "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition-colors duration-150 hover:bg-slate-50"
                   }
                   onClick={() => handlePageChange(item)}
                   aria-current={item === safePage ? "page" : undefined}
@@ -171,7 +176,7 @@ export default function TablePagination({
         </AnimatePresence>
 
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
           type="button"
           onClick={() => handlePageChange(safePage + 1)}
           disabled={safePage >= totalPages}
@@ -179,7 +184,7 @@ export default function TablePagination({
           <ChevronRight className="h-4 w-4" />
         </button>
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors duration-150 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 lg:inline-flex"
           type="button"
           onClick={() => handlePageChange(totalPages)}
           disabled={safePage >= totalPages}
@@ -190,3 +195,4 @@ export default function TablePagination({
     </div>
   );
 }
+

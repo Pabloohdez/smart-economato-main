@@ -17,6 +17,9 @@ import { getLotesProducto, type LoteProducto } from "../services/lotesService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { Trash2, Truck } from "lucide-react";
 
 type ProductoAviso = Producto & {
@@ -409,7 +412,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card mb-6 overflow-hidden">
+      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
         <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
@@ -446,7 +449,7 @@ export default function AvisosPage() {
                 <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                   <button
                     type="button"
-                    className="se-icon-btn se-icon-btn--danger"
+                    className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
                     onClick={() => abrirModalBaja(p)}
                     title="Dar de baja"
                     aria-label={`Dar de baja ${p.nombre}`}
@@ -466,7 +469,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card mb-6 overflow-hidden">
+      <StaggerItem className="mb-6 overflow-hidden rounded-[30px] border border-slate-200/90 bg-white shadow-[0_18px_48px_rgba(15,23,42,0.08)]">
         <div className="px-5 py-4 border-l-4 border-l-[#f59e0b] flex justify-between items-center bg-[linear-gradient(90deg,#fffbeb_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-box-open text-[16px] text-[#6b7280]"></i>
@@ -514,7 +517,7 @@ export default function AvisosPage() {
                   <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
                     <button
                       type="button"
-                      className="se-icon-btn se-icon-btn--primary"
+                      className="bo-table-action-btn text-slate-500 hover:bg-[rgba(179,49,49,0.08)] hover:text-[var(--color-brand-500)]"
                       onClick={() => abrirModalPedido(p, cantidadSugerida)}
                       title="Solicitar pedido"
                       aria-label={`Solicitar pedido para ${p.nombre}`}
@@ -537,39 +540,42 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="se-card mb-6 overflow-hidden">
-        <div className="px-5 py-4 border-l-4 border-l-[#2563eb] flex justify-between items-center bg-[linear-gradient(90deg,#eff6ff_0%,#f9fafb_100%)]">
-          <div className="flex items-center gap-2.5">
-            <i className="fa-solid fa-chart-line text-[16px] text-[#6b7280]"></i>
-            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Resumen Financiero</h2>
-          </div>
-        </div>
-
-        <div>
+      <StaggerItem>
+        <BackofficeTablePanel
+          header={
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Resumen Financiero</h2>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Badge variant="destructive" className="px-3 py-1 text-[11px] font-semibold">
+                  Caducidad: {financieroResumen.valorCaducado.toFixed(2)} €
+                </Badge>
+                <Badge variant="warning" className="px-3 py-1 text-[11px] font-semibold">
+                  Stock bajo: {financieroResumen.valorStockBajo.toFixed(2)} €
+                </Badge>
+              </div>
+            </div>
+          }
+        >
           {loading ? (
             <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Calculando..." /></div>
           ) : (
-            <div className="grid [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))] gap-4 p-5">
-              <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6]">
-                <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Pérdida por Caducidad</div>
-                <div className="text-[18px] font-bold text-[#dc2626]">
-                  {financieroResumen.valorCaducado.toFixed(2)} €
-                </div>
+            <div className="grid [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))] gap-4">
+              <div className="rounded-[22px] border border-red-100 bg-red-50/60 p-5">
+                <div className="mb-1.5 text-[12px] font-medium uppercase tracking-wide text-[#6b7280]">Pérdida por Caducidad</div>
+                <div className="text-[20px] font-bold text-[#dc2626]">{financieroResumen.valorCaducado.toFixed(2)} €</div>
               </div>
 
-              <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6]">
-                <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Valor en Stock Bajo</div>
-                <div className="text-[18px] font-bold text-[#f59e0b]">
-                  {financieroResumen.valorStockBajo.toFixed(2)} €
-                </div>
+              <div className="rounded-[22px] border border-amber-100 bg-amber-50/60 p-5">
+                <div className="mb-1.5 text-[12px] font-medium uppercase tracking-wide text-[#6b7280]">Valor en Stock Bajo</div>
+                <div className="text-[20px] font-bold text-[#d97706]">{financieroResumen.valorStockBajo.toFixed(2)} €</div>
               </div>
 
               {financieroResumen.masCaro && (
-                <div className="p-4 bg-[#f9fafb] rounded-lg border border-[#f3f4f6] col-span-full">
-                  <div className="text-[12px] text-[#6b7280] mb-1.5 uppercase tracking-wide font-medium">Producto en Riesgo de Mayor Valor</div>
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50/80 p-5 md:col-span-2">
+                  <div className="mb-1.5 text-[12px] font-medium uppercase tracking-wide text-[#6b7280]">Producto en Riesgo de Mayor Valor</div>
                   <div className="text-[18px] font-bold text-[#111827]">
                     {financieroResumen.masCaro.nombre}{" "}
-                    <span className="font-normal text-[13px] text-[#6B7280]">
+                    <span className="text-[13px] font-normal text-[#6B7280]">
                       — {(financieroResumen.masCaro.precioNum * financieroResumen.masCaro.stockNum).toFixed(2)} €
                     </span>
                   </div>
@@ -577,59 +583,57 @@ export default function AvisosPage() {
               )}
             </div>
           )}
-        </div>
+        </BackofficeTablePanel>
       </StaggerItem>
 
-      <StaggerItem className="se-card mb-6 overflow-hidden">
-        <div className="px-5 py-4 border-l-4 border-l-[#10b981] flex justify-between items-center bg-[linear-gradient(90deg,#ecfdf5_0%,#f9fafb_100%)]">
-          <div className="flex items-center gap-2.5">
-            <i className="fa-solid fa-bell text-[16px] text-[#10b981]"></i>
-            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Gastos Mensuales por Profesor</h2>
-          </div>
-        </div>
-
-        <div>
-          <div className="px-5 pb-5 pt-2.5 max-[768px]:px-2.5 max-[768px]:overflow-x-auto">
-            <div className="se-table-shell">
-              <table className="se-table">
-              <thead>
-                <tr>
-                  <th className="text-left">Mes</th>
-                  <th className="text-left">Profesor</th>
-                  <th className="text-center">Pedidos</th>
-                  <th className="text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody>
+      <StaggerItem>
+        <BackofficeTablePanel
+          header={
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Gastos Mensuales por Profesor</h2>
+              <Badge variant="success" className="px-3 py-1 text-[11px] font-semibold">
+                {gastosMensuales.length} fila(s)
+              </Badge>
+            </div>
+          }
+        >
+          <div className="overflow-x-auto">
+            <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+              <TableHeader>
+                <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                  <TableHead className="rounded-l-2xl">Mes</TableHead>
+                  <TableHead>Profesor</TableHead>
+                  <TableHead className="text-center">Pedidos</TableHead>
+                  <TableHead className="rounded-r-2xl text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={4} className="py-4 px-0">
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-6 text-center">
                       <Spinner size="sm" label="Cargando datos financieros..." />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : gastosMensuales.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="se-table-empty">
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-slate-500">
                       No hay datos de gastos registrados
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   gastosMensuales.map((g, idx) => (
-                    <tr key={`${g.mes}-${g.nombre_usuario}-${idx}`}>
-                      <td className="text-[#374151]">{formatearMes(g.mes)}</td>
-                      <td className="text-[#374151]">{g.nombre_usuario}</td>
-                      <td className="text-center text-[#374151]">{g.num_pedidos}</td>
-                      <td className="text-right text-[#374151]">
-                        <strong className="text-[#111827] font-semibold">{Number(g.total_mes).toFixed(2)} €</strong>
-                      </td>
-                    </tr>
+                    <TableRow key={`${g.mes}-${g.nombre_usuario}-${idx}`} className="bo-table-row">
+                      <TableCell className="text-sm text-slate-700">{formatearMes(g.mes)}</TableCell>
+                      <TableCell className="text-sm text-slate-700">{g.nombre_usuario}</TableCell>
+                      <TableCell className="text-center text-sm text-slate-700">{g.num_pedidos}</TableCell>
+                      <TableCell className="text-right text-sm font-semibold text-slate-900">{Number(g.total_mes).toFixed(2)} €</TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-              </table>
-            </div>
+              </TableBody>
+            </Table>
           </div>
-        </div>
+        </BackofficeTablePanel>
       </StaggerItem>
 
       <div className={`fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000] transition-opacity duration-200 ${modalOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>

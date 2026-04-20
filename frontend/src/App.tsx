@@ -19,6 +19,8 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import Spinner from "./components/ui/Spinner";
 import AppRealtimeSync from "./components/app/AppRealtimeSync";
 import RouteErrorBoundary from "./components/app/RouteErrorBoundary";
+import ConfirmDialogHost from "./components/ui/ConfirmDialogHost";
+import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { queryClient } from "./lib/queryClient";
 
@@ -78,6 +80,8 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <ConfirmDialogHost />
+          <Toaster />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

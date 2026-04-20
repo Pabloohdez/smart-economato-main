@@ -3,6 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
+import Button from "../components/ui/Button";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
+import SearchInput from "../components/ui/SearchInput";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useAuth } from "../contexts/AuthContext";
@@ -356,18 +361,16 @@ export default function EscandallosPage() {
           Escandallos y Recetas
         </h1>
 
-        <div className="se-toolbar px-[25px] py-5 mb-7 flex items-end gap-4 flex-wrap max-[768px]:flex-col max-[768px]:items-stretch">
+        <div className="mb-7 flex items-end gap-4 rounded-[30px] border border-slate-200/90 bg-white px-[25px] py-5 shadow-[0_18px_48px_rgba(15,23,42,0.08)] flex-wrap max-[768px]:flex-col max-[768px]:items-stretch">
           <div className="flex flex-col gap-1.5 min-w-[200px] flex-grow">
             <label htmlFor="busquedaEscandallos" className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
               Buscar Receta
             </label>
-            <input
-              type="text"
-              id="busquedaEscandallos"
-              className="h-11 w-full px-4 border border-[var(--color-border-default)] rounded-[10px] text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
-              placeholder="Buscar por nombre..."
+            <SearchInput
               value={busquedaReceta}
-              onChange={(e) => setBusquedaReceta(e.target.value)}
+              onChange={setBusquedaReceta}
+              placeholder="Buscar por nombre..."
+              ariaLabel="Buscar receta por nombre"
             />
           </div>
 
@@ -375,117 +378,123 @@ export default function EscandallosPage() {
             <label htmlFor="busquedaIngrediente" className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
               Buscar por Ingrediente
             </label>
-            <input
-              type="text"
-              id="busquedaIngrediente"
-              className="h-11 w-full px-4 border border-[var(--color-border-default)] rounded-[10px] text-[14px] text-[var(--color-text-muted)] bg-[var(--color-bg-soft)] outline-none transition-[border-color,box-shadow,background] duration-200 focus:border-[var(--color-brand-500)] focus:bg-white focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)]"
-              placeholder="Por ingrediente..."
+            <SearchInput
               value={busquedaIngrediente}
-              onChange={(e) => setBusquedaIngrediente(e.target.value)}
+              onChange={setBusquedaIngrediente}
+              placeholder="Por ingrediente..."
+              ariaLabel="Buscar receta por ingrediente"
             />
           </div>
 
-          <button
-            type="button"
-            className="h-11 px-6 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2 shadow-[0_4px_6px_rgba(0,0,0,0.1)] whitespace-nowrap bg-[var(--color-text-strong)] text-white transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:bg-[#1f2937]"
-            onClick={mostrarTodo}
-          >
+          <Button type="button" variant="secondary" onClick={mostrarTodo}>
             <i className="fa-solid fa-sync"></i> Mostrar Todo
-          </button>
+          </Button>
 
-          <button
-            type="button"
-            className="h-11 px-6 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(56,161,105,0.3)] whitespace-nowrap bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:brightness-105 max-[768px]:w-full"
-            onClick={abrirNuevaReceta}
-          >
+          <Button type="button" variant="success" className="max-[768px]:w-full" onClick={abrirNuevaReceta}>
             <i className="fa-solid fa-plus"></i> Nueva Receta
-          </button>
+          </Button>
         </div>
       </StaggerItem>
 
       {(loadingProductos || loadingEscandallos) && <Spinner label="Cargando datos..." />}
       {err && <Alert type="error">{err}</Alert>}
 
-      <StaggerItem className="se-table-shell">
-        <table className="se-table">
-          <caption className="sr-only">
-            Lista de escandallos y recetas disponibles
-          </caption>
-          <thead>
-            <tr>
-              <th className="text-left">Nombre</th>
-              <th className="text-left">Autor</th>
-              <th className="text-left">Ingredientes</th>
-              <th className="text-left">Coste Total</th>
-              <th className="text-left">PVP</th>
-              <th className="text-left">Beneficio %</th>
-              <th className="text-center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {escandallosFiltrados.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="se-table-empty"
-                >
-                  No se encontraron recetas.
-                </td>
-              </tr>
-            ) : (
-              escandallosFiltrados.map((esc) => {
-                const margen =
-                  esc.pvp > 0 ? ((esc.pvp - esc.coste) / esc.pvp) * 100 : 0;
+      <StaggerItem>
+        <BackofficeTablePanel
+          header={
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="m-0 text-[18px] font-semibold text-[var(--color-text-strong)]">Listado de Recetas</h3>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                  {escandallosFiltrados.length} receta(s)
+                </Badge>
+              </div>
+            </div>
+          }
+        >
+          <div className="overflow-x-auto">
+            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+              <TableHeader>
+                <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                  <TableHead className="rounded-l-2xl">Nombre</TableHead>
+                  <TableHead>Autor</TableHead>
+                  <TableHead>Ingredientes</TableHead>
+                  <TableHead>Coste Total</TableHead>
+                  <TableHead>PVP</TableHead>
+                  <TableHead>Beneficio %</TableHead>
+                  <TableHead className="rounded-r-2xl text-center">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {escandallosFiltrados.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="py-8 text-center text-slate-500">
+                      No se encontraron recetas.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  escandallosFiltrados.map((esc) => {
+                    const margen = esc.pvp > 0 ? ((esc.pvp - esc.coste) / esc.pvp) * 100 : 0;
 
-                return (
-                  <tr key={esc.id}>
-                    <td
-                      className="font-bold text-[var(--color-brand-500)] cursor-pointer underline decoration-transparent hover:decoration-[var(--color-brand-500)] hover:text-[#902424]"
-                      onClick={() => abrirVerReceta(esc)}
-                    >
-                      {esc.nombre}
-                    </td>
-                    <td className="text-[var(--color-text-strong)]">{esc.autor || "Admin"}</td>
-                    <td className="text-[var(--color-text-strong)]">{esc.items?.length ?? 0} ingredientes</td>
-                    <td className="text-[var(--color-text-strong)]">{esc.coste.toFixed(2)} €</td>
-                    <td className="text-[var(--color-text-strong)]">{esc.pvp.toFixed(2)} €</td>
-                    <td className={classMargenTabla(margen)}>
-                      {margen.toFixed(1)}%
-                    </td>
-                    <td className="text-center">
-                      <div className="inline-flex gap-2">
-                        <button
-                          type="button"
-                          className="se-icon-btn se-icon-btn--primary"
-                          title="Ver detalle"
-                          onClick={() => abrirVerReceta(esc)}
-                        >
-                          <Eye strokeWidth={1.5} size={18} />
-                        </button>
-                        <button
-                          type="button"
-                          className="se-icon-btn se-icon-btn--primary"
-                          title="Editar"
-                          onClick={() => abrirEditarReceta(esc)}
-                        >
-                          <Pencil strokeWidth={1.5} size={18} />
-                        </button>
-                        <button
-                          type="button"
-                          className="se-icon-btn se-icon-btn--danger"
-                          title="Eliminar"
-                          onClick={() => eliminarEscandallo(esc.id)}
-                        >
-                          <Trash2 strokeWidth={1.5} size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                    return (
+                      <TableRow key={esc.id} className="bo-table-row">
+                        <TableCell>
+                          <button
+                            type="button"
+                            className="font-bold text-[var(--color-brand-500)] underline decoration-transparent transition hover:text-[#902424] hover:decoration-[var(--color-brand-500)]"
+                            onClick={() => abrirVerReceta(esc)}
+                          >
+                            {esc.nombre}
+                          </button>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-700">{esc.autor || "Admin"}</TableCell>
+                        <TableCell className="text-sm text-slate-700">{esc.items?.length ?? 0} ingredientes</TableCell>
+                        <TableCell className="text-sm text-slate-700">{esc.coste.toFixed(2)} €</TableCell>
+                        <TableCell className="text-sm text-slate-700">{esc.pvp.toFixed(2)} €</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={margen < 20 ? "destructive" : margen < 50 ? "warning" : "success"}
+                            className="px-3 py-1 text-[11px] font-semibold"
+                          >
+                            {margen.toFixed(1)}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="inline-flex gap-2">
+                            <button
+                              type="button"
+                              className="bo-table-action-btn text-slate-500"
+                              title="Ver detalle"
+                              onClick={() => abrirVerReceta(esc)}
+                            >
+                              <Eye strokeWidth={1.5} size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              className="bo-table-action-btn text-slate-500"
+                              title="Editar"
+                              onClick={() => abrirEditarReceta(esc)}
+                            >
+                              <Pencil strokeWidth={1.5} size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
+                              title="Eliminar"
+                              onClick={() => eliminarEscandallo(esc.id)}
+                            >
+                              <Trash2 strokeWidth={1.5} size={18} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </BackofficeTablePanel>
       </StaggerItem>
 
       {detalleEscandallo && (
@@ -552,47 +561,45 @@ export default function EscandallosPage() {
                   </h3>
                 </div>
 
-                <div className="overflow-hidden rounded-2xl border border-slate-100">
-                  <table className="w-full border-collapse text-left text-sm">
-                    <thead className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">
-                      <tr>
-                        <th className="px-5 py-4">Producto</th>
-                        <th className="px-5 py-4 text-center">Cantidad</th>
-                        <th className="px-5 py-4 text-right">Coste unidad</th>
-                        <th className="px-5 py-4 text-right">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detalleItems.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
-                            Este escandallo no tiene ingredientes registrados.
-                          </td>
-                        </tr>
-                      ) : (
-                        detalleItems.map((item, index) => {
-                          const subtotal = Number(item.cantidad) * Number(item.precio);
-                          return (
-                            <tr key={`${item.producto_id}-${index}`} className="border-t border-slate-100">
-                              <td className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
-                                {item.nombre}
-                              </td>
-                              <td className="px-5 py-4 text-center text-slate-500">
-                                {item.cantidad}
-                              </td>
-                              <td className="px-5 py-4 text-right text-slate-500">
-                                {Number(item.precio).toFixed(2)} €
-                              </td>
-                              <td className="px-5 py-4 text-right font-bold text-slate-700">
-                                {subtotal.toFixed(2)} €
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                <Table className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
+                  <TableHeader>
+                    <TableRow className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 hover:bg-slate-50">
+                      <TableHead className="px-5 py-4 normal-case tracking-[0.18em] text-slate-400">Producto</TableHead>
+                      <TableHead className="px-5 py-4 text-center normal-case tracking-[0.18em] text-slate-400">Cantidad</TableHead>
+                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Coste unidad</TableHead>
+                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Subtotal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detalleItems.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
+                          Este escandallo no tiene ingredientes registrados.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      detalleItems.map((item, index) => {
+                        const subtotal = Number(item.cantidad) * Number(item.precio);
+                        return (
+                          <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
+                            <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
+                              {item.nombre}
+                            </TableCell>
+                            <TableCell className="px-5 py-4 text-center text-slate-500">
+                              {item.cantidad}
+                            </TableCell>
+                            <TableCell className="px-5 py-4 text-right text-slate-500">
+                              {Number(item.precio).toFixed(2)} €
+                            </TableCell>
+                            <TableCell className="px-5 py-4 text-right font-bold text-slate-700">
+                              {subtotal.toFixed(2)} €
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </section>
 
               <section className="mt-8 rounded-[26px] border border-slate-200 bg-slate-50 p-6">
@@ -821,33 +828,31 @@ export default function EscandallosPage() {
                   </div>
                 )}
 
-                <div className="se-table-shell">
-                  <table className="se-table">
-                    <thead>
-                      <tr>
-                        <th className="text-left">Producto</th>
-                        <th className="text-left w-20">Cant.</th>
-                        <th className="text-left w-20">Coste U.</th>
-                        <th className="text-left w-[90px]">Total</th>
-                        <th className="text-center w-[50px]">
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                <div className="overflow-x-auto rounded-[24px] border border-slate-100 bg-white">
+                  <Table className="min-w-[680px] bg-white">
+                    <TableHeader>
+                      <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                        <TableHead className="rounded-l-2xl text-left">Producto</TableHead>
+                        <TableHead className="text-left w-20">Cant.</TableHead>
+                        <TableHead className="text-left w-20">Coste U.</TableHead>
+                        <TableHead className="text-left w-[90px]">Total</TableHead>
+                        <TableHead className="rounded-r-2xl text-center w-[60px]">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
                       {ingredientesReceta.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="se-table-empty">
+                        <TableRow>
+                          <TableCell colSpan={5} className="py-8 text-center text-slate-500">
                             No hay ingredientes añadidos.
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ) : (
                         ingredientesReceta.map((ing, index) => {
                           const total = ing.cantidad * ing.precio;
                           return (
-                            <tr key={`${ing.producto_id}-${index}`}>
-                              <td className="text-[var(--color-text-strong)]">{ing.nombre}</td>
-                              <td>
+                            <TableRow key={`${ing.producto_id}-${index}`} className="bo-table-row">
+                              <TableCell className="text-[var(--color-text-strong)]">{ing.nombre}</TableCell>
+                              <TableCell>
                                 {modoLectura ? (
                                   ing.cantidad
                                 ) : (
@@ -855,42 +860,38 @@ export default function EscandallosPage() {
                                     type="number"
                                     step="0.001"
                                     min="0.001"
-                                    className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+                                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                                     value={String(ing.cantidad)}
                                     onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
                                   />
                                 )}
-                              </td>
-                              <td className="text-[var(--color-text-strong)]">{ing.precio.toFixed(2)} €</td>
-                              <td className="text-[var(--color-text-strong)]">{total.toFixed(2)} €</td>
-                              <td className="text-center">
+                              </TableCell>
+                              <TableCell className="text-[var(--color-text-strong)]">{ing.precio.toFixed(2)} €</TableCell>
+                              <TableCell className="text-[var(--color-text-strong)]">{total.toFixed(2)} €</TableCell>
+                              <TableCell className="text-center">
                                 {!modoLectura && (
                                   <button
                                     type="button"
-                                    className="se-icon-btn se-icon-btn--danger"
+                                    className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
                                     onClick={() => eliminarIngrediente(index)}
                                   >
                                     <Trash2 strokeWidth={1.5} size={18} />
                                   </button>
                                 )}
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
                           );
                         })
                       )}
-                    </tbody>
-                    <tfoot>
-                      <tr className="bg-[var(--color-bg-soft)] font-bold">
-                        <td colSpan={3} className="text-right p-4 text-[var(--color-text-strong)]">
-                          COSTE TOTAL:
-                        </td>
-                        <td className="px-4 py-3 text-[#c53030]">
-                          {costeTotal.toFixed(2)} €
-                        </td>
-                        <td />
-                      </tr>
-                    </tfoot>
-                  </table>
+                    </TableBody>
+                    <TableFooter>
+                      <TableRow className="bg-[var(--color-bg-soft)] hover:bg-[var(--color-bg-soft)] font-bold">
+                        <TableCell colSpan={3} className="text-right text-[var(--color-text-strong)]">COSTE TOTAL:</TableCell>
+                        <TableCell className="text-[#c53030]">{costeTotal.toFixed(2)} €</TableCell>
+                        <TableCell />
+                      </TableRow>
+                    </TableFooter>
+                  </Table>
                 </div>
               </div>
 

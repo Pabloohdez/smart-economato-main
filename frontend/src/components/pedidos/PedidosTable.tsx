@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Building2 } from "lucide-react";
 import type { PedidoHistorial } from "../../types";
 import SearchInput from "../ui/SearchInput";
 import TablePagination from "../ui/TablePagination";
+import BackofficeTablePanel from "../ui/BackofficeTablePanel";
+import { Badge } from "../ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 
 const paginatedBodyVariants = {
   hidden: { opacity: 1 },
@@ -66,32 +69,60 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
     return filtered.slice(start, start + pageSize);
   }, [filtered, safePage, pageSize]);
 
+  const pendientes = filtered.filter((p) => {
+    const estado = String(p.estado ?? "").toUpperCase();
+    return estado === "PENDIENTE" || estado === "INCOMPLETO";
+  }).length;
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="mb-3 flex gap-2.5 items-center flex-wrap">
-        <SearchInput
-          value={q}
-          onChange={(value) => {
-            setQ(value);
-            setPage(1);
-          }}
-          placeholder="Buscar..."
-          ariaLabel="Buscar pedidos"
-          maxWidthClassName="max-w-[320px]"
+    <BackofficeTablePanel
+      header={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+              {filtered.length} pedido(s)
+            </Badge>
+            <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+              {pendientes} pendiente(s) o incompleto(s)
+            </Badge>
+          </div>
+          <div className="w-full max-w-[320px]">
+            <SearchInput
+              value={q}
+              onChange={(value) => {
+                setQ(value);
+                setPage(1);
+              }}
+              placeholder="Buscar por ID, proveedor o estado..."
+              ariaLabel="Buscar pedidos"
+            />
+          </div>
+        </div>
+      }
+      footer={
+        <TablePagination
+          totalItems={filtered.length}
+          page={safePage}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[10, 25, 50]}
+          label="pedidos"
         />
-      </div>
+      }
+    >
 
       <div className="w-full overflow-x-auto">
-        <table className="w-full border-separate border-spacing-0 text-[14px]">
-          <thead>
-            <tr>
-              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">ID</th>
-              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Proveedor</th>
-              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Estado</th>
-              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Total</th>
-              <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Acciones</th>
-            </tr>
-          </thead>
+        <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+          <TableHeader>
+            <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+              <TableHead className="rounded-l-2xl">ID</TableHead>
+              <TableHead>Proveedor</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead className="rounded-r-2xl">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
           <AnimatePresence mode="wait" initial={false}>
             <motion.tbody
               key={`pedidos-page-${safePage}-${pageSize}`}
@@ -101,11 +132,11 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
               exit="exit"
             >
               {visible.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-5 px-4 text-[#718096]">
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8 text-center text-slate-500">
                     No hay pedidos que coincidan.
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 visible.map((p) => {
                 const estado = String(p.estado ?? "").toUpperCase();
@@ -114,46 +145,59 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
                   <motion.tr
                     key={String(p.id)}
                     variants={paginatedRowVariants}
-                    className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50"
+                    className="bo-table-row"
                   >
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.id}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{p.proveedor_nombre}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{p.estado}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{Number(p.total ?? 0).toFixed(2)} €</td>
-                    <td className="px-4 py-3">
+                    <TableCell className="text-sm font-medium text-slate-900">{p.id}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+                          <Building2 className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-slate-900">{p.proveedor_nombre}</div>
+                          <div className="mt-0.5 text-[12px] text-slate-500">Pedido #{p.id}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          estado === "COMPLETADO"
+                            ? "success"
+                            : estado === "PENDIENTE" || estado === "INCOMPLETO"
+                              ? "warning"
+                              : "outline"
+                        }
+                        className="px-3 py-1 text-[11px] font-semibold"
+                      >
+                        {p.estado}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm font-semibold text-slate-900">{Number(p.total ?? 0).toFixed(2)} €</TableCell>
+                    <TableCell>
                       {canReceive ? (
                         <button
                           type="button"
-                          className="inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
+                          className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:brightness-95"
                           onClick={() => onIrARecepcion(p.id)}
                         >
                           <ArrowRight className="h-4 w-4" />
                           Ir a Recepción
                         </button>
                       ) : (
-                        <span className="inline-block rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-600 whitespace-nowrap">
+                        <span className="inline-block rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 whitespace-nowrap">
                           Completado
                         </span>
                       )}
-                    </td>
+                    </TableCell>
                   </motion.tr>
                 );
                 })
               )}
             </motion.tbody>
           </AnimatePresence>
-        </table>
+        </Table>
       </div>
-
-      <TablePagination
-        totalItems={filtered.length}
-        page={safePage}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-        pageSizeOptions={[10, 25, 50]}
-        label="pedidos"
-      />
-    </div>
+    </BackofficeTablePanel>
   );
 }

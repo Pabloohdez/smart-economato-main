@@ -16,7 +16,10 @@ import UiSelect from "../components/ui/UiSelect";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
+import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import { Badge } from "../components/ui/badge";
 import Spinner from "../components/ui/Spinner";
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Trash2, Truck } from "lucide-react";
 
 type RecepcionRow = {
@@ -919,17 +922,17 @@ export default function Recepcion() {
                         {items.length === 0 ? (
                           <p>Sin items</p>
                         ) : (
-                          <table className="w-full border-separate border-spacing-0 text-[12px] table-fixed mt-2.5">
-                            <thead>
-                              <tr>
-                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Producto</th>
-                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Unidad</th>
-                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Pedida</th>
-                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-left font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap">Recibida (Antes)</th>
-                                <th className="bg-[var(--color-bg-surface)] text-[var(--color-text-muted)] px-2 py-3 text-center font-semibold border-b-2 border-[var(--color-border-default)] whitespace-nowrap w-[160px] max-[1024px]:w-[148px]">A Recibir Ahora</th>
-                              </tr>
-                            </thead>
-                            <tbody>
+                          <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
+                            <TableHeader>
+                              <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                                <TableHead className="rounded-l-2xl">Producto</TableHead>
+                                <TableHead>Unidad</TableHead>
+                                <TableHead>Pedida</TableHead>
+                                <TableHead>Recibida (Antes)</TableHead>
+                                <TableHead className="rounded-r-2xl text-center w-[160px] max-[1024px]:w-[148px]">A Recibir Ahora</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
                               {items.map((it) => {
                                 const qtyVerif = verifQty[it.id] ?? 0;
                                 const maxRecibir = Math.max(
@@ -939,17 +942,17 @@ export default function Recepcion() {
                                 const unidad = (it.unidad ?? "ud") as string;
                                 const step = stepDeUnidad(unidad);
                                 return (
-                                  <tr key={String(it.id)}>
-                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.producto_nombre}</td>
-                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)] whitespace-nowrap">{unidad}</td>
-                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.cantidad}</td>
-                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)]">{it.cantidad_recibida || 0}</td>
-                                    <td className="px-2 py-3 border-b border-[var(--color-border-default)] text-center">
+                                  <TableRow key={String(it.id)} className="bo-table-row">
+                                    <TableCell>{it.producto_nombre}</TableCell>
+                                    <TableCell className="whitespace-nowrap">{unidad}</TableCell>
+                                    <TableCell>{it.cantidad}</TableCell>
+                                    <TableCell>{it.cantidad_recibida || 0}</TableCell>
+                                    <TableCell className="text-center">
                                       {!completado ? (
-                                        <div className="inline-flex items-center gap-2 justify-center w-full">
+                                        <div className="inline-flex w-full items-center justify-center gap-2">
                                           <button
                                             type="button"
-                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
+                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
                                             aria-label={`Reducir cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
                                               actualizarCantidadVerificada(
@@ -974,31 +977,31 @@ export default function Recepcion() {
                                                 maxRecibir
                                               )
                                             }
-                                            className="w-[74px] min-h-11 py-2 px-2.5 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-surface)] text-center font-semibold [appearance:textfield]"
+                                            className="w-[74px] min-h-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
                                             inputMode="numeric"
                                           />
                                           <button
                                             type="button"
-                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
                                             aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
                                             title="Usar lectura de báscula"
                                             onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
                                             disabled={!scale.connected || scale.weightKg == null || step === 1}
                                           >
-                                            <i className="fa-solid fa-scale-balanced" />
+                                            <Scale className="h-4 w-4" />
                                           </button>
                                           <button
                                             type="button"
-                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
+                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
                                             aria-label={`Gestionar lotes de ${it.producto_nombre}`}
                                             title="Lotes (caducidad)"
                                             onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
                                           >
-                                            <i className="fa-solid fa-calendar-days" />
+                                            <CalendarDays className="h-4 w-4" />
                                           </button>
                                           <button
                                             type="button"
-                                            className="w-11 h-11 min-w-11 min-h-11 border border-[var(--color-border-default)] rounded-[10px] bg-[var(--color-bg-soft)] text-[var(--color-text-strong)] text-[22px] leading-none font-bold inline-flex items-center justify-center cursor-pointer active:scale-[0.97] focus-visible:outline-[3px] focus-visible:outline-[rgba(179,49,49,0.35)] focus-visible:outline-offset-2"
+                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
                                             aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
                                             onClick={() =>
                                               actualizarCantidadVerificada(
@@ -1014,12 +1017,12 @@ export default function Recepcion() {
                                       ) : (
                                         "—"
                                       )}
-                                    </td>
-                                  </tr>
+                                    </TableCell>
+                                  </TableRow>
                                 );
                               })}
-                            </tbody>
-                          </table>
+                            </TableBody>
+                          </Table>
                         )}
                       </div>
 
@@ -1110,38 +1113,40 @@ export default function Recepcion() {
                 <i className="fa-solid fa-plus" /> Añadir lote
               </button>
 
-              <div className="border border-[var(--color-border-default)] rounded-[12px] overflow-hidden">
-                <table className="w-full text-[13px]">
-                  <thead className="bg-[var(--color-bg-soft)]">
-                    <tr>
-                      <th className="text-left px-4 py-3">Caducidad</th>
-                      <th className="text-left px-4 py-3">Cantidad</th>
-                      <th className="text-right px-4 py-3">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+              <div className="overflow-hidden rounded-[12px] border border-[var(--color-border-default)]">
+                <Table className="bg-white text-[13px]">
+                  <TableHeader>
+                    <TableRow className="bg-[var(--color-bg-soft)] hover:bg-[var(--color-bg-soft)]">
+                      <TableHead className="rounded-l-2xl normal-case tracking-normal text-left text-[12px] text-[var(--color-text-muted)]">Caducidad</TableHead>
+                      <TableHead className="normal-case tracking-normal text-left text-[12px] text-[var(--color-text-muted)]">Cantidad</TableHead>
+                      <TableHead className="rounded-r-2xl normal-case tracking-normal text-right text-[12px] text-[var(--color-text-muted)]">Acción</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {(verifLotes[lotesDetalleId] ?? []).length === 0 ? (
-                      <tr><td colSpan={3} className="px-4 py-4 text-[var(--color-text-muted)]">No hay lotes añadidos.</td></tr>
+                      <TableRow>
+                        <TableCell colSpan={3} className="py-4 text-[var(--color-text-muted)]">No hay lotes añadidos.</TableCell>
+                      </TableRow>
                     ) : (
                       (verifLotes[lotesDetalleId] ?? []).map((l, idx) => (
-                        <tr key={idx} className="border-t border-[var(--color-border-default)]">
-                          <td className="px-4 py-3">{l.fecha}</td>
-                          <td className="px-4 py-3">{Number(l.cantidad).toFixed(3)} {lotesUnidad}</td>
-                          <td className="px-4 py-3 text-right">
+                        <TableRow key={idx} className="bo-table-row">
+                          <TableCell>{l.fecha}</TableCell>
+                          <TableCell>{Number(l.cantidad).toFixed(3)} {lotesUnidad}</TableCell>
+                          <TableCell className="text-right">
                             <button
                               type="button"
-                              className="bg-[#fff5f5] text-[#e53e3e] border-0 w-9 h-9 rounded-lg cursor-pointer"
+                              className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
                               onClick={() => eliminarLote(idx)}
                               aria-label="Eliminar lote"
                             >
                               <Trash2 strokeWidth={1.5} size={18} />
                             </button>
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
                       ))
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
 
               <div className="flex justify-end">
@@ -1160,87 +1165,87 @@ export default function Recepcion() {
       )}
       {/* Panel recepción actual */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm max-[1024px]:p-[18px]">
-        <div className="flex items-center justify-between gap-3 mb-5 flex-wrap max-[1024px]:items-start">
-          <h3 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 flex items-center gap-2.5">
-            <i className="fa-solid fa-clipboard-check" /> Recepción Actual
-          </h3>
-
-          <div className="bg-[var(--color-bg-surface)] px-5 py-2.5 rounded-lg border border-[var(--color-border-default)]">
-            <span className="text-[#50596D] text-[13px] mr-2">Proveedor:</span>
-            <span className="text-[var(--color-text-strong)] font-semibold text-[15px]">{nombreProveedorActual}</span>
+      <BackofficeTablePanel
+        className="mb-[25px] max-[1024px]:p-0"
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3 max-[1024px]:items-start">
+            <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+              <ClipboardCheck className="h-5 w-5 text-[var(--color-brand-500)]" /> Recepción Actual
+            </h3>
+            <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-5 py-2.5">
+              <span className="mr-2 text-[13px] text-[#50596D]">Proveedor:</span>
+              <span className="text-[15px] font-semibold text-[var(--color-text-strong)]">{nombreProveedorActual}</span>
+            </div>
           </div>
-        </div>
+        }
+      >
+        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto">
+          <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white max-[1024px]:min-w-0">
+            <TableHeader>
+              <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                <TableHead>Producto</TableHead>
+                <TableHead className="max-[1024px]:hidden">Proveedor</TableHead>
+                <TableHead>Stock Actual</TableHead>
+                <TableHead>Unidad</TableHead>
+                <TableHead>Cantidad Recibida</TableHead>
+                <TableHead>Nuevo Stock</TableHead>
+                <TableHead className="max-[1024px]:hidden">Precio</TableHead>
+                <TableHead>Subtotal</TableHead>
+                <TableHead>Acción</TableHead>
+              </TableRow>
+            </TableHeader>
 
-        <div className="w-full overflow-x-auto [-webkit-overflow-scrolling:touch]">
-          <table className="w-full min-w-[760px] border-separate border-spacing-0 bg-white max-[1024px]:min-w-0">
-            <thead>
-              <tr>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Producto</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:hidden">Proveedor</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Stock Actual</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Unidad</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Cantidad Recibida</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Nuevo Stock</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:hidden">Precio</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Subtotal</th>
-                <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">Acción</th>
-              </tr>
-            </thead>
-
-            <tbody>
+            <TableBody>
               {!recepcion.length ? (
-                <tr>
-                  <td colSpan={9}>
-                    <div className="py-[60px] px-5">
+                <TableRow>
+                  <TableCell colSpan={9}>
+                    <div className="px-5 py-[60px]">
                       <div className="flex flex-col items-center justify-center gap-2 text-center">
-                        <i className="fa-solid fa-inbox text-[48px] mb-1 opacity-55" />
+                        <i className="fa-solid fa-inbox mb-1 text-[48px] opacity-55" />
                         <p className="m-0 font-bold">No hay productos en la recepción actual</p>
                         <small className="opacity-80">Busca y selecciona productos para comenzar</small>
                       </div>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ) : (
                 recepcion.map((r, idx) => (
-                  <tr key={`${String(r.producto_id)}-${idx}`} className="border-b border-gray-100 transition-colors duration-150 hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.nombre}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:hidden">{r.proveedor}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap max-[1024px]:px-2 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.cantidadRecibida}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-primary max-[1024px]:px-2 max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500 max-[1024px]:hidden">{formatEUR(r.precio)}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900 max-[1024px]:px-2 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</td>
-                    <td className="px-4 py-3 max-[1024px]:px-2">
+                  <TableRow key={`${String(r.producto_id)}-${idx}`} className="bo-table-row">
+                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{r.nombre}</TableCell>
+                    <TableCell className="text-sm text-gray-500 max-[1024px]:hidden">{r.proveedor}</TableCell>
+                    <TableCell className="text-sm text-gray-500 max-[1024px]:text-[12px]">{r.stock}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-gray-500 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{r.cantidadRecibida}</TableCell>
+                    <TableCell className="text-sm font-medium text-primary max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</TableCell>
+                    <TableCell className="text-sm text-gray-500 max-[1024px]:hidden">{formatEUR(r.precio)}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
+                    <TableCell>
                       <button
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 max-[1024px]:h-11 max-[1024px]:w-11"
+                        className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 max-[1024px]:h-11 max-[1024px]:w-11"
                         onClick={() => eliminarFila(idx)}
                         title="Eliminar"
                         type="button"
                       >
                         <Trash2 strokeWidth={1.5} size={18} />
                       </button>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
+            </TableBody>
 
             {!!recepcion.length && (
-              <tfoot>
-                <tr className="bg-[var(--color-bg-surface)] text-[16px]">
-                  <td colSpan={6}>
-                    <strong>TOTAL DE LA RECEPCIÓN</strong>
-                  </td>
-                  <td className="text-[var(--color-brand-500)] text-[20px] font-bold">{formatEUR(totalRecepcion)}</td>
-                  <td />
-                </tr>
-              </tfoot>
+              <TableFooter>
+                <TableRow className="text-[16px] hover:bg-[var(--color-bg-soft)]">
+                  <TableCell colSpan={6}><strong>TOTAL DE LA RECEPCIÓN</strong></TableCell>
+                  <TableCell className="text-[20px] font-bold text-[var(--color-brand-500)]">{formatEUR(totalRecepcion)}</TableCell>
+                  <TableCell />
+                </TableRow>
+              </TableFooter>
             )}
-          </table>
+          </Table>
         </div>
-      </div>
+      </BackofficeTablePanel>
       </StaggerItem>
 
       {/* Observaciones + acciones */}
