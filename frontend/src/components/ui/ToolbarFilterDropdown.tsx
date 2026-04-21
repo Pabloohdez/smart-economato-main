@@ -59,8 +59,9 @@ export default function ToolbarFilterDropdown({
       <details ref={detailsRef} className="group">
         <summary
           className={cn(
-            "list-none flex items-center justify-between gap-3 cursor-pointer bo-toolbar-secondary",
-            active && "bg-blue-50 border-blue-200 text-blue-700",
+            // CLASES MAESTRAS: Igualadas al resto de botones de la Toolbar
+            "list-none flex items-center justify-between gap-3 cursor-pointer h-11 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 focus:outline-none active:scale-[0.98]",
+            active && "border-blue-300 bg-blue-50 text-blue-700"
           )}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">
@@ -83,8 +84,8 @@ export default function ToolbarFilterDropdown({
                 if (details) details.open = false;
               }}
               className={cn(
-                "w-full text-left text-sm px-3 py-2 rounded-lg transition-colors",
-                option.value === value ? "bg-indigo-50 text-indigo-700 font-semibold" : "hover:bg-slate-100 text-slate-700",
+                "w-full text-left text-[13px] font-medium px-3 py-2 rounded-lg transition-colors",
+                option.value === value ? "bg-indigo-50 text-indigo-700" : "hover:bg-slate-100 text-slate-700",
               )}
             >
               {option.label}

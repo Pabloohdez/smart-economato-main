@@ -208,15 +208,13 @@ export default function InventarioPage() {
   return (
     <StaggerPage className="mx-auto w-full max-w-[1460px] px-0 pb-8 pt-0">
       <StaggerItem>
-        <div className="mb-3">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary shadow-sm">
-              <Boxes className="h-6 w-6 text-white" strokeWidth={1.9} />
-            </div>
-            <div className="flex min-w-0 flex-col gap-1 pt-0.5">
-              <h1 className="text-4xl font-bold leading-none text-primary">Inventario</h1>
-              <p className="text-sm leading-tight text-slate-600">Gestiona los productos del catálogo, el stock y su presentación comercial.</p>
-            </div>
+        <div className="mb-3 flex items-center gap-3">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+            <Boxes className="h-5 w-5" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold leading-none text-primary">Inventario</h1>
+            <p className="mt-1 text-[13px] font-medium text-slate-500">{filtered.length} productos listados</p>
           </div>
         </div>
       </StaggerItem>
@@ -241,6 +239,7 @@ export default function InventarioPage() {
           onExportProducts={exportarProductos}
           onCreateProduct={() => nav("/inventario/nuevo")}
           limpiarFiltros={limpiarFiltros}
+          totalItems={filtered.length}
         />
       </StaggerItem>
 

@@ -7,8 +7,7 @@ import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
 import { showConfirm, showNotification } from "../../utils/notifications";
 import type { LoteProducto } from "../../services/lotesService";
-import { BadgeEuro, Eye, Pencil, Trash2 } from "lucide-react";
-import TablePaginationControls from "../ui/TablePaginationControls";
+import { Eye, Pencil, Trash2, ArrowUpAZ } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 function parseDate(d?: string | null): Date | null {
@@ -26,10 +25,10 @@ function formatShortDate(d: Date): string {
 }
 
 function classBadgePorCaducidad(dias: number | null) {
-  if (dias == null) return "bg-slate-100 text-slate-700 border-slate-200";
-  if (dias < 0) return "bg-red-600 text-white border-red-600";
-  if (dias <= 30) return "bg-amber-50 text-amber-800 border-amber-300";
-  return "bg-emerald-50 text-emerald-800 border-emerald-300";
+  if (dias == null) return "bg-slate-100 text-slate-600 border-slate-200";
+  if (dias < 0) return "bg-red-50 text-red-600 border-red-200";
+  if (dias <= 30) return "bg-amber-50 text-amber-700 border-amber-200";
+  return "bg-emerald-50 text-emerald-700 border-emerald-200";
 }
 
 function labelCaducidad(dias: number | null, fecha: Date | null) {
@@ -50,34 +49,42 @@ function formatMoney(value: number) {
 
 function formatStock(stock: number, unit: string) {
   const digits = unit === "ud" ? 0 : 2;
-  return `${stock.toFixed(digits)} ${unit}`;
+  return `${stock.toFixed(digits)}`;
 }
 
 function getStockPresentation(stock: number, min: number) {
   if (stock <= 0) {
     return {
       badge: "Agotado",
-      badgeClassName: "bg-red-50 text-red-700 border-red-200",
-      textClassName: "text-red-600",
+      badgeClassName: "bg-red-50 text-red-600",
     };
   }
 
   if (stock <= min) {
     return {
       badge: "Stock bajo",
-      badgeClassName: "bg-amber-50 text-amber-700 border-amber-200",
-      textClassName: "text-amber-700",
+      badgeClassName: "bg-amber-50 text-amber-600",
     };
   }
 
   return {
     badge: "En stock",
-    badgeClassName: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    textClassName: "text-slate-700",
+    badgeClassName: "bg-[#e6f4ea] text-[#137333]",
   };
 }
 
-
+function getPaginationRange(currentPage: number, totalPages: number) {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  if (currentPage <= 3) {
+    return [1, 2, 3, "...", totalPages];
+  }
+  if (currentPage >= totalPages - 2) {
+    return [1, "...", totalPages - 2, totalPages - 1, totalPages];
+  }
+  return [1, "...", currentPage, "...", totalPages];
+}
 
 export default function InventarioTable({ items, lotes }: { items: Producto[]; lotes: LoteProducto[] }) {
   const [page, setPage] = useState(1);
@@ -119,7 +126,6 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
       if (!Number.isFinite(stockMinimo) || stockMinimo < 0) throw new Error("Stock mínimo inválido");
 
       const payload: any = {
-        // backend espera la mayoría de campos, así que mandamos también los existentes
         nombre: editProducto.nombre,
         precio,
         stock,
@@ -256,10 +262,6 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     setPage(nextPage);
   }
 
-  function changePageSize(nextPageSize: number) {
-    setPageSize(nextPageSize);
-  }
-
   function toggleRowSelection(id: string) {
     setSelectedIds((current) => current.includes(id) ? current.filter((value) => value !== id) : [...current, id]);
   }
@@ -286,11 +288,13 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     await eliminarMutation.mutateAsync(producto);
   }
 
+  const paginationRange = getPaginationRange(safePage, totalPages);
+
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
-        <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white">
-          <section ref={tableSectionRef}>
+        <div className="overflow-hidden rounded-xl border-[3px] border-[#e2e8f0] bg-white shadow-sm flex flex-col">
+          <section ref={tableSectionRef} className="flex-1 overflow-hidden flex flex-col">
             <div className="overflow-x-auto">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
@@ -300,10 +304,10 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
                 >
-                  <table className="w-full min-w-[1100px] text-sm bo-table-no-select">
-                    <thead className="border-b-2 border-slate-300 bg-gradient-to-r from-slate-50 to-slate-100">
-                      <tr className="text-left text-slate-700">
-                        <th className="w-10 px-4 py-2.5 align-middle">
+                  <table className="w-full min-w-[1100px] border-collapse border-spacing-0 text-sm">
+                    <thead className="border-b-[3px] border-[#e2e8f0] bg-[#f8fafc]">
+                      <tr className="text-left text-[#0f172a]">
+                        <th className="w-12 px-4 py-2.5 align-middle">
                           <input
                             ref={selectAllRef}
                             type="checkbox"
@@ -311,23 +315,28 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                             checked={allVisibleSelected}
                             onChange={toggleVisibleSelection}
                             onMouseDown={(event) => event.preventDefault()}
-                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="w-[15px] h-[15px] rounded-[3px] border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                           />
                         </th>
-                        <th className="px-4 py-2.5 align-middle text-[15px] font-semibold text-slate-900">Producto</th>
-                        <th className="px-4 py-2.5 align-middle text-[15px] font-semibold text-slate-900">Familia</th>
-                        <th className="px-4 py-2.5 align-middle text-right text-[15px] font-semibold text-slate-900">Precio</th>
-                        <th className="px-4 py-2.5 align-middle text-center text-[15px] font-semibold text-slate-900">Stock</th>
-                        <th className="px-4 py-2.5 align-middle text-center text-[15px] font-semibold text-slate-900">Caducidad</th>
-                        <th className="px-4 py-2.5 align-middle text-[15px] font-semibold text-slate-900">Proveedor</th>
-                        <th className="px-4 py-2.5 align-middle text-center text-[15px] font-semibold text-slate-900">Acciones</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">
+                          <div className="flex items-center gap-1.5 cursor-pointer hover:text-blue-600 transition-colors">
+                            Productos
+                            <ArrowUpAZ className="w-[14px] h-[14px] text-slate-400" strokeWidth={2.5} />
+                          </div>
+                        </th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">Familia</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Precio</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Stock</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Caducidad</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">Proveedor</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRows.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="py-10 text-center">
-                            <p className="text-gray-500">No hay productos disponibles</p>
+                          <td colSpan={8} className="py-8 text-center">
+                            <p className="text-gray-500 text-[13px]">No hay productos disponibles</p>
                           </td>
                         </tr>
                       ) : (
@@ -340,93 +349,108 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                           return (
                             <tr
                               key={String(p.id)}
-                              className={`bo-table-row last:border-b-0 select-none ${selectedIds.includes(String(p.id)) ? "bg-indigo-50/50" : ""}`}
+                              className={`border-b border-[#e2e8f0] last:border-0 hover:bg-slate-50 transition-colors ${selectedIds.includes(String(p.id)) ? "bg-blue-50/50" : ""}`}
                             >
-                              <td className="px-4 py-1 align-top">
+                              <td className="px-4 py-2 align-middle">
                                 <input
                                   type="checkbox"
                                   aria-label={`Seleccionar ${String(p.nombre ?? "producto")}`}
                                   checked={selectedIds.includes(String(p.id))}
                                   onChange={() => toggleRowSelection(String(p.id))}
                                   onMouseDown={(event) => event.preventDefault()}
-                                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                  className="w-[15px] h-[15px] rounded-[3px] border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                                 />
                               </td>
-                              <td className="px-4 py-1 align-top">
-                                <div className="min-w-[280px]">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <p className="truncate font-semibold text-slate-800">{String(p.nombre ?? "Sin nombre")}</p>
-                                  </div>
-                                  <div className="mt-0.5 space-y-0 text-[10px] leading-tight text-slate-500">
-                                    <p>#{String(p.id ?? "—")} · Ref. {reference}</p>
-                                  </div>
+                              <td className="px-4 py-2 align-middle">
+                                <div className="flex flex-col justify-center min-w-[200px]">
+                                  <p className="text-[13px] font-semibold text-[#1e293b] uppercase leading-tight">
+                                    {String(p.nombre ?? "Sin nombre")}
+                                  </p>
+                                  <p className="text-[12px] text-slate-500 mt-0.5">
+                                    #{reference}
+                                  </p>
                                 </div>
                               </td>
-                              <td className="px-4 py-1 align-top text-slate-700">
-                                <div className="space-y-0 leading-tight">
-                                  <p>{String(p.categoria?.nombre ?? "General")}</p>
-                                  <p className="text-[10px] text-slate-500">Unidad: {stockUnit}</p>
+                              <td className="px-4 py-2 align-middle">
+                                <span className="text-[13px] text-slate-600">
+                                  {String(p.categoria?.nombre ?? "General")}
+                                </span>
+                              </td>
+                              <td className="px-4 py-2 align-middle text-center">
+                                <div className="flex flex-col items-center">
+                                  <span className="font-semibold text-blue-600 text-[14px]">
+                                    {formatMoney(Number(p.precio ?? 0))}
+                                  </span>
+                                  <span className="text-[11px] text-slate-500 mt-0.5">
+                                    /{stockUnit === 'ud' ? 'unidad' : stockUnit}
+                                  </span>
                                 </div>
                               </td>
-                              <td className="px-4 py-1 align-top text-right">
-                                <p className="font-bold tabular-nums text-primary">{formatMoney(Number(p.precio ?? 0))}</p>
-                                <p className="ml-auto mt-0.5 inline-flex items-center gap-1 text-[10px] text-slate-500">
-                                  <BadgeEuro className="h-3.5 w-3.5" /> /{stockUnit}
-                                </p>
-                              </td>
-                              <td className="px-4 py-1 align-top text-center">
-                                <div className="space-y-0 leading-tight">
+                              <td className="px-4 py-2 align-middle text-center">
+                                <div className="flex flex-col items-center gap-0.5">
                                   <span className={cn(
-                                    "inline-flex items-center rounded-full px-2.5 py-0 text-[11px] font-semibold leading-5",
-                                    stockMeta.badge === "En stock" ? "bg-green-100 text-green-800" : stockMeta.badge === "Stock bajo" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800",
+                                    "inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-medium",
+                                    stockMeta.badgeClassName
                                   )}>
                                     {stockMeta.badge}
                                   </span>
-                                  <div className="text-[10px] text-slate-500">{formatStock(stock, stockUnit)}</div>
+                                  {stockMeta.badge !== "En stock" && (
+                                    <span className="text-[11px] text-slate-500">
+                                      {formatStock(stock, stockUnit)} {stockUnit === 'ud' ? 'ud' : stockUnit}
+                                    </span>
+                                  )}
                                 </div>
                               </td>
-                              <td className="px-4 py-1 align-top text-center">
-                                <div className="space-y-0 leading-tight">
+                              <td className="px-4 py-2 align-middle text-center">
+                                <div className="flex flex-col items-center justify-center">
                                   <span className={cn(
-                                    "inline-flex items-center rounded-full px-2.5 py-0 text-[11px] font-semibold leading-5",
-                                    cadDias != null && cadDias < 0 ? "bg-red-100 text-red-800" : cadDias != null && cadDias <= 30 ? "bg-amber-100 text-amber-800" : cadDias == null ? "bg-slate-100 text-slate-800" : "bg-green-100 text-green-800",
+                                    "text-[13px]",
+                                    cadDias != null && cadDias < 0 ? "text-red-600 font-medium" : cadDias != null && cadDias <= 30 ? "text-amber-600 font-medium" : "text-slate-600"
                                   )}>
                                     {nearestLabel.title}
                                   </span>
-                                  <div className="text-[10px] text-slate-500">{nearestLabel.subtitle || "Sin fecha registrada"}</div>
+                                  {nearestLabel.subtitle && (
+                                    <span className="text-[11px] text-slate-400 mt-0.5">{nearestLabel.subtitle}</span>
+                                  )}
                                 </div>
                               </td>
-                              <td className="px-4 py-1 align-top text-slate-700">
-                                <div className="space-y-0 text-[10px] leading-tight text-slate-600">
-                                  <p>{String(p.proveedor?.nombre ?? "Sin proveedor")}</p>
-                                  <p>Lotes: {lotesCount}</p>
+                              <td className="px-4 py-2 align-middle text-left">
+                                <div className="flex flex-col">
+                                  <span className="text-[13px] text-slate-600">
+                                    {String(p.proveedor?.nombre ?? "Sin proveedor")}
+                                  </span>
+                                  {lotesCount > 0 && (
+                                    <span className="text-[11px] text-slate-400 mt-0.5">
+                                      {lotesCount} lote{lotesCount !== 1 ? 's' : ''}
+                                    </span>
+                                  )}
                                 </div>
                               </td>
-                              <td className="px-4 py-1 align-top">
-                                <div className="flex items-center justify-center gap-1">
+                              <td className="px-4 py-2 align-middle">
+                                <div className="flex items-center justify-center gap-2">
                                   <button
                                     type="button"
                                     onClick={() => abrirLotes(p)}
-                                    className="bo-table-action-btn text-slate-600 hover:text-slate-800"
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
                                     title="Ver lotes"
                                   >
-                                    <Eye className="h-4 w-4" />
+                                    <Eye className="h-[14px] w-[14px]" />
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => abrirEdicion(p)}
-                                    className="bo-table-action-btn text-primary hover:text-primary/90"
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-blue-500 hover:bg-blue-50 transition-colors"
                                     title="Editar producto"
                                   >
-                                    <Pencil className="h-4 w-4" />
+                                    <Pencil className="h-[14px] w-[14px]" />
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => void eliminarProducto(p)}
-                                    className="bo-table-action-btn text-red-600 hover:text-red-700"
+                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-red-500 hover:bg-red-50 transition-colors"
                                     title="Eliminar producto"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-[14px] w-[14px]" />
                                   </button>
                                 </div>
                               </td>
@@ -439,24 +463,94 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 </motion.div>
               </AnimatePresence>
             </div>
-            {rows.length > 0 ? (
+
+            {rows.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bo-table-pagination"
+                className="border-t-[3px] border-[#e2e8f0] bg-white px-5 py-4 flex items-center justify-between"
               >
-                <TablePaginationControls
-                  page={safePage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
-                  totalItems={rows.length}
-                  totalLabel="productos"
-                  onPageChange={changePage}
-                  onPageSizeChange={changePageSize}
-                />
+                <div className="flex items-center gap-3 text-[14px] text-slate-500">
+                  <span>Mostrando</span>
+                  <div className="relative">
+                    <select
+                      value={pageSize}
+                      onChange={(e) => {
+                        setPageSize(Number(e.target.value));
+                        setPage(1);
+                      }}
+                      className="appearance-none bg-white border border-[#e2e8f0] text-slate-700 text-[14px] rounded-[6px] pl-3 pr-8 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#5b4eff] cursor-pointer"
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                  </div>
+                  <span>de {rows.length} productos</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => changePage(1)}
+                    disabled={safePage === 1}
+                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="text-[16px] leading-none mb-0.5">«</span>
+                  </button>
+                  <button
+                    onClick={() => changePage(safePage - 1)}
+                    disabled={safePage === 1}
+                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="text-[16px] leading-none mb-0.5">‹</span>
+                  </button>
+
+                  {paginationRange.map((p, i) => {
+                    if (p === "...") {
+                      return (
+                        <span key={`dots-${i}`} className="flex items-center justify-center w-[34px] h-[34px] text-slate-400 text-[14px]">
+                          ...
+                        </span>
+                      );
+                    }
+                    const isCurrent = safePage === p;
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => changePage(p as number)}
+                        className={`flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border text-[13px] transition-colors ${
+                          isCurrent
+                            ? "bg-[#5b4eff] border-[#5b4eff] text-white font-medium shadow-sm"
+                            : "border-[#e2e8f0] bg-white text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    onClick={() => changePage(safePage + 1)}
+                    disabled={safePage === totalPages}
+                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="text-[16px] leading-none mb-0.5">›</span>
+                  </button>
+                  <button
+                    onClick={() => changePage(totalPages)}
+                    disabled={safePage === totalPages}
+                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <span className="text-[16px] leading-none mb-0.5">»</span>
+                  </button>
+                </div>
               </motion.div>
-            ) : null}
+            )}
           </section>
         </div>
       </motion.div>
