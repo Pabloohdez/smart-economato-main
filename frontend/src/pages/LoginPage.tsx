@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { login } from "../services/authService";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginPage() {
+  const { refreshUser } = useAuth();
   const nav = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -17,7 +19,8 @@ export default function LoginPage() {
 
     try {
       await login(username.trim(), password.trim());
-      nav("/inicio");
+      refreshUser();
+      nav("/inicio", { replace: true });
     } catch (error) {
       setMsg(error instanceof Error ? error.message : "Usuario o contraseña incorrectos");
     } finally {
@@ -140,16 +143,10 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="mb-2">
                     <label htmlFor="password" className="block text-[13px] font-semibold text-slate-700">
                       Contraseña
                     </label>
-                    <Link
-                      className="text-[12px] font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]"
-                      to="/recuperar-password"
-                    >
-                      Recuperar acceso
-                    </Link>
                   </div>
 
                   <div className="relative">
@@ -180,6 +177,14 @@ export default function LoginPage() {
                         aria-hidden="true"
                       />
                     </button>
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <Link
+                      className="text-[12px] font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]"
+                      to="/recuperar-password"
+                    >
+                      Recuperar acceso
+                    </Link>
                   </div>
                 </div>
 

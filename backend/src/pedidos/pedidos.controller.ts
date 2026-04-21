@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { PedidosService } from './pedidos.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import type { AuthenticatedRequest } from '../auth/auth.types';
@@ -55,5 +55,21 @@ export class PedidosController {
       'pedidos',
     );
     return result;
+  }
+  @Delete(':id')
+  async eliminar(@Param('id') id: string) {
+    const numId = parseInt(id, 10);
+    if (isNaN(numId)) {
+      throw new HttpException('ID inválido', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const result = await this.pedidosService.remove(numId);
+      this.realtimeService.publish(['pedidos', 'pedidosPendientes'], 'pedidos');
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo eliminar el pedido';
+      throw new HttpException(message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

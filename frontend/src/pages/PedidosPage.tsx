@@ -123,6 +123,7 @@ export default function PedidosPage() {
   const [fechaPedido, setFechaPedido] = useState("");
 
   const [proveedorId, setProveedorId] = useState("");
+  const [busquedaProducto, setBusquedaProducto] = useState("");
   const [itemsPedido, setItemsPedido] = useState<ItemPedido[]>([]);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualNombre, setManualNombre] = useState("");
@@ -266,13 +267,19 @@ export default function PedidosPage() {
   }, [pedidosQuery.error, productosQuery.error, proveedoresQuery.error, vista]);
 
   const productosFiltrados = useMemo(() => {
-    if (!proveedorId) return [];
+    const term = busquedaProducto.trim().toLowerCase();
 
     return productos.filter((p) => {
       const pid = p.proveedorId ?? p.proveedor?.id ?? null;
-      return String(pid) === proveedorId;
+      const coincideProveedor = !proveedorId || String(pid) === proveedorId;
+      const coincideBusqueda =
+        !term ||
+        String(p.nombre ?? "").toLowerCase().includes(term) ||
+        String((p as any).codigoBarras ?? "").toLowerCase().includes(term);
+
+      return coincideProveedor && coincideBusqueda;
     });
-  }, [productos, proveedorId]);
+  }, [productos, proveedorId, busquedaProducto]);
 
   const totalPedido = useMemo(() => {
     return itemsPedido.reduce((acc, item) => {
@@ -580,7 +587,9 @@ export default function PedidosPage() {
                   <BackofficeTablePanel
                     header={
                       <div className="flex items-center justify-between gap-3 flex-wrap">
-                        <h4 className="m-0 text-[16px] font-semibold text-[var(--color-text-strong)]">Productos Disponibles</h4>
+                        <h4 className="m-0 text-[16px] font-semibold text-[var(--color-text-strong)]">
+                          Productos Disponibles
+                        </h4>
                         <Button
                           type="button"
                           variant="secondary"
@@ -598,17 +607,24 @@ export default function PedidosPage() {
                     }
                     bodyClassName="p-0"
                   >
-                  <div className="h-[400px] overflow-y-auto bg-white">
-                    {!proveedorId && (
-                      <p className="p-4 text-[var(--color-text-muted)]">Selecciona un proveedor primero</p>
+                    <div className="p-4 border-b border-slate-100 bg-white">
+                      <input
+                        type="text"
+                        value={busquedaProducto}
+                        onChange={(e) => setBusquedaProducto(e.target.value)}
+                        placeholder="Buscar producto por nombre o código..."
+                        className="w-full rounded-lg border border-[var(--color-border-default)] px-3 py-2 text-sm"
+                      />
+                    </div>
+
+                    <div className="h-[400px] overflow-y-auto bg-white">
+                    {productosFiltrados.length === 0 && (
+                      <p className="p-4 text-[var(--color-text-muted)]">
+                        No hay productos que coincidan con la búsqueda o el filtro seleccionado.
+                      </p>
                     )}
 
-                    {proveedorId && productosFiltrados.length === 0 && (
-                      <p className="p-4 text-[var(--color-text-muted)]">No hay productos asociados a este proveedor</p>
-                    )}
-
-                    {proveedorId &&
-                      productosFiltrados.map((p) => (
+                    {productosFiltrados.map((p) => (
                         <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 text-[14px] transition-colors hover:bg-slate-50" key={String(p.id)}>
                           <div className="min-w-0 flex-1">
                             <div className="truncate font-medium text-[var(--color-text-strong)]">{p.nombre}</div>

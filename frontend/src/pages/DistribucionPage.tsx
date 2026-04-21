@@ -115,7 +115,9 @@ export default function DistribucionPage() {
 
       if (!json?.success) throw new Error(json?.error || "Error cargando productos");
 
-      let list: Producto[] = (json.data ?? []).map((p: any) => ({
+      let list: Producto[] = (json.data ?? [])
+      .filter((p: any) => p.activo !== false && Number(p.stock ?? 0) > 0)
+      .map((p: any) => ({
         id: p.id,
         nombre: p.nombre,
         precio: Number(p.precio ?? 0),
@@ -252,7 +254,10 @@ export default function DistribucionPage() {
     }
 
     // Filter locally from already loaded products
-    let matchList = productosBase.filter((p) => {
+    let matchList = productosBase.filter((p: any) => {
+      if (p.activo === false) return false;
+      if (Number(p.stock ?? 0) <= 0) return false;
+
       const nom = (p.nombre || "").toLowerCase();
       const cb = (p.codigoBarras || "").toLowerCase();
       return nom.includes(t) || cb.includes(t);
@@ -377,11 +382,10 @@ export default function DistribucionPage() {
 
     for (const item of carrito) {
       const payload = {
-        productoId: item.productoId,
+        productoId: String(item.productoId),
         cantidad: item.cantidad,
         tipo: "SALIDA",
         motivo: motivo,
-        usuarioId: user?.id || "admin",
       };
 
       try {

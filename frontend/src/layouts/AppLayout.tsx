@@ -75,11 +75,26 @@ export default function AppLayout() {
   const outlet = useOutlet();
   const isInicio = location.pathname === "/inicio";
   const transitionKey = location.pathname;
-  const { user } = useAuth();
-  const userName = String(user?.nombre ?? "Administrador");
+  const { user, refreshUser } = useAuth();
+
+  const userName = String(
+    user?.nombre ||
+    user?.username ||
+    user?.usuario ||
+    "Usuario"
+  ).trim();
+
   const userEmail = String(user?.email ?? "").trim();
-  const userRole = String(user?.role ?? user?.rol ?? "usuario").trim();
+
+  const userRole = String(
+    user?.role ||
+    user?.rol ||
+    "admin"
+  ).trim();
+
   const normalizedRole = normalizeRole(userRole);
+  const userRoleDisplay =
+  normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -176,10 +191,11 @@ export default function AppLayout() {
     };
   }, [sidebarOpen]);
 
-  function logout() {
-    logoutSession();
-    nav("/login", { replace: true });
-  }
+ function logout() {
+  logoutSession();
+  refreshUser();
+  nav("/login", { replace: true });
+}
 
   function renderNavSection(items: typeof visibleNavItems, title: string) {
     if (items.length === 0) return null;
@@ -294,7 +310,7 @@ export default function AppLayout() {
                 <span className="min-w-0 flex flex-1 flex-col items-start gap-0.5">
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-bold text-[var(--color-text-strong)]">{userName}</span>
                   <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold text-[var(--color-text-muted)]">
-                    {userEmail || userRole || "Gestor de Economato"}
+                    {userEmail || userRoleDisplay || "Usuario"}
                   </span>
                 </span>
                 <span className="ml-auto text-[#9ca3af]" aria-hidden="true">
@@ -398,7 +414,7 @@ export default function AppLayout() {
                   >
                     <div className="hidden text-right md:block">
                       <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
+                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRoleDisplay || "Usuario"}</div>
                     </div>
                     <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
                       {userInitial}

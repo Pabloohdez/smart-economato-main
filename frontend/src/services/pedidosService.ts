@@ -21,6 +21,16 @@ export async function getPedidos(): Promise<PedidoHistorial[]> {
 
   return Array.isArray(json.data) ? json.data : [];
 }
+export async function eliminarPedido(pedidoId: number | string): Promise<string> {
+  const json = await apiFetch<{ success?: boolean; message?: string; data?: { message?: string } }>(`/pedidos/${pedidoId}`, {
+    method: "DELETE",
+    headers: {
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  });
+
+  return json?.data?.message ?? json?.message ?? "Pedido eliminado correctamente";
+}
 
 export async function getPedidosPendientes(): Promise<Pedido[]> {
   const json = await apiFetch<PedidosResponse<Pedido[]>>("/pedidos", {
