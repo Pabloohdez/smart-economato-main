@@ -30,16 +30,6 @@ function daysUntil(date: Date): number {
   return Math.floor((b - a) / (1000 * 60 * 60 * 24));
 }
 
-function hoyES() {
-  const fecha = new Date();
-  return fecha.toLocaleDateString("es-ES", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
 export default function InventarioPage() {
   const nav = useNavigate();
 
@@ -164,20 +154,6 @@ export default function InventarioPage() {
     await Promise.all([productosQuery.refetch(), lotesQuery.refetch()]);
   }
 
-  const resumenInventario = useMemo(() => {
-    const total = activeItems.length;
-    const stockBajo = activeItems.filter((item) => Number(item.stock ?? 0) <= Number((item as any).stockMinimo ?? LOW_STOCK_THRESHOLD)).length;
-    const proximosCaducar = activeItems.filter((item) => {
-      const d = parseFechaCaducidad((item as any).fechaCaducidad);
-      if (!d) return false;
-      const diff = daysUntil(d);
-      return diff >= 0 && diff <= EXPIRING_DAYS_THRESHOLD;
-    }).length;
-    const valorCatalogo = activeItems.reduce((sum, item) => sum + Number(item.precio ?? 0) * Number(item.stock ?? 0), 0);
-
-    return { total, stockBajo, proximosCaducar, valorCatalogo };
-  }, [activeItems]);
-
   function exportarProductos() {
     const rows = filtered.map((item) => ({
       Producto: String(item.nombre ?? ""),
@@ -230,20 +206,18 @@ export default function InventarioPage() {
   }, []);
 
   return (
-    <StaggerPage className="mx-auto w-full max-w-[1440px] px-0 pb-8 pt-0">
+    <StaggerPage className="mx-auto w-full max-w-[1460px] px-0 pb-8 pt-0">
       <StaggerItem>
-        <div className="mb-7">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[18px] border border-[rgba(179,49,49,0.14)] bg-[linear-gradient(145deg,rgba(179,49,49,0.12),rgba(255,255,255,0.96))] text-[var(--color-brand-500)] shadow-[0_8px_20px_rgba(179,49,49,0.12)]">
-              <Boxes className="h-6 w-6" strokeWidth={1.8} />
+        <div className="mb-3">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary shadow-sm">
+              <Boxes className="h-6 w-6 text-white" strokeWidth={1.9} />
             </div>
-            <h1 className="text-[32px] font-extrabold leading-none tracking-[-0.04em] text-slate-900 max-[768px]:text-[26px]">
-              Inventario
-            </h1>
+            <div className="flex min-w-0 flex-col gap-1 pt-0.5">
+              <h1 className="text-4xl font-bold leading-none text-primary">Inventario</h1>
+              <p className="text-sm leading-tight text-slate-600">Gestiona los productos del catálogo, el stock y su presentación comercial.</p>
+            </div>
           </div>
-          <p className="mt-1.5 pl-[3.875rem] text-[13.5px] leading-snug text-slate-500">
-            Gestiona los productos del catálogo, el stock y su presentación comercial.
-          </p>
         </div>
       </StaggerItem>
 
@@ -273,14 +247,20 @@ export default function InventarioPage() {
       {loading && (
         <StaggerItem>
           <div className="space-y-4">
-            <div className="grid gap-3 xl:grid-cols-[minmax(420px,1.8fr)_210px_190px_auto_auto]">
-              <Skeleton className="h-11 rounded-2xl" />
-              <Skeleton className="h-11 rounded-2xl" />
-              <Skeleton className="h-11 rounded-2xl" />
-              <Skeleton className="h-11 rounded-2xl" />
-              <Skeleton className="h-11 rounded-2xl" />
+            <div className="rounded-[30px] border border-slate-200/80 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
+              <div className="grid gap-3 xl:grid-cols-[minmax(360px,1.7fr)_220px_200px_auto]">
+                <Skeleton className="h-14 rounded-2xl" />
+                <Skeleton className="h-14 rounded-2xl" />
+                <Skeleton className="h-14 rounded-2xl" />
+                <Skeleton className="h-14 rounded-2xl" />
+              </div>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <Skeleton className="h-10 w-[220px] rounded-xl" />
+                <Skeleton className="h-10 w-[220px] rounded-xl" />
+                <Skeleton className="h-10 w-[140px] rounded-xl" />
+              </div>
             </div>
-            <Skeleton className="h-[560px] rounded-[28px]" />
+            <Skeleton className="h-[620px] rounded-[32px]" />
           </div>
         </StaggerItem>
       )}

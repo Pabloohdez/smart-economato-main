@@ -16,7 +16,10 @@ type UiSelectProps = {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  triggerClassName?: string;
+  contentClassName?: string;
   leadingIcon?: ReactNode;
+  active?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -30,7 +33,10 @@ export default function UiSelect(props: UiSelectProps) {
     placeholder = "Seleccionar...",
     disabled,
     className,
+    triggerClassName,
+    contentClassName,
     leadingIcon,
+    active = false,
     onChange,
   } = props;
 
@@ -63,7 +69,9 @@ export default function UiSelect(props: UiSelectProps) {
           aria-label={ariaLabel ?? label ?? placeholder}
           className={cn(
             "group bo-select w-full justify-between gap-3",
+            active && "border-slate-300 bg-slate-50 text-slate-900 shadow-[0_0_0_4px_rgba(148,163,184,0.12)]",
             !selected && "text-[var(--color-text-muted)]",
+            triggerClassName,
           )}
         >
           <span className="flex min-w-0 items-center gap-2.5">
@@ -81,7 +89,10 @@ export default function UiSelect(props: UiSelectProps) {
           <SelectPrimitive.Content
             position="popper"
             sideOffset={8}
-            className="z-[99999] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]"
+            className={cn(
+              "z-[99999] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+              contentClassName,
+            )}
           >
             <SelectPrimitive.Viewport className="min-w-[var(--radix-select-trigger-width)] p-2">
               {options.map((opt) => (

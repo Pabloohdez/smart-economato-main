@@ -1,33 +1,26 @@
 import type { Categoria, Proveedor } from "../../services/productosService";
-import { Clock3, Download, Filter, FilterX, Plus, Tag, TriangleAlert, ScanLine } from "lucide-react";
-import UiSelect from "../ui/UiSelect";
+import { ArrowDownWideNarrow, Clock3, Download, Filter, FilterX, Plus, ScanLine, TriangleAlert } from "lucide-react";
 import SearchInput from "../ui/SearchInput";
+import ToolbarFilterDropdown from "../ui/ToolbarFilterDropdown";
 
 type Props = {
   q: string;
   setQ: (v: string) => void;
-
   cats: Categoria[];
   catId: string;
   setCatId: (v: string) => void;
-
   provs: Proveedor[];
   provId: string;
   setProvId: (v: string) => void;
-
   orden: "asc" | "desc";
   setOrden: (v: "asc" | "desc") => void;
-
   onlyStockBajo: boolean;
   setOnlyStockBajo: (v: boolean) => void;
-
   onlyProximoCaducar: boolean;
   setOnlyProximoCaducar: (v: boolean) => void;
-
   onScanBarcode: () => void;
   onExportProducts: () => void;
   onCreateProduct: () => void;
-
   limpiarFiltros: () => void;
 };
 
@@ -51,8 +44,12 @@ export default function InventarioToolbar({
   onCreateProduct,
   limpiarFiltros,
 }: Props) {
-  const activeFilters = Number(Boolean(catId)) + Number(Boolean(provId)) + Number(onlyStockBajo) + Number(Boolean(onlyProximoCaducar));
   const stockValue = onlyStockBajo ? "stock-bajo" : onlyProximoCaducar ? "proximo-caducar" : "todos";
+  const stockLabel = stockValue === "stock-bajo" ? "Stock bajo" : stockValue === "proximo-caducar" ? "Próximo a caducar" : "Todos";
+  const ordenLabel = orden === "desc" ? "Mayor a menor" : "Menor a mayor";
+  const catLabel = cats.find((cat) => String(cat.id) === catId)?.nombre ?? "Todas";
+  const provLabel = provs.find((prov) => String(prov.id) === provId)?.nombre ?? "Todos";
+  const hasActiveFilters = Boolean(q.trim() || catId || provId || onlyStockBajo || onlyProximoCaducar || orden !== "asc");
 
   function handleStockChange(value: string) {
     if (value === "stock-bajo") {
@@ -70,145 +67,121 @@ export default function InventarioToolbar({
   }
 
   return (
-    <div className="mb-6 space-y-3">
-      <div className="rounded-[26px] border border-slate-200/50 bg-white/98 p-3.5 shadow-[0_2px_4px_rgba(15,23,42,0.03),0_20px_48px_rgba(15,23,42,0.07)] ring-1 ring-black/[0.03] backdrop-blur-xl">
-      <div className="grid gap-3 xl:grid-cols-[minmax(420px,1.8fr)_210px_190px_auto_auto] xl:items-center">
-        <div className="min-w-0">
+    <div className="mb-5 rounded-[28px] border border-slate-300 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.4)]">
+      <div className="grid grid-cols-1 gap-3 min-[1180px]:grid-cols-[minmax(290px,1.45fr)_minmax(128px,0.72fr)_minmax(122px,0.62fr)_minmax(138px,0.72fr)_minmax(158px,0.8fr)_110px_110px_176px] min-[1180px]:items-center">
+        <div className="relative min-w-0">
           <SearchInput
             value={q}
             onChange={setQ}
-            placeholder="Buscar por nombre, referencia, marca o material..."
+            placeholder="Buscar por nombre, referencia, marca, material..."
             ariaLabel="Buscar producto por nombre o código"
-            className="[&_input]:h-12 [&_input]:rounded-2xl [&_input]:border-slate-200/70 [&_input]:bg-white [&_input]:shadow-none [&_input]:ring-1 [&_input]:ring-slate-200/60 [&_input]:transition-all [&_input]:duration-200 [&_input]:hover:ring-slate-300/80 [&_input]:focus-visible:outline-none [&_input]:focus-visible:ring-2 [&_input]:focus-visible:ring-[rgba(179,49,49,0.18)] [&_input]:focus-visible:border-[rgba(179,49,49,0.3)]"
+            inputClassName="text-[15px]"
           />
         </div>
 
-        <div className="min-w-0">
-          <UiSelect
-            className="[&>button]:h-12 [&>button]:rounded-2xl [&>button]:border-slate-200/70 [&>button]:bg-white [&>button]:ring-1 [&>button]:ring-black/[0.03] [&>button]:transition-all [&>button]:duration-200 [&>button]:hover:border-slate-300 [&>button]:hover:shadow-[0_6px_18px_rgba(15,23,42,0.07)]"
-            leadingIcon={<Filter className="h-4 w-4" />}
-            value={catId}
-            onChange={setCatId}
-            placeholder="Familias (Todas)"
-            options={[
-              { value: "", label: "Familias  (Todas)" },
-              ...cats.map((c) => ({ value: String(c.id), label: c.nombre })),
-            ]}
-          />
-        </div>
+        <ToolbarFilterDropdown
+          label="Familias"
+          valueLabel={catLabel}
+          value={catId}
+          active={Boolean(catId)}
+          leadingIcon={<Filter className="w-4 h-4" />}
+          onChange={setCatId}
+          options={[{ value: "", label: "Todas" }, ...cats.map((cat) => ({ value: String(cat.id), label: cat.nombre }))]}
+          className="min-w-0"
+        />
 
-        <div className="min-w-0">
-          <UiSelect
-            className="[&>button]:h-12 [&>button]:rounded-2xl [&>button]:border-slate-200/70 [&>button]:bg-white [&>button]:ring-1 [&>button]:ring-black/[0.03] [&>button]:transition-all [&>button]:duration-200 [&>button]:hover:border-slate-300 [&>button]:hover:shadow-[0_6px_18px_rgba(15,23,42,0.07)]"
-            leadingIcon={<Filter className="h-4 w-4" />}
-            value={stockValue}
-            onChange={handleStockChange}
-            placeholder="Stock (Todos)"
-            options={[
-              { value: "todos", label: "Stock  (Todos)" },
-              { value: "stock-bajo", label: "Solo stock bajo" },
-              { value: "proximo-caducar", label: "Próximo a caducar" },
-            ]}
-          />
-        </div>
+        <ToolbarFilterDropdown
+          label="Stock"
+          valueLabel={stockLabel}
+          value={stockValue}
+          active={stockValue !== "todos"}
+          leadingIcon={<Filter className="w-4 h-4" />}
+          onChange={handleStockChange}
+          options={[
+            { value: "todos", label: "Todos" },
+            { value: "stock-bajo", label: "Stock bajo" },
+            { value: "proximo-caducar", label: "Próximo a caducar" },
+          ]}
+          className="min-w-0"
+        />
 
-        <div className="flex items-center gap-2 xl:justify-end">
+        <ToolbarFilterDropdown
+          label="Proveedor"
+          valueLabel={provLabel}
+          value={provId}
+          active={Boolean(provId)}
+          leadingIcon={<Filter className="w-4 h-4" />}
+          onChange={setProvId}
+          options={[{ value: "", label: "Todos" }, ...provs.map((prov) => ({ value: String(prov.id), label: prov.nombre }))]}
+          className="min-w-0"
+        />
+
+        <ToolbarFilterDropdown
+          label="Precio"
+          valueLabel={ordenLabel}
+          value={orden}
+          active={orden !== "asc"}
+          leadingIcon={<ArrowDownWideNarrow className="w-4 h-4" />}
+          onChange={(value) => setOrden(value as "asc" | "desc")}
+          options={[
+            { value: "asc", label: "Menor a mayor" },
+            { value: "desc", label: "Mayor a menor" },
+          ]}
+          className="min-w-0"
+        />
+
+        <button type="button" onClick={onExportProducts} className="bo-toolbar-secondary w-full min-[1280px]:w-auto">
+          <Download className="h-4 w-4" />
+          Exportar
+        </button>
+
+        <button
+          type="button"
+          onClick={limpiarFiltros}
+          disabled={!hasActiveFilters}
+          className="bo-toolbar-secondary w-full min-[1280px]:w-auto disabled:cursor-not-allowed disabled:opacity-55"
+        >
+          <FilterX className="h-4 w-4" />
+          Limpiar
+        </button>
+
+        <button type="button" onClick={onCreateProduct} className="bo-toolbar-primary w-full justify-center px-6 min-[1180px]:w-auto">
+          <Plus className="h-5 w-5" />
+          Nuevo Producto
+        </button>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
-            className="inline-flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border border-slate-200/70 bg-white text-slate-400 ring-1 ring-black/[0.03] transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:text-slate-600 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
+            type="button"
+            onClick={() => setOnlyStockBajo(!onlyStockBajo)}
+            className={`bo-segmented-btn ${onlyStockBajo ? "border-primary bg-primary text-white hover:bg-primary/95" : ""}`}
+            aria-pressed={onlyStockBajo}
+          >
+            <TriangleAlert className="w-4 h-4" />
+            Stock Bajo
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setOnlyProximoCaducar(!onlyProximoCaducar)}
+            className={`bo-segmented-btn ${onlyProximoCaducar ? "border-primary bg-primary text-white hover:bg-primary/95" : ""}`}
+            aria-pressed={onlyProximoCaducar}
+          >
+            <Clock3 className="w-4 h-4" />
+            Próximo a Caducar
+          </button>
+
+          <button
             type="button"
             onClick={onScanBarcode}
             aria-label="Escanear codigo de barras"
             title="Escanear código"
+            className="bo-segmented-btn"
           >
-            <ScanLine className="h-4 w-4" />
+            <ScanLine className="w-4 h-4" />
+            Escanear
           </button>
-          <button
-            className="inline-flex h-12 items-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 text-[13px] font-medium text-slate-500 ring-1 ring-black/[0.03] transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:text-slate-700 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
-            type="button"
-            onClick={onExportProducts}
-          >
-            <Download className="h-3.5 w-3.5" /> Exportar
-          </button>
-          <button
-            className="inline-flex h-12 items-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 text-[13px] font-medium text-slate-500 ring-1 ring-black/[0.03] transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:text-slate-700 hover:shadow-[0_8px_20px_rgba(15,23,42,0.08)]"
-            type="button"
-            onClick={limpiarFiltros}
-          >
-            <FilterX className="h-3.5 w-3.5" /> Limpiar
-          </button>
-        </div>
-
-        <div className="xl:justify-self-end">
-          <button
-            className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--color-brand-500)] px-5 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.12),0_10px_24px_rgba(179,49,49,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:brightness-[1.07] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_1px_2px_rgba(0,0,0,0.14),0_14px_32px_rgba(179,49,49,0.30)] xl:w-auto"
-            type="button"
-            onClick={onCreateProduct}
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.2} /> Nuevo Producto
-          </button>
-        </div>
-      </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2.5 text-[12px]">
-        <div className="min-w-[210px] max-w-[240px] flex-1">
-          <UiSelect
-            className="[&>button]:h-10 [&>button]:rounded-xl [&>button]:border-slate-200/70 [&>button]:bg-white [&>button]:text-[13px] [&>button]:ring-1 [&>button]:ring-black/[0.03] [&>button]:transition-all [&>button]:duration-200 [&>button]:hover:border-slate-300 [&>button]:hover:shadow-[0_4px_12px_rgba(15,23,42,0.07)]"
-            leadingIcon={<Filter className="h-3.5 w-3.5" />}
-            value={provId}
-            onChange={setProvId}
-            placeholder="Proveedor (Todos)"
-            options={[
-              { value: "", label: "Proveedor  (Todos)" },
-              ...provs.map((p) => ({ value: String(p.id), label: p.nombre })),
-            ]}
-          />
-        </div>
-
-        <div className="min-w-[210px] max-w-[240px] flex-1">
-          <UiSelect
-            className="[&>button]:h-10 [&>button]:rounded-xl [&>button]:border-slate-200/70 [&>button]:bg-white [&>button]:text-[13px] [&>button]:ring-1 [&>button]:ring-black/[0.03] [&>button]:transition-all [&>button]:duration-200 [&>button]:hover:border-slate-300 [&>button]:hover:shadow-[0_4px_12px_rgba(15,23,42,0.07)]"
-            leadingIcon={<Filter className="h-3.5 w-3.5" />}
-            value={orden}
-            onChange={(v) => setOrden(v as "asc" | "desc")}
-            placeholder="Ordenar precio"
-            options={[
-              { value: "asc", label: "Precio: menor a mayor" },
-              { value: "desc", label: "Precio: mayor a menor" },
-            ]}
-          />
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setOnlyStockBajo(!onlyStockBajo)}
-          className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-[13px] font-medium transition-all duration-200 ${
-            onlyStockBajo
-              ? "border-amber-300/80 bg-amber-50 text-amber-700 shadow-[0_0_0_3px_rgba(251,191,36,0.12)]"
-              : "border-slate-200/70 bg-white text-slate-500 ring-1 ring-black/[0.03] hover:border-slate-300 hover:text-slate-700 hover:shadow-[0_4px_12px_rgba(15,23,42,0.07)]"
-          }`}
-        >
-          <TriangleAlert className="h-3.5 w-3.5" /> Stock Bajo
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setOnlyProximoCaducar(!onlyProximoCaducar)}
-          className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-[13px] font-medium transition-all duration-200 ${
-            onlyProximoCaducar
-              ? "border-[rgba(179,49,49,0.3)] bg-[rgba(179,49,49,0.06)] text-[var(--color-brand-500)] shadow-[0_0_0_3px_rgba(179,49,49,0.08)]"
-              : "border-slate-200/70 bg-white text-slate-500 ring-1 ring-black/[0.03] hover:border-slate-300 hover:text-slate-700 hover:shadow-[0_4px_12px_rgba(15,23,42,0.07)]"
-          }`}
-        >
-          <Clock3 className="h-3.5 w-3.5" /> Próximo a Caducar
-        </button>
-
-        {activeFilters > 0 ? (
-          <div className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[rgba(179,49,49,0.22)] bg-[rgba(179,49,49,0.07)] px-3.5 text-[12px] font-semibold text-[var(--color-brand-500)] shadow-[0_0_0_3px_rgba(179,49,49,0.06)]">
-            <Tag className="h-3 w-3" />
-            {activeFilters} filtro(s) activo(s)
-          </div>
-        ) : null}
       </div>
     </div>
   );
