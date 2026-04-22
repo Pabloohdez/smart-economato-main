@@ -76,7 +76,7 @@ function DetailsDropdown({
         <summary
           className={[
             "list-none flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50",
-            active ? "border-slate-300" : "border-slate-200",
+            "border-black",
           ].join(" ")}
           aria-label={label}
         >

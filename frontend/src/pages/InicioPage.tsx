@@ -40,9 +40,9 @@ export default function InicioPage() {
   );
 
   return (
-    <StaggerPage className="w-full h-full min-h-0 flex flex-col p-6 max-[820px]:p-4 max-[520px]:p-3">
+    <StaggerPage className="w-full h-full min-h-0 flex flex-col p-5 pt-4 max-[820px]:p-4 max-[820px]:pt-3 max-[520px]:p-3 max-[520px]:pt-2">
       <StaggerItem className="shrink-0">
-        <div className="flex items-center justify-between gap-4 pb-4 max-[520px]:pb-3">
+        <div className="flex items-center justify-between gap-4 pb-3 max-[520px]:pb-2">
           <div className="min-w-0">
             <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
               Inicio

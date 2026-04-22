@@ -441,7 +441,7 @@ export default function EscandallosPage() {
                         <TableCell>
                           <button
                             type="button"
-                            className="font-bold text-[var(--color-brand-500)] underline decoration-transparent transition hover:text-[#902424] hover:decoration-[var(--color-brand-500)]"
+                            className="no-global-button font-bold text-[var(--color-brand-500)] underline decoration-transparent transition hover:text-[#902424] hover:decoration-[var(--color-brand-500)]"
                             onClick={() => abrirVerReceta(esc)}
                           >
                             {esc.nombre}
@@ -772,7 +772,7 @@ export default function EscandallosPage() {
                               <button
                                 key={String(producto.id)}
                                 type="button"
-                                className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition hover:bg-slate-50"
+                                className="no-global-button flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition hover:bg-slate-50"
                                 onClick={() => seleccionarIngrediente(producto)}
                               >
                                 <span className="min-w-0 pr-3">
@@ -819,7 +819,7 @@ export default function EscandallosPage() {
 
                     <button
                       type="button"
-                      className="h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
+                      className="no-global-button h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
                       title="Añadir ingrediente"
                       onClick={agregarIngrediente}
                     >

@@ -53,11 +53,11 @@ export default function TablePaginationControls({
         <span className="text-sm text-gray-500">Mostrando</span>
         <div className="relative">
           <details ref={pageSizeDetailsRef} className="group">
-            <summary className="list-none flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-sm text-gray-700 cursor-pointer select-none hover:bg-gray-50">
+            <summary className="list-none flex items-center gap-1.5 rounded-md border border-black bg-white px-2.5 py-1 text-sm text-gray-700 cursor-pointer select-none hover:bg-gray-50">
               <span className="font-medium">{pageSize}</span>
               <ChevronDown className="w-3 h-3 text-gray-400 group-open:rotate-180 transition-transform" />
             </summary>
-            <div className="absolute bottom-full left-0 z-30 mb-1 min-w-[64px] rounded-xl border border-slate-300 bg-white p-1 shadow-lg">
+            <div className="absolute bottom-full left-0 z-30 mb-1 min-w-[64px] rounded-xl border border-black bg-white p-1 shadow-lg">
               {pageSizeOptions.map((option) => (
                 <button
                   key={option}
@@ -96,7 +96,7 @@ export default function TablePaginationControls({
             }, 320);
           }}
           disabled={safePage === 1}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
           type="button"
         >
           {"«"}
@@ -107,7 +107,7 @@ export default function TablePaginationControls({
             onPageChange(Math.max(1, safePage - 1));
           }}
           disabled={safePage === 1}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
           type="button"
         >
           {"‹"}
@@ -125,7 +125,7 @@ export default function TablePaginationControls({
                 className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
                   pageNumber === safePage
                     ? "border-[var(--brand-700)] bg-[var(--brand-600)] text-white font-semibold"
-                    : "border-slate-300 bg-white text-gray-700 hover:bg-gray-50"
+                    : "border-black bg-white text-gray-700 hover:bg-gray-50"
                 }`}
                 type="button"
               >
@@ -139,7 +139,7 @@ export default function TablePaginationControls({
             onPageChange(Math.min(totalPages, safePage + 1));
           }}
           disabled={safePage === totalPages}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
           type="button"
         >
           {"›"}
@@ -150,7 +150,7 @@ export default function TablePaginationControls({
             onPageChange(totalPages);
           }}
           disabled={safePage === totalPages}
-          className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
           type="button"
         >
           {"»"}

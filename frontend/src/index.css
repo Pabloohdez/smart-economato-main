@@ -30,6 +30,11 @@
     --color-border-default: #e2e8f0;
     --color-border-strong: #cbd5e1;
 
+    /* Bordes de controles (2 niveles) */
+    --color-control-border: rgba(15, 23, 42, 0.18);       /* borde general (más gris) */
+    --color-control-border-strong: rgba(15, 23, 42, 0.34); /* borde para primarios/activos */
+    --shadow-button: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(226, 232, 240, 0.45);
+
     --radius-sm: 10px;
     --radius-md: 14px;
     --radius-lg: 18px;
@@ -105,6 +110,41 @@ body {
   overflow-x: hidden;
 }
 
+/* Forzar borde coherente en TODOS los botones con borde */
+.smart-economato-app button:not(.no-global-button),
+.smart-economato-app [role="button"]:not(.no-global-button),
+.smart-economato-app summary:not(.no-global-button) {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-color: var(--color-control-border) !important;
+}
+
+/* Estilo de "botón" consistente con sombra (global) */
+.smart-economato-app button:not(.no-global-button),
+.smart-economato-app [role="button"]:not(.no-global-button),
+.smart-economato-app summary:not(.no-global-button) {
+  box-shadow: var(--shadow-button);
+}
+
+/* Escape hatch: botones que deben verse como lista/enlace */
+.smart-economato-app .no-global-button {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* También aplicar borde coherente a inputs/selects para que TODO se vea igual */
+.smart-economato-app input,
+.smart-economato-app select,
+.smart-economato-app textarea {
+  border-color: var(--color-control-border) !important;
+}
+
+/* Primarios: borde un poco más marcado */
+.smart-economato-app .bo-toolbar-primary-blue,
+.smart-economato-app .bo-toolbar-primary {
+  border-color: var(--color-control-border-strong) !important;
+}
+
 /* Permite que hijos flex/grid puedan encoger sin provocar overflow */
 .smart-economato-app * {
   min-width: 0;
@@ -171,7 +211,7 @@ a {
   }
 
   .bo-toolbar-input {
-    @apply w-full min-h-12 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100;
+    @apply w-full min-h-12 rounded-xl border border-black bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition-colors outline-none focus:ring-0 focus:border-black;
   }
 
   .bo-toolbar-select {
@@ -179,7 +219,7 @@ a {
   }
 
   .bo-toolbar-secondary {
-    @apply inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
+    @apply inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-black bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
   }
 
   .bo-toolbar-primary {
@@ -207,7 +247,7 @@ a {
   .bo-toolbar-primary-blue:hover { background: var(--brand-700); }
 
   .bo-segmented-btn {
-    @apply min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
+    @apply min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-xl border border-black bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
   }
 
   .bo-segmented-btn-active {
@@ -219,7 +259,7 @@ a {
   }
 
   .bo-table-action-btn {
-    @apply inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-800;
+    @apply inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-black bg-white text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-800;
   }
 
   .bo-table-no-select,

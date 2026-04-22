@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import Alert from "../components/ui/Alert";
@@ -9,10 +9,13 @@ import { showConfirm } from "../utils/notifications";
 import UiSelect from "../components/ui/UiSelect";
 
 // Ajusta esta línea si en tu proyecto real estos métodos están en otro service
-import { getCategorias, getProveedores, crearProductosBatch } from "../services/productosService";
+import { getCategorias, getProveedores, crearProductosBatch, getProductos } from "../services/productosService";
+import { crearLotesBatch } from "../services/lotesService";
 import type { Categoria, Proveedor } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
+
+type LoteTemporal = { fechaCaducidad: string; cantidad: number };
 
 type ProductoTemporal = {
   nombre: string;
@@ -25,7 +28,7 @@ type ProductoTemporal = {
   unidadMedida: string;
   marca: string;
   codigoBarras: string;
-  fechaCaducidad: string | null;
+  lotes: LoteTemporal[];
   alergenos: string[];
   descripcion: string;
   imagen: string;
@@ -37,6 +40,7 @@ type ProductoTemporal = {
 export default function IngresarProductoPage() {
   const nav = useNavigate();
   const queryClient = useQueryClient();
+  const importInputRef = useRef<HTMLInputElement | null>(null);
 
   const [nombre, setNombre] = useState("");
   const [categoriaId, setCategoriaId] = useState("");
@@ -45,12 +49,16 @@ export default function IngresarProductoPage() {
   const [stock, setStock] = useState("");
   const [stockMin, setStockMin] = useState("");
   const [proveedorId, setProveedorId] = useState("");
-  const [fechaCaducidad, setFechaCaducidad] = useState<string>("");
+  const [loteFecha, setLoteFecha] = useState("");
+  const [loteCantidad, setLoteCantidad] = useState("");
+  const [lotes, setLotes] = useState<LoteTemporal[]>([]);
+  const [lotesModalOpen, setLotesModalOpen] = useState(false);
 
   const [listaTemporal, setListaTemporal] = useState<ProductoTemporal[]>([]);
   const [guardando, setGuardando] = useState(false);
   const [mensajeEstado, setMensajeEstado] = useState("");
   const [mensajeTipo, setMensajeTipo] = useState<"ok" | "warn" | "error" | "info" | "">("");
+  const [importando, setImportando] = useState(false);
 
   const categoriasQuery = useQuery({
     queryKey: queryKeys.categorias,
@@ -82,6 +90,216 @@ export default function IngresarProductoPage() {
     return `${listaTemporal.length} productos listos`;
   }, [listaTemporal]);
 
+  const totalLotesCantidad = useMemo(() => {
+    return lotes.reduce((s, l) => s + Number(l.cantidad || 0), 0);
+  }, [lotes]);
+
+  function formatFechaChip(iso: string) {
+    const v = String(iso || "").slice(0, 10);
+    if (!v) return "";
+    const [yyyy, mm, dd] = v.split("-");
+    if (!yyyy || !mm || !dd) return v;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function normalizeKey(raw: unknown) {
+    return String(raw ?? "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function parseNumber(raw: unknown) {
+    const n = Number(String(raw ?? "").trim().replace(",", "."));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function parseCsv(text: string) {
+    const lines = String(text ?? "")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n")
+      .split("\n")
+      .filter((l) => l.trim().length > 0);
+    if (lines.length === 0) return [];
+
+    const sample = lines.slice(0, 5).join("\n");
+    const delim = sample.includes(";") && !sample.includes(",") ? ";" : sample.includes(";") ? ";" : ",";
+
+    const parseLine = (line: string) => {
+      const out: string[] = [];
+      let cur = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          const next = line[i + 1];
+          if (inQuotes && next === '"') {
+            cur += '"';
+            i++;
+            continue;
+          }
+          inQuotes = !inQuotes;
+          continue;
+        }
+        if (!inQuotes && ch === delim) {
+          out.push(cur);
+          cur = "";
+          continue;
+        }
+        cur += ch;
+      }
+      out.push(cur);
+      return out.map((s) => s.trim());
+    };
+
+    const headers = parseLine(lines[0]).map(normalizeKey);
+    const rows: Record<string, string>[] = [];
+    for (const line of lines.slice(1)) {
+      const cols = parseLine(line);
+      const row: Record<string, string> = {};
+      headers.forEach((h, idx) => {
+        row[h] = cols[idx] ?? "";
+      });
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  function resolveCategoriaId(raw: unknown) {
+    const v = String(raw ?? "").trim();
+    if (!v) return "";
+    const byId = categorias.find((c) => String(c.id) === v);
+    if (byId) return String(byId.id);
+    const byName = categorias.find((c) => normalizeKey(c.nombre) === normalizeKey(v));
+    return byName ? String(byName.id) : "";
+  }
+
+  function resolveProveedorId(raw: unknown) {
+    const v = String(raw ?? "").trim();
+    if (!v) return "";
+    const byId = proveedores.find((p) => String(p.id) === v);
+    if (byId) return String(byId.id);
+    const byName = proveedores.find((p) => normalizeKey(p.nombre) === normalizeKey(v));
+    return byName ? String(byName.id) : "";
+  }
+
+  async function importarArchivo(file: File) {
+    const name = file.name.toLowerCase();
+    setImportando(true);
+    try {
+      let rows: Array<Record<string, any>> = [];
+      if (name.endsWith(".csv")) {
+        const text = await file.text();
+        rows = parseCsv(text);
+      } else if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
+        const XLSX = await import("xlsx");
+        const buf = await file.arrayBuffer();
+        const wb = XLSX.read(buf, { type: "array" });
+        const sheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[sheetName];
+        rows = XLSX.utils.sheet_to_json(ws, { defval: "" }) as any[];
+      } else {
+        setMensajeEstado("Formato no soportado. Sube un CSV o XLSX.");
+        setMensajeTipo("warn");
+        return;
+      }
+
+      if (!rows || rows.length === 0) {
+        setMensajeEstado("El archivo está vacío o no tiene filas.");
+        setMensajeTipo("warn");
+        return;
+      }
+
+      const unidades = new Set(["ud", "kg", "l"]);
+      const nuevos: ProductoTemporal[] = [];
+      for (const r of rows) {
+        const normalizedRow: Record<string, any> = {};
+        for (const [k, v] of Object.entries(r ?? {})) {
+          normalizedRow[normalizeKey(k)] = v;
+        }
+        const get = (...keys: string[]) => {
+          for (const k of keys) {
+            const v = normalizedRow[normalizeKey(k)];
+            if (v !== undefined && v !== null && String(v).trim() !== "") return v;
+          }
+          return "";
+        };
+
+        const nombreR = String(
+          get("nombre", "producto", "nombreproducto", "nombre del producto", "nombre_producto"),
+        ).trim();
+        if (!nombreR) continue;
+
+        const categoriaRaw = get("categoria", "categoriaid", "familia", "categoria id");
+        const proveedorRaw = get("proveedor", "proveedorid", "proveedor id");
+        const unidadRaw = String(get("unidad", "unidadmedida", "unidad_medida", "unidad de medida", "ud") || "ud")
+          .trim()
+          .toLowerCase();
+        const unidad = unidades.has(unidadRaw) ? unidadRaw : "ud";
+
+        const precioNum = parseNumber(get("precio", "precio_unitario", "preciounitario", "precio unitario", "0"));
+        const stockNumRaw = parseNumber(get("stock", "cantidad", "0"));
+        const stockMinNumRaw = parseNumber(get("minimo", "stockminimo", "stock_minimo", "stock minimo", "0"));
+        const stockNum = unidad === "ud" ? Math.max(0, Math.floor(stockNumRaw)) : Math.max(0, stockNumRaw);
+        const stockMinNum = unidad === "ud" ? Math.max(0, Math.floor(stockMinNumRaw)) : Math.max(0, stockMinNumRaw);
+
+        const categoriaResolved = resolveCategoriaId(categoriaRaw);
+        const proveedorResolved = resolveProveedorId(proveedorRaw);
+
+        const codigo =
+          String(get("codigobarras", "codigo_barras", "codigo", "codigo de barras", "")).trim() || generarCodigoBarras();
+
+        const categoriaNombre =
+          categorias.find((c) => String(c.id) === String(categoriaResolved))?.nombre ?? String(categoriaRaw ?? "").trim();
+        const proveedorNombre =
+          proveedores.find((p) => String(p.id) === String(proveedorResolved))?.nombre ?? String(proveedorRaw ?? "").trim();
+
+        nuevos.push({
+          nombre: nombreR,
+          precio: Number(precioNum || 0),
+          precioUnitario: unidad,
+          stock: Number(stockNum || 0),
+          stockMinimo: Number(stockMinNum || 0),
+          categoriaId: categoriaResolved || "",
+          proveedorId: proveedorResolved || "",
+          unidadMedida: unidad,
+          marca: String(get("marca", "Sin marca") ?? "Sin marca"),
+          codigoBarras: codigo,
+          lotes: [],
+          alergenos: [],
+          descripcion: String(get("descripcion", "") ?? ""),
+          imagen: "producto-generico.jpg",
+          activo: true,
+          _tempCategoriaNombre: categoriaNombre,
+          _tempProveedorNombre: proveedorNombre,
+        });
+      }
+
+      if (nuevos.length === 0) {
+        setMensajeEstado("No pude importar filas (falta la columna nombre).");
+        setMensajeTipo("warn");
+        return;
+      }
+
+      const incompletos = nuevos.filter((p) => !p.categoriaId || !p.proveedorId).length;
+      setListaTemporal((prev) => [...prev, ...nuevos]);
+      setMensajeEstado(
+        incompletos > 0
+          ? `Importados ${nuevos.length} productos. ${incompletos} requieren seleccionar Categoría/Proveedor antes de guardar.`
+          : `Importados ${nuevos.length} productos.`,
+      );
+      setMensajeTipo(incompletos > 0 ? "warn" : "ok");
+    } catch (e) {
+      console.error(e);
+      setMensajeEstado("Error importando archivo. Revisa el formato y vuelve a intentarlo.");
+      setMensajeTipo("error");
+    } finally {
+      setImportando(false);
+      if (importInputRef.current) importInputRef.current.value = "";
+    }
+  }
+
   function generarCodigoBarras() {
     const random = Math.floor(Math.random() * 1000000)
       .toString()
@@ -97,7 +315,23 @@ export default function IngresarProductoPage() {
     setStock("");
     setStockMin("");
     setProveedorId("");
-    setFechaCaducidad("");
+    setLoteFecha("");
+    setLoteCantidad("");
+    setLotes([]);
+  }
+
+  function agregarLote() {
+    const fecha = loteFecha.trim();
+    const cant = Number(String(loteCantidad || "").replace(",", "."));
+    if (!fecha) return;
+    if (!Number.isFinite(cant) || cant <= 0) return;
+    setLotes((prev) => [...prev, { fechaCaducidad: fecha.slice(0, 10), cantidad: Number(cant.toFixed(3)) }]);
+    setLoteFecha("");
+    setLoteCantidad("");
+  }
+
+  function eliminarLote(index: number) {
+    setLotes((prev) => prev.filter((_, i) => i !== index));
   }
 
   function agregarALista() {
@@ -127,21 +361,27 @@ export default function IngresarProductoPage() {
       proveedores.find((p) => String(p.id) === String(proveedorId))?.nombre ?? "";
 
     const unidadLabel = unidadMedida === "kg" ? "kg" : unidadMedida === "l" ? "l" : "ud";
-    const fechaCad = fechaCaducidad.trim() ? fechaCaducidad.trim() : null;
+    const lotesNormalizados = lotes.map((l) => ({
+      fechaCaducidad: l.fechaCaducidad.slice(0, 10),
+      cantidad: Number(l.cantidad),
+    }));
+    const stockFromLotes =
+      lotesNormalizados.length > 0
+        ? lotesNormalizados.reduce((s, l) => s + Number(l.cantidad || 0), 0)
+        : stockNum;
 
     const nuevoProducto: ProductoTemporal = {
       nombre: nombreLimpio,
       precio: precioNum,
       precioUnitario: unidadLabel,
-      stock: stockNum,
+      stock: stockFromLotes,
       stockMinimo: stockMinNum,
       categoriaId,
       proveedorId,
       unidadMedida: unidadLabel,
       marca: "Sin marca",
       codigoBarras: generarCodigoBarras(),
-      // Fecha opcional; si no se rellena, se guarda null.
-      fechaCaducidad: fechaCad,
+      lotes: lotesNormalizados,
       alergenos: [],
       descripcion: "",
       imagen: "producto-generico.jpg",
@@ -204,7 +444,7 @@ export default function IngresarProductoPage() {
             unidadMedida: producto.unidadMedida,
             marca: producto.marca,
             codigoBarras: producto.codigoBarras,
-            fechaCaducidad: producto.fechaCaducidad ?? null,
+            fechaCaducidad: null,
             alergenos: producto.alergenos,
             descripcion: producto.descripcion,
             imagen: producto.imagen,
@@ -213,6 +453,34 @@ export default function IngresarProductoPage() {
 
       try {
         await guardarBatchMutation.mutateAsync(productosLimpios);
+
+        const anyLotes = listaTemporal.some((p) => p.lotes.length > 0);
+        if (anyLotes) {
+          const productosActuales = await getProductos();
+          const mapByBarcode = new Map<string, any>();
+          for (const p of productosActuales as any[]) {
+            const cb = String((p as any).codigoBarras ?? (p as any).codigobarras ?? "").trim();
+            if (cb) mapByBarcode.set(cb, p);
+          }
+
+          const lotesPayload = listaTemporal.flatMap((p) => {
+            const created = mapByBarcode.get(String(p.codigoBarras));
+            const pid = String(created?.id ?? "");
+            if (!pid) return [];
+            return p.lotes.map((l) => ({
+              productoId: pid,
+              fechaCaducidad: l.fechaCaducidad,
+              cantidad: l.cantidad,
+            }));
+          });
+
+          if (lotesPayload.length > 0) {
+            await crearLotesBatch(lotesPayload);
+            await queryClient.invalidateQueries({ queryKey: queryKeys.lotesProducto });
+            broadcastQueryInvalidation(queryKeys.lotesProducto);
+          }
+        }
+
         setMensajeEstado(`¡Éxito! Se guardaron ${productosLimpios.length} productos correctamente.`);
         setMensajeTipo("ok");
         setListaTemporal([]);
@@ -244,6 +512,29 @@ export default function IngresarProductoPage() {
       <h1 className="text-center text-[var(--color-brand-500)] mb-6 font-bold tracking-wide">
         INGRESO MASIVO DE MERCANCÍA
       </h1>
+
+      <div className="mb-4 flex items-center justify-end gap-3 flex-wrap">
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".csv,.xlsx,.xls"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) importarArchivo(f);
+          }}
+        />
+        <Button
+          type="button"
+          variant="secondary"
+          size="lg"
+          className="px-6"
+          onClick={() => importInputRef.current?.click()}
+          disabled={importando || loadingSelects}
+        >
+          {loadingSelects ? "Cargando catálogos..." : importando ? "Importando..." : "Importar CSV/XLSX"}
+        </Button>
+      </div>
 
       <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex flex-wrap gap-5 items-end border border-black/5">
         <div className="flex flex-col gap-2 flex-grow min-w-[220px] flex-[2]">
@@ -355,29 +646,174 @@ export default function IngresarProductoPage() {
           />
         </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[170px] flex-[1.2]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputFechaCaducidad">
-            Caducidad (opcional)
+        <div className="flex flex-col gap-2 flex-grow min-w-[240px] flex-[1.2]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+            Caducidad por lotes
           </label>
-          <input
-            id="inputFechaCaducidad"
-            type="date"
-            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-            value={fechaCaducidad}
-            onChange={(e) => setFechaCaducidad(e.target.value)}
-          />
+          <button
+            type="button"
+            className="no-global-button h-11 w-full rounded-lg border border-[var(--color-control-border)] bg-white px-4 text-left text-[14px] font-semibold text-slate-800 shadow-[0_2px_10px_rgba(15,23,42,0.06)] transition hover:-translate-y-px hover:bg-slate-50 active:translate-y-0"
+            onClick={() => setLotesModalOpen(true)}
+            title="Gestionar lotes"
+          >
+            <span className="block">
+              <span className="block text-[14px] font-extrabold text-slate-900">Gestionar lotes</span>
+              <span className="block text-[12px] text-slate-600 mt-0.5">
+                {lotes.length === 0
+                  ? "Opcional · 0 lotes"
+                  : `${lotes.length} lote${lotes.length !== 1 ? "s" : ""} · Total: ${totalLotesCantidad}`}
+              </span>
+            </span>
+          </button>
+          <div className="text-[12px] text-slate-500">
+            Si añades lotes, el stock se calculará como la suma de cantidades.
+          </div>
         </div>
 
         <Button
           type="button"
-          variant="success"
-          className="h-11 px-7 border-0 rounded-[10px] font-semibold text-[14px] cursor-pointer inline-flex items-center justify-center gap-2.5 shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,box-shadow,filter] duration-200 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white hover:-translate-y-0.5 hover:shadow-[0_6px_15px_rgba(49,130,206,0.4)] hover:brightness-105 active:translate-y-px disabled:opacity-70 disabled:cursor-not-allowed"
+          variant="danger"
+          size="lg"
+          className="min-w-[140px] px-7"
           icon="fa-solid fa-plus"
           onClick={agregarALista}
         >
           Agregar
         </Button>
       </div>
+
+      {lotesModalOpen ? (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4"
+          onClick={(e) => e.target === e.currentTarget && setLotesModalOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setLotesModalOpen(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="w-full max-w-[720px] rounded-2xl bg-white shadow-[0_20px_80px_rgba(0,0,0,0.25)] border border-black/10 overflow-hidden">
+            <div className="flex items-start justify-between gap-4 px-5 py-4 bg-[var(--color-bg-soft)]">
+              <div>
+                <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-500">Lotes</div>
+                <div className="text-[16px] font-extrabold text-[var(--color-text-strong)] leading-tight">
+                  Caducidad por lote
+                </div>
+                <div className="text-[13px] text-slate-600 mt-0.5">
+                  Añade una fecha de caducidad y su cantidad. Puedes quitar lotes tocando la ✕.
+                </div>
+              </div>
+              <button
+                type="button"
+                className="no-global-button inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                onClick={() => setLotesModalOpen(false)}
+                aria-label="Cerrar"
+                title="Cerrar"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="px-5 py-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_180px_auto] gap-3 items-end max-[520px]:grid-cols-1">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Fecha
+                  </label>
+                  <input
+                    type="date"
+                    className="h-11 w-full px-3.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+                    value={loteFecha}
+                    onChange={(e) => setLoteFecha(e.target.value)}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
+                    Cantidad
+                  </label>
+                  <input
+                    type="number"
+                    step={unidadMedida === "ud" ? "1" : "0.001"}
+                    placeholder="0"
+                    className="h-11 w-full px-3.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+                    value={loteCantidad}
+                    onChange={(e) => setLoteCantidad(e.target.value)}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  className="no-global-button h-11 whitespace-nowrap rounded-lg border border-[var(--color-control-border-strong)] bg-[var(--brand-600)] px-5 text-[13px] font-extrabold text-white shadow-[0_10px_25px_rgba(30,64,175,0.18)] transition hover:brightness-105 active:brightness-95"
+                  onClick={agregarLote}
+                >
+                  Añadir
+                </button>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                <div className="text-[13px] text-slate-600">
+                  {lotes.length === 0 ? "Sin lotes añadidos." : `${lotes.length} lote${lotes.length !== 1 ? "s" : ""} · Total: ${totalLotesCantidad}`}
+                </div>
+                {lotes.length > 0 ? (
+                  <button
+                    type="button"
+                    className="no-global-button text-[13px] font-semibold text-slate-700 hover:underline"
+                    onClick={() => setLotes([])}
+                  >
+                    Quitar todos
+                  </button>
+                ) : null}
+              </div>
+
+              {lotes.length > 0 ? (
+                <div className="mt-3 grid gap-2 max-h-[260px] overflow-y-auto pr-1">
+                  {lotes
+                    .slice()
+                    .sort((a, b) => String(a.fechaCaducidad).localeCompare(String(b.fechaCaducidad)))
+                    .map((l, idx) => (
+                      <div
+                        key={`${l.fechaCaducidad}-${idx}`}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[13px] font-extrabold text-slate-900 truncate">
+                            {formatFechaChip(l.fechaCaducidad)}
+                          </div>
+                          <div className="text-[12px] text-slate-500 mt-0.5">
+                            Cantidad: <span className="font-semibold text-slate-700">{l.cantidad}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="no-global-button inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                          onClick={() => eliminarLote(lotes.findIndex((x) => x === l))}
+                          title="Quitar"
+                          aria-label="Quitar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-4 text-[13px] text-slate-600">
+                  Añade lotes si quieres controlar la caducidad por cada entrada.
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 px-5 py-4 bg-[var(--color-bg-soft)] border-t border-black/5">
+              <button
+                type="button"
+                className="no-global-button h-11 rounded-lg border border-[var(--color-control-border)] bg-white px-5 text-[13px] font-semibold text-slate-800 hover:bg-slate-50"
+                onClick={() => setLotesModalOpen(false)}
+              >
+                Listo
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <div className="mt-[35px]">
         <h3 className="text-[var(--color-text-strong)] mb-4 flex items-center gap-2.5 text-[1.1rem] flex-wrap">

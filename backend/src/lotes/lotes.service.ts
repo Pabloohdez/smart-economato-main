@@ -46,5 +46,54 @@ export class LotesService {
     );
     return rows.map((r) => ({ ...r, cantidad: Number((r as any).cantidad) }));
   }
+
+  async crear(input: { productoId: string; fechaCaducidad: string | null; cantidad: number }) {
+    await this.ensureTable();
+    const { rows } = await this.db.query<{
+      id: number;
+      productoId: string;
+      pedidoId: number | null;
+      detalleId: number | null;
+      fechaCaducidad: string | null;
+      cantidad: number;
+    }>(
+      `INSERT INTO lotes_producto (producto_id, fecha_caducidad, cantidad)
+       VALUES ($1, $2, $3)
+       RETURNING
+        id,
+        producto_id as "productoId",
+        pedido_id as "pedidoId",
+        detalle_id as "detalleId",
+        fecha_caducidad as "fechaCaducidad",
+        cantidad`,
+      [input.productoId, input.fechaCaducidad, input.cantidad],
+    );
+    const row = rows[0];
+    return { ...row, cantidad: Number((row as any).cantidad) };
+  }
+
+  async crearBatch(inputs: Array<{ productoId: string; fechaCaducidad: string | null; cantidad: number }>) {
+    await this.ensureTable();
+    return this.db.transaction(async (client) => {
+      const created: any[] = [];
+      for (const input of inputs) {
+        const res = await client.query(
+          `INSERT INTO lotes_producto (producto_id, fecha_caducidad, cantidad)
+           VALUES ($1, $2, $3)
+           RETURNING
+            id,
+            producto_id as "productoId",
+            pedido_id as "pedidoId",
+            detalle_id as "detalleId",
+            fecha_caducidad as "fechaCaducidad",
+            cantidad`,
+          [input.productoId, input.fechaCaducidad, input.cantidad],
+        );
+        const row = res.rows[0];
+        created.push({ ...row, cantidad: Number((row as any).cantidad) });
+      }
+      return created;
+    });
+  }
 }
 

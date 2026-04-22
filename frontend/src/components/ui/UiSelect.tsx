@@ -52,7 +52,7 @@ export default function UiSelect(props: UiSelectProps) {
   }
 
   return (
-    <div className={className ?? ""}>
+    <div className={cn("min-w-0", className ?? "")}>
       {label && (
         <label
           htmlFor={id}
@@ -76,8 +76,10 @@ export default function UiSelect(props: UiSelectProps) {
         >
           <span className="flex min-w-0 items-center gap-2.5">
             {leadingIcon ? <span className="shrink-0 text-slate-400">{leadingIcon}</span> : null}
-            <SelectPrimitive.Value placeholder={placeholder}>
-              {selected ? selected.label : placeholder}
+            <SelectPrimitive.Value asChild placeholder={placeholder}>
+              <span className="min-w-0 flex-1 truncate">
+                {selected ? selected.label : placeholder}
+              </span>
             </SelectPrimitive.Value>
           </span>
           <SelectPrimitive.Icon asChild>

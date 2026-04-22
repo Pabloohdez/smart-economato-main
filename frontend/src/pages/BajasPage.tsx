@@ -562,7 +562,7 @@ export default function BajasPage() {
         </h2>
 
         <div className="flex flex-col gap-4">
-          <div className="flex gap-3 max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-3 min-[768px]:grid-cols-[1fr_auto] min-[768px]:items-center">
             <SearchInput
               value={q}
               onChange={(value) => {
@@ -572,10 +572,8 @@ export default function BajasPage() {
               }}
               placeholder="Buscar producto por nombre o código de barras..."
               ariaLabel="Buscar producto por nombre o código de barras"
-              className="flex-1"
+              className="w-full min-w-0"
             />
-
-
 
             <button
               id="btnEscanearBaja"
@@ -589,7 +587,7 @@ export default function BajasPage() {
             </button>
           </div>
 
-          <div className="flex gap-4 max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-4 min-[768px]:grid-cols-[minmax(260px,1fr)_auto] min-[768px]:items-center">
             <UiSelect
               id="selectCategoriaBaja"
               value={catId}
@@ -599,13 +597,21 @@ export default function BajasPage() {
               }}
               disabled={loadingDatos}
               placeholder="Todas las categorías"
+              className="w-full min-w-0"
               options={[
                 { value: "", label: "Todas las categorías" },
                 ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
               ]}
             />
 
-            <Button id="btnProductosCaducados" type="button" onClick={mostrarProductosCaducados}>
+            <Button
+              id="btnProductosCaducados"
+              type="button"
+              variant="danger"
+              size="lg"
+              className="w-full min-[768px]:w-auto"
+              onClick={mostrarProductosCaducados}
+            >
               <Clock3 className="h-4 w-4" /> Ver Productos Próximos a Caducar
             </Button>
           </div>

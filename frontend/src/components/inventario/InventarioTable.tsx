@@ -8,7 +8,7 @@ import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
 import { showConfirm, showNotification } from "../../utils/notifications";
 import type { LoteProducto } from "../../services/lotesService";
-import { Eye, Pencil, Trash2, ArrowUpAZ } from "lucide-react";
+import { Eye, Pencil, Trash2, ArrowUpAZ, Layers, Truck, Ruler } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 function parseDate(d?: string | null): Date | null {
@@ -259,8 +259,38 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     selectAllRef.current.indeterminate = someVisibleSelected;
   }, [someVisibleSelected]);
 
+  function findScrollParent(el: HTMLElement | null): HTMLElement | null {
+    if (!el) return null;
+    let cur: HTMLElement | null = el.parentElement;
+    while (cur) {
+      const style = window.getComputedStyle(cur);
+      const overflowY = style.overflowY;
+      if (overflowY === "auto" || overflowY === "scroll") return cur;
+      cur = cur.parentElement;
+    }
+    return null;
+  }
+
   function changePage(nextPage: number) {
     setPage(nextPage);
+
+    if (typeof window === "undefined") return;
+    // Esperar a que React pinte la nueva página antes de scrollear.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = tableSectionRef.current;
+        const scroller = findScrollParent(target) ?? document.getElementById("main-content");
+        if (!scroller || !target) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+
+        const scrollerRect = scroller.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const nextTop = targetRect.top - scrollerRect.top + scroller.scrollTop - 12;
+        scroller.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
+      });
+    });
   }
 
   function toggleRowSelection(id: string) {
@@ -325,18 +355,19 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                             <ArrowUpAZ className="w-[14px] h-[14px] text-slate-400" strokeWidth={2.5} />
                           </div>
                         </th>
-                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] max-[820px]:hidden">Familia</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">
+                          Familia / Proveedor
+                        </th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Precio</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Stock</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center max-[640px]:hidden">Caducidad</th>
-                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] max-[1100px]:hidden">Proveedor</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleRows.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="py-8 text-center">
+                          <td colSpan={7} className="py-8 text-center">
                             <p className="text-gray-500 text-[13px]">No hay productos disponibles</p>
                           </td>
                         </tr>
@@ -375,10 +406,21 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   </p>
                                 </div>
                               </td>
-                              <td className="px-4 py-2 align-middle max-[820px]:hidden">
-                                <span className="text-[13px] text-slate-600">
-                                  {String(p.categoria?.nombre ?? "General")}
-                                </span>
+                              <td className="px-4 py-2 align-middle">
+                                <div className="flex flex-col gap-1 text-[12px] text-slate-500">
+                                  <div className="flex items-center gap-2">
+                                    <Layers className="h-3.5 w-3.5 text-slate-400" />
+                                    <span className="truncate">{String(p.categoria?.nombre ?? "General")}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Truck className="h-3.5 w-3.5 text-slate-400" />
+                                    <span className="truncate">{String(p.proveedor?.nombre ?? "Sin proveedor")}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Ruler className="h-3.5 w-3.5 text-slate-400" />
+                                    <span className="truncate">Unidad: {stockUnit === "ud" ? "unidad" : stockUnit}</span>
+                                  </div>
+                                </div>
                               </td>
                               <td className="px-4 py-2 align-middle text-center">
                                 <div className="flex flex-col items-center">
@@ -418,18 +460,6 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   )}
                                 </div>
                               </td>
-                              <td className="px-4 py-2 align-middle text-left max-[1100px]:hidden">
-                                <div className="flex flex-col">
-                                  <span className="text-[13px] text-slate-600">
-                                    {String(p.proveedor?.nombre ?? "Sin proveedor")}
-                                  </span>
-                                  {lotesCount > 0 && (
-                                    <span className="text-[11px] text-slate-400 mt-0.5">
-                                      {lotesCount} lote{lotesCount !== 1 ? 's' : ''}
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
                               <td className="px-4 py-2 align-middle">
                                 <div className="flex items-center justify-center gap-2">
                                   <button
@@ -457,6 +487,11 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                     <Trash2 className="h-[14px] w-[14px]" />
                                   </button>
                                 </div>
+                                {lotesCount > 0 ? (
+                                  <div className="mt-1 text-center text-[11px] text-slate-400">
+                                    {lotesCount} lote{lotesCount !== 1 ? "s" : ""}
+                                  </div>
+                                ) : null}
                               </td>
                             </tr>
                           );
