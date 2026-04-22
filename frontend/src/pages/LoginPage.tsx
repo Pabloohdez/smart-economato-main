@@ -26,14 +26,15 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.18),transparent_34%),linear-gradient(135deg,#f5efe8_0%,#f7f8fb_44%,#eef2f7_100%)] text-slate-800 font-[var(--font-family-base)]">
+    <div className="login-page h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
       <main className="mx-auto flex h-full w-full max-w-[1320px] items-stretch px-6 py-6 max-[960px]:px-4 max-[960px]:py-4">
-        <div className="grid h-full w-full grid-cols-[1.08fr_minmax(360px,460px)] overflow-hidden rounded-[34px] border border-white/60 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.14)] backdrop-blur max-[960px]:grid-cols-1">
-          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#7f1d1d_0%,#9f2a2a_42%,#d97745_100%)] px-10 py-10 text-white max-[960px]:px-6 max-[960px]:py-7">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(255,255,255,0.18),transparent_18%),radial-gradient(circle_at_78%_70%,rgba(255,255,255,0.16),transparent_22%)]" aria-hidden="true" />
+        <div className="grid h-full w-full grid-cols-[1.15fr_minmax(360px,480px)] overflow-hidden rounded-[34px] border border-white/60 bg-white/60 shadow-[0_30px_80px_rgba(15,23,42,0.14)] backdrop-blur max-[960px]:grid-cols-1">
+          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-10 py-10 text-white max-[960px]:px-6 max-[960px]:py-7">
+            <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" aria-hidden="true" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(179,49,49,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(217,119,69,0.25),transparent_45%)]" aria-hidden="true" />
             <div className="relative z-[1] flex h-full flex-col">
               <div className="inline-flex items-center gap-4">
-                <div className="flex h-[72px] w-[72px] items-center justify-center rounded-[22px] bg-white/12 p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+                <div className="flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-white/10 p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
                   <img
                     src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
                     alt="CIFP Virgen de la Candelaria"
@@ -41,70 +42,64 @@ export default function LoginPage() {
                   />
                 </div>
 
-                <div>
-                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/72">
+                <div className="min-w-0">
+                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/70">
                     Smart Economato
                   </p>
-                  <h1 className="m-0 mt-1 text-[32px] font-semibold tracking-[-0.04em] text-white max-[960px]:text-[28px]">
-                    Gestión diaria sin fricción.
+                  <h1 className="m-0 mt-2 text-[40px] font-extrabold tracking-[-0.05em] text-white max-[1100px]:text-[36px] max-[960px]:text-[30px]">
+                    Panel de Administración
                   </h1>
                 </div>
               </div>
 
-              <p className="mt-8 max-w-[520px] text-[18px] leading-8 text-white/86 max-[960px]:mt-6 max-[960px]:text-[16px] max-[960px]:leading-7">
-                Un acceso claro para recepción, inventario, distribución y control de incidencias en un mismo entorno.
+              <p className="mt-8 max-w-[520px] text-[15px] leading-7 text-white/80 max-[960px]:mt-6">
+                Acceso unificado para recepción, inventario, distribución, pedidos y control de incidencias del economato.
               </p>
 
-              <div className="login-page__features mt-8 grid gap-4 max-[960px]:mt-6">
+              <div className="login-page__features mt-8 grid gap-5 max-[960px]:mt-6">
                 {[
                   {
-                    title: "Recepción y stock en una vista",
-                    text: "Entrada de mercancía, trazabilidad y control de mínimos sin cambiar de flujo.",
+                    title: "Operativa",
+                    text: "Catálogo, entradas y salidas con un flujo claro y consistente.",
                   },
                   {
-                    title: "Uso rápido en tablet",
-                    text: "Botones amplios, contraste alto y recorrido corto para operativa en aula o almacén.",
+                    title: "Seguridad",
+                    text: "Acceso por roles con acciones registradas y trazabilidad.",
                   },
                   {
-                    title: "Avisos que importan",
-                    text: "Caducidades, bajas y movimientos listos para revisar nada más entrar.",
+                    title: "Seguimiento",
+                    text: "Avisos y métricas listos para actuar sin pasos sobrantes.",
                   },
                 ].map((item) => (
-                  <article
-                    key={item.title}
-                    className="grid grid-cols-[44px_1fr] items-start gap-4 rounded-[22px] border border-white/14 bg-white/10 px-4 py-4 backdrop-blur-sm"
-                  >
-                    <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-white text-[var(--color-brand-500)] shadow-[0_10px_25px_rgba(0,0,0,0.12)]">
-                      <i className="fa-solid fa-check" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h2 className="m-0 text-[16px] font-semibold tracking-[-0.02em] text-white">{item.title}</h2>
-                      <p className="m-0 mt-1 text-[14px] leading-6 text-white/78">{item.text}</p>
-                    </div>
+                  <article key={item.title} className="grid gap-1">
+                    <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-white/55">
+                      {item.title}
+                    </p>
+                    <p className="m-0 text-[13px] leading-6 text-white/78">
+                      {item.text}
+                    </p>
                   </article>
                 ))}
               </div>
 
-              <div className="mt-auto pt-10 text-[12px] font-medium uppercase tracking-[0.18em] text-white/62 max-[960px]:pt-8">
+              <div className="mt-auto pt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 max-[960px]:pt-8">
                 Centro operativo del CIFP Virgen de la Candelaria
               </div>
             </div>
           </section>
 
-          <section className="flex items-center px-9 py-9 max-[960px]:px-5 max-[960px]:py-6">
-            <div className="w-full rounded-[28px] border border-slate-200/80 bg-white px-7 py-7 shadow-[0_24px_60px_rgba(15,23,42,0.08)] max-[480px]:px-5 max-[480px]:py-6">
-              <div className="mb-7 flex items-start justify-between gap-4">
-                <div>
-                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--color-brand-500)]">
-                    Acceso seguro
-                  </p>
-                  <h2 className="m-0 mt-2 text-[32px] font-semibold tracking-[-0.04em] text-slate-900 max-[480px]:text-[28px]">
-                    Bienvenido
-                  </h2>
-                  <p className="m-0 mt-2 text-[14px] leading-6 text-slate-500">
-                    Accede con tu usuario o correo y continúa en el punto exacto donde lo dejaste.
-                  </p>
-                </div>
+          <section className="flex items-center justify-center px-10 py-10 max-[960px]:px-5 max-[960px]:py-7">
+            <div className="w-full max-w-[460px] rounded-[28px] border border-slate-200/80 bg-white px-7 py-7 shadow-[0_24px_60px_rgba(15,23,42,0.08)] max-[480px]:px-5 max-[480px]:py-6">
+              <div className="mb-7">
+                <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                  Acceso seguro
+                </p>
+                <h2 className="m-0 mt-2 text-[28px] font-extrabold tracking-[-0.04em] text-slate-900">
+                  Iniciar sesión
+                </h2>
+                <p className="m-0 mt-2 text-[13px] leading-6 text-slate-500">
+                  Introduce tus credenciales para acceder al panel operativo de Smart Economato.
+                </p>
               </div>
 
               <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
@@ -190,7 +185,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  className="mt-1 inline-flex min-h-[56px] w-full items-center justify-center rounded-[18px] border-0 bg-[linear-gradient(135deg,#7f1d1d_0%,#b33131_58%,#d97745_100%)] px-4 py-4 text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_20px_40px_rgba(159,42,42,0.24)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(159,42,42,0.28)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-1 inline-flex min-h-[56px] w-full items-center justify-center rounded-[18px] border-0 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_58%,#d97745_100%)] px-4 py-4 text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_20px_40px_rgba(179,49,49,0.22)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(179,49,49,0.26)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={loading}
                   aria-busy={loading}
                 >

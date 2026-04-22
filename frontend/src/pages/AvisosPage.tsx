@@ -326,6 +326,7 @@ export default function AvisosPage() {
 
         mostrarToast("Baja registrada correctamente", "success");
       } else if (accionActual === "pedido") {
+        if (!productoSeleccionado) return;
         await pedidoMutation.mutateAsync({
           proveedorId:
             productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,

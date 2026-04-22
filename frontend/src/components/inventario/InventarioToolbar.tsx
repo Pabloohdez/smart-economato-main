@@ -1,7 +1,6 @@
 import type { Categoria, Proveedor } from "../../services/productosService";
-import { ArrowDownWideNarrow, ChevronDown, Download, Filter, FilterX, Plus, ScanLine, Search } from "lucide-react";
-import { useMemo } from "react";
-import ToolbarFilterDropdown from "../ui/ToolbarFilterDropdown";
+import { ArrowDownWideNarrow, ChevronDown, Download, FileSpreadsheet, Filter, FilterX, Plus, ScanLine, Search, FileText } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
 
 type Props = {
   q: string;
@@ -19,11 +18,100 @@ type Props = {
   onlyProximoCaducar: boolean;
   setOnlyProximoCaducar: (v: boolean) => void;
   onScanBarcode: () => void;
-  onExportProducts: () => void;
+  onExportCsv: () => void;
+  onExportXlsx: () => void;
   onCreateProduct: () => void;
   limpiarFiltros: () => void;
   totalItems: number;
 };
+
+type DropdownOption = { value: string; label: string };
+
+function DetailsDropdown({
+  label,
+  value,
+  valueLabel,
+  options,
+  leadingIcon,
+  active,
+  onChange,
+  className,
+}: {
+  label: string;
+  value: string;
+  valueLabel: string;
+  options: DropdownOption[];
+  leadingIcon?: React.ReactNode;
+  active?: boolean;
+  onChange: (next: string) => void;
+  className?: string;
+}) {
+  const detailsRef = useRef<HTMLDetailsElement | null>(null);
+
+  useEffect(() => {
+    const handleDocumentMouseDown = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (detailsRef.current && !detailsRef.current.contains(target)) {
+        detailsRef.current.open = false;
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (detailsRef.current) detailsRef.current.open = false;
+    };
+
+    document.addEventListener("mousedown", handleDocumentMouseDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleDocumentMouseDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  return (
+    <div className={className}>
+      <details ref={detailsRef} className="group relative">
+        <summary
+          className={[
+            "list-none flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50",
+            active ? "border-slate-300" : "border-slate-200",
+          ].join(" ")}
+          aria-label={label}
+        >
+          <span className="inline-flex min-w-0 items-center gap-2">
+            {leadingIcon ? <span className="text-slate-400">{leadingIcon}</span> : null}
+            <span className="truncate">{label} <span className="text-slate-400">({valueLabel})</span></span>
+          </span>
+          <ChevronDown className="h-4 w-4 text-slate-400 group-open:rotate-180 transition-transform" />
+        </summary>
+
+        <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+          {options.map((opt) => {
+            const isActive = opt.value === value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                className={[
+                  "w-full text-left text-sm px-3 py-2 rounded-lg transition-colors hover:bg-slate-100",
+                  isActive ? "bg-[var(--brand-50)] text-[var(--brand-700)] font-semibold" : "text-slate-700",
+                ].join(" ")}
+                onClick={() => {
+                  onChange(opt.value);
+                  if (detailsRef.current) detailsRef.current.open = false;
+                }}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </details>
+    </div>
+  );
+}
 
 export default function InventarioToolbar({
   q,
@@ -41,7 +129,8 @@ export default function InventarioToolbar({
   onlyProximoCaducar,
   setOnlyProximoCaducar,
   onScanBarcode,
-  onExportProducts,
+  onExportCsv,
+  onExportXlsx,
   onCreateProduct,
   limpiarFiltros,
   totalItems: _totalItems,
@@ -69,11 +158,7 @@ export default function InventarioToolbar({
     setOnlyProximoCaducar(true);
   }
 
-  // =========================================================================
-  // CLASE MAESTRA UNIFICADA PARA TODOS LOS CONTROLES (Borde, sombra, hover)
-  // =========================================================================
-  const controlClassName = "h-11 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-200 hover:bg-slate-50 focus:outline-none";
-  const secondaryBtnClassName = `${controlClassName} inline-flex items-center justify-center gap-2 active:scale-[0.98]`;
+  const secondaryBtnClassName = "bo-toolbar-secondary active:scale-[0.98]";
   
   const stockLabel = stockMode === "stock-bajo" ? "Stock bajo" : stockMode === "proximo-caducar" ? "Próximo a caducar" : "Todos";
   const catLabel = cats.find((cat) => String(cat.id) === catId)?.nombre ?? "Todas";
@@ -92,12 +177,11 @@ export default function InventarioToolbar({
             onChange={(event) => setQ(event.target.value)}
             placeholder="Buscar por nombre, referencia, marca, material..."
             aria-label="Buscar producto por nombre o código"
-            className={`${controlClassName} w-full pl-11 pr-4 placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-300/40`}
+            className="bo-toolbar-input w-full pl-12 placeholder:text-slate-400"
           />
         </div>
 
-        {/* Dropdowns (la clase maestra está dentro del componente ToolbarFilterDropdown) */}
-        <ToolbarFilterDropdown
+        <DetailsDropdown
           label="Familias"
           valueLabel={catLabel}
           value={catId}
@@ -108,7 +192,7 @@ export default function InventarioToolbar({
           className="min-w-0"
         />
 
-        <ToolbarFilterDropdown
+        <DetailsDropdown
           label="Stock"
           valueLabel={stockLabel}
           value={stockMode}
@@ -123,21 +207,28 @@ export default function InventarioToolbar({
           className="min-w-0"
         />
 
-        <button
-          type="button"
-          onClick={onExportProducts}
-          className={`${secondaryBtnClassName} min-[1240px]:w-auto`}
-        >
-          <Download className="h-4 w-4" strokeWidth={2} />
-          Exportar / Importar
-          <ChevronDown className="h-4 w-4 text-slate-500" strokeWidth={2} />
-        </button>
+        <DetailsDropdown
+          label="Exportar / Importar"
+          valueLabel="Opciones"
+          value=""
+          active={false}
+          leadingIcon={<Download className="h-4 w-4" strokeWidth={2} />}
+          onChange={(v) => {
+            if (v === "csv") onExportCsv();
+            if (v === "xlsx") onExportXlsx();
+          }}
+          options={[
+            { value: "csv", label: "Exportar CSV" },
+            { value: "xlsx", label: "Exportar XLSX" },
+          ]}
+          className="min-w-0"
+        />
 
         {/* Botón Primario: Usa color corporativo */}
         <button
           type="button"
           onClick={onCreateProduct}
-          className="inline-flex items-center justify-center gap-2 h-11 rounded-xl border border-transparent bg-primary text-white px-5 text-[13px] font-semibold shadow-sm transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+          className="bo-toolbar-primary-blue active:scale-[0.98]"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nuevo Producto
@@ -145,7 +236,7 @@ export default function InventarioToolbar({
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <ToolbarFilterDropdown
+        <DetailsDropdown
           label="Proveedor"
           valueLabel={provLabel}
           value={provId}

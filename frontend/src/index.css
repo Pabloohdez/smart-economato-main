@@ -17,6 +17,12 @@
     --color-brand-600: #8f2323;
     --color-brand-100: #ffe3e3;
 
+    /* Tokens corporativos (equivalente a indigo/blue en backoffice) */
+    --brand-50: rgba(179, 49, 49, 0.08);
+    --brand-200: rgba(179, 49, 49, 0.22);
+    --brand-600: var(--color-brand-500);
+    --brand-700: var(--color-brand-600);
+
     --color-success-500: #2f9e63;
     --color-warning-500: #c53030;
     --color-danger-500: #dc2626;
@@ -181,8 +187,24 @@ a {
   }
 
   .bo-toolbar-primary-blue {
-    @apply inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700;
+    display: inline-flex;
+    min-height: 3rem;
+    flex-shrink: 0;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--brand-600);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 10px 22px rgba(226, 232, 240, 0.45);
+    transition: background-color 150ms ease;
   }
+  .bo-toolbar-primary-blue:hover { background: var(--brand-700); }
 
   .bo-segmented-btn {
     @apply min-h-10 shrink-0 cursor-pointer whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;

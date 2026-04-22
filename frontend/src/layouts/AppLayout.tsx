@@ -466,7 +466,7 @@ export default function AppLayout() {
               : isInicio
                 ? "flex-1 w-full min-w-0 m-0 p-0"
                 : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
-            isInicio ? "overflow-hidden" : "overflow-auto",
+            isInicio ? "overflow-hidden" : "overflow-y-auto overflow-x-hidden",
           ].join(" ")}
           id="main-content"
         >

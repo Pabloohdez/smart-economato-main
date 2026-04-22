@@ -72,7 +72,11 @@ export default function TablePaginationControls({
                     const details = event.currentTarget.closest("details") as HTMLDetailsElement | null;
                     if (details) details.open = false;
                   }}
-                  className={`w-full text-left text-sm px-3 py-1.5 rounded-lg transition-colors ${option === pageSize ? "bg-primary/10 text-primary font-semibold" : "hover:bg-slate-100 text-slate-700"}`}
+                  className={`w-full text-left text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                    option === pageSize
+                      ? "bg-[var(--brand-50)] text-[var(--brand-700)] font-semibold"
+                      : "hover:bg-slate-100 text-slate-700"
+                  }`}
                 >
                   {option}
                 </button>
@@ -118,7 +122,11 @@ export default function TablePaginationControls({
                   window.scrollTo({ top: 0, behavior: "smooth" });
                   onPageChange(pageNumber);
                 }}
-                className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${pageNumber === safePage ? "border-primary bg-primary text-white font-semibold" : "border-slate-300 bg-white text-gray-700 hover:bg-gray-50"}`}
+                className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                  pageNumber === safePage
+                    ? "border-[var(--brand-700)] bg-[var(--brand-600)] text-white font-semibold"
+                    : "border-slate-300 bg-white text-gray-700 hover:bg-gray-50"
+                }`}
                 type="button"
               >
                 {pageNumber}

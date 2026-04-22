@@ -154,8 +154,8 @@ export default function InventarioPage() {
     await Promise.all([productosQuery.refetch(), lotesQuery.refetch()]);
   }
 
-  function exportarProductos() {
-    const rows = filtered.map((item) => ({
+  function buildExportRows() {
+    return filtered.map((item) => ({
       Producto: String(item.nombre ?? ""),
       Categoria: String(item.categoria?.nombre ?? ""),
       Precio: Number(item.precio ?? 0),
@@ -163,6 +163,19 @@ export default function InventarioPage() {
       Caducidad: String((item as any).fechaCaducidad ?? ""),
       Proveedor: String(item.proveedor?.nombre ?? ""),
     }));
+  }
+
+  function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportarProductosCsv() {
+    const rows = buildExportRows();
 
     const csv = [
       Object.keys(rows[0] ?? { Producto: "", Categoria: "", Precio: "", Stock: "", Caducidad: "", Proveedor: "" }).join(";"),
@@ -170,12 +183,21 @@ export default function InventarioPage() {
     ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `inventario-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, `inventario-${new Date().toISOString().slice(0, 10)}.csv`);
+    showNotification("Inventario exportado correctamente.", "success");
+  }
+
+  async function exportarProductosXlsx() {
+    const rows = buildExportRows();
+    const XLSX = await import("xlsx");
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([out], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    downloadBlob(blob, `inventario-${new Date().toISOString().slice(0, 10)}.xlsx`);
     showNotification("Inventario exportado correctamente.", "success");
   }
 
@@ -236,7 +258,8 @@ export default function InventarioPage() {
           onlyProximoCaducar={onlyProximoCaducar}
           setOnlyProximoCaducar={setOnlyProximoCaducar}
           onScanBarcode={escanearCodigoBarras}
-          onExportProducts={exportarProductos}
+          onExportCsv={exportarProductosCsv}
+          onExportXlsx={exportarProductosXlsx}
           onCreateProduct={() => nav("/inventario/nuevo")}
           limpiarFiltros={limpiarFiltros}
           totalItems={filtered.length}

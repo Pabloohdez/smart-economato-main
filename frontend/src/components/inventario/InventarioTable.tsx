@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Producto } from "../../services/productosService";
+import TablePaginationControls from "../ui/TablePaginationControls";
 import UiSelect from "../ui/UiSelect";
 import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
@@ -295,7 +296,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
         <div className="overflow-hidden rounded-xl border-[3px] border-[#e2e8f0] bg-white shadow-sm flex flex-col">
           <section ref={tableSectionRef} className="flex-1 overflow-hidden flex flex-col">
-            <div className="overflow-x-hidden">
+            <div className="overflow-x-auto">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`inventario-page-${safePage}-${pageSize}`}
@@ -304,8 +305,8 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
                 >
-                  <table className="w-full table-fixed border-collapse border-spacing-0 text-sm">
-                    <thead className="border-b-[3px] border-[#e2e8f0] bg-[#f8fafc]">
+                  <table className="w-full min-w-[1100px] text-sm bo-table-no-select border-collapse border-spacing-0">
+                    <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200">
                       <tr className="text-left text-[#0f172a]">
                         <th className="w-12 px-4 py-2.5 align-middle">
                           <input
@@ -324,11 +325,11 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                             <ArrowUpAZ className="w-[14px] h-[14px] text-slate-400" strokeWidth={2.5} />
                           </div>
                         </th>
-                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">Familia</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] max-[820px]:hidden">Familia</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Precio</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Stock</th>
-                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Caducidad</th>
-                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a]">Proveedor</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center max-[640px]:hidden">Caducidad</th>
+                        <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] max-[1100px]:hidden">Proveedor</th>
                         <th className="px-4 py-2.5 align-middle text-[13px] font-semibold text-[#0f172a] text-center">Acciones</th>
                       </tr>
                     </thead>
@@ -349,7 +350,10 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                           return (
                             <tr
                               key={String(p.id)}
-                              className={`border-b border-[#e2e8f0] last:border-0 hover:bg-slate-50 transition-colors ${selectedIds.includes(String(p.id)) ? "bg-blue-50/50" : ""}`}
+                              className={cn(
+                                "bo-table-row",
+                                selectedIds.includes(String(p.id)) ? "bg-[var(--brand-50)]" : "",
+                              )}
                             >
                               <td className="px-4 py-2 align-middle">
                                 <input
@@ -371,7 +375,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   </p>
                                 </div>
                               </td>
-                              <td className="px-4 py-2 align-middle">
+                              <td className="px-4 py-2 align-middle max-[820px]:hidden">
                                 <span className="text-[13px] text-slate-600">
                                   {String(p.categoria?.nombre ?? "General")}
                                 </span>
@@ -401,7 +405,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   )}
                                 </div>
                               </td>
-                              <td className="px-4 py-2 align-middle text-center">
+                              <td className="px-4 py-2 align-middle text-center max-[640px]:hidden">
                                 <div className="flex flex-col items-center justify-center">
                                   <span className={cn(
                                     "text-[13px]",
@@ -414,7 +418,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   )}
                                 </div>
                               </td>
-                              <td className="px-4 py-2 align-middle text-left">
+                              <td className="px-4 py-2 align-middle text-left max-[1100px]:hidden">
                                 <div className="flex flex-col">
                                   <span className="text-[13px] text-slate-600">
                                     {String(p.proveedor?.nombre ?? "Sin proveedor")}
@@ -430,24 +434,24 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                 <div className="flex items-center justify-center gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => abrirLotes(p)}
-                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
-                                    title="Ver lotes"
-                                  >
-                                    <Eye className="h-[14px] w-[14px]" />
-                                  </button>
-                                  <button
-                                    type="button"
                                     onClick={() => abrirEdicion(p)}
-                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-blue-500 hover:bg-blue-50 transition-colors"
+                                    className="bo-table-action-btn text-[var(--brand-700)] hover:bg-[var(--brand-50)]"
                                     title="Editar producto"
                                   >
                                     <Pencil className="h-[14px] w-[14px]" />
                                   </button>
                                   <button
                                     type="button"
+                                    onClick={() => abrirLotes(p)}
+                                    className="bo-table-action-btn"
+                                    title="Ver lotes de caducidad"
+                                  >
+                                    <Eye className="h-[14px] w-[14px]" />
+                                  </button>
+                                  <button
+                                    type="button"
                                     onClick={() => void eliminarProducto(p)}
-                                    className="inline-flex items-center justify-center w-8 h-8 rounded border border-slate-200 bg-white text-red-500 hover:bg-red-50 transition-colors"
+                                    className="bo-table-action-btn text-red-600 hover:bg-red-50 hover:text-red-700"
                                     title="Eliminar producto"
                                   >
                                     <Trash2 className="h-[14px] w-[14px]" />
@@ -469,86 +473,18 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="border-t-[3px] border-[#e2e8f0] bg-white px-5 py-4 flex items-center justify-between"
+                className="bo-table-pagination"
               >
-                <div className="flex items-center gap-3 text-[14px] text-slate-500">
-                  <span>Mostrando</span>
-                  <div className="relative">
-                    <select
-                      value={pageSize}
-                      onChange={(e) => {
-                        setPageSize(Number(e.target.value));
-                        setPage(1);
-                      }}
-                      className="appearance-none bg-white border border-[#e2e8f0] text-slate-700 text-[14px] rounded-[6px] pl-3 pr-8 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#5b4eff] cursor-pointer"
-                    >
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                    </div>
-                  </div>
-                  <span>de {rows.length} productos</span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => changePage(1)}
-                    disabled={safePage === 1}
-                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <span className="text-[16px] leading-none mb-0.5">«</span>
-                  </button>
-                  <button
-                    onClick={() => changePage(safePage - 1)}
-                    disabled={safePage === 1}
-                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <span className="text-[16px] leading-none mb-0.5">‹</span>
-                  </button>
-
-                  {paginationRange.map((p, i) => {
-                    if (p === "...") {
-                      return (
-                        <span key={`dots-${i}`} className="flex items-center justify-center w-[34px] h-[34px] text-slate-400 text-[14px]">
-                          ...
-                        </span>
-                      );
-                    }
-                    const isCurrent = safePage === p;
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => changePage(p as number)}
-                        className={`flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border text-[13px] transition-colors ${
-                          isCurrent
-                            ? "bg-[#5b4eff] border-[#5b4eff] text-white font-medium shadow-sm"
-                            : "border-[#e2e8f0] bg-white text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    onClick={() => changePage(safePage + 1)}
-                    disabled={safePage === totalPages}
-                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <span className="text-[16px] leading-none mb-0.5">›</span>
-                  </button>
-                  <button
-                    onClick={() => changePage(totalPages)}
-                    disabled={safePage === totalPages}
-                    className="flex items-center justify-center w-[34px] h-[34px] rounded-[6px] border border-[#e2e8f0] bg-white text-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <span className="text-[16px] leading-none mb-0.5">»</span>
-                  </button>
-                </div>
+                <TablePaginationControls
+                  page={safePage}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalItems={rows.length}
+                  totalLabel="productos"
+                  onPageChange={changePage}
+                  onPageSizeChange={setPageSize}
+                  pageSizeOptions={[10, 25, 50, 100]}
+                />
               </motion.div>
             )}
           </section>
