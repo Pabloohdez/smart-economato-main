@@ -32,22 +32,22 @@ export default function InicioPage() {
     <StaggerPage className="w-full h-full min-h-0 flex p-6 max-[820px]:p-4 max-[520px]:p-3">
       <StaggerItem>
         <div className="w-full flex-1 min-h-0 flex">
-          <div className="grid w-full flex-1 min-h-0 min-w-0 grid-cols-3 grid-rows-3 gap-5 max-[820px]:gap-4 max-[520px]:gap-3">
+          <div className="grid w-full flex-1 min-h-0 min-w-0 grid-cols-3 auto-rows-fr gap-5 max-[1100px]:grid-cols-2 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
               <button
                 key={c.to}
-                className="group flex h-full w-full flex-col justify-between rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)] max-[820px]:px-5 max-[820px]:py-5 max-[640px]:px-4 max-[640px]:py-4 max-[520px]:rounded-[20px] max-[520px]:px-3.5 max-[520px]:py-3.5"
+                className="group flex h-full w-full flex-col rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)] max-[820px]:px-5 max-[820px]:py-5 max-[640px]:px-4 max-[640px]:py-4 max-[520px]:rounded-[20px] max-[520px]:px-3.5 max-[520px]:py-3.5"
                 type="button"
                 onClick={() => nav(c.to)}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)] max-[520px]:hidden">
+                    <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
                       Sección
                     </div>
-                    <h3 className="m-0 mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[20px] max-[640px]:text-[18px] max-[520px]:mt-0 max-[520px]:text-[13px]">
+                    <h3 className="m-0 mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[20px] max-[640px]:text-[18px] max-[520px]:text-[15px]">
                       {c.title}
                     </h3>
                   </div>
