@@ -401,7 +401,7 @@ export default function AppLayout() {
 
         <main
           className={[
-            isInicio ? "flex-1 w-full min-w-0 m-0 p-0" : "flex-1 w-full min-w-0 m-0 p-[16px_20px_24px] max-[820px]:p-4",
+            isInicio ? "flex-1 w-full min-w-0 m-0 p-0" : "flex-1 w-full min-w-0 m-0 p-[28px_32px_32px] max-[820px]:p-5",
             isInicio ? (isSmallViewport ? "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]" : "overflow-hidden") : "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]",
           ].join(" ")}
           id="main-content"

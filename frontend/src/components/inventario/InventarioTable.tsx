@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Producto } from "../../services/productosService";
-import TablePaginationControls from "../ui/TablePaginationControls";
+import TablePagination from "../ui/TablePagination";
 import UiSelect from "../ui/UiSelect";
 import { actualizarProducto } from "../../services/productosService";
 import { queryKeys } from "../../lib/queryClient";
@@ -72,19 +72,6 @@ function getStockPresentation(stock: number, min: number) {
     badge: "En stock",
     badgeClassName: "bg-[#e6f4ea] text-[#137333]",
   };
-}
-
-function getPaginationRange(currentPage: number, totalPages: number) {
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
-  }
-  if (currentPage <= 3) {
-    return [1, 2, 3, "...", totalPages];
-  }
-  if (currentPage >= totalPages - 2) {
-    return [1, "...", totalPages - 2, totalPages - 1, totalPages];
-  }
-  return [1, "...", currentPage, "...", totalPages];
 }
 
 export default function InventarioTable({ items, lotes }: { items: Producto[]; lotes: LoteProducto[] }) {
@@ -348,8 +335,6 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     await eliminarMutation.mutateAsync(producto);
   }
 
-  const paginationRange = getPaginationRange(safePage, totalPages);
-
   return (
     <>
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
@@ -494,7 +479,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                                   <button
                                     type="button"
                                     onClick={() => abrirEdicion(p)}
-                                    className="bo-table-action-btn text-[var(--brand-700)] hover:bg-[var(--brand-50)]"
+                                    className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                                     title="Editar producto"
                                   >
                                     <Pencil className="h-[14px] w-[14px]" />
@@ -533,23 +518,15 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
             </div>
 
             {rows.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bo-table-pagination"
-              >
-                <TablePaginationControls
-                  page={safePage}
-                  totalPages={totalPages}
-                  pageSize={pageSize}
+              <TablePagination
                   totalItems={rows.length}
-                  totalLabel="productos"
+                  page={safePage}
+                  pageSize={pageSize}
                   onPageChange={changePage}
                   onPageSizeChange={handlePageSizeChange}
                   pageSizeOptions={[10, 25, 50, 100]}
+                  label="productos"
                 />
-              </motion.div>
             )}
           </section>
         </div>

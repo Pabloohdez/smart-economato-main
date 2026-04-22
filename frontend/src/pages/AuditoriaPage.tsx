@@ -260,8 +260,8 @@ export default function AuditoriaPage() {
     return (
       <div>
         <div className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
-          <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
-            <ClipboardList className="h-7 w-7 text-primary" /> REGISTRO DE AUDITORÍA
+          <h1 className="text-[28px] font-bold text-primary m-0 mb-2 flex items-center gap-3">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><ClipboardList className="h-5 w-5" /></span> REGISTRO DE AUDITORÍA
           </h1>
           <p className="text-[14px] text-[var(--color-text-muted)] m-0">
             Historial completo de actividades del sistema
@@ -280,8 +280,8 @@ export default function AuditoriaPage() {
   return (
     <StaggerPage className="w-full">
       <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
-        <h1 className="text-[28px] font-bold text-[var(--color-text-strong)] m-0 mb-2 flex items-center gap-3">
-          <ClipboardList className="h-7 w-7 text-primary" /> REGISTRO DE AUDITORÍA
+        <h1 className="text-[28px] font-bold text-primary m-0 mb-2 flex items-center gap-3">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><ClipboardList className="h-5 w-5" /></span> REGISTRO DE AUDITORÍA
         </h1>
         <p className="text-[14px] text-[var(--color-text-muted)] m-0">
           Historial completo de actividades del sistema
@@ -361,14 +361,16 @@ export default function AuditoriaPage() {
             <Button
               type="button"
               id="btnAplicarFiltros"
+              className="h-12"
               onClick={aplicarFiltros}
             >
-              <i className="fa-solid fa-search"></i> Aplicar
+              <i className="fa-solid fa-filter"></i> Aplicar
             </Button>
             <Button
               type="button"
               id="btnLimpiarFiltros"
               variant="secondary"
+              className="h-12"
               onClick={limpiarFiltros}
             >
               <i className="fa-solid fa-eraser"></i> Limpiar

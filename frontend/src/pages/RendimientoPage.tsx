@@ -19,7 +19,7 @@ import Button from "../components/ui/Button";
 import { Badge } from "../components/ui/badge";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
-import { Table2, Trash2 } from "lucide-react";
+import { PieChart, Table2, Trash2 } from "lucide-react";
 
 type RegistroRendimiento = {
   id: number;
@@ -457,8 +457,11 @@ export default function RendimientoPage() {
         data-print-date={new Date().toLocaleString("es-ES")}
       >
         <div>
-          <h1 className="text-[1.8rem] font-extrabold text-[var(--color-text-strong)] m-0 mb-1 flex items-center gap-3 max-[768px]:text-[1.4rem]">
-            <i className="fa-solid fa-chart-pie"></i> Rendimiento
+          <h1 className="text-[1.8rem] font-extrabold text-primary m-0 mb-1 flex items-center gap-3 max-[768px]:text-[1.4rem]">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <PieChart className="h-5 w-5" />
+            </span>
+            Rendimiento
           </h1>
           <p className="text-[14px] text-[var(--color-text-muted)] m-0 italic">
             Toda materia prima susceptible de manipulación o preelaboración

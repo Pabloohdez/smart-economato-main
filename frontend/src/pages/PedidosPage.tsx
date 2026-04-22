@@ -18,6 +18,14 @@ import Button from "../components/ui/Button";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
 import { Badge } from "../components/ui/badge";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
+import { CalendarDays, ClipboardList, Download, Filter, ListOrdered, Plus, Upload } from "lucide-react";
+import SearchInput from "../components/ui/SearchInput";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
 
 type ItemPedido = {
   producto_id: number | string;
@@ -115,12 +123,33 @@ function hoyES() {
   });
 }
 
+function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; decimals?: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    const target = Number.isFinite(value) ? value : 0;
+    const duration = 700;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(target * eased);
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{display.toFixed(decimals)}{suffix}</>;
+}
+
 export default function PedidosPage() {
   const nav = useNavigate();
   const queryClient = useQueryClient();
 
   const [vista, setVista] = useState<"lista" | "nuevo">("lista");
   const [fechaPedido, setFechaPedido] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState("");
+  const [importandoPedidos, setImportandoPedidos] = useState(false);
 
   const [proveedorId, setProveedorId] = useState("");
   const [itemsPedido, setItemsPedido] = useState<ItemPedido[]>([]);
@@ -290,6 +319,68 @@ export default function PedidosPage() {
     return { pendientes, incompletos, importeTotal };
   }, [pedidos]);
 
+  const estadosUnicos = useMemo(() => {
+    const states = new Set<string>();
+    pedidos.forEach((p) => {
+      const s = String(p.estado ?? "").trim();
+      if (s) states.add(s);
+    });
+    return Array.from(states).sort();
+  }, [pedidos]);
+
+  async function exportarPedidosExcel() {
+    const XLSX = await import("xlsx");
+    const rows = pedidos.map((p) => ({
+      ID: p.id,
+      Proveedor: String(p.proveedor_nombre ?? ""),
+      Estado: String(p.estado ?? ""),
+      Total: Number(p.total ?? 0).toFixed(2),
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pedidos-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showNotification("Pedidos exportados a Excel.", "success");
+  }
+
+  async function importarPedidosExcel(file: File) {
+    setImportandoPedidos(true);
+    try {
+      const XLSX = await import("xlsx");
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+      let procesados = 0;
+      for (const row of rows) {
+        const proveedorId = String(row.ProveedorID ?? row.Proveedor ?? "").trim();
+        if (!proveedorId) continue;
+        await crearPedidoHistorial({
+          proveedorId,
+          items: [],
+          usuarioId: "1",
+          total: Number(row.Total ?? 0),
+        });
+        procesados++;
+      }
+      await queryClient.invalidateQueries({ queryKey: queryKeys.pedidos });
+      broadcastQueryInvalidation(queryKeys.pedidos);
+      showNotification(`Importación completada: ${procesados} pedido(s).`, "success");
+    } catch (error) {
+      console.error(error);
+      showNotification("No se pudo importar el archivo.", "error");
+    } finally {
+      setImportandoPedidos(false);
+    }
+  }
+
   function irANuevoPedido() {
     setVista("nuevo");
   }
@@ -443,8 +534,10 @@ export default function PedidosPage() {
       <StaggerItem>
         <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
           <div>
-            <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-              <i className="fa-solid fa-file-invoice-dollar text-[var(--color-brand-500)]"></i>
+            <h2 className="m-0 text-[28px] font-bold text-primary flex items-center gap-3">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                <ClipboardList className="h-5 w-5" />
+              </span>
               Pedidos y Compras
             </h2>
             <p className="mt-2 mb-0 text-[14px] text-[var(--color-text-muted)]">Historial de compras y generación de pedidos por proveedor.</p>
@@ -452,26 +545,9 @@ export default function PedidosPage() {
 
           <div className="flex gap-[15px] flex-wrap items-center max-[900px]:w-full">
             <div className="inline-flex items-center gap-2.5 px-4 py-3 border border-[var(--color-border-default)] rounded-[12px] bg-[var(--color-bg-surface)] shadow-[var(--shadow-sm)] text-[var(--color-text-muted)] font-semibold max-[900px]:w-full max-[900px]:justify-center">
-              <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
+              <CalendarDays className="h-4 w-4 text-[var(--color-brand-500)]" />
               <span>{hoyES()}</span>
             </div>
-
-            <Button
-              type="button"
-              className="max-[900px]:w-full max-[900px]:justify-center"
-              onClick={irANuevoPedido}
-            >
-              <i className="fa-solid fa-plus"></i> Nuevo Pedido
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              className="max-[900px]:w-full max-[900px]:justify-center"
-              onClick={irAHistorial}
-            >
-              <i className="fa-solid fa-list"></i> Ver Historial
-            </Button>
           </div>
         </div>
       </StaggerItem>
@@ -480,15 +556,15 @@ export default function PedidosPage() {
         <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
           <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
-            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]"><AnimatedMetric value={pedidosResumen.pendientes} /></strong>
           </article>
           <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Incompletos</span>
-            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.incompletos}</strong>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]"><AnimatedMetric value={pedidosResumen.incompletos} /></strong>
           </article>
           <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Importe Histórico</span>
-            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.importeTotal.toFixed(2)} €</strong>
+            <strong className="text-[24px] leading-none text-[var(--color-text-strong)]"><AnimatedMetric value={pedidosResumen.importeTotal} decimals={2} suffix=" €" /></strong>
           </article>
         </section>
       </StaggerItem>
@@ -502,8 +578,6 @@ export default function PedidosPage() {
       {vista === "lista" && (
         <StaggerItem>
           <div className="mb-[25px]">
-          <h3 className="mb-5 border-b-2 border-[var(--color-border-default)] pb-2.5 text-[18px] text-[var(--color-text-strong)]">Historial de Pedidos</h3>
-
           {loadingPedidos && <Spinner label="Cargando pedidos..." />}
 
           {!loadingPedidos && pedidos.length === 0 && (
@@ -515,7 +589,17 @@ export default function PedidosPage() {
           )}
 
           {!loadingPedidos && pedidos.length > 0 && (
-            <PedidosGrid pedidos={pedidos} onIrARecepcion={irARecepcion} />
+            <PedidosGrid
+              pedidos={pedidos}
+              onIrARecepcion={irARecepcion}
+              estadoFiltro={estadoFiltro}
+              onEstadoFiltroChange={setEstadoFiltro}
+              estadosUnicos={estadosUnicos}
+              onNuevoPedido={irANuevoPedido}
+              onExportar={() => void exportarPedidosExcel()}
+              onImportar={(file) => void importarPedidosExcel(file)}
+              importando={importandoPedidos}
+            />
           )}
           </div>
         </StaggerItem>
@@ -537,6 +621,13 @@ export default function PedidosPage() {
                   <Badge variant="secondary" className="px-3 py-1 text-[11px] font-semibold">
                     Total: {totalPedido.toFixed(2)} €
                   </Badge>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={irAHistorial}
+                  >
+                    <ListOrdered className="h-4 w-4" /> Volver al Historial
+                  </Button>
                 </div>
               </div>
             }

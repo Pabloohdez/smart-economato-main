@@ -35,7 +35,7 @@ export default function RegistroPage() {
     setMsg("");
     setLoading(true);
     try {
-      await apiFetch("/usuarios", {
+      const response = await apiFetch<{ message?: string; mailMode?: string }>("/usuarios", {
         method: "POST",
         headers: { "X-Requested-With": "XMLHttpRequest" },
         body: JSON.stringify({
@@ -49,7 +49,8 @@ export default function RegistroPage() {
         }),
       });
       setSuccess(true);
-      setMsg("Cuenta creada correctamente. Redirigiendo al login...");
+      const backendMessage = String(response?.message ?? "").trim();
+      setMsg(backendMessage || "Cuenta creada correctamente. Redirigiendo al login...");
       setTimeout(() => nav("/login", { replace: true }), 1500);
     } catch (err: unknown) {
       setMsg(err instanceof Error ? err.message : "Error al crear la cuenta.");

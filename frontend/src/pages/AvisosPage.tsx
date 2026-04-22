@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
@@ -20,7 +20,7 @@ import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
 import { Badge } from "../components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { Trash2, Truck } from "lucide-react";
+import { Bell, CalendarDays, Trash2, Truck } from "lucide-react";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -69,6 +69,8 @@ export default function AvisosPage() {
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMensaje, setToastMensaje] = useState("");
   const [toastTipo, setToastTipo] = useState<"success" | "error">("success");
+  const holdIntervalRef = useRef<number | null>(null);
+  const holdTimeoutRef = useRef<number | null>(null);
 
   // Obtener usuario activo
   const { user } = useAuth();
@@ -297,6 +299,7 @@ export default function AvisosPage() {
   }
 
   function cerrarModal() {
+    stopHoldCantidad();
     setModalOpen(false);
     setProductoSeleccionado(null);
     setLoteSeleccionado(null);
@@ -304,6 +307,37 @@ export default function AvisosPage() {
     setCantidadModal(1);
     setConfirmando(false);
   }
+
+  const stopHoldCantidad = useCallback(() => {
+    if (holdTimeoutRef.current !== null) {
+      window.clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+    if (holdIntervalRef.current !== null) {
+      window.clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+    }
+  }, []);
+
+  const cambiarCantidad = useCallback((delta: number) => {
+    setCantidadModal((prev) => {
+      const maxPermitido = accionActual === "baja"
+        ? Number(loteSeleccionado?.cantidadCaducada ?? productoSeleccionado?.stockNum ?? prev)
+        : Number.POSITIVE_INFINITY;
+      const next = prev + delta;
+      return Math.max(1, Math.min(maxPermitido, next));
+    });
+  }, [accionActual, loteSeleccionado, productoSeleccionado]);
+
+  const startHoldCantidad = useCallback((delta: number) => {
+    cambiarCantidad(delta);
+    stopHoldCantidad();
+    holdTimeoutRef.current = window.setTimeout(() => {
+      holdIntervalRef.current = window.setInterval(() => cambiarCantidad(delta), 110);
+    }, 260);
+  }, [cambiarCantidad, stopHoldCantidad]);
+
+  useEffect(() => () => stopHoldCantidad(), [stopHoldCantidad]);
 
   async function confirmarAccion() {
     if (!accionActual) return;
@@ -396,23 +430,21 @@ export default function AvisosPage() {
     <StaggerPage className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
       <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-[28px] font-semibold text-[#111827] m-0 mb-1 flex items-center gap-3">
-            <i className="fa-solid fa-bell"></i> Centro de Avisos
+          <h1 className="m-0 mb-1 flex items-center gap-3 text-[28px] font-semibold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <Bell className="h-5 w-5" />
+            </span>
+            Centro de Avisos
           </h1>
           <p className="text-[#6b7280] text-[14px] m-0">Resumen de alertas y notificaciones del sistema</p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap max-[768px]:w-full">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] bg-[var(--color-bg-surface)] border border-[#e5e7eb] shadow-[0_2px_8px_rgba(15,23,42,0.05)] text-[#4b5563] text-[13px] font-semibold max-[768px]:w-full max-[768px]:justify-center">
-            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
+        <div className="text-right text-slate-500 text-sm max-[768px]:w-full max-[768px]:text-left">
+          <div className="inline-flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
             <span>{hoyES()}</span>
           </div>
-
-          {timestamp ? (
-            <div className="text-[12px] text-[#6b7280] px-3.5 py-2.5 bg-[#f9fafb] rounded-[10px] border border-[#e5e7eb] max-[768px]:w-full max-[768px]:text-center">
-              {timestamp}
-            </div>
-          ) : null}
+          {timestamp ? <div className="mt-1">{timestamp.replace("Actualizado", "Ultima actualizacion")}</div> : null}
         </div>
       </StaggerItem>
 
@@ -482,7 +514,7 @@ export default function AvisosPage() {
                   </p>
                 </div>
 
-                <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
+                <div className="flex w-12 items-center justify-center max-[768px]:col-start-2 max-[768px]:mt-2">
                   <button
                     type="button"
                     className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -550,7 +582,7 @@ export default function AvisosPage() {
                     </p>
                   </div>
 
-                  <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
+                  <div className="flex w-12 items-center justify-center max-[768px]:col-start-2 max-[768px]:mt-2">
                     <button
                       type="button"
                       className="bo-table-action-btn text-slate-500 hover:bg-[rgba(179,49,49,0.08)] hover:text-[var(--color-brand-500)]"
@@ -678,7 +710,7 @@ export default function AvisosPage() {
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
             </h3>
-            <button type="button" className="bg-transparent border-0 text-[#9ca3af] cursor-pointer text-[16px] p-1 rounded hover:bg-[#f3f4f6] hover:text-[#374151]" onClick={cerrarModal}>
+            <button type="button" className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-700" onClick={cerrarModal}>
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -704,11 +736,15 @@ export default function AvisosPage() {
 
             <div>
               <label htmlFor="modal-cantidad" className="block text-[12px] font-medium text-[#374151] mb-1.5">Cantidad</label>
-              <div className="flex items-center border border-[#d1d5db] rounded-lg overflow-hidden">
+              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
                 <button
                   type="button"
-                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-r border-r-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
-                  onClick={() => setCantidadModal((v) => Math.max(1, v - 1))}
+                  className="inline-flex h-11 w-11 items-center justify-center border-0 border-r border-r-slate-200 bg-slate-50 text-[16px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onMouseDown={() => startHoldCantidad(-1)}
+                  onMouseUp={stopHoldCantidad}
+                  onMouseLeave={stopHoldCantidad}
+                  onTouchStart={() => startHoldCantidad(-1)}
+                  onTouchEnd={stopHoldCantidad}
                 >
                   -
                 </button>
@@ -720,19 +756,17 @@ export default function AvisosPage() {
                   max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
                   onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
-                  className="flex-1 border-0 text-center text-[16px] font-semibold py-2 outline-none [appearance:textfield]"
+                  className="flex-1 border-0 text-center text-[16px] font-semibold py-2.5 outline-none [appearance:textfield]"
                 />
 
                 <button
                   type="button"
-                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-l border-l-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
-                  onClick={() => {
-                    const max =
-                      accionActual === "baja"
-                        ? productoSeleccionado?.stockNum || cantidadModal + 1
-                        : cantidadModal + 1;
-                    setCantidadModal((v) => Math.min(max, v + 1));
-                  }}
+                  className="inline-flex h-11 w-11 items-center justify-center border-0 border-l border-l-slate-200 bg-slate-50 text-[16px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onMouseDown={() => startHoldCantidad(1)}
+                  onMouseUp={stopHoldCantidad}
+                  onMouseLeave={stopHoldCantidad}
+                  onTouchStart={() => startHoldCantidad(1)}
+                  onTouchEnd={stopHoldCantidad}
                 >
                   +
                 </button>

@@ -609,8 +609,11 @@ export default function Recepcion() {
       <StaggerItem>
       <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
-          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
-            <Truck className="h-7 w-7 text-[var(--color-brand-500)]" /> RECEPCIÓN DE MERCANCÍA
+          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <Import className="h-5 w-5" />
+            </span>
+            RECEPCIÓN DE MERCANCÍA
           </h1>
           <p className="m-0 text-[14px] text-[#50596D]">
             Registra las entregas de proveedores y actualiza el inventario
@@ -812,7 +815,7 @@ export default function Recepcion() {
             )}
           </div>
 
-          <div className="flex gap-[15px] max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(240px,1fr)_minmax(240px,1fr)_auto]">
             <UiSelect
               value={provFiltro}
               onChange={setProvFiltro}
@@ -832,16 +835,14 @@ export default function Recepcion() {
                 ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
               ]}
             />
+
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90"
+              onClick={abrirModalPedidos}
+            >
+              <Import className="h-4 w-4" /> Importar/Recibir Pedido
+            </button>
           </div>
-        </div>
-        <div className="mt-[15px] text-right">
-          <button
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
-            style={{ display: "inline-flex" }}
-            onClick={abrirModalPedidos}
-          >
-            <Import className="h-4 w-4" /> Importar/Recibir Pedido
-          </button>
         </div>
       </div>
       </StaggerItem>

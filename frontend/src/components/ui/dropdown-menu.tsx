@@ -41,7 +41,7 @@ function DropdownMenuItem({ className, inset, variant = "default", ...props }: R
       data-variant={variant}
       className={cn(
         "relative flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm outline-none select-none transition-colors",
-        "focus:bg-[var(--color-bg-soft)] focus:text-[var(--color-text-strong)] data-[inset]:pl-8 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "focus:bg-slate-100 focus:text-slate-900 focus:font-semibold data-[inset]:pl-8 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         "data-[variant=destructive]:text-red-600 data-[variant=destructive]:focus:bg-red-50",
         className,
       )}

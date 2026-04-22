@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { login } from "../services/authService";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function LoginPage() {
   const nav = useNavigate();
+  const { updateUser } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -16,7 +18,8 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(username.trim(), password.trim());
+      const loggedUser = await login(username.trim(), password.trim());
+      updateUser(loggedUser as any);
       nav("/inicio");
     } catch (error) {
       setMsg(error instanceof Error ? error.message : "Usuario o contraseña incorrectos");

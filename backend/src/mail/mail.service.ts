@@ -8,13 +8,17 @@ type MailPayload = {
   html: string;
 };
 
+export type MailDeliveryMode = 'smtp' | 'log';
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: Transporter | null = null;
 
-  async sendMail(payload: MailPayload) {
-    if (this.getMailMode() === 'log') {
+  async sendMail(payload: MailPayload): Promise<MailDeliveryMode> {
+    const mode = this.getMailMode();
+
+    if (mode === 'log') {
       this.logger.warn(
         [
           'MAIL_MODE=log activo. Correo no enviado por SMTP.',
@@ -23,7 +27,7 @@ export class MailService {
           payload.text,
         ].join('\n'),
       );
-      return;
+      return mode;
     }
 
     const transporter = this.getTransporter();
@@ -34,6 +38,8 @@ export class MailService {
       text: payload.text,
       html: payload.html,
     });
+
+    return mode;
   }
 
   private getTransporter() {

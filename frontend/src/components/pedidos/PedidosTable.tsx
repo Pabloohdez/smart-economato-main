@@ -1,12 +1,19 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight, Building2, Download, Filter, Plus, Upload } from "lucide-react";
 import type { PedidoHistorial } from "../../types";
 import SearchInput from "../ui/SearchInput";
 import TablePagination from "../ui/TablePagination";
 import BackofficeTablePanel from "../ui/BackofficeTablePanel";
 import { Badge } from "../ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import UiSelect from "../ui/UiSelect";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const paginatedBodyVariants = {
   hidden: { opacity: 1 },
@@ -43,24 +50,44 @@ const paginatedRowVariants = {
 type Props = {
   pedidos: PedidoHistorial[];
   onIrARecepcion: (id: number | string) => void;
+  estadoFiltro?: string;
+  onEstadoFiltroChange?: (v: string) => void;
+  estadosUnicos?: string[];
+  onNuevoPedido?: () => void;
+  onExportar?: () => void;
+  onImportar?: (file: File) => void;
+  importando?: boolean;
 };
 
-export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
+export default function PedidosGrid({
+  pedidos,
+  onIrARecepcion,
+  estadoFiltro = "",
+  onEstadoFiltroChange,
+  estadosUnicos = [],
+  onNuevoPedido,
+  onExportar,
+  onImportar,
+  importando = false,
+}: Props) {
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return pedidos;
-    return pedidos.filter((p) => {
+    const byEstado = estadoFiltro
+      ? pedidos.filter((p) => String(p.estado ?? "").toUpperCase() === estadoFiltro.toUpperCase())
+      : pedidos;
+    if (!s) return byEstado;
+    return byEstado.filter((p) => {
       return (
         String(p.id).toLowerCase().includes(s)
         || String(p.proveedor_nombre ?? "").toLowerCase().includes(s)
         || String(p.estado ?? "").toLowerCase().includes(s)
       );
     });
-  }, [pedidos, q]);
+  }, [pedidos, q, estadoFiltro]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -77,26 +104,70 @@ export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
   return (
     <BackofficeTablePanel
       header={
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
-              {filtered.length} pedido(s)
-            </Badge>
-            <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
-              {pendientes} pendiente(s) o incompleto(s)
-            </Badge>
-          </div>
-          <div className="w-full max-w-[320px]">
-            <SearchInput
-              value={q}
-              onChange={(value) => {
-                setQ(value);
-                setPage(1);
-              }}
-              placeholder="Buscar por ID, proveedor o estado..."
-              ariaLabel="Buscar pedidos"
-            />
-          </div>
+        <div className="grid w-full grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(280px,1.6fr)_minmax(180px,0.7fr)_minmax(200px,0.8fr)_auto]">
+          <SearchInput
+            value={q}
+            onChange={(value) => {
+              setQ(value);
+              setPage(1);
+            }}
+            placeholder="Buscar por ID, proveedor o estado..."
+            ariaLabel="Buscar pedidos"
+          />
+
+          <UiSelect
+            value={estadoFiltro}
+            onChange={(v) => {
+              onEstadoFiltroChange?.(v);
+              setPage(1);
+            }}
+            leadingIcon={<Filter className="h-4 w-4" />}
+            triggerClassName="h-11 rounded-xl"
+            options={[
+              { value: "", label: "Estado: Todos" },
+              ...estadosUnicos.map((s) => ({ value: s, label: s }))
+            ]}
+          />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-11 items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+              >
+                <span className="inline-flex items-center gap-2"><Download className="h-4 w-4" /> Exportar / Importar</span>
+                <i className="fa-solid fa-chevron-down text-[11px] text-slate-500" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[220px] rounded-xl border-slate-300">
+              <DropdownMenuItem onSelect={() => onExportar?.()}>
+                <Download className="h-4 w-4" /> Exportar Excel
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = ".xlsx,.xls";
+                  input.onchange = () => {
+                    const file = input.files?.[0];
+                    if (file) onImportar?.(file);
+                  };
+                  input.click();
+                }}
+                disabled={importando}
+              >
+                <Upload className="h-4 w-4" /> {importando ? "Importando..." : "Importar Excel"}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <button
+            type="button"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] px-5 text-[13px] font-semibold text-white shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] whitespace-nowrap"
+            onClick={() => onNuevoPedido?.()}
+          >
+            <Plus className="h-4 w-4" /> Nuevo Pedido
+          </button>
         </div>
       }
       footer={

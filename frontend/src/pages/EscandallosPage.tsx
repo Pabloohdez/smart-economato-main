@@ -16,7 +16,7 @@ import { deleteEscandallo, getEscandallos, saveEscandallo } from "../services/es
 import type { Escandallo, EscandalloItem } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, ReceiptText, Trash2 } from "lucide-react";
 
 export default function EscandallosPage() {
   const { user } = useAuth();
@@ -357,8 +357,10 @@ export default function EscandallosPage() {
   return (
     <StaggerPage className="w-full mb-8">
       <StaggerItem className="mb-6 w-full">
-        <h1 className="m-0 mb-6 text-[28px] font-extrabold text-[var(--color-brand-500)] flex items-center gap-3">
-          <i className="fa-solid fa-receipt text-[var(--color-brand-500)]" />
+        <h1 className="m-0 mb-6 flex items-center gap-3 text-[28px] font-extrabold text-[var(--color-brand-500)]">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+            <ReceiptText className="h-5 w-5" />
+          </span>
           Escandallos y Recetas
         </h1>
 
@@ -423,7 +425,7 @@ export default function EscandallosPage() {
                   <TableHead>Coste Total</TableHead>
                   <TableHead>PVP</TableHead>
                   <TableHead>Beneficio %</TableHead>
-                  <TableHead className="rounded-r-2xl text-center min-w-[120px] w-[120px]">Acciones</TableHead>
+                  <TableHead className="rounded-r-2xl text-center min-w-[140px] w-[140px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -442,7 +444,7 @@ export default function EscandallosPage() {
                         <TableCell>
                           <button
                             type="button"
-                            className="inline-flex max-w-full items-center gap-2 rounded-xl border border-[rgba(179,49,49,0.2)] bg-[linear-gradient(135deg,rgba(179,49,49,0.10)_0%,rgba(179,49,49,0.03)_100%)] px-3 py-1.5 text-sm font-semibold text-[var(--color-brand-600)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)] hover:brightness-105"
+                            className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-[background-color,border-color,color] duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
                             onClick={() => abrirVerReceta(esc)}
                           >
                             <span className="truncate">{esc.nombre}</span>
@@ -460,8 +462,8 @@ export default function EscandallosPage() {
                             {margen.toFixed(1)}%
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <div className="inline-flex gap-2">
+                        <TableCell className="text-center pr-4">
+                          <div className="inline-flex min-w-[120px] justify-center gap-2">
                             <button
                               type="button"
                               className="bo-table-action-btn text-slate-500"
@@ -472,7 +474,7 @@ export default function EscandallosPage() {
                             </button>
                             <button
                               type="button"
-                              className="bo-table-action-btn text-slate-500"
+                              className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                               title="Editar"
                               onClick={() => abrirEditarReceta(esc)}
                             >
@@ -498,9 +500,22 @@ export default function EscandallosPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      {detalleEscandallo && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200">
+      <AnimatePresence>
+        {detalleEscandallo && (
+          <motion.div
+            className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+          <motion.div
+            className="w-full max-w-[1120px] overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
+            initial={{ scale: 0.95, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
             <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-8 py-7 text-white">
               <div>
                 <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
@@ -517,14 +532,14 @@ export default function EscandallosPage() {
               <button
                 type="button"
                 onClick={cerrarDetalle}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20 active:scale-95"
                 aria-label="Cerrar detalle"
               >
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
 
-            <div className="max-h-[calc(92vh-96px)] overflow-y-auto px-8 py-8">
+            <div className="px-7 py-6">
               <div className="grid gap-4 md:grid-cols-3">
                 <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 text-center">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
@@ -637,9 +652,10 @@ export default function EscandallosPage() {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {modalOpen && (
@@ -651,7 +667,7 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
             <motion.div
-              className="relative w-[95%] max-w-[900px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
+              className="relative w-[95%] max-w-[960px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
@@ -665,7 +681,7 @@ export default function EscandallosPage() {
               >
                 <i className="fa-solid fa-xmark" />
               </button>
-              <div className="max-h-[90vh] overflow-y-auto p-[30px]">
+              <div className="p-6">
 
             <h2 className="m-0 mt-0 text-[1.5rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-5 mb-7">
               {modoLectura
@@ -734,7 +750,7 @@ export default function EscandallosPage() {
                 </h3>
 
                 {!modoLectura && (
-                  <div className="flex gap-4 mb-5 items-end max-[768px]:flex-col max-[768px]:items-stretch">
+                  <div className="grid grid-cols-[1fr_120px_auto] items-end gap-3 mb-5 max-[768px]:grid-cols-1 max-[768px]:items-stretch">
                     <div className="flex-1 flex flex-col gap-2">
                       <label
                         htmlFor="busquedaProductoIngrediente"
@@ -814,7 +830,7 @@ export default function EscandallosPage() {
                       </div>
                     </div>
 
-                    <div className="w-[100px] flex flex-col gap-2">
+                    <div className="flex flex-col gap-2">
                       <label
                         htmlFor="cantidadIngrediente"
                         className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide"
@@ -836,7 +852,7 @@ export default function EscandallosPage() {
                       <div className="invisible text-[12px] leading-none" aria-hidden="true">&nbsp;</div>
                       <button
                         type="button"
-                        className="no-global-button h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
+                        className="no-global-button h-[46px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
                         title="Añadir ingrediente"
                         onClick={agregarIngrediente}
                       >
@@ -847,14 +863,14 @@ export default function EscandallosPage() {
                 )}
 
                 <div className="overflow-x-auto rounded-[24px] border border-slate-100 bg-white">
-                  <Table className="min-w-[680px] bg-white">
+                  <Table className="min-w-[700px] bg-white">
                     <TableHeader>
                       <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
                         <TableHead className="rounded-l-2xl text-left">Producto</TableHead>
-                        <TableHead className="text-left w-20">Cant.</TableHead>
-                        <TableHead className="text-left w-20">Coste U.</TableHead>
+                        <TableHead className="text-left w-24">Cant.</TableHead>
+                        <TableHead className="text-left w-24">Coste U.</TableHead>
                         <TableHead className="text-left w-[90px]">Total</TableHead>
-                        <TableHead className="rounded-r-2xl text-center w-[60px]">Acciones</TableHead>
+                        <TableHead className="rounded-r-2xl text-center w-[90px] min-w-[90px]">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
