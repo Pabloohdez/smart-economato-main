@@ -166,7 +166,7 @@ export default function InventarioToolbar({
 
   return (
     <div className="mb-4 border-b border-[#e2e8f0] pb-4">
-      <div className="grid grid-cols-1 gap-3 min-[1240px]:grid-cols-[minmax(360px,1.8fr)_minmax(220px,0.92fr)_minmax(180px,0.84fr)_minmax(220px,0.95fr)_minmax(190px,0.84fr)] min-[1240px]:items-center">
+      <div className="grid grid-cols-1 gap-3 min-[1240px]:grid-cols-[minmax(0,1.8fr)_minmax(0,0.92fr)_minmax(0,0.84fr)_minmax(0,0.95fr)_minmax(0,0.84fr)] min-[1240px]:items-center">
         
         {/* Buscador: Hereda los mismos bordes y sombras */}
         <div className="relative min-w-0">
@@ -221,14 +221,14 @@ export default function InventarioToolbar({
             { value: "csv", label: "Exportar CSV" },
             { value: "xlsx", label: "Exportar XLSX" },
           ]}
-          className="min-w-0"
+          className="min-w-0 w-full"
         />
 
         {/* Botón Primario: Usa color corporativo */}
         <button
           type="button"
           onClick={onCreateProduct}
-          className="bo-toolbar-primary-blue active:scale-[0.98]"
+          className="bo-toolbar-primary-blue active:scale-[0.98] w-full"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nuevo Producto
