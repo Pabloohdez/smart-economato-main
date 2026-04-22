@@ -8,7 +8,6 @@ import {
   PackagePlus,
   PieChart,
   Truck,
-  TruckIcon,
   Users,
   ArrowRight,
 } from "lucide-react";
@@ -32,36 +31,7 @@ export default function InicioPage() {
   return (
     <StaggerPage className="w-full">
       <StaggerItem>
-        <section className="overflow-hidden rounded-[28px] border border-[var(--color-border-default)] bg-[linear-gradient(135deg,#fff8f5_0%,#ffffff_52%,#f6f8fc_100%)] px-7 py-7 shadow-[var(--shadow-md)] max-[640px]:px-5 max-[640px]:py-5">
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="max-w-[640px]">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(179,49,49,0.16)] bg-[rgba(179,49,49,0.08)] px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.14em] text-[var(--color-brand-500)]">
-                <TruckIcon className="h-3.5 w-3.5" /> Operativa diaria
-              </span>
-              <h1 className="m-0 mt-4 text-[34px] font-extrabold tracking-[-0.04em] text-[var(--color-text-strong)] max-[640px]:text-[28px]">
-                Panel de inicio
-              </h1>
-              <p className="m-0 mt-3 max-w-[560px] text-[15px] leading-7 text-[var(--color-text-muted)]">
-                Entrada rápida a las secciones con más uso y una lectura más clara del estado general del economato.
-              </p>
-            </div>
-
-            <div className="grid min-w-[250px] gap-3 max-[640px]:w-full">
-              <div className="rounded-[20px] border border-[var(--color-border-default)] bg-white/90 px-4 py-4 shadow-[var(--shadow-sm)]">
-                <div className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-muted)]">Enfoque</div>
-                <div className="mt-2 text-[18px] font-bold text-[var(--color-text-strong)]">Acceso rápido y limpio</div>
-              </div>
-              <div className="rounded-[20px] border border-[rgba(179,49,49,0.14)] bg-[rgba(179,49,49,0.06)] px-4 py-4 shadow-[var(--shadow-sm)]">
-                <div className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[var(--color-brand-500)]">Objetivo</div>
-                <div className="mt-2 text-[15px] font-semibold text-[var(--color-text-strong)]">Menos fricción para tablet y escritorio</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </StaggerItem>
-
-      <StaggerItem>
-        <div className="mt-6 grid grid-cols-3 gap-5 w-full max-w-[1150px] max-[1100px]:grid-cols-2 max-[520px]:grid-cols-1 max-[520px]:gap-4 max-[820px]:pb-6">
+        <div className="grid grid-cols-3 gap-5 w-full max-w-[1150px] max-[1100px]:grid-cols-2 max-[520px]:grid-cols-1 max-[520px]:gap-4 max-[820px]:pb-6">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
