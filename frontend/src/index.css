@@ -171,7 +171,7 @@ a {
   }
 
   .bo-toolbar-input {
-    @apply w-full min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 shadow-sm transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100;
+    @apply w-full min-h-12 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm transition-colors outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100;
   }
 
   .bo-toolbar-select {
@@ -179,7 +179,7 @@ a {
   }
 
   .bo-toolbar-secondary {
-    @apply inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
+    @apply inline-flex min-h-12 shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50;
   }
 
   .bo-toolbar-primary {
