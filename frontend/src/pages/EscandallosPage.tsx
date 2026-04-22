@@ -17,6 +17,11 @@ import { queryKeys } from "../lib/queryClient";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
+function formatCantidad(cantidad: number) {
+  if (Number.isInteger(cantidad)) return String(cantidad);
+  return cantidad.toFixed(1);
+}
+
 export default function EscandallosPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -279,7 +284,6 @@ export default function EscandallosPage() {
       pvp: Number.parseFloat(pvpPlato || "0") || 0,
       elaboracion: elaboracionPlato,
       items: [...ingredientesReceta],
-      coste_total: costeTotal,
       autor: String(user?.nombre ?? user?.username ?? "Admin"),
     };
 
@@ -448,7 +452,9 @@ export default function EscandallosPage() {
                           </button>
                         </TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.autor || "Admin"}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{esc.items?.length ?? 0} ingredientes</TableCell>
+                        <TableCell className="text-sm text-slate-700">
+                          {esc.items?.length ?? 0} ingrediente(s)
+                        </TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.coste.toFixed(2)} €</TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.pvp.toFixed(2)} €</TableCell>
                         <TableCell>
@@ -585,8 +591,8 @@ export default function EscandallosPage() {
                             <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
                               {item.nombre}
                             </TableCell>
-                            <TableCell className="px-5 py-4 text-center text-slate-500">
-                              {item.cantidad}
+                            <TableCell className="px-5 py-4 text-center text-slate-500 font-semibold">
+                              {formatCantidad(Number(item.cantidad))}
                             </TableCell>
                             <TableCell className="px-5 py-4 text-right text-slate-500">
                               {Number(item.precio).toFixed(2)} €
@@ -809,8 +815,8 @@ export default function EscandallosPage() {
                       <input
                         type="number"
                         id="cantidadIngrediente"
-                        step="0.001"
-                        placeholder="0"
+                        step="0.1"
+                        placeholder="0.0"
                         className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                         value={cantidadIngrediente}
                         onChange={(e) => setCantidadIngrediente(e.target.value)}
@@ -851,23 +857,40 @@ export default function EscandallosPage() {
                           const total = ing.cantidad * ing.precio;
                           return (
                             <TableRow key={`${ing.producto_id}-${index}`} className="bo-table-row">
-                              <TableCell className="text-[var(--color-text-strong)]">{ing.nombre}</TableCell>
+                              <TableCell className="text-[var(--color-text-strong)]">
+                                {ing.nombre}
+                              </TableCell>
+
                               <TableCell>
                                 {modoLectura ? (
-                                  ing.cantidad
+                                  <span className="font-semibold text-slate-700">
+                                    {formatCantidad(Number(ing.cantidad))}
+                                  </span>
                                 ) : (
-                                  <input
-                                    type="number"
-                                    step="0.001"
-                                    min="0.001"
-                                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-                                    value={String(ing.cantidad)}
-                                    onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
-                                  />
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="number"
+                                      step="0.1"
+                                      min="0.1"
+                                      className="w-20 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+                                      value={String(ing.cantidad)}
+                                      onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
+                                    />
+                                    <span className="text-sm font-semibold text-slate-600 min-w-[48px]">
+                                      {formatCantidad(Number(ing.cantidad))}
+                                    </span>
+                                  </div>
                                 )}
                               </TableCell>
-                              <TableCell className="text-[var(--color-text-strong)]">{ing.precio.toFixed(2)} €</TableCell>
-                              <TableCell className="text-[var(--color-text-strong)]">{total.toFixed(2)} €</TableCell>
+
+                              <TableCell className="text-[var(--color-text-strong)]">
+                                {ing.precio.toFixed(2)} €
+                              </TableCell>
+
+                              <TableCell className="text-[var(--color-text-strong)]">
+                                {total.toFixed(2)} €
+                              </TableCell>
+
                               <TableCell className="text-center">
                                 {!modoLectura && (
                                   <button

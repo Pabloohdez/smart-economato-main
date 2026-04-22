@@ -16,11 +16,24 @@ import { getLotesProducto, type LoteProducto } from "../services/lotesService";
 
 function parseFechaCaducidad(raw: unknown): Date | null {
   if (!raw) return null;
+
   const s = String(raw).trim();
-  if (!s) return null;
+
+  if (!s || s.toLowerCase() === "sin fecha" || s.toLowerCase() === "null") {
+    return null;
+  }
+
   const normalized = s.includes(" ") && !s.includes("T") ? s.replace(" ", "T") : s;
   const d = new Date(normalized);
-  return Number.isNaN(d.getTime()) ? null : d;
+
+  if (Number.isNaN(d.getTime())) return null;
+
+  const year = d.getFullYear();
+
+  // Filtrar fechas absurdas
+  if (year < 2000 || year > 2100) return null;
+
+  return d;
 }
 
 function daysUntil(date: Date): number {

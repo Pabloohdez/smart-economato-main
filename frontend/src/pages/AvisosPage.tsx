@@ -290,26 +290,37 @@ export default function AvisosPage() {
       setConfirmando(true);
 
       if (accionActual === "baja") {
+        const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
+        const cantidadNormalizada =
+          unidad === "ud"
+            ? Math.round(cantidadModal)
+            : Number(cantidadModal.toFixed(3));
+
         await bajaMutation.mutateAsync({
           productoId: productoSeleccionado.id,
-          cantidad: cantidadModal,
+          cantidad: cantidadNormalizada,
           tipoBaja: "Caducado",
           motivo: "Caducidad registrada desde Centro de Avisos",
         });
 
         mostrarToast("Baja registrada correctamente", "success");
-      } else if (accionActual === "pedido") {
+      }else if (accionActual === "pedido") {
+        const proveedorId =
+          productoSeleccionado.proveedorObj?.id ?? productoSeleccionado.proveedorId;
+
+        if (!proveedorId) {
+          throw new Error("El producto no tiene proveedor asociado");
+        }
+
         await pedidoMutation.mutateAsync({
-          proveedorId:
-            productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,
+          proveedorId,
           total: cantidadModal * productoSeleccionado.precioNum,
-          usuarioId: String(user?.id ?? "admin"),
           items: [
             {
               producto_id: productoSeleccionado.id,
               cantidad: cantidadModal,
               precio: productoSeleccionado.precioNum,
-              nombre: productoSeleccionado.nombre,
+              unidad: "ud",
             },
           ],
         });
@@ -319,8 +330,11 @@ export default function AvisosPage() {
 
       cerrarModal();
     } catch (error) {
-      console.error(error);
-      mostrarToast("Error al realizar la acción", "error");
+      console.error("Error accion aviso:", error);
+      mostrarToast(
+        error instanceof Error ? error.message : "Error al realizar la acción",
+        "error"
+      );
       setConfirmando(false);
     }
   }
@@ -681,9 +695,19 @@ export default function AvisosPage() {
                   id="modal-cantidad"
                   type="number"
                   min={1}
+                  step={String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase() === "ud" ? 1 : 0.1}
                   max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
-                  onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
+                  onChange={(e) => {
+                    const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
+                    let value = Number(e.target.value) || 1;
+
+                    if (unidad === "ud") {
+                      value = Math.round(value);
+                    }
+
+                    setCantidadModal(Math.max(1, value));
+                  }}
                   className="flex-1 border-0 text-center text-[16px] font-semibold py-2 outline-none [appearance:textfield]"
                 />
 
@@ -691,11 +715,15 @@ export default function AvisosPage() {
                   type="button"
                   className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-l border-l-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
                   onClick={() => {
+                    const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
+                    const incremento = unidad === "ud" ? 1 : 0.1;
+
                     const max =
                       accionActual === "baja"
-                        ? productoSeleccionado?.stockNum || cantidadModal + 1
-                        : cantidadModal + 1;
-                    setCantidadModal((v) => Math.min(max, v + 1));
+                        ? productoSeleccionado?.stockNum || cantidadModal + incremento
+                        : cantidadModal + incremento;
+
+                    setCantidadModal((v) => Math.min(max, Number((v + incremento).toFixed(3))));
                   }}
                 >
                   +

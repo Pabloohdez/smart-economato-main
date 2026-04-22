@@ -32,13 +32,11 @@ export type RegistrarBajaPayload = {
 export type CrearPedidoPayload = {
   proveedorId: number | string | null | undefined;
   total: number;
-  usuarioId: string;
   items: Array<{
     producto_id: number | string;
     unidad?: string;
     cantidad: number;
     precio: number;
-    nombre: string;
   }>;
 };
 

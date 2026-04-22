@@ -13,8 +13,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 
 function parseDate(d?: string | null): Date | null {
   if (!d) return null;
-  const dt = new Date(String(d).replace(" ", "T"));
-  return Number.isNaN(dt.getTime()) ? null : dt;
+
+  const raw = String(d).trim();
+  if (!raw || raw.toLowerCase() === "sin fecha" || raw.toLowerCase() === "null") {
+    return null;
+  }
+
+  const normalized = raw.includes(" ") && !raw.includes("T")
+    ? raw.replace(" ", "T")
+    : raw;
+
+  const dt = new Date(normalized);
+
+  if (Number.isNaN(dt.getTime())) return null;
+
+  const year = dt.getFullYear();
+  if (year < 2000 || year > 2100) return null;
+
+  return dt;
+}
+
+function serializeFechaCaducidad(value: unknown): string | null {
+  const parsed = parseDate(typeof value === "string" ? value : value ? String(value) : null);
+  if (!parsed) return null;
+  return parsed.toISOString().slice(0, 10);
 }
 
 function daysFromNow(date: Date): number {
@@ -175,7 +197,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
         proveedorId: (editProducto as any).proveedorId ?? editProducto.proveedor?.id ?? null,
         marca: (editProducto as any).marca ?? null,
         codigoBarras: (editProducto as any).codigoBarras ?? null,
-        fechaCaducidad: (editProducto as any).fechaCaducidad ?? null,
+        fechaCaducidad: serializeFechaCaducidad((editProducto as any).fechaCaducidad),
         descripcion: (editProducto as any).descripcion ?? null,
         imagen: (editProducto as any).imagen ?? null,
         alergenos: (editProducto as any).alergenos ?? [],
@@ -209,7 +231,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
         proveedorId: (producto as any).proveedorId ?? producto.proveedor?.id ?? null,
         marca: (producto as any).marca ?? null,
         codigoBarras: (producto as any).codigoBarras ?? null,
-        fechaCaducidad: (producto as any).fechaCaducidad ?? null,
+        fechaCaducidad: serializeFechaCaducidad((producto as any).fechaCaducidad),
         descripcion: (producto as any).descripcion ?? null,
         imagen: (producto as any).imagen ?? null,
         alergenos: (producto as any).alergenos ?? [],
