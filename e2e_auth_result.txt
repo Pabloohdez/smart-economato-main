@@ -1,0 +1,6 @@
+usuario=test_1774004061
+health_status=200
+sin_token_status=401
+crear_usuario=ok
+login=ok
+con_token_admin_status=403

@@ -1,0 +1,203 @@
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowRight, Building2 } from "lucide-react";
+import type { PedidoHistorial } from "../../types";
+import SearchInput from "../ui/SearchInput";
+import TablePagination from "../ui/TablePagination";
+import BackofficeTablePanel from "../ui/BackofficeTablePanel";
+import { Badge } from "../ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+
+const paginatedBodyVariants = {
+  hidden: { opacity: 1 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.02,
+    },
+  },
+  exit: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.03,
+      staggerDirection: -1,
+    },
+  },
+} as const;
+
+const paginatedRowVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.24, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    y: -8,
+    transition: { duration: 0.18, ease: "easeIn" },
+  },
+} as const;
+
+type Props = {
+  pedidos: PedidoHistorial[];
+  onIrARecepcion: (id: number | string) => void;
+};
+
+export default function PedidosGrid({ pedidos, onIrARecepcion }: Props) {
+  const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    if (!s) return pedidos;
+    return pedidos.filter((p) => {
+      return (
+        String(p.id).toLowerCase().includes(s)
+        || String(p.proveedor_nombre ?? "").toLowerCase().includes(s)
+        || String(p.estado ?? "").toLowerCase().includes(s)
+      );
+    });
+  }, [pedidos, q]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const visible = useMemo(() => {
+    const start = (safePage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, safePage, pageSize]);
+
+  const pendientes = filtered.filter((p) => {
+    const estado = String(p.estado ?? "").toUpperCase();
+    return estado === "PENDIENTE" || estado === "INCOMPLETO";
+  }).length;
+
+  return (
+    <BackofficeTablePanel
+      header={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+              {filtered.length} pedido(s)
+            </Badge>
+            <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
+              {pendientes} pendiente(s) o incompleto(s)
+            </Badge>
+          </div>
+          <div className="w-full max-w-[320px]">
+            <SearchInput
+              value={q}
+              onChange={(value) => {
+                setQ(value);
+                setPage(1);
+              }}
+              placeholder="Buscar por ID, proveedor o estado..."
+              ariaLabel="Buscar pedidos"
+            />
+          </div>
+        </div>
+      }
+      footer={
+        <TablePagination
+          totalItems={filtered.length}
+          page={safePage}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={[10, 25, 50]}
+          label="pedidos"
+        />
+      }
+    >
+
+      <div className="w-full overflow-x-auto">
+        <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+          <TableHeader>
+            <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+              <TableHead className="rounded-l-2xl">ID</TableHead>
+              <TableHead>Proveedor</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Total</TableHead>
+              <TableHead className="rounded-r-2xl">Acciones</TableHead>
+            </TableRow>
+          </TableHeader>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.tbody
+              key={`pedidos-page-${safePage}-${pageSize}`}
+              variants={paginatedBodyVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {visible.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-8 text-center text-slate-500">
+                    No hay pedidos que coincidan.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                visible.map((p) => {
+                const estado = String(p.estado ?? "").toUpperCase();
+                const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
+                return (
+                  <motion.tr
+                    key={String(p.id)}
+                    variants={paginatedRowVariants}
+                    className="bo-table-row"
+                  >
+                    <TableCell className="text-sm font-medium text-slate-900">{p.id}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+                          <Building2 className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-sm font-semibold text-slate-900">{p.proveedor_nombre}</div>
+                          <div className="mt-0.5 text-[12px] text-slate-500">Pedido #{p.id}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          estado === "COMPLETADO"
+                            ? "success"
+                            : estado === "PENDIENTE" || estado === "INCOMPLETO"
+                              ? "warning"
+                              : "outline"
+                        }
+                        className="px-3 py-1 text-[11px] font-semibold"
+                      >
+                        {p.estado}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm font-semibold text-slate-900">{Number(p.total ?? 0).toFixed(2)} €</TableCell>
+                    <TableCell>
+                      {canReceive ? (
+                        <button
+                          type="button"
+                          className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:brightness-95"
+                          onClick={() => onIrARecepcion(p.id)}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                          Ir a Recepción
+                        </button>
+                      ) : (
+                        <span className="inline-block rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 whitespace-nowrap">
+                          Completado
+                        </span>
+                      )}
+                    </TableCell>
+                  </motion.tr>
+                );
+                })
+              )}
+            </motion.tbody>
+          </AnimatePresence>
+        </Table>
+      </div>
+    </BackofficeTablePanel>
+  );
+}
