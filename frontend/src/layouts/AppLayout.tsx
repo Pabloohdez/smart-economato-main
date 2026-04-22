@@ -167,28 +167,23 @@ export default function AppLayout() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    if (!isInicio) {
-      return;
+    const shouldLockScroll = sidebarOpen || isInicio;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    if (shouldLockScroll) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
     }
 
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
     return () => {
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
     };
-  }, [isInicio]);
-
-  useEffect(() => {
-    if (!sidebarOpen) {
-      document.body.style.overflow = "";
-      return;
-    }
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
+  }, [isInicio, sidebarOpen]);
 
   function logout() {
     logoutSession();
