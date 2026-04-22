@@ -434,7 +434,9 @@ export default function AppLayout() {
           className={[
             isInventarioRoute
               ? "flex-1 w-full min-w-0 m-0 p-[16px_20px_24px] max-[820px]:p-4"
-              : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
+              : isInicio
+                ? "flex-1 w-full min-w-0 m-0 p-0"
+                : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
             isInicio ? "overflow-hidden" : "overflow-auto",
           ].join(" ")}
           id="main-content"
