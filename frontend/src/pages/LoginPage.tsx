@@ -26,10 +26,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.18),transparent_34%),linear-gradient(135deg,#f5efe8_0%,#f7f8fb_44%,#eef2f7_100%)] text-slate-800 font-[var(--font-family-base)]">
-      <main className="mx-auto flex min-h-screen w-full max-w-[1320px] items-center px-6 py-8 max-[960px]:px-4 max-[960px]:py-5">
-        <div className="grid w-full grid-cols-[1.08fr_minmax(360px,460px)] overflow-hidden rounded-[34px] border border-white/60 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.14)] backdrop-blur max-[960px]:grid-cols-1">
-          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#7f1d1d_0%,#9f2a2a_42%,#d97745_100%)] px-10 py-12 text-white max-[960px]:px-6 max-[960px]:py-8">
+    <div className="login-page h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.18),transparent_34%),linear-gradient(135deg,#f5efe8_0%,#f7f8fb_44%,#eef2f7_100%)] text-slate-800 font-[var(--font-family-base)]">
+      <main className="mx-auto flex h-full w-full max-w-[1320px] items-stretch px-6 py-6 max-[960px]:px-4 max-[960px]:py-4">
+        <div className="grid h-full w-full grid-cols-[1.08fr_minmax(360px,460px)] overflow-hidden rounded-[34px] border border-white/60 bg-white/70 shadow-[0_30px_80px_rgba(15,23,42,0.14)] backdrop-blur max-[960px]:grid-cols-1">
+          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#7f1d1d_0%,#9f2a2a_42%,#d97745_100%)] px-10 py-10 text-white max-[960px]:px-6 max-[960px]:py-7">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(255,255,255,0.18),transparent_18%),radial-gradient(circle_at_78%_70%,rgba(255,255,255,0.16),transparent_22%)]" aria-hidden="true" />
             <div className="relative z-[1] flex h-full flex-col">
               <div className="inline-flex items-center gap-4">
@@ -51,11 +51,11 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <p className="mt-10 max-w-[520px] text-[18px] leading-8 text-white/86 max-[960px]:mt-8 max-[960px]:text-[16px] max-[960px]:leading-7">
+              <p className="mt-8 max-w-[520px] text-[18px] leading-8 text-white/86 max-[960px]:mt-6 max-[960px]:text-[16px] max-[960px]:leading-7">
                 Un acceso claro para recepción, inventario, distribución y control de incidencias en un mismo entorno.
               </p>
 
-              <div className="mt-10 grid gap-4 max-[960px]:mt-8">
+              <div className="login-page__features mt-8 grid gap-4 max-[960px]:mt-6">
                 {[
                   {
                     title: "Recepción y stock en una vista",
@@ -91,7 +91,7 @@ export default function LoginPage() {
             </div>
           </section>
 
-          <section className="flex items-center px-9 py-10 max-[960px]:px-5 max-[960px]:py-6">
+          <section className="flex items-center px-9 py-9 max-[960px]:px-5 max-[960px]:py-6">
             <div className="w-full rounded-[28px] border border-slate-200/80 bg-white px-7 py-7 shadow-[0_24px_60px_rgba(15,23,42,0.08)] max-[480px]:px-5 max-[480px]:py-6">
               <div className="mb-7 flex items-start justify-between gap-4">
                 <div>
