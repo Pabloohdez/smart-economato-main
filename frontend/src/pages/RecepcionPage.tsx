@@ -99,6 +99,7 @@ function normalizarUnidad(raw?: string) {
   return u;
 }
 
+
 export default function Recepcion() {
   const queryClient = useQueryClient();
   const scale = useScaleSerial({ baudRate: 9600 });
@@ -191,9 +192,23 @@ export default function Recepcion() {
   const [loteFecha, setLoteFecha] = useState<string>("");
   const [loteCantidad, setLoteCantidad] = useState<string>("");
 
+  const tablaPedidoScrollRef = useRef<HTMLDivElement | null>(null); 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
   const drawerPedidosTimerRef = useRef<number | null>(null);
+
+  function manejarWheelTablaPedido(e: React.WheelEvent<HTMLDivElement>) {
+  const el = tablaPedidoScrollRef.current;
+  if (!el) return;
+
+  const tieneOverflowHorizontal = el.scrollWidth > el.clientWidth;
+  if (!tieneOverflowHorizontal) return;
+
+  if (e.deltaY !== 0) {
+    e.preventDefault();
+    el.scrollLeft += e.deltaY;
+  }
+}
 
   // Obtener usuario activo para auditoría
   const { user } = useAuth();
@@ -469,6 +484,26 @@ export default function Recepcion() {
         (_, i) => i !== index,
       ),
     }));
+  }
+
+  function confirmarLotes() {
+    if (!lotesDetalleId) return;
+
+    const cantidadRecibir = Number(verifQty[lotesDetalleId] ?? 0);
+    const sumaLotes = (verifLotes[lotesDetalleId] ?? []).reduce(
+      (s, l) => s + Number(l.cantidad || 0),
+      0
+    );
+
+    if (cantidadRecibir > 0 && Math.abs(sumaLotes - cantidadRecibir) > 0.0005) {
+      showNotification(
+        "La suma de los lotes debe coincidir con la cantidad a recibir.",
+        "warning"
+      );
+      return;
+    }
+
+    cerrarLotes();
   }
 
   function capturarBasculaParaDetalle(
@@ -940,6 +975,7 @@ export default function Recepcion() {
                         )}
                       <input
                         id="inputRecepcion"
+                        autoFocus
                         className="relative z-[1] h-12 w-full flex-1 rounded-[18px] border border-gray-300 bg-white px-3 pl-10 text-sm text-gray-900 shadow-sm transition-[border-color,box-shadow] duration-150 box-border focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                         value={term}
                         autoComplete="off"
@@ -1021,24 +1057,39 @@ export default function Recepcion() {
                               setResultadosOpen(false);
                             }}
                           >
+                            <div className="min-w-0">
+                              <div
+                                className="truncate"
+                                style={{
+                                  fontWeight: 600,
+                                  fontSize: "14px",
+                                  color: "#2d3748",
+                                }}
+                              >
+                                {p.nombre}
+                              </div>
+
+                              {!!(p as any).codigoBarras && (
+                                <div
+                                  style={{
+                                    fontSize: "12px",
+                                    color: "#718096",
+                                    marginTop: "2px",
+                                  }}
+                                >
+                                  CB: {(p as any).codigoBarras}
+                                </div>
+                              )}
+                            </div>
+
                             <span
-                              className="nombre-producto-resultado"
-                              style={{
-                                fontWeight: 600,
-                                fontSize: "14px",
-                                color: "#2d3748",
-                              }}
-                            >
-                              {p.nombre}
-                            </span>
-                            <span
-                              className="detalles-producto-resultado"
                               style={{
                                 fontSize: "12px",
                                 color: "#718096",
                                 background: "#f7fafc",
                                 padding: "2px 8px",
                                 borderRadius: "20px",
+                                whiteSpace: "nowrap",
                               }}
                             >
                               Stock: {p.stock}
@@ -1098,7 +1149,7 @@ export default function Recepcion() {
                 onClick={cerrarDrawerPedidos}
               >
                 <aside
-                  className={`w-[min(38vw,620px)] max-w-[100vw] h-full bg-[var(--color-bg-surface)] border-l border-[var(--color-border-default)] shadow-[-16px_0_40px_rgba(0,0,0,0.18)] p-6 overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "translate-x-9 opacity-55" : "translate-x-0 opacity-100"} max-[1280px]:w-[min(58vw,760px)] max-[1024px]:w-[min(78vw,920px)] max-[768px]:w-screen max-[768px]:p-4`}
+                  className={`w-[min(38vw,620px)] max-w-[100vw] h-full bg-[var(--color-bg-surface)] border-l border-[var(--color-border-default)] shadow-[-16px_0_40px_rgba(0,0,0,0.18)] p-6 overflow-y-auto overflow-x-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "translate-x-9 opacity-55" : "translate-x-0 opacity-100"} max-[1280px]:w-[min(58vw,760px)] max-[1024px]:w-[min(78vw,920px)] max-[768px]:w-screen max-[768px]:p-4`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between gap-3 mb-5">
@@ -1197,7 +1248,12 @@ export default function Recepcion() {
                                     </div>
                                   </div>
                                 ) : (
-                                  <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
+                                  <div
+                                    ref={tablaPedidoScrollRef}
+                                    onWheel={manejarWheelTablaPedido}
+                                    className="mt-2.5 w-full overflow-x-auto overflow-y-hidden pb-2"
+                                  >
+                                    <Table className="min-w-[1100px] rounded-[20px] border border-slate-100 bg-white text-[12px]">
                                     <TableHeader>
                                       <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
                                         <TableHead className="rounded-l-2xl">
@@ -1333,6 +1389,7 @@ export default function Recepcion() {
                                       })}
                                     </TableBody>
                                   </Table>
+                                  </div>
                                 )}
                               </div>
 
@@ -1493,7 +1550,7 @@ export default function Recepcion() {
                   <button
                     type="button"
                     className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white border-0 px-6 py-2.5 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.25)] hover:-translate-y-0.5 transition"
-                    onClick={cerrarLotes}
+                    onClick={confirmarLotes}
                   >
                     Listo
                   </button>

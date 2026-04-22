@@ -132,7 +132,15 @@ export default function InventarioPage() {
       list = list.filter((p) => {
         const nombre = String(p.nombre ?? "").toLowerCase();
         const id = String(p.id ?? "").toLowerCase();
-        return nombre.includes(s) || id.includes(s);
+        const codigoBarras = String((p as any).codigoBarras ?? "").toLowerCase();
+        const marca = String((p as any).marca ?? "").toLowerCase();
+
+        return (
+          nombre.includes(s) ||
+          id.includes(s) ||
+          codigoBarras.includes(s) ||
+          marca.includes(s)
+        );
       });
     }
 

@@ -38,17 +38,6 @@ function formatFechaCortaES(iso: string) {
   return { fecha, hora };
 }
 
-function claseTipoBaja(tipo: string) {
-  const map: Record<string, string> = {
-    Rotura: "bg-[#fff5f5] text-[#c53030]",
-    Caducado: "bg-[#fffaf0] text-[#dd6b20]",
-    Merma: "bg-[#fefcbf] text-[#d69e2e]",
-    Ajuste: "bg-[#e6fffa] text-[#319795]",
-    Otro: "bg-[var(--color-border-default)] text-[var(--color-text-muted)]",
-  };
-  return map[tipo] ?? "bg-[var(--color-border-default)] text-[var(--color-text-muted)]";
-}
-
 function variantTipoBaja(tipo: string): "default" | "secondary" | "success" | "warning" | "destructive" | "outline" {
   if (tipo === "Rotura") return "destructive";
   if (tipo === "Caducado") return "warning";
@@ -78,6 +67,7 @@ export default function BajasPage() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loadingDatos, setLoadingDatos] = useState(true);
   const [errorDatos, setErrorDatos] = useState("");
+  const [lotes, setLotes] = useState<any[]>([]);
 
   // fecha
   const [fechaActual] = useState(() => formatFechaLargaES(new Date()));
@@ -113,13 +103,21 @@ export default function BajasPage() {
     setLoadingDatos(true);
     setErrorDatos("");
     try {
-      const [pJson, cJson] = await Promise.all([
-        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
-        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/categorias", { headers: { "X-Requested-With": "XMLHttpRequest" } }),
+      const [pJson, cJson, lJson] = await Promise.all([
+        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/productos", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        }),
+        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/categorias", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        }),
+        apiFetch<{ success?: boolean; error?: string; data?: any[] }>("/lotes", {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        }),
       ]);
 
       if (!pJson?.success) throw new Error(pJson?.error || "Error cargando productos");
       if (!cJson?.success) throw new Error(cJson?.error || "Error cargando categorías");
+      if (!lJson?.success) throw new Error(lJson?.error || "Error cargando lotes");
 
       const prod: Producto[] = (pJson.data ?? []).map((p: any) => ({
         id: p.id,
@@ -138,12 +136,14 @@ export default function BajasPage() {
 
       setProductos(prod);
       setCategorias(cats);
+      setLotes(lJson.data ?? []);
     } catch (e) {
       console.error(e);
-      setErrorDatos("No se pudieron cargar productos o categorías.");
-      showNotification("Error de conexión: no se pudieron cargar productos/categorías.", "error");
+      setErrorDatos("No se pudieron cargar productos, categorías o lotes.");
+      showNotification("Error de conexión: no se pudieron cargar los datos base.", "error");
       setProductos([]);
       setCategorias([]);
+      setLotes([]);
     } finally {
       setLoadingDatos(false);
     }
@@ -155,9 +155,12 @@ export default function BajasPage() {
       const mes = hoy.getMonth() + 1;
       const anio = hoy.getFullYear();
 
-      const json = await apiFetch<{ success?: boolean; data?: BajaHistorialItem[] }>(`/bajas?mes=${mes}&anio=${anio}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-      });
+      const json = await apiFetch<{ success?: boolean; data?: BajaHistorialItem[] }>(
+        `/bajas?mes=${mes}&anio=${anio}`,
+        {
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        }
+      );
 
       if (!json?.success || !Array.isArray(json.data)) {
         setStats({ roturas: 0, caducados: 0, mermas: 0, valorPerdido: 0 });
@@ -166,17 +169,58 @@ export default function BajasPage() {
 
       const bajasDelMes: BajaHistorialItem[] = json.data;
 
+      console.log("Bajas del mes:", bajasDelMes);
+      console.log(
+        "Detalle valor perdido:",
+        bajasDelMes.map((b: any) => ({
+          producto: b.producto_nombre,
+          tipo: b.tipoBaja,
+          precio: Number(b.producto_precio ?? 0),
+          cantidad: Number(b.cantidad ?? 0),
+          total:
+            (Number(b.producto_precio ?? 0) || 0) *
+            (Number(b.cantidad ?? 0) || 0),
+        }))
+      );
+
       const roturas = bajasDelMes.filter((b) => b.tipoBaja === "Rotura").length;
-      const caducados = bajasDelMes.filter((b) => b.tipoBaja === "Caducado").length;
       const mermas = bajasDelMes.filter((b) => b.tipoBaja === "Merma").length;
 
       const valorPerdido = bajasDelMes.reduce((sum, b: any) => {
-        const precio = Number.parseFloat(String(b.producto_precio ?? 0)) || 0;
-        const cant = Number.parseInt(String(b.cantidad ?? 0), 10) || 0;
+        const precio = Number(b.producto_precio ?? 0) || 0;
+        const cant = Number(b.cantidad ?? 0) || 0;
         return sum + precio * cant;
       }, 0);
 
-      setStats({ roturas, caducados, mermas, valorPerdido });
+      // Caducados actuales sacados de lotes
+      const hoySinHora = new Date();
+      hoySinHora.setHours(0, 0, 0, 0);
+
+      const lotesCaducados = (lotes ?? []).filter((l: any) => {
+        if (!l.fechaCaducidad && !l.fecha_caducidad) return false;
+
+        const rawFecha = l.fechaCaducidad ?? l.fecha_caducidad;
+        const fecha = new Date(rawFecha);
+        if (Number.isNaN(fecha.getTime())) return false;
+
+        const cantidad = Number(l.cantidad ?? 0);
+        if (cantidad <= 0) return false;
+
+        return fecha < hoySinHora;
+      });
+
+      const productosCaducadosUnicos = new Set(
+        lotesCaducados.map((l: any) => String(l.productoId ?? l.producto_id))
+      );
+
+      const caducados = productosCaducadosUnicos.size;
+
+      setStats({
+        roturas,
+        caducados,
+        mermas,
+        valorPerdido,
+      });
     } catch (e) {
       console.error(e);
       setStats({ roturas: 0, caducados: 0, mermas: 0, valorPerdido: 0 });
@@ -211,12 +255,15 @@ export default function BajasPage() {
   }
 
   const recargarBajas = useCallback(async () => {
-    await Promise.all([
-      cargarDatos(),
-      cargarEstadisticasMes(),
-      cargarHistorialBajas(),
-    ]);
+    await cargarDatos();
+    await cargarHistorialBajas();
   }, []);
+
+  useEffect(() => {
+    if (!loadingDatos) {
+      void cargarEstadisticasMes();
+    }
+  }, [loadingDatos, lotes, historial]);
 
   useEffect(() => {
     void recargarBajas();
@@ -266,23 +313,34 @@ export default function BajasPage() {
 
     if (modoCaducados) {
       const hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+
       const proximoMes = new Date(hoy);
       proximoMes.setDate(proximoMes.getDate() + 30);
 
-      list = list.filter((p) => {
-        if (!p.fechaCaducidad) return false;
-        const cad = new Date(p.fechaCaducidad);
-        return cad <= proximoMes;
-      });
+      const productosConLoteProximo = new Set(
+        (lotes ?? [])
+          .filter((l: any) => {
+            const rawFecha = l.fechaCaducidad ?? l.fecha_caducidad;
+            if (!rawFecha) return false;
+
+            const fecha = new Date(rawFecha);
+            if (Number.isNaN(fecha.getTime())) return false;
+
+            const cantidad = Number(l.cantidad ?? 0);
+            if (cantidad <= 0) return false;
+
+            return fecha <= proximoMes;
+          })
+          .map((l: any) => String(l.productoId ?? l.producto_id))
+      );
+
+      list = list.filter((p) => productosConLoteProximo.has(String(p.id)));
     }
 
     return list;
-  }, [productos, debouncedQ, catId, modoCaducados]);
+  }, [productos, debouncedQ, catId, modoCaducados, lotes]);
 
-  function buscarProductos() {
-    // en el JS antiguo buscaba también sin mínimo, aquí lo dejamos simple:
-    setResultadosOpen(true);
-  }
 
   async function escanearCodigoBarras() {
     const code = await scanBarcodeFromCamera();
@@ -437,9 +495,7 @@ export default function BajasPage() {
       setMensaje(`✅ Bajas registradas correctamente: ${exitosos} productos actualizados`, "green");
       setProductosBaja([]);
       setMotivo("");
-      await cargarDatos();
-      await cargarEstadisticasMes();
-      await cargarHistorialBajas();
+      await recargarBajas();
       showNotification(
         `Bajas registradas exitosamente. Productos afectados: ${exitosos}. Valor total: ${totalValor.toFixed(2)} €.`,
         "success"
@@ -521,7 +577,7 @@ export default function BajasPage() {
             <Clock3 className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
-            <span className="text-[13px] text-[#50596D] mb-1.5">Productos Caducados</span>
+            <span className="text-[13px] text-[#50596D] mb-1.5">Caducados Actuales</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statCaducados">
               {stats.caducados}
             </span>
@@ -878,8 +934,8 @@ export default function BajasPage() {
                 <TableBody>
                   {historialFiltrado.map((baja, idx) => {
                     const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
-                    const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
-                    const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
+                    const precio = Number(baja.producto_precio ?? 0) || 0;
+                    const cant = Number(baja.cantidad ?? 0) || 0;
                     const total = precio * cant;
 
                     return (

@@ -58,6 +58,14 @@ export class ProductosService {
   async crear(dto: Record<string, unknown>) {
     const id = (dto.id as string) || randomBytes(4).toString('hex');
     const activo = dto.activo ? true : false;
+    const codigoBarras = String(dto.codigoBarras ?? "").trim();
+
+    if (codigoBarras) {
+      const existe = await this.existeCodigoBarras(codigoBarras);
+      if (existe) {
+        throw new Error(`Ya existe un producto con el código de barras ${codigoBarras}`);
+      }
+    }
     await this.db.query(
       `INSERT INTO productos (
         id, nombre, precio, preciounitario, stock, stockminimo,
@@ -86,12 +94,52 @@ export class ProductosService {
     return { ...dto, id };
   }
 
+  private async existeCodigoBarras(codigoBarras: string, excludeId?: string) {
+    if (!codigoBarras?.trim()) return false;
+
+    if (excludeId) {
+      const { rows } = await this.db.query(
+        `SELECT id
+        FROM productos
+        WHERE codigobarras = $1
+          AND id <> $2
+        LIMIT 1`,
+        [codigoBarras.trim(), excludeId],
+      );
+      return rows.length > 0;
+    }
+
+    const { rows } = await this.db.query(
+      `SELECT id
+      FROM productos
+      WHERE codigobarras = $1
+      LIMIT 1`,
+      [codigoBarras.trim()],
+    );
+
+    return rows.length > 0;
+  }
   async crearBatch(items: Record<string, unknown>[]) {
     return this.db.transaction(async (client) => {
       const results: Array<Record<string, unknown>> = [];
       for (const dto of items) {
         const id = (dto.id as string) || randomBytes(4).toString('hex');
         const activo = dto.activo ? true : false;
+        const codigoBarras = String(dto.codigoBarras ?? "").trim();
+
+        if (codigoBarras) {
+          const { rows } = await client.query(
+            `SELECT id
+            FROM productos
+            WHERE codigobarras = $1
+            LIMIT 1`,
+            [codigoBarras],
+          );
+
+          if (rows.length > 0) {
+            throw new Error(`Ya existe un producto con el código de barras ${codigoBarras}`);
+          }
+        }
         await client.query(
           `INSERT INTO productos (
             id, nombre, precio, preciounitario, stock, stockminimo,
@@ -125,6 +173,14 @@ export class ProductosService {
 
   async actualizar(id: string, dto: Record<string, unknown>) {
     const activo = dto.activo ? true : false;
+    const codigoBarras = String(dto.codigoBarras ?? "").trim();
+
+    if (codigoBarras) {
+      const existe = await this.existeCodigoBarras(codigoBarras, id);
+      if (existe) {
+        throw new Error(`Ya existe otro producto con el código de barras ${codigoBarras}`);
+      }
+    }
     await this.db.query(
       `UPDATE productos SET
         nombre = $1, precio = $2, preciounitario = $3, stock = $4, stockminimo = $5,

@@ -46,6 +46,7 @@ export default function IngresarProductoPage() {
   const [stockMin, setStockMin] = useState("");
   const [proveedorId, setProveedorId] = useState("");
   const [fechaCaducidad, setFechaCaducidad] = useState<string>("");
+  const [codigoBarras, setCodigoBarras] = useState("");
 
   const [listaTemporal, setListaTemporal] = useState<ProductoTemporal[]>([]);
   const [guardando, setGuardando] = useState(false);
@@ -98,6 +99,7 @@ export default function IngresarProductoPage() {
     setStockMin("");
     setProveedorId("");
     setFechaCaducidad("");
+    setCodigoBarras("");
   }
 
   function agregarALista() {
@@ -128,6 +130,7 @@ export default function IngresarProductoPage() {
 
     const unidadLabel = unidadMedida === "kg" ? "kg" : unidadMedida === "l" ? "l" : "ud";
     const fechaCad = fechaCaducidad.trim() ? fechaCaducidad.trim() : null;
+    const codigoFinal = codigoBarras.trim() || generarCodigoBarras();
 
     const nuevoProducto: ProductoTemporal = {
       nombre: nombreLimpio,
@@ -139,8 +142,7 @@ export default function IngresarProductoPage() {
       proveedorId,
       unidadMedida: unidadLabel,
       marca: "Sin marca",
-      codigoBarras: generarCodigoBarras(),
-      // Fecha opcional; si no se rellena, se guarda null.
+      codigoBarras: codigoFinal,
       fechaCaducidad: fechaCad,
       alergenos: [],
       descripcion: "",
@@ -194,21 +196,21 @@ export default function IngresarProductoPage() {
       setMensajeTipo("info");
 
       const productosLimpios = listaTemporal.map((producto) => ({
-            nombre: producto.nombre,
-            precio: producto.precio,
-            precioUnitario: producto.precioUnitario,
-            stock: producto.stock,
-            stockMinimo: producto.stockMinimo,
-            categoriaId: producto.categoriaId,
-            proveedorId: producto.proveedorId,
-            unidadMedida: producto.unidadMedida,
-            marca: producto.marca,
-            codigoBarras: producto.codigoBarras,
-            fechaCaducidad: producto.fechaCaducidad ?? null,
-            alergenos: producto.alergenos,
-            descripcion: producto.descripcion,
-            imagen: producto.imagen,
-            activo: producto.activo,
+        nombre: producto.nombre,
+        precio: producto.precio,
+        precioUnitario: producto.precioUnitario,
+        stock: producto.stock,
+        stockMinimo: producto.stockMinimo,
+        categoriaId: producto.categoriaId,
+        proveedorId: producto.proveedorId,
+        unidadMedida: producto.unidadMedida,
+        marca: producto.marca,
+        codigoBarras: producto.codigoBarras,
+        fechaCaducidad: producto.fechaCaducidad ?? null,
+        alergenos: producto.alergenos,
+        descripcion: producto.descripcion,
+        imagen: producto.imagen,
+        activo: producto.activo,
       }));
 
       try {
@@ -245,7 +247,8 @@ export default function IngresarProductoPage() {
         INGRESO MASIVO DE MERCANCÍA
       </h1>
 
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex flex-wrap gap-5 items-end border border-black/5">
+      <div className="bg-[var(--color-bg-surface)] p-6 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-black/5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-end">
         <div className="flex flex-col gap-2 flex-grow min-w-[220px] flex-[2]">
           <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputNombre">
             Nombre del Producto
@@ -284,7 +287,7 @@ export default function IngresarProductoPage() {
           <UiSelect
             id="selectUnidadMedida"
             value={unidadMedida}
-            onChange={(v) => setUnidadMedida((v as any) || "ud")}
+            onChange={(v) => setUnidadMedida((v as "ud" | "kg" | "l") || "ud")}
             options={[
               { value: "ud", label: "Unidades (ud)" },
               { value: "kg", label: "Peso (kg)" },
@@ -317,7 +320,7 @@ export default function IngresarProductoPage() {
             type="number"
             className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="0"
-            step={unidadMedida === "ud" ? "1" : "0.001"}
+            step={unidadMedida === "ud" ? "1" : "0.1"}
             value={stock}
             onChange={(e) => setStock(e.target.value)}
           />
@@ -332,7 +335,7 @@ export default function IngresarProductoPage() {
             type="number"
             className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
             placeholder="5"
-            step={unidadMedida === "ud" ? "1" : "0.001"}
+            step={unidadMedida === "ud" ? "1" : "0.1"}
             value={stockMin}
             onChange={(e) => setStockMin(e.target.value)}
           />
@@ -368,6 +371,20 @@ export default function IngresarProductoPage() {
           />
         </div>
 
+        <div className="flex flex-col gap-2 flex-grow min-w-[190px] flex-[1.4]">
+          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputCodigoBarras">
+            Código de barras (opcional)
+          </label>
+          <input
+            id="inputCodigoBarras"
+            type="text"
+            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+            placeholder="Ej: 8410001234567"
+            value={codigoBarras}
+            onChange={(e) => setCodigoBarras(e.target.value)}
+          />
+        </div>
+
         <Button
           type="button"
           variant="success"
@@ -389,50 +406,52 @@ export default function IngresarProductoPage() {
 
         <div className="overflow-x-auto rounded-xl border border-black/5 shadow-[var(--shadow-sm)]">
           <Table className="overflow-hidden rounded-xl bg-[var(--color-bg-surface)]">
-          <TableHeader>
-            <TableRow className="bg-[var(--color-bg-soft)] hover:bg-[var(--color-bg-soft)]">
-              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Nombre</TableHead>
-              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Categoría</TableHead>
-              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Precio</TableHead>
-              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Stock</TableHead>
-              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Proveedor</TableHead>
-              <TableHead className="text-center text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {listaTemporal.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="p-5">
-                  <EmptyState
-                    icon="fa-solid fa-box-open"
-                    title="Lista vacía"
-                    description="Agrega productos para previsualizar antes de confirmar la importación."
-                  />
-                </TableCell>
+            <TableHeader>
+              <TableRow className="bg-[var(--color-bg-soft)] hover:bg-[var(--color-bg-soft)]">
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Nombre</TableHead>
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Categoría</TableHead>
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Precio</TableHead>
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Stock</TableHead>
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Proveedor</TableHead>
+                <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Código barras</TableHead>
+                <TableHead className="text-center text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Acción</TableHead>
               </TableRow>
-            ) : (
-              listaTemporal.map((prod, index) => (
-                <TableRow key={`${prod.codigoBarras}-${index}`} className="bo-table-row">
-                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.nombre}</TableCell>
-                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempCategoriaNombre}</TableCell>
-                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">
-                    {prod.precio.toFixed(2)} €/{prod.unidadMedida || "ud"}
-                  </TableCell>
-                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.stock}</TableCell>
-                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</TableCell>
-                  <TableCell className="text-center">
-                    <button
-                      type="button"
-                      className="bo-table-action-btn inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#e53e3e] shadow-[0_2px_4px_rgba(229,62,62,0.1)] transition-transform duration-200 hover:scale-105 hover:bg-[#fed7d7]"
-                      onClick={() => borrarFila(index)}
-                    >
-                      <i className="fa-solid fa-xmark"></i>
-                    </button>
+            </TableHeader>
+            <TableBody>
+              {listaTemporal.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="p-5">
+                    <EmptyState
+                      icon="fa-solid fa-box-open"
+                      title="Lista vacía"
+                      description="Agrega productos para previsualizar antes de confirmar la importación."
+                    />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
+              ) : (
+                listaTemporal.map((prod, index) => (
+                  <TableRow key={`${prod.codigoBarras}-${index}`} className="bo-table-row">
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.nombre}</TableCell>
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempCategoriaNombre}</TableCell>
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">
+                      {prod.precio.toFixed(2)} €/{prod.unidadMedida || "ud"}
+                    </TableCell>
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.stock}</TableCell>
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</TableCell>
+                    <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.codigoBarras}</TableCell>
+                    <TableCell className="text-center">
+                      <button
+                        type="button"
+                        className="bo-table-action-btn inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#e53e3e] shadow-[0_2px_4px_rgba(229,62,62,0.1)] transition-transform duration-200 hover:scale-105 hover:bg-[#fed7d7]"
+                        onClick={() => borrarFila(index)}
+                      >
+                        <i className="fa-solid fa-xmark"></i>
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
           </Table>
         </div>
       </div>
@@ -473,6 +492,7 @@ export default function IngresarProductoPage() {
           {mensajeEstado}
         </Alert>
       )}
+    </div>
     </div>
   );
 }
