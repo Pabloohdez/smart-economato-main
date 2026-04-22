@@ -95,6 +95,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
   const selectAllRef = useRef<HTMLInputElement | null>(null);
   const tableSectionRef = useRef<HTMLElement | null>(null);
   const lastScrollKeyRef = useRef<string>("");
+  const shouldAutoScrollRef = useRef(false);
 
   const [editOpen, setEditOpen] = useState(false);
   const [editProducto, setEditProducto] = useState<Producto | null>(null);
@@ -265,6 +266,8 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     const key = `${safePage}:${pageSize}:${rows.length}`;
     if (lastScrollKeyRef.current === key) return;
     lastScrollKeyRef.current = key;
+    if (!shouldAutoScrollRef.current) return;
+    shouldAutoScrollRef.current = false;
 
     // Esperar a que el layout se estabilice tras el render.
     window.requestAnimationFrame(() => {
@@ -309,7 +312,14 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
   }
 
   function changePage(nextPage: number) {
+    shouldAutoScrollRef.current = true;
     setPage(nextPage);
+  }
+
+  function handlePageSizeChange(nextSize: number) {
+    shouldAutoScrollRef.current = true;
+    setPage(1);
+    setPageSize(nextSize);
   }
 
   function toggleRowSelection(id: string) {
@@ -536,7 +546,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                   totalItems={rows.length}
                   totalLabel="productos"
                   onPageChange={changePage}
-                  onPageSizeChange={setPageSize}
+                  onPageSizeChange={handlePageSizeChange}
                   pageSizeOptions={[10, 25, 50, 100]}
                 />
               </motion.div>
