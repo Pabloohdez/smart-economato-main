@@ -262,6 +262,18 @@ export default function AppLayout() {
             </span>
           </NavLink>
 
+          <NavLink
+            to="/avisos"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--color-border-default)] bg-white text-[var(--color-brand-500)] shadow-sm transition hover:bg-[#f8fafc]"
+            aria-label="Ir a Avisos"
+          >
+            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
+            {avisosCount > 0 ? (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-[#ef4444] text-white text-[11px] font-bold inline-flex items-center justify-center px-1">
+                {avisosCount > 99 ? "99+" : avisosCount}
+              </span>
+            ) : null}
+          </NavLink>
         </div>
 
         <nav className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" aria-label="Secciones del sistema">
