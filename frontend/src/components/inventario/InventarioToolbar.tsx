@@ -235,7 +235,7 @@ export default function InventarioToolbar({
         </button>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 min-[900px]:grid-cols-[minmax(220px,1.1fr)_minmax(220px,1fr)_minmax(180px,0.9fr)_minmax(160px,0.8fr)] min-[900px]:items-center">
         <DetailsDropdown
           label="Proveedor"
           valueLabel={provLabel}
@@ -244,13 +244,13 @@ export default function InventarioToolbar({
           leadingIcon={<Filter className="h-4 w-4" strokeWidth={2} />}
           onChange={setProvId}
           options={[{ value: "", label: "Todos" }, ...provs.map((prov) => ({ value: String(prov.id), label: prov.nombre }))]}
-          className="min-w-[220px]"
+          className="w-full min-w-0"
         />
 
         <button
           type="button"
           onClick={() => setOrden(orden === "asc" ? "desc" : "asc")}
-          className={secondaryBtnClassName}
+          className={`${secondaryBtnClassName} w-full`}
           title="Cambiar orden por precio"
         >
           <ArrowDownWideNarrow className="h-4 w-4" strokeWidth={2} />
@@ -262,7 +262,7 @@ export default function InventarioToolbar({
           onClick={onScanBarcode}
           aria-label="Escanear codigo de barras"
           title="Escanear código"
-          className={secondaryBtnClassName}
+          className={`${secondaryBtnClassName} w-full`}
         >
           <ScanLine className="h-4 w-4" strokeWidth={2} />
           Escanear
@@ -272,7 +272,7 @@ export default function InventarioToolbar({
           type="button"
           onClick={limpiarFiltros}
           disabled={!hasActiveFilters}
-          className={`${secondaryBtnClassName} disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`${secondaryBtnClassName} w-full disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <FilterX className="h-4 w-4" strokeWidth={2} />
           Limpiar
