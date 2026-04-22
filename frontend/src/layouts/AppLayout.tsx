@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
-  BadgeAlert,
   Bell,
   BellRing,
   CalendarDays,
@@ -290,59 +289,7 @@ export default function AppLayout() {
           {renderNavSection(secondaryNavItems, "Gestión")}
         </nav>
 
-        <div className="border-t border-[var(--color-border-default)] pt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="w-full rounded-[20px] border border-[rgba(229,231,235,.95)] bg-[linear-gradient(180deg,#ffffff_0%,#fafbff_100%)] p-3 transition-[background,border-color,transform] duration-200 flex items-center gap-3 shadow-[0_10px_24px_rgba(15,23,42,.06)] hover:bg-white hover:border-[rgba(209,213,219,.95)]"
-              >
-                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-[16px] bg-[var(--color-brand-500)] text-[15px] font-bold text-white" title="Usuario">
-                  {userInitial}
-                </div>
-                <span className="min-w-0 flex flex-1 flex-col items-start gap-0.5">
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-bold text-[var(--color-text-strong)]">{userName}</span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold text-[var(--color-text-muted)]">
-                    {userEmail || userRole || "Gestor de Economato"}
-                  </span>
-                </span>
-                <span className="ml-auto text-[#9ca3af]" aria-hidden="true">
-                  <ChevronDown className="h-4 w-4" />
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-[--radix-dropdown-menu-trigger-width] min-w-[260px] rounded-[20px] p-0">
-              <DropdownMenuLabel className="p-0">
-                <div className="flex items-center gap-3.5 border-b border-[var(--color-border-default)] p-[18px_18px_14px]">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[18px] bg-[var(--color-brand-500)] text-[24px] font-semibold text-white">
-                    {userInitial}
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="text-[16px] font-extrabold text-[var(--color-text-strong)]">{userName}</div>
-                    <div className="text-[12px] font-semibold text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                    <span className={`role-badge role-badge--${normalizedRole}`}>
-                      {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => nav("/avisos")}>
-                <Bell className="h-4 w-4" /> Centro de avisos
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => nav("/configuracion")}>
-                <Settings className="h-4 w-4" /> Configuración
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                <CalendarDays className="h-4 w-4" /> {todayLabel}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive" onSelect={logout}>
-                <LogOut className="h-4 w-4" /> Cerrar sesión
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <div className="border-t border-[var(--color-border-default)] pt-2" />
       </aside>
 
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
@@ -366,7 +313,18 @@ export default function AppLayout() {
                 <Menu className="h-[18px] w-[18px]" />
               </button>
 
-              {isInicio ? null : (
+              {isInicio ? (
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                    <LayoutDashboard className="h-3.5 w-3.5" /> Inicio
+                  </div>
+                  <div className="mt-1 flex min-w-0 items-center gap-2">
+                    <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
+                      Panel de inicio
+                    </h2>
+                  </div>
+                </div>
+              ) : (
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
                     <LayoutDashboard className="h-3.5 w-3.5" /> Smart Economato
@@ -388,73 +346,48 @@ export default function AppLayout() {
             </div>
 
             <div className="flex items-center gap-3 max-[520px]:gap-2">
-              {isInicio ? null : (
               <div className="hidden items-center gap-2 rounded-[18px] border border-[var(--color-border-default)] bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-text-muted)] shadow-sm md:inline-flex">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{todayLabel}</span>
               </div>
-              )}
 
-              {isInicio ? null : (
-                <NavLink
-                  to="/avisos"
-                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-[18px] border border-[var(--color-border-default)] bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-                  aria-label="Abrir avisos"
-                >
-                  <BadgeAlert className="h-4.5 w-4.5" />
-                  {avisosCount > 0 ? (
-                    <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] font-bold text-white">
-                      {avisosCount > 99 ? "99+" : avisosCount}
-                    </span>
-                  ) : null}
-                </NavLink>
-              )}
-
-              {isInicio ? null : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
-                      className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
-                      aria-label="Abrir menú de usuario"
-                    >
-                      <div className="hidden text-right md:block">
-                        <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
-                        <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
-                      </div>
-                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                        {userInitial}
-                      </div>
-                      <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
-                    <DropdownMenuLabel className="flex items-center gap-3">
-                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                        {userInitial}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
-                        <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => nav("/configuracion")}>
-                      <Settings className="h-4 w-4" /> Configuración
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => nav("/avisos")}>
-                      <Bell className="h-4 w-4" /> Avisos
-                    </DropdownMenuItem>
-                    <DropdownMenuItem disabled>
-                      <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive" onSelect={logout}>
-                      <LogOut className="h-4 w-4" /> Cerrar sesión
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
+                    aria-label="Abrir menú de usuario"
+                  >
+                    <div className="hidden text-right md:block">
+                      <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
+                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
+                    </div>
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
+                      {userInitial}
+                    </div>
+                    <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
+                  <DropdownMenuLabel className="flex items-center gap-3">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
+                      {userInitial}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
+                      <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled>
+                    <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onSelect={logout}>
+                    <LogOut className="h-4 w-4" /> Cerrar sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>

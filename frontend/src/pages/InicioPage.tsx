@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { useMemo } from "react";
 import {
   BellRing,
   Boxes,
@@ -11,7 +10,6 @@ import {
   Truck,
   Users,
   ArrowRight,
-  CalendarDays,
 } from "lucide-react";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
@@ -29,45 +27,18 @@ const cards = [
 
 export default function InicioPage() {
   const nav = useNavigate();
-  const todayLabel = useMemo(
-    () =>
-      new Intl.DateTimeFormat("es-ES", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      }).format(new Date()),
-    [],
-  );
 
   return (
-    <StaggerPage className="w-full h-full min-h-0 flex flex-col p-5 pt-4 max-[820px]:p-4 max-[820px]:pt-3 max-[520px]:p-3 max-[520px]:pt-2">
-      <StaggerItem className="shrink-0">
-        <div className="flex items-center justify-between gap-4 pb-3 max-[520px]:pb-2">
-          <div className="min-w-0">
-            <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
-              Inicio
-            </div>
-            <h1 className="m-0 mt-1 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[640px]:text-[20px] max-[520px]:text-[18px]">
-              Panel de inicio
-            </h1>
-          </div>
-
-          <div className="inline-flex items-center gap-2 rounded-[18px] border border-[var(--color-border-default)] bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-text-muted)] shadow-sm max-[520px]:px-3 max-[520px]:py-2 max-[520px]:text-[12px]">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            <span className="truncate">{todayLabel}</span>
-          </div>
-        </div>
-      </StaggerItem>
-
+    <StaggerPage className="inicio-page w-full h-full min-h-0 flex flex-col p-5 pt-4 max-[820px]:p-4 max-[820px]:pt-3 max-[520px]:p-3 max-[520px]:pt-2">
       <StaggerItem className="flex flex-1 min-h-0">
         <div className="w-full flex-1 min-h-0 flex">
-          <div className="grid w-full flex-1 h-full min-h-0 min-w-0 grid-cols-3 grid-rows-3 gap-5 max-[1100px]:grid-cols-2 max-[1100px]:grid-rows-5 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
+          <div className="inicio-page__grid grid w-full flex-1 h-full min-h-0 min-w-0 grid-cols-3 grid-rows-3 gap-5 max-[1100px]:grid-cols-2 max-[1100px]:grid-rows-5 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
               <button
                 key={c.to}
-                className="group flex h-full w-full flex-col rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)] max-[820px]:px-5 max-[820px]:py-5 max-[640px]:px-4 max-[640px]:py-4 max-[520px]:rounded-[20px] max-[520px]:px-3.5 max-[520px]:py-3.5"
+                className="inicio-page__card group flex h-full w-full flex-col rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)] max-[820px]:px-5 max-[820px]:py-5 max-[640px]:px-4 max-[640px]:py-4 max-[520px]:rounded-[20px] max-[520px]:px-3.5 max-[520px]:py-3.5"
                 type="button"
                 onClick={() => nav(c.to)}
               >
@@ -85,11 +56,11 @@ export default function InicioPage() {
                   </div>
                 </div>
 
-                <p className="m-0 mt-4 text-[14px] leading-[1.65] font-medium text-[var(--color-text-muted)] max-[640px]:mt-3 max-[520px]:hidden">
+                <p className="inicio-page__desc m-0 mt-4 text-[14px] leading-[1.65] font-medium text-[var(--color-text-muted)] max-[640px]:mt-3 max-[520px]:hidden">
                   {c.desc}
                 </p>
 
-                <div className="mt-6 inline-flex items-center gap-2 text-[13px] font-extrabold text-[var(--color-brand-600)] max-[640px]:mt-4 max-[520px]:mt-3 max-[520px]:text-[12px]">
+                <div className="inicio-page__cta mt-6 inline-flex items-center gap-2 text-[13px] font-extrabold text-[var(--color-brand-600)] max-[640px]:mt-4 max-[520px]:mt-3 max-[520px]:text-[12px]">
                   <span className="max-[520px]:hidden">Abrir {c.title}</span>
                   <span className="hidden max-[520px]:inline">Abrir</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 max-[520px]:h-3.5 max-[520px]:w-3.5" />

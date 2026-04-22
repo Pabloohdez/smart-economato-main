@@ -481,3 +481,31 @@ a {
     transform: translateX(100%);
   }
 }
+
+@media (max-height: 820px) {
+  .inicio-page {
+    padding: 16px !important;
+    padding-top: 14px !important;
+  }
+
+  .inicio-page__grid {
+    gap: 14px !important;
+  }
+
+  .inicio-page__card {
+    padding: 16px 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .inicio-page__card h3 {
+    font-size: 18px !important;
+  }
+
+  .inicio-page__desc {
+    display: none !important;
+  }
+
+  .inicio-page__cta {
+    margin-top: 12px !important;
+  }
+}
