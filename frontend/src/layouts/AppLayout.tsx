@@ -325,7 +325,13 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
-        <header className={isInventarioRoute ? "hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block" : "sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl"}>
+        <header
+          className={
+            isInventarioRoute || isInicio
+              ? "hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block"
+              : "sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl"
+          }
+        >
           <div className={isInventarioRoute ? "flex items-center justify-between gap-4 px-4 py-3" : "flex items-center justify-between gap-4 px-6 py-4 max-[820px]:px-4 max-[820px]:py-3"}>
             <div className="flex min-w-0 items-center gap-3">
               <button

@@ -32,7 +32,7 @@ export default function InicioPage() {
     <StaggerPage className="w-full h-full min-h-0 flex">
       <StaggerItem>
         <div className="w-full flex-1 min-h-0 flex">
-          <div className="grid w-full flex-1 min-h-0 content-start grid-cols-3 gap-5 max-w-[1150px] max-[1100px]:grid-cols-2 max-[820px]:pb-4 max-[640px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
+          <div className="grid w-full flex-1 min-h-0 min-w-0 content-start grid-cols-3 gap-5 max-[1100px]:grid-cols-2 max-[820px]:pb-4 max-[640px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
