@@ -94,6 +94,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
   const queryClient = useQueryClient();
   const selectAllRef = useRef<HTMLInputElement | null>(null);
   const tableSectionRef = useRef<HTMLElement | null>(null);
+  const lastScrollKeyRef = useRef<string>("");
 
   const [editOpen, setEditOpen] = useState(false);
   const [editProducto, setEditProducto] = useState<Producto | null>(null);
@@ -259,6 +260,42 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
     selectAllRef.current.indeterminate = someVisibleSelected;
   }, [someVisibleSelected]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const key = `${safePage}:${pageSize}:${rows.length}`;
+    if (lastScrollKeyRef.current === key) return;
+    lastScrollKeyRef.current = key;
+
+    // Esperar a que el layout se estabilice tras el render.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = tableSectionRef.current;
+        if (!target) return;
+
+        // 1) Scroll universal (window o contenedores): Safari/iPad lo respeta mejor.
+        try {
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch {
+          // noop
+        }
+
+        // 2) Si `#main-content` es el scroller real, ajustamos fino para dejar margen.
+        const scroller = document.getElementById("main-content");
+        if (!scroller) return;
+        const style = window.getComputedStyle(scroller);
+        const isScrollable =
+          (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          scroller.scrollHeight > scroller.clientHeight + 2;
+        if (!isScrollable) return;
+
+        const scrollerRect = scroller.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const nextTop = targetRect.top - scrollerRect.top + scroller.scrollTop - 12;
+        scroller.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
+      });
+    });
+  }, [safePage, pageSize, rows.length]);
+
   function findScrollParent(el: HTMLElement | null): HTMLElement | null {
     if (!el) return null;
     let cur: HTMLElement | null = el.parentElement;
@@ -273,24 +310,6 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
 
   function changePage(nextPage: number) {
     setPage(nextPage);
-
-    if (typeof window === "undefined") return;
-    // Esperar a que React pinte la nueva página antes de scrollear.
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        const target = tableSectionRef.current;
-        const scroller = findScrollParent(target) ?? document.getElementById("main-content");
-        if (!scroller || !target) {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          return;
-        }
-
-        const scrollerRect = scroller.getBoundingClientRect();
-        const targetRect = target.getBoundingClientRect();
-        const nextTop = targetRect.top - scrollerRect.top + scroller.scrollTop - 12;
-        scroller.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" });
-      });
-    });
   }
 
   function toggleRowSelection(id: string) {

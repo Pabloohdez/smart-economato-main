@@ -81,6 +81,7 @@ export default function AppLayout() {
   const normalizedRole = normalizeRole(userRole);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
 
   const productosQuery = useQuery({
     queryKey: queryKeys.productos,
@@ -159,6 +160,14 @@ export default function AppLayout() {
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 820px)");
+    const update = () => setIsSmallViewport(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
     document.body.classList.toggle("sidebar-mobile-open", sidebarOpen);
     return () => {
       document.body.classList.remove("sidebar-mobile-open");
@@ -166,7 +175,8 @@ export default function AppLayout() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    const shouldLockScroll = sidebarOpen || isInicio;
+    // En Inicio: estático en escritorio, con scroll en pantallas pequeñas.
+    const shouldLockScroll = sidebarOpen || (isInicio && !isSmallViewport);
     const prevBodyOverflow = document.body.style.overflow;
     const prevHtmlOverflow = document.documentElement.style.overflow;
 
@@ -182,7 +192,7 @@ export default function AppLayout() {
       document.body.style.overflow = prevBodyOverflow;
       document.documentElement.style.overflow = prevHtmlOverflow;
     };
-  }, [isInicio, sidebarOpen]);
+  }, [isInicio, isSmallViewport, sidebarOpen]);
 
   function logout() {
     logoutSession();
@@ -399,7 +409,7 @@ export default function AppLayout() {
               : isInicio
                 ? "flex-1 w-full min-w-0 m-0 p-0"
                 : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
-            isInicio ? "overflow-hidden" : "overflow-y-auto overflow-x-hidden",
+            isInicio ? (isSmallViewport ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden") : "overflow-y-auto overflow-x-hidden",
           ].join(" ")}
           id="main-content"
         >
