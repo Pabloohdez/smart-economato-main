@@ -29,15 +29,16 @@ export default function InicioPage() {
   const nav = useNavigate();
 
   return (
-    <StaggerPage className="w-full">
+    <StaggerPage className="w-full h-full min-h-0 flex">
       <StaggerItem>
-        <div className="grid grid-cols-3 gap-5 w-full max-w-[1150px] max-[1100px]:grid-cols-2 max-[520px]:grid-cols-1 max-[520px]:gap-4 max-[820px]:pb-6">
+        <div className="w-full flex-1 min-h-0 flex">
+          <div className="grid w-full flex-1 min-h-0 content-start grid-cols-3 gap-5 max-w-[1150px] max-[1100px]:grid-cols-2 max-[820px]:pb-4 max-[640px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
               <button
                 key={c.to}
-                className="group flex w-full flex-col rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)]"
+                className="group flex w-full flex-col rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] px-6 py-6 text-left shadow-[var(--shadow-sm)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-[3px] hover:border-[rgba(179,49,49,0.16)] hover:shadow-[var(--shadow-lg)] max-[820px]:px-5 max-[820px]:py-5 max-[640px]:px-4 max-[640px]:py-4 max-[520px]:rounded-[20px] max-[520px]:px-3.5 max-[520px]:py-3.5"
                 type="button"
                 onClick={() => nav(c.to)}
               >
@@ -46,26 +47,28 @@ export default function InicioPage() {
                     <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
                       Sección
                     </div>
-                    <h3 className="m-0 mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)]">
+                    <h3 className="m-0 mt-2 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[20px] max-[640px]:text-[18px] max-[520px]:text-[15px]">
                       {c.title}
                     </h3>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-[rgba(179,49,49,0.14)] bg-[rgba(179,49,49,0.08)] text-[var(--color-brand-500)] transition-transform duration-300 group-hover:scale-110">
-                    <Icon className="h-5 w-5" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[16px] border border-[rgba(179,49,49,0.14)] bg-[rgba(179,49,49,0.08)] text-[var(--color-brand-500)] transition-transform duration-300 group-hover:scale-110 max-[640px]:h-11 max-[640px]:w-11 max-[520px]:h-9 max-[520px]:w-9 max-[520px]:rounded-[14px]">
+                    <Icon className="h-5 w-5 max-[520px]:h-4 max-[520px]:w-4" />
                   </div>
                 </div>
 
-                <p className="m-0 mt-4 text-[14px] leading-[1.65] font-medium text-[var(--color-text-muted)]">
+                <p className="m-0 mt-4 text-[14px] leading-[1.65] font-medium text-[var(--color-text-muted)] max-[640px]:mt-3 max-[520px]:hidden">
                   {c.desc}
                 </p>
 
-                <div className="mt-6 inline-flex items-center gap-2 text-[13px] font-extrabold text-[var(--color-brand-600)]">
-                  Abrir {c.title}
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+                <div className="mt-6 inline-flex items-center gap-2 text-[13px] font-extrabold text-[var(--color-brand-600)] max-[640px]:mt-4 max-[520px]:mt-3 max-[520px]:text-[12px]">
+                  <span className="max-[520px]:hidden">Abrir {c.title}</span>
+                  <span className="hidden max-[520px]:inline">Abrir</span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 max-[520px]:h-3.5 max-[520px]:w-3.5" />
                 </div>
               </button>
             );
           })}
+        </div>
         </div>
       </StaggerItem>
     </StaggerPage>
