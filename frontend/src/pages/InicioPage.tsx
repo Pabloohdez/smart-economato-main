@@ -30,9 +30,9 @@ export default function InicioPage() {
 
   return (
     <StaggerPage className="w-full h-full min-h-0 flex p-6 max-[820px]:p-4 max-[520px]:p-3">
-      <StaggerItem>
+      <StaggerItem className="flex flex-1 min-h-0">
         <div className="w-full flex-1 min-h-0 flex">
-          <div className="grid w-full flex-1 min-h-0 min-w-0 grid-cols-3 auto-rows-fr gap-5 max-[1100px]:grid-cols-2 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
+          <div className="grid w-full flex-1 h-full min-h-0 min-w-0 grid-cols-3 grid-rows-3 gap-5 max-[1100px]:grid-cols-2 max-[1100px]:grid-rows-5 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
           {cards.map((c) => {
             const Icon = c.icon;
             return (
