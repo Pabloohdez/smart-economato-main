@@ -1,6 +1,13 @@
 import type { Categoria, Proveedor } from "../../services/productosService";
-import { ArrowDownWideNarrow, ChevronDown, Download, FileSpreadsheet, Filter, FilterX, Plus, ScanLine, Search, FileText } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { ArrowUpDown, ChevronDown, Filter, FilterX, MoreVertical, Plus, ScanLine, Search } from "lucide-react";
+import { useMemo } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../ui/dropdown-menu";
 
 type Props = {
   q: string;
@@ -27,7 +34,7 @@ type Props = {
 
 type DropdownOption = { value: string; label: string };
 
-function DetailsDropdown({
+function FilterDropdown({
   label,
   value,
   valueLabel,
@@ -35,7 +42,6 @@ function DetailsDropdown({
   leadingIcon,
   active,
   onChange,
-  className,
 }: {
   label: string;
   value: string;
@@ -44,72 +50,41 @@ function DetailsDropdown({
   leadingIcon?: React.ReactNode;
   active?: boolean;
   onChange: (next: string) => void;
-  className?: string;
 }) {
-  const detailsRef = useRef<HTMLDetailsElement | null>(null);
-
-  useEffect(() => {
-    const handleDocumentMouseDown = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (detailsRef.current && !detailsRef.current.contains(target)) {
-        detailsRef.current.open = false;
-      }
-    };
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      if (detailsRef.current) detailsRef.current.open = false;
-    };
-
-    document.addEventListener("mousedown", handleDocumentMouseDown);
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("mousedown", handleDocumentMouseDown);
-      document.removeEventListener("keydown", handleEscape);
-    };
-  }, []);
-
   return (
-    <div className={className}>
-      <details ref={detailsRef} className="group relative">
-        <summary
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
           className={[
-            "list-none flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50",
-            "border-black",
+            "group flex min-h-12 w-full items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-all cursor-pointer",
+            active
+              ? "border border-[rgba(179,49,49,0.35)] bg-[rgba(179,49,49,0.08)] text-[var(--color-brand-600)]"
+              : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50",
           ].join(" ")}
           aria-label={label}
         >
           <span className="inline-flex min-w-0 items-center gap-2">
-            {leadingIcon ? <span className="text-slate-400">{leadingIcon}</span> : null}
-            <span className="truncate">{label} <span className="text-slate-400">({valueLabel})</span></span>
+            {leadingIcon ? <span className={`flex-shrink-0 ${active ? "text-[var(--color-brand-500)]" : "text-slate-400"}`}>{leadingIcon}</span> : null}
+            <span className="min-w-0 truncate text-[13px]">
+              {active ? <><span className="opacity-60">{label}:</span> <span className="font-semibold">{valueLabel}</span></> : label}
+            </span>
           </span>
-          <ChevronDown className="h-4 w-4 text-slate-400 group-open:rotate-180 transition-transform" />
-        </summary>
-
-        <div className="absolute z-20 mt-2 w-full min-w-[220px] rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
-          {options.map((opt) => {
-            const isActive = opt.value === value;
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                className={[
-                  "w-full text-left text-sm px-3 py-2 rounded-lg transition-colors hover:bg-slate-100",
-                  isActive ? "bg-[var(--brand-50)] text-[var(--brand-700)] font-semibold" : "text-slate-700",
-                ].join(" ")}
-                onClick={() => {
-                  onChange(opt.value);
-                  if (detailsRef.current) detailsRef.current.open = false;
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-      </details>
-    </div>
+          <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+        {options.map((opt) => (
+          <DropdownMenuItem
+            key={opt.value}
+            onClick={() => onChange(opt.value)}
+            className={opt.value === value ? "bg-[rgba(179,49,49,0.12)] font-semibold text-[var(--color-brand-600)]" : ""}
+          >
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -144,140 +119,131 @@ export default function InventarioToolbar({
   const hasActiveFilters = Boolean(q.trim() || catId || provId || onlyStockBajo || onlyProximoCaducar || orden !== "asc");
 
   function setStockMode(value: "todos" | "stock-bajo" | "proximo-caducar") {
-    if (value === "todos") {
-      setOnlyStockBajo(false);
-      setOnlyProximoCaducar(false);
-      return;
-    }
-    if (value === "stock-bajo") {
-      setOnlyStockBajo(true);
-      setOnlyProximoCaducar(false);
-      return;
-    }
-    setOnlyStockBajo(false);
-    setOnlyProximoCaducar(true);
+    if (value === "todos") { setOnlyStockBajo(false); setOnlyProximoCaducar(false); return; }
+    if (value === "stock-bajo") { setOnlyStockBajo(true); setOnlyProximoCaducar(false); return; }
+    setOnlyStockBajo(false); setOnlyProximoCaducar(true);
   }
 
-  const secondaryBtnClassName = "bo-toolbar-secondary active:scale-[0.98]";
-  
-  const stockLabel = stockMode === "stock-bajo" ? "Stock bajo" : stockMode === "proximo-caducar" ? "Próximo a caducar" : "Todos";
+  const stockLabel = stockMode === "stock-bajo" ? "Bajo" : stockMode === "proximo-caducar" ? "Caduca pronto" : "Todos";
   const catLabel = cats.find((cat) => String(cat.id) === catId)?.nombre ?? "Todas";
   const provLabel = provs.find((prov) => String(prov.id) === provId)?.nombre ?? "Todos";
 
   return (
     <div className="mb-4 border-b border-[#e2e8f0] pb-4">
-      <div className="grid grid-cols-1 gap-3 min-[1240px]:grid-cols-[minmax(0,1.8fr)_minmax(0,0.92fr)_minmax(0,0.84fr)_minmax(0,0.95fr)_minmax(0,0.84fr)] min-[1240px]:items-center">
-        
-        {/* Buscador: Hereda los mismos bordes y sombras */}
-        <div className="relative min-w-0">
-          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2} />
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Buscador */}
+        <div className="relative min-w-[140px] flex-[2]">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2} />
           <input
             type="text"
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            placeholder="Buscar por nombre, referencia, marca, material..."
-            aria-label="Buscar producto por nombre o código"
-            className="bo-toolbar-input w-full pl-12 placeholder:text-slate-400"
+            placeholder="Buscar..."
+            aria-label="Buscar producto"
+            className="bo-toolbar-input w-full pl-10 placeholder:text-slate-400"
           />
         </div>
 
-        <DetailsDropdown
-          label="Familias"
-          valueLabel={catLabel}
-          value={catId}
-          active={Boolean(catId)}
-          leadingIcon={<Filter className="h-4 w-4" strokeWidth={2} />}
-          onChange={setCatId}
-          options={[{ value: "", label: "Todas" }, ...cats.map((cat) => ({ value: String(cat.id), label: cat.nombre }))]}
-          className="min-w-0"
-        />
+        {/* Filtros */}
+        <div className="min-w-[120px] flex-1">
+          <FilterDropdown
+            label="Familias"
+            valueLabel={catLabel}
+            value={catId}
+            active={Boolean(catId)}
+            leadingIcon={<Filter className="h-3.5 w-3.5" strokeWidth={2} />}
+            onChange={setCatId}
+            options={[{ value: "", label: "Todas" }, ...cats.map((cat) => ({ value: String(cat.id), label: cat.nombre }))]}
+          />
+        </div>
 
-        <DetailsDropdown
-          label="Stock"
-          valueLabel={stockLabel}
-          value={stockMode}
-          active={stockMode !== "todos"}
-          leadingIcon={<Filter className="h-4 w-4" strokeWidth={2} />}
-          onChange={(value) => setStockMode(value as "todos" | "stock-bajo" | "proximo-caducar")}
-          options={[
-            { value: "todos", label: "Todos" },
-            { value: "stock-bajo", label: "Stock bajo" },
-            { value: "proximo-caducar", label: "Próximo a caducar" },
-          ]}
-          className="min-w-0"
-        />
+        <div className="min-w-[120px] flex-1">
+          <FilterDropdown
+            label="Stock"
+            valueLabel={stockLabel}
+            value={stockMode}
+            active={stockMode !== "todos"}
+            leadingIcon={<Filter className="h-3.5 w-3.5" strokeWidth={2} />}
+            onChange={(value) => setStockMode(value as "todos" | "stock-bajo" | "proximo-caducar")}
+            options={[
+              { value: "todos", label: "Todos" },
+              { value: "stock-bajo", label: "Stock bajo" },
+              { value: "proximo-caducar", label: "Próximo a caducar" },
+            ]}
+          />
+        </div>
 
-        <DetailsDropdown
-          label="Exportar / Importar"
-          valueLabel="Opciones"
-          value=""
-          active={false}
-          leadingIcon={<Download className="h-4 w-4" strokeWidth={2} />}
-          onChange={(v) => {
-            if (v === "csv") onExportCsv();
-            if (v === "xlsx") onExportXlsx();
-          }}
-          options={[
-            { value: "csv", label: "Exportar CSV" },
-            { value: "xlsx", label: "Exportar XLSX" },
-          ]}
-          className="min-w-0 w-full"
-        />
+        <div className="min-w-[120px] flex-1">
+          <FilterDropdown
+            label="Proveedor"
+            valueLabel={provLabel}
+            value={provId}
+            active={Boolean(provId)}
+            leadingIcon={<Filter className="h-3.5 w-3.5" strokeWidth={2} />}
+            onChange={setProvId}
+            options={[{ value: "", label: "Todos" }, ...provs.map((prov) => ({ value: String(prov.id), label: prov.nombre }))]}
+          />
+        </div>
 
-        {/* Botón Primario: Usa color corporativo */}
+        {/* Ordenar — icono solo */}
+        <button
+          type="button"
+          onClick={() => setOrden(orden === "asc" ? "desc" : "asc")}
+          className="bo-toolbar-secondary flex-shrink-0 px-3"
+          title={orden === "asc" ? "Precio ascendente — clic para invertir" : "Precio descendente — clic para invertir"}
+          aria-label="Invertir orden por precio"
+        >
+          <ArrowUpDown className={`h-4 w-4 ${orden !== "asc" ? "text-[var(--color-brand-500)]" : ""}`} strokeWidth={2} />
+        </button>
+
+        {/* Nuevo Producto */}
         <button
           type="button"
           onClick={onCreateProduct}
-          className="bo-toolbar-primary-blue active:scale-[0.98] w-full"
+          className="bo-toolbar-primary-blue active:scale-[0.98] flex-shrink-0"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nuevo Producto
         </button>
-      </div>
 
-      <div className="mt-3 grid grid-cols-1 gap-3 min-[900px]:grid-cols-[minmax(220px,1.1fr)_minmax(220px,1fr)_minmax(180px,0.9fr)_minmax(160px,0.8fr)] min-[900px]:items-center">
-        <DetailsDropdown
-          label="Proveedor"
-          valueLabel={provLabel}
-          value={provId}
-          active={Boolean(provId)}
-          leadingIcon={<Filter className="h-4 w-4" strokeWidth={2} />}
-          onChange={setProvId}
-          options={[{ value: "", label: "Todos" }, ...provs.map((prov) => ({ value: String(prov.id), label: prov.nombre }))]}
-          className="w-full min-w-0"
-        />
-
-        <button
-          type="button"
-          onClick={() => setOrden(orden === "asc" ? "desc" : "asc")}
-          className={`${secondaryBtnClassName} w-full`}
-          title="Cambiar orden por precio"
-        >
-          <ArrowDownWideNarrow className="h-4 w-4" strokeWidth={2} />
-          {orden === "asc" ? "Precio ascendente" : "Precio descendente"}
-        </button>
-
-        <button
-          type="button"
-          onClick={onScanBarcode}
-          aria-label="Escanear codigo de barras"
-          title="Escanear código"
-          className={`${secondaryBtnClassName} w-full`}
-        >
-          <ScanLine className="h-4 w-4" strokeWidth={2} />
-          Escanear
-        </button>
-
-        <button
-          type="button"
-          onClick={limpiarFiltros}
-          disabled={!hasActiveFilters}
-          className={`${secondaryBtnClassName} w-full disabled:cursor-not-allowed disabled:opacity-50`}
-        >
-          <FilterX className="h-4 w-4" strokeWidth={2} />
-          Limpiar
-        </button>
+        {/* Más acciones */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className={`bo-toolbar-secondary flex-shrink-0 px-3 relative ${hasActiveFilters ? "border-[rgba(179,49,49,0.35)] text-[var(--color-brand-500)]" : ""}`}
+              aria-label="Más acciones"
+              title="Más acciones"
+            >
+              <MoreVertical className="h-4 w-4" strokeWidth={2} />
+              {hasActiveFilters && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[var(--color-brand-500)]" aria-hidden="true" />
+              )}
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onScanBarcode}>
+              <ScanLine className="h-4 w-4" strokeWidth={2} /> Escanear código
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onExportCsv}>
+              Exportar CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onExportXlsx}>
+              Exportar XLSX
+            </DropdownMenuItem>
+            {hasActiveFilters && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={limpiarFiltros} className="text-[var(--color-brand-600)]">
+                  <FilterX className="h-4 w-4" strokeWidth={2} /> Limpiar Filtros
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
 }
+

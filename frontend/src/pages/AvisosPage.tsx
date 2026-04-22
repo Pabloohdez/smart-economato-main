@@ -576,7 +576,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem>
+      <StaggerItem className="mb-6">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">

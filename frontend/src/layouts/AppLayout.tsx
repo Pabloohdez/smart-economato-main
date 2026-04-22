@@ -15,7 +15,6 @@ import {
   Building2,
   HandCoins,
   House,
-  LayoutDashboard,
   LogOut,
   Menu,
   PackagePlus,
@@ -131,13 +130,6 @@ export default function AppLayout() {
     [visibleNavItems],
   );
 
-  const currentSection = useMemo(
-    () => visibleNavItems.find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ?? null,
-    [location.pathname, visibleNavItems],
-  );
-  const isInventarioRoute = currentSection?.to === "/inventario";
-  const hideCurrentSectionTitle = isInventarioRoute;
-
   const todayLabel = useMemo(
     () => new Intl.DateTimeFormat("es-ES", {
       weekday: "long",
@@ -175,24 +167,26 @@ export default function AppLayout() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    // En Inicio: estático en escritorio, con scroll en pantallas pequeñas.
-    const shouldLockScroll = sidebarOpen || (isInicio && !isSmallViewport);
     const prevBodyOverflow = document.body.style.overflow;
     const prevHtmlOverflow = document.documentElement.style.overflow;
 
-    if (shouldLockScroll) {
+    // Solo ocultar overflow en viewport movil cuando sidebar esta abierto
+    const isMobileViewport = window.innerWidth <= 820;
+    const shouldHideScroll = isMobileViewport && sidebarOpen;
+
+    if (shouldHideScroll) {
       document.body.style.overflow = "hidden";
       document.documentElement.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "";
-      document.documentElement.style.overflow = "";
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
     }
 
     return () => {
       document.body.style.overflow = prevBodyOverflow;
       document.documentElement.style.overflow = prevHtmlOverflow;
     };
-  }, [isInicio, isSmallViewport, sidebarOpen]);
+  }, [sidebarOpen]);
 
   function logout() {
     logoutSession();
@@ -258,7 +252,7 @@ export default function AppLayout() {
 
       <aside
         id="app-sidebar"
-        className={`grid [grid-template-rows:auto_1fr_auto] gap-4 fixed top-0 left-0 bottom-0 w-[294px] h-[100dvh] overflow-hidden z-[100] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border-r border-[var(--color-border-default)] p-[18px_14px_14px] text-[var(--color-text-strong)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[300px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.14)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[252px] max-[520px]:p-[14px_12px_12px]`}
+        className={`grid [grid-template-rows:auto_1fr_auto] gap-4 fixed top-0 left-0 bottom-0 w-[294px] h-[100dvh] overflow-hidden z-[100] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border-r border-[#d1d9e6] shadow-[6px_0_32px_rgba(15,23,42,0.07),2px_0_8px_rgba(15,23,42,0.04)] p-[18px_14px_14px] text-[var(--color-text-strong)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[300px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.14)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[252px] max-[520px]:p-[14px_12px_12px]`}
         aria-label="Navegacion principal"
       >
         <div className="flex items-center gap-3 rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
@@ -299,18 +293,52 @@ export default function AppLayout() {
           {renderNavSection(secondaryNavItems, "Gestión")}
         </nav>
 
-        <div className="border-t border-[var(--color-border-default)] pt-2" />
+        <div className="border-t border-[var(--color-border-default)] pt-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="group flex w-full min-h-[46px] items-center gap-3 rounded-[14px] border border-slate-200 bg-white px-3 py-2.5 transition hover:bg-slate-50"
+                aria-label="Menú de perfil"
+              >
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-[10px] bg-[var(--color-brand-500)] text-xs font-bold text-white flex-shrink-0">
+                  {userInitial}
+                </div>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="truncate text-xs font-bold text-[var(--color-text-strong)]">{userName}</div>
+                  <div className="truncate text-[11px] text-[var(--color-text-muted)]">{normalizedRole}</div>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-[var(--radix-dropdown-menu-trigger-width)]">
+              <DropdownMenuLabel className="flex items-center gap-2 flex-col">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-sm font-bold text-white shadow-sm">
+                  {userInitial}
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
+                  <div className="text-xs text-[var(--color-text-muted)] mt-1">{userEmail || "Sin email"}</div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled className="text-xs">
+                <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onSelect={logout}>
+                <LogOut className="h-4 w-4" /> Cerrar sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </aside>
 
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
         <header
-          className={
-            isInventarioRoute
-              ? "hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block"
-              : "sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl"
-          }
+          className="hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block"
         >
-          <div className={isInventarioRoute ? "flex items-center justify-between gap-4 px-4 py-3" : "flex items-center justify-between gap-4 px-6 py-4 max-[820px]:px-4 max-[820px]:py-3"}>
+          <div className="flex items-center justify-between gap-4 px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               <button
                 className="hidden h-[42px] w-[42px] items-center justify-center rounded-[14px] border border-[var(--color-border-default)] text-[var(--color-text-strong)] transition-[background] duration-150 hover:bg-[#f1f5f9] max-[820px]:inline-flex"
@@ -322,37 +350,6 @@ export default function AppLayout() {
               >
                 <Menu className="h-[18px] w-[18px]" />
               </button>
-
-              {isInicio ? (
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                    <LayoutDashboard className="h-3.5 w-3.5" /> Inicio
-                  </div>
-                  <div className="mt-1 flex min-w-0 items-center gap-2">
-                    <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
-                      Panel de inicio
-                    </h2>
-                  </div>
-                </div>
-              ) : (
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                    <LayoutDashboard className="h-3.5 w-3.5" /> Smart Economato
-                  </div>
-                  {!hideCurrentSectionTitle ? (
-                    <div className="mt-1 flex min-w-0 items-center gap-2">
-                      <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
-                        {currentSection?.label || "Panel"}
-                      </h2>
-                      {currentSection?.to === "/avisos" && avisosCount > 0 ? (
-                        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#fde2e2] px-2 text-[11px] font-bold text-[#ef4444]">
-                          {avisosCount > 99 ? "99+" : avisosCount}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              )}
             </div>
 
             <div className="flex items-center gap-3 max-[520px]:gap-2">
@@ -404,12 +401,8 @@ export default function AppLayout() {
 
         <main
           className={[
-            isInventarioRoute
-              ? "flex-1 w-full min-w-0 m-0 p-[16px_20px_24px] max-[820px]:p-4"
-              : isInicio
-                ? "flex-1 w-full min-w-0 m-0 p-0"
-                : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
-            isInicio ? (isSmallViewport ? "overflow-y-auto overflow-x-hidden" : "overflow-hidden") : "overflow-y-auto overflow-x-hidden",
+            isInicio ? "flex-1 w-full min-w-0 m-0 p-0" : "flex-1 w-full min-w-0 m-0 p-[16px_20px_24px] max-[820px]:p-4",
+            isInicio ? (isSmallViewport ? "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]" : "overflow-hidden") : "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]",
           ].join(" ")}
           id="main-content"
         >

@@ -445,9 +445,22 @@ export default function ProveedoresPage() {
         )}
       </BackofficeTablePanel>
 
+      <AnimatePresence>
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4">
-          <div className="relative w-[90%] max-w-[520px] rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-[30px] shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+        <motion.div
+          className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <motion.div
+            className="relative w-[90%] max-w-[520px] rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-[30px] shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
             <button
               type="button"
               className="absolute top-3.5 right-3.5 w-[42px] h-[42px] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] inline-flex items-center justify-center text-[#50596D] shadow-[var(--shadow-sm)] hover:text-[var(--color-brand-500)] hover:bg-[var(--color-bg-soft)]"
@@ -512,9 +525,10 @@ export default function ProveedoresPage() {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
       </StaggerItem>
     </StaggerPage>
   );

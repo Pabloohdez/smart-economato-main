@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import Spinner from "../components/ui/Spinner";
@@ -422,7 +423,7 @@ export default function EscandallosPage() {
                   <TableHead>Coste Total</TableHead>
                   <TableHead>PVP</TableHead>
                   <TableHead>Beneficio %</TableHead>
-                  <TableHead className="rounded-r-2xl text-center">Acciones</TableHead>
+                  <TableHead className="rounded-r-2xl text-center min-w-[120px] w-[120px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -441,10 +442,10 @@ export default function EscandallosPage() {
                         <TableCell>
                           <button
                             type="button"
-                            className="no-global-button font-bold text-[var(--color-brand-500)] underline decoration-transparent transition hover:text-[#902424] hover:decoration-[var(--color-brand-500)]"
+                            className="inline-flex max-w-full items-center gap-2 rounded-xl border border-[rgba(179,49,49,0.2)] bg-[linear-gradient(135deg,rgba(179,49,49,0.10)_0%,rgba(179,49,49,0.03)_100%)] px-3 py-1.5 text-sm font-semibold text-[var(--color-brand-600)] transition-[transform,box-shadow,filter] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)] hover:brightness-105"
                             onClick={() => abrirVerReceta(esc)}
                           >
-                            {esc.nombre}
+                            <span className="truncate">{esc.nombre}</span>
                           </button>
                         </TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.autor || "Admin"}</TableCell>
@@ -640,17 +641,31 @@ export default function EscandallosPage() {
         </div>
       )}
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="relative max-h-[90vh] w-[95%] max-w-[900px] overflow-y-auto rounded-2xl bg-[var(--color-bg-surface)] p-[30px] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10">
-            <button
-              type="button"
-              className="absolute right-6 top-5 text-[28px] leading-none text-[#a0aec0] hover:text-[#e53e3e] transition-colors bg-transparent border-0 cursor-pointer"
-              aria-label="Cerrar ventana"
-              onClick={cerrarModal}
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <motion.div
+              className="relative w-[95%] max-w-[900px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
             >
-              &times;
-            </button>
+              <button
+                type="button"
+                className="no-global-button absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)]"
+                aria-label="Cerrar ventana"
+                onClick={cerrarModal}
+              >
+                <i className="fa-solid fa-xmark" />
+              </button>
+              <div className="max-h-[90vh] overflow-y-auto p-[30px]">
 
             <h2 className="m-0 mt-0 text-[1.5rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-5 mb-7">
               {modoLectura
@@ -817,14 +832,17 @@ export default function EscandallosPage() {
                       />
                     </div>
 
-                    <button
-                      type="button"
-                      className="no-global-button h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
-                      title="Añadir ingrediente"
-                      onClick={agregarIngrediente}
-                    >
-                      <i className="fa-solid fa-plus"></i>
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <div className="invisible text-[12px] leading-none" aria-hidden="true">&nbsp;</div>
+                      <button
+                        type="button"
+                        className="no-global-button h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
+                        title="Añadir ingrediente"
+                        onClick={agregarIngrediente}
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -957,9 +975,11 @@ export default function EscandallosPage() {
                 )}
               </div>
             </form>
-          </div>
-        </div>
-      )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StaggerPage>
   );
 }

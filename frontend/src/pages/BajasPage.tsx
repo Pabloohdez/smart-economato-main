@@ -609,7 +609,7 @@ export default function BajasPage() {
               type="button"
               variant="danger"
               size="lg"
-              className="w-full min-[768px]:w-auto"
+              className="w-full min-[768px]:w-auto !bg-[var(--color-brand-500)] hover:!bg-[var(--color-brand-600)]"
               onClick={mostrarProductosCaducados}
             >
               <Clock3 className="h-4 w-4" /> Ver Productos Próximos a Caducar
@@ -660,7 +660,7 @@ export default function BajasPage() {
       </StaggerItem>
 
       {/* BAJA ACTIVA */}
-      <StaggerItem>
+      <StaggerItem className="mb-6">
       <BackofficeTablePanel
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">

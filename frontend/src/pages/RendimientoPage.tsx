@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
@@ -511,7 +513,7 @@ export default function RendimientoPage() {
       </StaggerItem>
 
       <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
           </div>
@@ -521,7 +523,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#f0fff4] text-[#38a169]">
             <i className="fa-solid fa-arrow-trend-up"></i>
           </div>
@@ -533,7 +535,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-arrow-trend-down"></i>
           </div>
@@ -545,7 +547,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
             <Trash2 strokeWidth={1.5} size={22} />
           </div>
@@ -630,7 +632,7 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem>
+      <StaggerItem className="mb-6">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -778,19 +780,27 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      {mensajeEstado ? (
-        <div
-          className={`px-5 py-3 rounded-[10px] mb-5 font-semibold border ${
-            mensajeTipo === "exito"
-              ? "bg-[#f0fff4] text-[#276749] border-[#c6f6d5]"
-              : mensajeTipo === "error"
-              ? "bg-[#fff5f5] text-[#9b2c2c] border-[#fed7d7]"
-              : "bg-transparent border-transparent"
-          }`}
-        >
-          {mensajeEstado}
-        </div>
-      ) : null}
+      {createPortal(
+        <AnimatePresence>
+          {mensajeEstado && (
+            <motion.div
+              key="rendimiento-toast"
+              initial={{ opacity: 0, y: -16, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -16, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 420, damping: 32 }}
+              className={`fixed right-5 top-5 z-[99999] flex max-w-sm items-center gap-3 rounded-[14px] border px-5 py-3 font-semibold shadow-xl ${
+                mensajeTipo === "exito"
+                  ? "bg-[#f0fff4] text-[#276749] border-[#c6f6d5]"
+                  : "bg-[#fff5f5] text-[#9b2c2c] border-[#fed7d7]"
+              }`}
+            >
+              {mensajeEstado}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <StaggerItem>
         <BackofficeTablePanel
@@ -825,8 +835,8 @@ export default function RendimientoPage() {
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
                   <TableHead className="rounded-l-2xl">Ingrediente</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Categoría</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[90px]">Fecha</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[100px]">Categoría</TableHead>
                   <TableHead>Bruto / Neto</TableHead>
                   <TableHead>Rendimiento</TableHead>
                   <TableHead>Merma</TableHead>
@@ -853,8 +863,8 @@ export default function RendimientoPage() {
                       <TableCell className="text-slate-900">
                         <strong>{item.ingrediente}</strong>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-700">{item.fecha}</TableCell>
-                      <TableCell className="text-sm text-slate-700">{item.categoria || "General"}</TableCell>
+                      <TableCell className="text-sm text-slate-700 whitespace-nowrap">{item.fecha}</TableCell>
+                      <TableCell className="text-sm text-slate-700 whitespace-nowrap">{item.categoria || "General"}</TableCell>
                       <TableCell className="text-sm text-slate-700 whitespace-nowrap">
                         {Number(item.pesoBruto).toFixed(3)} kg → {Number(item.pesoNeto).toFixed(3)} kg
                       </TableCell>
@@ -890,13 +900,25 @@ export default function RendimientoPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      <div
-        className={`fixed inset-0 bg-black/50 [backdrop-filter:blur(4px)] flex justify-center items-center z-[1000] ${modalOpen ? "" : "hidden"}`}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) cerrarModal();
-        }}
-      >
-        <div className="bg-[var(--color-bg-surface)] rounded-2xl p-[30px] max-w-[500px] w-[90%] shadow-[0_25px_50px_rgba(0,0,0,0.25)]">
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 [backdrop-filter:blur(4px)] flex justify-center items-center z-[1000]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) cerrarModal();
+            }}
+          >
+          <motion.div
+            className="bg-[var(--color-bg-surface)] rounded-2xl p-[30px] max-w-[500px] w-[90%] shadow-[0_25px_50px_rgba(0,0,0,0.25)]"
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
           <h3 className="m-0 mb-5 text-[1.3rem] text-[var(--color-text-strong)] flex items-center gap-2.5">
             <i className="fa-solid fa-chart-pie"></i>
             Análisis de Rendimiento
@@ -1013,8 +1035,10 @@ export default function RendimientoPage() {
               Añadir Registro
             </button>
           </div>
-        </div>
-      </div>
+          </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StaggerPage>
   );
 }
