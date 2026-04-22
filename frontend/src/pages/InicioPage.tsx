@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import {
   BellRing,
   Boxes,
@@ -10,6 +11,7 @@ import {
   Truck,
   Users,
   ArrowRight,
+  CalendarDays,
 } from "lucide-react";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
@@ -27,9 +29,36 @@ const cards = [
 
 export default function InicioPage() {
   const nav = useNavigate();
+  const todayLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }).format(new Date()),
+    [],
+  );
 
   return (
-    <StaggerPage className="w-full h-full min-h-0 flex p-6 max-[820px]:p-4 max-[520px]:p-3">
+    <StaggerPage className="w-full h-full min-h-0 flex flex-col p-6 max-[820px]:p-4 max-[520px]:p-3">
+      <StaggerItem className="shrink-0">
+        <div className="flex items-center justify-between gap-4 pb-4 max-[520px]:pb-3">
+          <div className="min-w-0">
+            <div className="text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--color-text-muted)]">
+              Inicio
+            </div>
+            <h1 className="m-0 mt-1 text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[640px]:text-[20px] max-[520px]:text-[18px]">
+              Panel de inicio
+            </h1>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-[18px] border border-[var(--color-border-default)] bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-text-muted)] shadow-sm max-[520px]:px-3 max-[520px]:py-2 max-[520px]:text-[12px]">
+            <CalendarDays className="h-4 w-4 text-primary" />
+            <span className="truncate">{todayLabel}</span>
+          </div>
+        </div>
+      </StaggerItem>
+
       <StaggerItem className="flex flex-1 min-h-0">
         <div className="w-full flex-1 min-h-0 flex">
           <div className="grid w-full flex-1 h-full min-h-0 min-w-0 grid-cols-3 grid-rows-3 gap-5 max-[1100px]:grid-cols-2 max-[1100px]:grid-rows-5 max-[820px]:gap-4 max-[520px]:grid-cols-2 max-[520px]:gap-3">
