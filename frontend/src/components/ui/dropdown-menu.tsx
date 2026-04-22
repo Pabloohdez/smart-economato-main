@@ -20,6 +20,7 @@ function DropdownMenuContent({ className, sideOffset = 6, ...props }: React.Comp
         className={cn(
           "z-[90] min-w-[12rem] overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-white p-1.5 text-[var(--color-text-strong)] shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2",
           className,
         )}
         {...props}
@@ -122,7 +123,12 @@ function DropdownMenuSubContent({ className, ...props }: React.ComponentProps<ty
   return (
     <DropdownMenuPrimitive.SubContent
       data-slot="dropdown-menu-sub-content"
-      className={cn("z-[90] min-w-[12rem] overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-white p-1.5 shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]", className)}
+      className={cn(
+        "z-[90] min-w-[12rem] overflow-hidden rounded-2xl border border-[var(--color-border-default)] bg-white p-1.5 shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "data-[side=right]:slide-in-from-left-2 data-[side=left]:slide-in-from-right-2",
+        className,
+      )}
       {...props}
     />
   );

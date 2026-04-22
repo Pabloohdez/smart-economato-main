@@ -33,6 +33,18 @@ type ProductoAviso = Producto & {
   diasCaducado?: number;
 };
 
+type LoteCaducadoAviso = {
+  loteId: number;
+  productoId: string | number;
+  nombreProducto: string;
+  nombreCategoria: string;
+  nombreProveedor: string;
+  precioNum: number;
+  cantidadCaducada: number;
+  fechaCaducidad: string;
+  diasCaducado: number;
+};
+
 type ModalModo = "baja" | "pedido" | null;
 
 function hoyES() {
@@ -50,6 +62,7 @@ export default function AvisosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [accionActual, setAccionActual] = useState<ModalModo>(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState<ProductoAviso | null>(null);
+  const [loteSeleccionado, setLoteSeleccionado] = useState<LoteCaducadoAviso | null>(null);
   const [cantidadModal, setCantidadModal] = useState(1);
   const [confirmando, setConfirmando] = useState(false);
 
@@ -151,65 +164,68 @@ export default function AvisosPage() {
     });
   }, [categoriasQuery.data, productosQuery.data, proveedoresQuery.data]);
 
-  const caducados = useMemo<ProductoAviso[]>(() => {
+  const lotesCaducados = useMemo<LoteCaducadoAviso[]>(() => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
     const lotes = lotesQuery.data ?? [];
-    const lotesPorProducto = new Map<string, LoteProducto[]>();
-    for (const l of lotes) {
-      const pid = String(l.productoId);
-      const arr = lotesPorProducto.get(pid) ?? [];
-      arr.push(l);
-      lotesPorProducto.set(pid, arr);
+    const productosPorId = new Map<string, ProductoAviso>();
+    for (const p of productos) {
+      productosPorId.set(String((p as any).id ?? p.id), p);
     }
 
-    const listaCaducados = productos.map((p) => {
-      const pid = String((p as any).id ?? "");
-      const lotesP = lotesPorProducto.get(pid) ?? [];
-      const tieneLotes = lotesP.length > 0;
+    const caducados: LoteCaducadoAviso[] = [];
+    for (const l of lotes) {
+      if (!l.fechaCaducidad) continue;
+      const fecha = new Date(l.fechaCaducidad);
+      if (Number.isNaN(fecha.getTime())) continue;
+      const cantidad = Number(l.cantidad ?? 0);
+      if (cantidad <= 0) continue;
+      if (fecha >= hoy) continue;
 
-      let cantidadCaducada = 0;
-      let minFechaCaducada: Date | null = null;
+      const p = productosPorId.get(String(l.productoId));
+      if (!p) continue;
 
-      for (const l of lotesP) {
-        if (!l.fechaCaducidad) continue;
-        const fecha = new Date(l.fechaCaducidad);
-        if (Number.isNaN(fecha.getTime())) continue;
-        if (fecha < hoy && Number(l.cantidad) > 0) {
-          cantidadCaducada += Number(l.cantidad);
-          if (!minFechaCaducada || fecha < minFechaCaducada) minFechaCaducada = fecha;
-        }
-      }
-
-      // Si hay lotes, el caducado viene SOLO de lotes (fuente de verdad)
-      if (tieneLotes) {
-        if (cantidadCaducada <= 0) return null;
-      } else {
-        // Fallback: productos antiguos sin lotes (todavía) -> usar fechaCaducidad del producto
-        // Si el stock ya está a 0, no tiene sentido mantener el aviso de "dar de baja"
-        if (p.stockNum <= 0) return null;
-        const raw = p.fechaCaducidadNormalizada;
-        if (!raw || raw === "NULL" || raw === "Sin fecha") return null;
-        const fecha = new Date(String(raw).replace(" ", "T"));
-        if (Number.isNaN(fecha.getTime()) || fecha >= hoy) return null;
-        cantidadCaducada = p.stockNum;
-        minFechaCaducada = fecha;
-      }
-
-      const diasCaducado = minFechaCaducada
-        ? Math.ceil((hoy.getTime() - minFechaCaducada.getTime()) / 86400000)
-        : 0;
-
-      // Para acciones/valorización, usamos el "stock caducado" (suma de lotes caducados)
-      return {
-        ...p,
-        stockNum: Number(cantidadCaducada.toFixed(3)),
+      const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
+      caducados.push({
+        loteId: Number(l.id),
+        productoId: (p as any).id ?? p.id,
+        nombreProducto: String((p as any).nombre ?? ""),
+        nombreCategoria: p.nombreCategoria,
+        nombreProveedor: p.nombreProveedor,
+        precioNum: p.precioNum,
+        cantidadCaducada: Number(cantidad.toFixed(3)),
+        fechaCaducidad: l.fechaCaducidad,
         diasCaducado,
-      };
-    }).filter(Boolean) as ProductoAviso[];
+      });
+    }
 
-    return listaCaducados.sort((a, b) => (b.diasCaducado ?? 0) - (a.diasCaducado ?? 0));
+    // Fallback: productos antiguos sin lotes (todavía) -> aviso por producto
+    // (pero lo tratamos como "lote virtual" para no perder visibilidad)
+    for (const p of productos) {
+      const pid = String((p as any).id ?? p.id);
+      const tieneLotes = lotes.some((l) => String(l.productoId) === pid);
+      if (tieneLotes) continue;
+      if (p.stockNum <= 0) continue;
+      const raw = p.fechaCaducidadNormalizada;
+      if (!raw || raw === "NULL" || raw === "Sin fecha") continue;
+      const fecha = new Date(String(raw).replace(" ", "T"));
+      if (Number.isNaN(fecha.getTime()) || fecha >= hoy) continue;
+      const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
+      caducados.push({
+        loteId: -Number(pid) || -1,
+        productoId: (p as any).id ?? p.id,
+        nombreProducto: String((p as any).nombre ?? ""),
+        nombreCategoria: p.nombreCategoria,
+        nombreProveedor: p.nombreProveedor,
+        precioNum: p.precioNum,
+        cantidadCaducada: Number(p.stockNum.toFixed(3)),
+        fechaCaducidad: String(raw),
+        diasCaducado,
+      });
+    }
+
+    return caducados.sort((a, b) => b.diasCaducado - a.diasCaducado);
   }, [lotesQuery.data, productos]);
 
   const stockBajo = useMemo<ProductoAviso[]>(() => {
@@ -238,19 +254,24 @@ export default function AvisosPage() {
   }, [gastosMensualesQuery.dataUpdatedAt, productosQuery.dataUpdatedAt]);
 
   const valorRiesgo = useMemo(() => {
-    // "Riesgo" = valor caducados + valor de stock bajo (evitando duplicar por id)
-    const map = new Map<string, ProductoAviso>();
-    for (const p of caducados) map.set(String(p.id), p);
+    // "Riesgo" = valor de lotes caducados + valor de stock bajo.
+    // Para stock bajo evitamos duplicar por productoId (si ya está caducado por lotes, manda el caducado).
+    const map = new Map<string, { precioNum: number; cantidad: number }>();
+    for (const l of lotesCaducados) {
+      const id = String(l.productoId);
+      const prev = map.get(id);
+      map.set(id, { precioNum: l.precioNum, cantidad: (prev?.cantidad ?? 0) + l.cantidadCaducada });
+    }
     for (const p of stockBajo) {
       const id = String(p.id);
-      if (!map.has(id)) map.set(id, p);
+      if (!map.has(id)) map.set(id, { precioNum: p.precioNum, cantidad: p.stockNum });
     }
     let total = 0;
-    for (const p of map.values()) total += p.precioNum * p.stockNum;
+    for (const v of map.values()) total += v.precioNum * v.cantidad;
     return total;
-  }, [caducados, stockBajo]);
+  }, [lotesCaducados, stockBajo]);
 
-  const totalAlertas = caducados.length + stockBajo.length;
+  const totalAlertas = lotesCaducados.length + stockBajo.length;
 
   function tiempoRelativo(dias: number) {
     if (dias === 0) return "Hoy";
@@ -260,10 +281,11 @@ export default function AvisosPage() {
     return `Hace ${Math.floor(dias / 30)} meses`;
   }
 
-  function abrirModalBaja(p: ProductoAviso) {
-    setProductoSeleccionado(p);
+  function abrirModalBajaLote(l: LoteCaducadoAviso) {
+    setLoteSeleccionado(l);
+    setProductoSeleccionado(null);
     setAccionActual("baja");
-    setCantidadModal(p.stockNum || 1);
+    setCantidadModal(l.cantidadCaducada || 1);
     setModalOpen(true);
   }
 
@@ -277,24 +299,29 @@ export default function AvisosPage() {
   function cerrarModal() {
     setModalOpen(false);
     setProductoSeleccionado(null);
+    setLoteSeleccionado(null);
     setAccionActual(null);
     setCantidadModal(1);
     setConfirmando(false);
   }
 
   async function confirmarAccion() {
-    if (!productoSeleccionado || !accionActual) return;
+    if (!accionActual) return;
     if (cantidadModal <= 0) return;
 
     try {
       setConfirmando(true);
 
       if (accionActual === "baja") {
+        const productoId = loteSeleccionado?.productoId ?? productoSeleccionado?.id;
+        if (!productoId) return;
         await bajaMutation.mutateAsync({
-          productoId: productoSeleccionado.id,
+          productoId,
           cantidad: cantidadModal,
           tipoBaja: "Caducado",
-          motivo: "Caducidad registrada desde Centro de Avisos",
+          motivo: loteSeleccionado
+            ? `Caducidad registrada desde Centro de Avisos (lote ${loteSeleccionado.loteId}, fecha ${loteSeleccionado.fechaCaducidad})`
+            : "Caducidad registrada desde Centro de Avisos",
         });
 
         mostrarToast("Baja registrada correctamente", "success");
@@ -342,19 +369,27 @@ export default function AvisosPage() {
   }
 
   const financieroResumen = useMemo(() => {
-    const valorCaducado = caducados.reduce((s, p) => s + p.precioNum * p.stockNum, 0);
+    const valorCaducado = lotesCaducados.reduce((s, l) => s + l.precioNum * l.cantidadCaducada, 0);
     const valorStockBajo = stockBajo.reduce((s, p) => s + p.precioNum * p.stockNum, 0);
 
-    const todosEnRiesgo = [...caducados, ...stockBajo];
-    const masCaro =
-      todosEnRiesgo.length > 0
-        ? todosEnRiesgo.reduce((max, p) =>
-            p.precioNum * p.stockNum > max.precioNum * max.stockNum ? p : max
-          )
-        : null;
+    const masCaro = (() => {
+      const map = new Map<string, { nombre: string; precio: number; cantidad: number }>();
+      for (const l of lotesCaducados) {
+        const id = String(l.productoId);
+        const prev = map.get(id);
+        map.set(id, { nombre: l.nombreProducto, precio: l.precioNum, cantidad: (prev?.cantidad ?? 0) + l.cantidadCaducada });
+      }
+      for (const p of stockBajo) {
+        const id = String(p.id);
+        if (!map.has(id)) map.set(id, { nombre: p.nombre, precio: p.precioNum, cantidad: p.stockNum });
+      }
+      const values = Array.from(map.values());
+      if (values.length === 0) return null;
+      return values.reduce((max, v) => v.precio * v.cantidad > max.precio * max.cantidad ? v : max, values[0]);
+    })();
 
     return { valorCaducado, valorStockBajo, masCaro };
-  }, [caducados, stockBajo]);
+  }, [lotesCaducados, stockBajo]);
 
   return (
     <StaggerPage className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
@@ -396,8 +431,8 @@ export default function AvisosPage() {
             <i className="fa-solid fa-skull-crossbones"></i>
           </div>
           <div className="flex-1">
-            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : caducados.length}</span>
-            <span className="block text-[13px] text-[#6b7280] mt-0.5">Productos Caducados</span>
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : lotesCaducados.length}</span>
+            <span className="block text-[13px] text-[#6b7280] mt-0.5">Lotes Caducados</span>
           </div>
         </div>
 
@@ -416,33 +451,33 @@ export default function AvisosPage() {
         <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
-            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Productos Caducados</h2>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Lotes Caducados</h2>
           </div>
           <span className="bg-[var(--color-bg-surface)] text-[#374151] px-3 py-1 rounded-xl text-[13px] font-semibold border border-[#e5e7eb]">
-            {caducados.length}
+            {lotesCaducados.length}
           </span>
         </div>
 
         <div>
           {loading ? (
             <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Cargando caducados..." /></div>
-          ) : caducados.length === 0 ? (
+          ) : lotesCaducados.length === 0 ? (
             <div className="py-10 text-center text-[#10b981]">
               <i className="fa-solid fa-circle-check block text-[32px] mb-2"></i>
-              <span>No hay productos caducados</span>
+              <span>No hay lotes caducados</span>
             </div>
           ) : (
-            caducados.map((p) => (
+            lotesCaducados.map((l) => (
               <div
                 className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
-                key={`cad-${p.id}`}
+                key={`cad-lote-${l.loteId}-${l.productoId}`}
               >
                 <div className="w-1 h-10 rounded bg-[#dc2626]"></div>
 
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{p.nombre}</p>
+                  <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{l.nombreProducto}</p>
                   <p className="m-0 text-[13px] text-[#6b7280]">
-                    {p.nombreCategoria} · Stock: {p.stockNum}
+                    {l.nombreCategoria} · Lote: {l.loteId} · Cantidad: {l.cantidadCaducada}
                   </p>
                 </div>
 
@@ -450,18 +485,18 @@ export default function AvisosPage() {
                   <button
                     type="button"
                     className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
-                    onClick={() => abrirModalBaja(p)}
-                    title="Dar de baja"
-                    aria-label={`Dar de baja ${p.nombre}`}
+                    onClick={() => abrirModalBajaLote(l)}
+                    title="Dar de baja lote"
+                    aria-label={`Dar de baja lote ${l.loteId} de ${l.nombreProducto}`}
                   >
                     <Trash2 strokeWidth={1.5} size={18} />
                   </button>
                 </div>
 
                 <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
-                  <strong>{p.precioNum.toFixed(2)} €</strong>
+                  <strong>{l.precioNum.toFixed(2)} €</strong>
                   <br />
-                  {tiempoRelativo(p.diasCaducado || 0)}
+                  {tiempoRelativo(l.diasCaducado)}
                 </div>
               </div>
             ))
@@ -576,7 +611,7 @@ export default function AvisosPage() {
                   <div className="text-[18px] font-bold text-[#111827]">
                     {financieroResumen.masCaro.nombre}{" "}
                     <span className="text-[13px] font-normal text-[#6B7280]">
-                      — {(financieroResumen.masCaro.precioNum * financieroResumen.masCaro.stockNum).toFixed(2)} €
+                      — {(financieroResumen.masCaro.precio * financieroResumen.masCaro.cantidad).toFixed(2)} €
                     </span>
                   </div>
                 </div>

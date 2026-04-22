@@ -295,7 +295,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.35 }}>
         <div className="overflow-hidden rounded-xl border-[3px] border-[#e2e8f0] bg-white shadow-sm flex flex-col">
           <section ref={tableSectionRef} className="flex-1 overflow-hidden flex flex-col">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-hidden">
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={`inventario-page-${safePage}-${pageSize}`}
@@ -304,7 +304,7 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.18, ease: "easeOut" }}
                 >
-                  <table className="w-full min-w-[1100px] border-collapse border-spacing-0 text-sm">
+                  <table className="w-full table-fixed border-collapse border-spacing-0 text-sm">
                     <thead className="border-b-[3px] border-[#e2e8f0] bg-[#f8fafc]">
                       <tr className="text-left text-[#0f172a]">
                         <th className="w-12 px-4 py-2.5 align-middle">

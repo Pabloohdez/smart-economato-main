@@ -165,6 +165,20 @@ export default function AppLayout() {
       document.body.classList.remove("sidebar-mobile-open");
     };
   }, [sidebarOpen]);
+
+  useEffect(() => {
+    if (!isInicio) {
+      return;
+    }
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isInicio]);
+
   useEffect(() => {
     if (!sidebarOpen) {
       document.body.style.overflow = "";
@@ -339,7 +353,7 @@ export default function AppLayout() {
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
         <header
           className={
-            isInventarioRoute || isInicio
+            isInventarioRoute
               ? "hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block"
               : "sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl"
           }
@@ -357,87 +371,95 @@ export default function AppLayout() {
                 <Menu className="h-[18px] w-[18px]" />
               </button>
 
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                  <LayoutDashboard className="h-3.5 w-3.5" /> Smart Economato
-                </div>
-                {!hideCurrentSectionTitle ? (
-                <div className="mt-1 flex min-w-0 items-center gap-2">
-                  <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
-                    {currentSection?.label || "Panel"}
-                  </h2>
-                  {currentSection?.to === "/avisos" && avisosCount > 0 ? (
-                    <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#fde2e2] px-2 text-[11px] font-bold text-[#ef4444]">
-                      {avisosCount > 99 ? "99+" : avisosCount}
-                    </span>
+              {isInicio ? null : (
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                    <LayoutDashboard className="h-3.5 w-3.5" /> Smart Economato
+                  </div>
+                  {!hideCurrentSectionTitle ? (
+                    <div className="mt-1 flex min-w-0 items-center gap-2">
+                      <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
+                        {currentSection?.label || "Panel"}
+                      </h2>
+                      {currentSection?.to === "/avisos" && avisosCount > 0 ? (
+                        <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#fde2e2] px-2 text-[11px] font-bold text-[#ef4444]">
+                          {avisosCount > 99 ? "99+" : avisosCount}
+                        </span>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
-                ) : null}
-              </div>
+              )}
             </div>
 
             <div className="flex items-center gap-3 max-[520px]:gap-2">
+              {isInicio ? null : (
               <div className="hidden items-center gap-2 rounded-[18px] border border-[var(--color-border-default)] bg-white px-4 py-2 text-[13px] font-semibold text-[var(--color-text-muted)] shadow-sm md:inline-flex">
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{todayLabel}</span>
               </div>
+              )}
 
-              <NavLink
-                to="/avisos"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-[18px] border border-[var(--color-border-default)] bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-                aria-label="Abrir avisos"
-              >
-                <BadgeAlert className="h-4.5 w-4.5" />
-                {avisosCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] font-bold text-white">
-                    {avisosCount > 99 ? "99+" : avisosCount}
-                  </span>
-                ) : null}
-              </NavLink>
+              {isInicio ? null : (
+                <NavLink
+                  to="/avisos"
+                  className="relative inline-flex h-11 w-11 items-center justify-center rounded-[18px] border border-[var(--color-border-default)] bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
+                  aria-label="Abrir avisos"
+                >
+                  <BadgeAlert className="h-4.5 w-4.5" />
+                  {avisosCount > 0 ? (
+                    <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] font-bold text-white">
+                      {avisosCount > 99 ? "99+" : avisosCount}
+                    </span>
+                  ) : null}
+                </NavLink>
+              )}
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
-                    aria-label="Abrir menú de usuario"
-                  >
-                    <div className="hidden text-right md:block">
-                      <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
-                    </div>
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
-                  <DropdownMenuLabel className="flex items-center gap-3">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => nav("/configuracion")}>
-                    <Settings className="h-4 w-4" /> Configuración
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => nav("/avisos")}>
-                    <Bell className="h-4 w-4" /> Avisos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled>
-                    <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={logout}>
-                    <LogOut className="h-4 w-4" /> Cerrar sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {isInicio ? null : (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
+                      aria-label="Abrir menú de usuario"
+                    >
+                      <div className="hidden text-right md:block">
+                        <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
+                        <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
+                      </div>
+                      <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
+                        {userInitial}
+                      </div>
+                      <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
+                    <DropdownMenuLabel className="flex items-center gap-3">
+                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
+                        {userInitial}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
+                        <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => nav("/configuracion")}>
+                      <Settings className="h-4 w-4" /> Configuración
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => nav("/avisos")}>
+                      <Bell className="h-4 w-4" /> Avisos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" onSelect={logout}>
+                      <LogOut className="h-4 w-4" /> Cerrar sesión
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
         </header>
