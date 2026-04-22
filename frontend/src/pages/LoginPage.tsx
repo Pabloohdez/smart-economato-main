@@ -105,11 +105,6 @@ export default function LoginPage() {
                     Accede con tu usuario o correo y continúa en el punto exacto donde lo dejaste.
                   </p>
                 </div>
-
-                <div className="hidden rounded-[18px] border border-[var(--color-brand-100)] bg-[#fff7f2] px-4 py-3 text-right text-[12px] font-medium text-slate-600 min-[1150px]:block">
-                  <span className="block text-[11px] uppercase tracking-[0.18em] text-[var(--color-brand-500)]">Panel</span>
-                  Economato
-                </div>
               </div>
 
               <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
