@@ -619,10 +619,7 @@ export default function Recepcion() {
             Registra las entregas de proveedores y actualiza el inventario
           </p>
         </div>
-        <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[14px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
-          <CalendarDays className="h-4 w-4" />
-          <span>{hoyES()}</span>
-        </div>
+        <div />
       </div>
       </StaggerItem>
 
