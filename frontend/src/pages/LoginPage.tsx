@@ -29,10 +29,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page h-[100dvh] overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
-      <main className="mx-auto flex h-full w-full max-w-[1320px] items-stretch px-6 py-6 max-[960px]:px-4 max-[960px]:py-4">
-        <div className="grid h-full w-full grid-cols-[1.15fr_minmax(360px,480px)] overflow-hidden rounded-[34px] border border-white/60 bg-white/60 shadow-[0_30px_80px_rgba(15,23,42,0.14)] backdrop-blur max-[960px]:grid-cols-1">
-          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-10 py-10 text-white max-[960px]:px-6 max-[960px]:py-7">
+    <div className="login-page min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
+      <main className="flex min-h-[100dvh] w-full items-stretch p-0">
+        <div className="grid min-h-[100dvh] w-full grid-cols-[1.15fr_minmax(340px,520px)] overflow-hidden rounded-none border-0 bg-white/60 shadow-none backdrop-blur max-[960px]:grid-cols-1">
+          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)] text-white">
             <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" aria-hidden="true" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(179,49,49,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(217,119,69,0.25),transparent_45%)]" aria-hidden="true" />
             <div className="relative z-[1] flex h-full flex-col">
@@ -91,8 +91,8 @@ export default function LoginPage() {
             </div>
           </section>
 
-          <section className="flex items-center justify-center px-10 py-10 max-[960px]:px-5 max-[960px]:py-7">
-            <div className="w-full max-w-[460px] rounded-[28px] border border-slate-200/80 bg-white px-7 py-7 shadow-[0_24px_60px_rgba(15,23,42,0.08)] max-[480px]:px-5 max-[480px]:py-6">
+          <section className="flex items-center justify-center px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)]">
+            <div className="w-full max-w-[520px] rounded-[28px] border border-slate-200/80 bg-white px-[clamp(18px,3.6vw,32px)] py-[clamp(18px,3.6vh,32px)] shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
               <div className="mb-7">
                 <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
                   Acceso seguro

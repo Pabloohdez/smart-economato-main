@@ -451,7 +451,7 @@ export default function RendimientoPage() {
   }
 
   return (
-    <StaggerPage className="max-w-[1400px] mx-auto w-full">
+    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
       <StaggerItem
         className="flex justify-between items-start mb-[25px] flex-wrap gap-4 max-[768px]:flex-col"
         data-print-date={new Date().toLocaleString("es-ES")}
