@@ -72,6 +72,31 @@ function badgeCaducidad(fechaCaducidad?: string | null) {
   return null;
 }
 
+function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; decimals?: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number.isFinite(value) ? value : 0;
+    const duration = 1200;
+    const start = performance.now();
+
+    let raf = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(target * eased);
+      if (progress < 1) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <>{display.toFixed(decimals)}{suffix}</>;
+}
+
 export default function BajasPage() {
   // datos base
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -475,8 +500,11 @@ export default function BajasPage() {
       <StaggerItem>
       <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
         <div>
-          <h1 className="text-[#c53030] text-[28px] font-bold m-0 mb-2 flex items-center gap-3">
-            <AlertCircle className="h-7 w-7" /> GESTIÓN DE BAJAS
+          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <AlertCircle className="h-5 w-5" />
+            </span>
+            GESTIÓN DE BAJAS
           </h1>
           <p className="text-[#50596D] text-[14px] m-0">Registra roturas, caducados, mermas y ajustes de inventario</p>
         </div>
@@ -504,50 +532,50 @@ export default function BajasPage() {
       {/* STATS */}
       <StaggerItem>
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
             <Wrench className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Roturas del Mes</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statRoturas">
-              {stats.roturas}
+              <AnimatedMetric value={stats.roturas} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fffaf0] text-[#dd6b20]">
             <Clock3 className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Productos Caducados</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statCaducados">
-              {stats.caducados}
+              <AnimatedMetric value={stats.caducados} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fefcbf] text-[#d69e2e]">
             <Scale className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Mermas Registradas</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statMermas">
-              {stats.mermas}
+              <AnimatedMetric value={stats.mermas} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#c53030]">
             <Wallet className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Valor Perdido Total</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statValorPerdido">
-              {stats.valorPerdido.toFixed(2)} €
+              <AnimatedMetric value={stats.valorPerdido} decimals={2} suffix=" €" />
             </span>
           </div>
         </div>
@@ -556,7 +584,7 @@ export default function BajasPage() {
 
       {/* PANEL REGISTRO */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
+      <div className="mb-[25px] rounded-xl border border-slate-300 bg-white p-[25px] shadow-[0_16px_36px_rgba(15,23,42,0.08)]">
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <ClipboardList className="h-5 w-5 text-[var(--color-brand-500)]" /> Registrar Nueva Baja
         </h2>
@@ -660,7 +688,7 @@ export default function BajasPage() {
       </StaggerItem>
 
       {/* BAJA ACTIVA */}
-      <StaggerItem>
+      <StaggerItem className="mb-6">
       <BackofficeTablePanel
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -867,50 +895,107 @@ export default function BajasPage() {
               No hay bajas registradas este mes
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
-                <TableHeader>
-                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Producto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Precio Ud.</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className="rounded-r-2xl">Motivo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <>
+              {/* Móvil: lista/card (sin solapes) */}
+              <div className="hidden max-[640px]:block">
+                <div className="grid gap-3">
                   {historialFiltrado.map((baja, idx) => {
                     const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                     const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
                     const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
                     const total = precio * cant;
+                    const nombre = baja.producto_nombre || "Producto desconocido";
+                    const usuario = baja.usuario_nombre || "Desconocido";
+                    const motivo = baja.motivo || "Sin especificar";
 
                     return (
-                      <TableRow key={idx} className="bo-table-row">
-                        <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
-                        <TableCell>
-                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                      <div
+                        key={`hist-baja-m-${idx}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{nombre}</div>
+                            <div className="mt-1 text-[12px] text-slate-500">
+                              {fecha} · <span className="text-slate-400">{hora}</span>
+                            </div>
+                          </div>
+                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold shrink-0">
                             {baja.tipoBaja}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-600">
-                          <div>{fecha}</div>
-                          <div className="text-xs text-slate-400">{hora}</div>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-700">{cant}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
-                        <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
-                        <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
-                      </TableRow>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cant.</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{cant}</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{total.toFixed(2)} €</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Usuario</div>
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{usuario}</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 text-[12px] text-slate-600">
+                          <span className="font-semibold text-slate-700">Motivo:</span>{" "}
+                          <span className="break-words">{motivo}</span>
+                        </div>
+                      </div>
                     );
                   })}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              </div>
+
+              {/* Desktop/Tablet: tabla */}
+              <div className="overflow-x-auto max-[640px]:hidden">
+                <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                  <TableHeader>
+                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                      <TableHead className="rounded-l-2xl">Producto</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Precio Ud.</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead className="rounded-r-2xl">Motivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historialFiltrado.map((baja, idx) => {
+                      const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
+                      const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
+                      const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
+                      const total = precio * cant;
+
+                      return (
+                        <TableRow key={idx} className="bo-table-row">
+                          <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
+                          <TableCell>
+                            <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                              {baja.tipoBaja}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">
+                            <div>{fecha}</div>
+                            <div className="text-xs text-slate-400">{hora}</div>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-700">{cant}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
+                          <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
+                          <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </div>
       </BackofficeTablePanel>

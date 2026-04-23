@@ -609,17 +609,17 @@ export default function Recepcion() {
       <StaggerItem>
       <div className="flex items-center justify-between gap-4 mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-[15px]">
         <div>
-          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
-            <Truck className="h-7 w-7 text-[var(--color-brand-500)]" /> RECEPCIÓN DE MERCANCÍA
+          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <Import className="h-5 w-5" />
+            </span>
+            RECEPCIÓN DE MERCANCÍA
           </h1>
           <p className="m-0 text-[14px] text-[#50596D]">
             Registra las entregas de proveedores y actualiza el inventario
           </p>
         </div>
-        <div className="bg-[var(--color-bg-surface)] px-5 py-3 rounded-[14px] text-[var(--color-text-muted)] font-semibold inline-flex items-center gap-2 border border-[var(--color-border-default)] shadow-[var(--shadow-sm)]">
-          <CalendarDays className="h-4 w-4" />
-          <span>{hoyES()}</span>
-        </div>
+        <div />
       </div>
       </StaggerItem>
 
@@ -812,7 +812,7 @@ export default function Recepcion() {
             )}
           </div>
 
-          <div className="flex gap-[15px] max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(240px,1fr)_minmax(240px,1fr)_auto]">
             <UiSelect
               value={provFiltro}
               onChange={setProvFiltro}
@@ -832,16 +832,14 @@ export default function Recepcion() {
                 ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
               ]}
             />
+
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:opacity-90"
+              onClick={abrirModalPedidos}
+            >
+              <Import className="h-4 w-4" /> Importar/Recibir Pedido
+            </button>
           </div>
-        </div>
-        <div className="mt-[15px] text-right">
-          <button
-            className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:opacity-90"
-            style={{ display: "inline-flex" }}
-            onClick={abrirModalPedidos}
-          >
-            <Import className="h-4 w-4" /> Importar/Recibir Pedido
-          </button>
         </div>
       </div>
       </StaggerItem>
@@ -1179,7 +1177,81 @@ export default function Recepcion() {
           </div>
         }
       >
-        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto">
+        {/* Móvil: cards (evita cabeceras solapadas) */}
+        <div className="hidden max-[640px]:block">
+          {!recepcion.length ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-600 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+              <div className="mx-auto mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
+                <i className="fa-solid fa-inbox text-[22px] opacity-70" />
+              </div>
+              <p className="m-0 font-bold text-slate-900">No hay productos en la recepción actual</p>
+              <small className="opacity-80">Busca y selecciona productos para comenzar</small>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {recepcion.map((r, idx) => (
+                <div
+                  key={`recep-m-${String(r.producto_id)}-${idx}`}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-[14px] font-extrabold text-slate-900">{r.nombre}</div>
+                      <div className="mt-1 text-[12px] text-slate-500">
+                        <span className="font-semibold text-slate-700">{r.proveedor || "N/A"}</span>
+                      </div>
+                    </div>
+                    <button
+                      className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => eliminarFila(idx)}
+                      title="Eliminar"
+                      type="button"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 strokeWidth={1.5} size={18} />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Stock</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{r.stock}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Unidad</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{String(r.unidad ?? "ud")}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Recibido</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{r.cantidadRecibida}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Nuevo stock</div>
+                      <div className="text-[13px] font-extrabold text-[var(--color-brand-600)]">{r.stock + r.cantidadRecibida}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="text-[12px] text-slate-500">
+                      Precio: <span className="font-semibold text-slate-700">{formatEUR(r.precio)}</span>
+                    </div>
+                    <div className="text-[14px] font-extrabold text-slate-900">{formatEUR(r.precio * r.cantidadRecibida)}</div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">Total recepción</div>
+                  <div className="text-[18px] font-extrabold text-[var(--color-brand-500)]">{formatEUR(totalRecepcion)}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tablet/Desktop: tabla */}
+        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto max-[640px]:hidden">
           <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white max-[1024px]:min-w-0">
             <TableHeader>
               <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">

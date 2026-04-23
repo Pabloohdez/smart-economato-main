@@ -8,13 +8,17 @@ type MailPayload = {
   html: string;
 };
 
+export type MailDeliveryMode = 'smtp' | 'log';
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: Transporter | null = null;
 
-  async sendMail(payload: MailPayload) {
-    if (this.getMailMode() === 'log') {
+  async sendMail(payload: MailPayload): Promise<MailDeliveryMode> {
+    const mode = this.getMailMode();
+
+    if (mode === 'log') {
       this.logger.warn(
         [
           'MAIL_MODE=log activo. Correo no enviado por SMTP.',
@@ -23,7 +27,7 @@ export class MailService {
           payload.text,
         ].join('\n'),
       );
-      return;
+      return mode;
     }
 
     const transporter = this.getTransporter();
@@ -34,6 +38,8 @@ export class MailService {
       text: payload.text,
       html: payload.html,
     });
+
+    return mode;
   }
 
   private getTransporter() {
@@ -43,18 +49,15 @@ export class MailService {
 
     const host = this.requiredEnv('SMTP_HOST');
     const port = parseInt(process.env.SMTP_PORT || '587', 10);
-    const user = this.requiredEnv('SMTP_USER');
-    const pass = this.requiredEnv('SMTP_PASS');
+    const user = (process.env.SMTP_USER || '').trim();
+    const pass = (process.env.SMTP_PASS || '').trim();
     const secure = process.env.SMTP_SECURE === 'true' || port === 465;
 
     this.transporter = createTransport({
       host,
       port,
       secure,
-      auth: {
-        user,
-        pass,
-      },
+      auth: user && pass ? { user, pass } : undefined,
     });
 
     return this.transporter;
@@ -70,11 +73,16 @@ export class MailService {
       return 'log';
     }
 
-    return process.env.NODE_ENV === 'production' ? 'smtp' : 'log';
+    return this.hasEnv('SMTP_HOST') ? 'smtp' : 'log';
   }
 
   private getFromAddress() {
-    return process.env.SMTP_FROM || this.requiredEnv('SMTP_USER');
+    return process.env.SMTP_FROM || process.env.SMTP_USER || 'Smart Economato <no-reply@smart-economato.local>';
+  }
+
+  private hasEnv(name: string) {
+    const value = process.env[name];
+    return Boolean(value && value.trim().length > 0);
   }
 
   private requiredEnv(name: string) {

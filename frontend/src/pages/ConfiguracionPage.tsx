@@ -365,8 +365,11 @@ export default function ConfiguracionPage() {
   return (
     <StaggerPage>
       <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
-        <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-[var(--color-text-strong)]">
-          <i className="fa-solid fa-gear text-[var(--color-brand-500)]" /> CONFIGURACIÓN DE PERFIL
+        <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+            <i className="fa-solid fa-gear" />
+          </span>
+          CONFIGURACIÓN DE PERFIL
         </h1>
         <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
           Gestiona tu información personal y configuración de alergias

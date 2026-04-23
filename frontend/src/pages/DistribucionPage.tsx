@@ -423,8 +423,11 @@ export default function DistribucionPage() {
       <StaggerItem>
         <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
           <div>
-            <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-              <Truck className="h-7 w-7 text-[var(--color-brand-500)]" /> Distribución / Salida de Stock
+            <h2 className="m-0 text-[28px] font-bold text-primary flex items-center gap-3">
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                <Truck className="h-5 w-5" />
+              </span>
+              Distribución / Salida de Stock
             </h2>
             <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
               Registra la salida de productos hacia cocina, bar u otros departamentos.
