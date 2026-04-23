@@ -20,4 +20,9 @@ export class CreateBajaDto {
   @IsOptional()
   @IsString()
   fechaBaja?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  loteId?: number;
 }

@@ -27,6 +27,7 @@ export type RegistrarBajaPayload = {
   tipoBaja: string;
   motivo: string;
   usuarioId?: string;
+  loteId?: number;
 };
 
 export type CrearPedidoPayload = {

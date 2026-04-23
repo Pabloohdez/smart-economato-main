@@ -580,7 +580,7 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
           <motion.div
-            className="w-full max-w-[900px] overflow-hidden rounded-[26px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
+            className="w-full max-w-[680px] overflow-hidden rounded-[26px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col max-h-[90vh]"
             initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
@@ -609,7 +609,7 @@ export default function EscandallosPage() {
               </button>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-5 py-4 overflow-y-auto">
               <div className="grid gap-3 md:grid-cols-3">
                 <article className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-center">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
@@ -639,7 +639,7 @@ export default function EscandallosPage() {
                 </article>
               </div>
 
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
               <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
@@ -703,7 +703,7 @@ export default function EscandallosPage() {
               </section>
               </div>
 
-              <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
+              <div className="mt-4 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
                 <button
                   type="button"
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
@@ -739,7 +739,7 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
             <motion.div
-              className="relative w-[95%] max-w-[860px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
+              className="relative w-[95%] max-w-[720px] rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
@@ -753,9 +753,9 @@ export default function EscandallosPage() {
               >
                 <i className="fa-solid fa-xmark" />
               </button>
-              <div className="p-5">
+              <div className="p-4 max-h-[88vh] overflow-y-auto">
 
-            <h2 className="m-0 mt-0 text-[1.25rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-4 mb-5">
+            <h2 className="m-0 mt-0 text-[1.1rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-3 mb-4">
               {modoLectura
                 ? "Ver Receta"
                 : editEscandalloId
@@ -805,8 +805,8 @@ export default function EscandallosPage() {
                   </label>
                   <textarea
                     id="elaboracionPlato"
-                    rows={4}
-                    className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none disabled:opacity-70 resize-y min-h-[100px]"
+                    rows={3}
+                    className="w-full px-4 py-2 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none disabled:opacity-70 resize-none"
                     placeholder="Describe los pasos para preparar la receta..."
                     value={elaboracionPlato}
                     disabled={modoLectura}
@@ -815,7 +815,7 @@ export default function EscandallosPage() {
                 </div>
               </div>
 
-              <div className="border border-[var(--color-border-default)] p-6 rounded-xl mb-7 bg-[var(--color-bg-soft)]">
+              <div className="border border-[var(--color-border-default)] p-4 rounded-xl mb-4 bg-[var(--color-bg-soft)]">
                 <h3 className="m-0 mb-5 text-[1.1rem] text-[var(--color-text-strong)] flex items-center gap-2.5">
                   <i className="fa-solid fa-basket-shopping"></i>
                   Ingredientes
@@ -1001,12 +1001,12 @@ export default function EscandallosPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-3">
-                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5">
+              <div className="grid gap-3 md:grid-cols-3">
+                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Coste actual
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-slate-800">
+                  <span className="mt-1 block text-2xl font-black text-slate-800">
                     {costeTotal.toFixed(2)} €
                   </span>
                   <p className="mt-2 mb-0 text-sm text-slate-500">
@@ -1014,11 +1014,11 @@ export default function EscandallosPage() {
                   </p>
                 </article>
 
-                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-6 py-5">
+                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-4 py-3">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
                     PVP sugerido
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-[var(--color-brand-500)]">
+                  <span className="mt-1 block text-2xl font-black text-[var(--color-brand-500)]">
                     {pvp.toFixed(2)} €
                   </span>
                   <p className="mt-2 mb-0 text-sm text-slate-500">
@@ -1026,19 +1026,19 @@ export default function EscandallosPage() {
                   </p>
                 </article>
 
-                <article className="rounded-3xl border border-slate-200 bg-white px-6 py-5 shadow-sm">
+                <article className="rounded-3xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Rentabilidad
                   </span>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <span className={`inline-flex rounded-full px-4 py-2 text-xl font-black ring-1 ${classMargenBadge(margenBeneficio)}`}>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <span className={`inline-flex rounded-full px-3 py-1 text-lg font-black ring-1 ${classMargenBadge(margenBeneficio)}`}>
                       {margenBeneficio.toFixed(1)}%
                     </span>
-                    <span className="text-2xl font-black text-slate-700">
+                    <span className="text-xl font-black text-slate-700">
                       {beneficioNeto.toFixed(2)} €
                     </span>
                   </div>
-                  <p className="mt-2 mb-0 text-sm text-slate-500">
+                  <p className="mt-1 mb-0 text-sm text-slate-500">
                     Margen y beneficio neto calculados en tiempo real.
                   </p>
                 </article>

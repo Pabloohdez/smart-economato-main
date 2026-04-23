@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
@@ -356,6 +357,7 @@ export default function AvisosPage() {
           motivo: loteSeleccionado
             ? `Caducidad registrada desde Centro de Avisos (lote ${loteSeleccionado.loteId}, fecha ${loteSeleccionado.fechaCaducidad})`
             : "Caducidad registrada desde Centro de Avisos",
+          loteId: loteSeleccionado && loteSeleccionado.loteId > 0 ? loteSeleccionado.loteId : undefined,
         });
 
         mostrarToast("Baja registrada correctamente", "success");
@@ -502,7 +504,7 @@ export default function AvisosPage() {
           ) : (
             lotesCaducados.map((l) => (
               <div
-                className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
+                className="grid [grid-template-columns:4px_1fr_48px_110px] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
                 key={`cad-lote-${l.loteId}-${l.productoId}`}
               >
                 <div className="w-1 h-10 rounded bg-[#dc2626]"></div>
@@ -514,7 +516,7 @@ export default function AvisosPage() {
                   </p>
                 </div>
 
-                <div className="flex w-12 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
+                <div className="flex w-12 shrink-0 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
                   <button
                     type="button"
                     className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -526,7 +528,7 @@ export default function AvisosPage() {
                   </button>
                 </div>
 
-                <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
+                <div className="text-right text-[12px] text-[#6b7280] max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
                   <strong>{l.precioNum.toFixed(2)} €</strong>
                   <br />
                   {tiempoRelativo(l.diasCaducado)}
@@ -745,8 +747,23 @@ export default function AvisosPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      <div className={`fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000] transition-opacity duration-200 ${modalOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
-        <div className={`bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${modalOpen ? "translate-y-0 scale-100" : "translate-y-5 scale-95"}`}>
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            key="aviso-modal-overlay"
+            className="fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+        <motion.div
+          className="bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]"
+          initial={{ scale: 0.94, opacity: 0, y: 12 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.94, opacity: 0, y: 12 }}
+          transition={{ type: "spring", stiffness: 380, damping: 32, mass: 0.75 }}
+        >
           <div className="flex justify-between items-center px-5 py-4 border-b border-b-[#f3f4f6]">
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
@@ -845,8 +862,10 @@ export default function AvisosPage() {
               <span>Confirmar</span>
             </button>
           </div>
-        </div>
-      </div>
+        </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div
         className={`fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-[100px] opacity-0 bg-[#111827] text-white px-5 py-2.5 rounded-[30px] flex items-center gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] z-[2000] text-[13px] font-medium transition-[transform,opacity] duration-400 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${

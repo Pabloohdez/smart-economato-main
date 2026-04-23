@@ -7,6 +7,7 @@ import { getAlergenosCatalogo, getMisAlergias, saveMisAlergias } from "../servic
 import { queryKeys } from "../lib/queryClient";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
+import { Settings2 } from "lucide-react";
 
 type PreferenciasNotificaciones = {
   alertasProductos: boolean;
@@ -367,7 +368,7 @@ export default function ConfiguracionPage() {
       <StaggerItem className="mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)]">
         <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
-            <i className="fa-solid fa-gear" />
+            <Settings2 className="h-5 w-5" strokeWidth={1.5} />
           </span>
           CONFIGURACIÓN DE PERFIL
         </h1>

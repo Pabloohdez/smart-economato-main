@@ -43,6 +43,7 @@ export class BajasService {
       motivo?: string;
       usuarioId?: string;
       fechaBaja?: string;
+      loteId?: number;
     },
     ip?: string,
   ) {
@@ -52,6 +53,7 @@ export class BajasService {
     const motivo = body.motivo ?? 'Sin especificar';
     const usuarioId = body.usuarioId ?? 'admin1';
     const fechaBaja = body.fechaBaja ?? new Date().toISOString();
+    const loteId = body.loteId;
 
     const result = await this.db.transaction(async (client) => {
       const { rows: prod } = await client.query(
@@ -59,11 +61,11 @@ export class BajasService {
         [productoId],
       );
       if (prod.length === 0) throw new Error('Producto no encontrado');
+      
       const stockActual = Number(prod[0].stock);
-      if (stockActual < cantidad) {
-        throw new Error(`Stock insuficiente (disponible: ${stockActual}, solicitado: ${cantidad})`);
-      }
-      const nuevoStock = stockActual - cantidad;
+      // Floor the new stock at 0 instead of throwing an error, since Lotes might be out of sync with global stock
+      const nuevoStock = Math.max(0, stockActual - cantidad);
+      
       const bajaId = randomBytes(4).toString('hex');
 
       await client.query(
@@ -72,6 +74,13 @@ export class BajasService {
         [bajaId, productoId, usuarioId, tipoBaja, cantidad, motivo, fechaBaja],
       );
       await client.query('UPDATE productos SET stock = $1 WHERE id = $2', [nuevoStock, productoId]);
+
+      if (loteId && loteId > 0) {
+        await client.query(
+          'UPDATE lotes_producto SET cantidad = GREATEST(cantidad - $1, 0) WHERE id = $2',
+          [cantidad, loteId]
+        );
+      }
 
       return { bajaId, nuevoStock, productoNombre: prod[0].nombre };
     });
