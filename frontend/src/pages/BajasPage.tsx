@@ -895,50 +895,107 @@ export default function BajasPage() {
               No hay bajas registradas este mes
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
-                <TableHeader>
-                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Producto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Precio Ud.</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className="rounded-r-2xl">Motivo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <>
+              {/* Móvil: lista/card (sin solapes) */}
+              <div className="hidden max-[640px]:block">
+                <div className="grid gap-3">
                   {historialFiltrado.map((baja, idx) => {
                     const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                     const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
                     const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
                     const total = precio * cant;
+                    const nombre = baja.producto_nombre || "Producto desconocido";
+                    const usuario = baja.usuario_nombre || "Desconocido";
+                    const motivo = baja.motivo || "Sin especificar";
 
                     return (
-                      <TableRow key={idx} className="bo-table-row">
-                        <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
-                        <TableCell>
-                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                      <div
+                        key={`hist-baja-m-${idx}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{nombre}</div>
+                            <div className="mt-1 text-[12px] text-slate-500">
+                              {fecha} · <span className="text-slate-400">{hora}</span>
+                            </div>
+                          </div>
+                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold shrink-0">
                             {baja.tipoBaja}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-600">
-                          <div>{fecha}</div>
-                          <div className="text-xs text-slate-400">{hora}</div>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-700">{cant}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
-                        <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
-                        <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
-                      </TableRow>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cant.</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{cant}</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{total.toFixed(2)} €</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Usuario</div>
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{usuario}</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 text-[12px] text-slate-600">
+                          <span className="font-semibold text-slate-700">Motivo:</span>{" "}
+                          <span className="break-words">{motivo}</span>
+                        </div>
+                      </div>
                     );
                   })}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              </div>
+
+              {/* Desktop/Tablet: tabla */}
+              <div className="overflow-x-auto max-[640px]:hidden">
+                <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                  <TableHeader>
+                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                      <TableHead className="rounded-l-2xl">Producto</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Precio Ud.</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead className="rounded-r-2xl">Motivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historialFiltrado.map((baja, idx) => {
+                      const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
+                      const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
+                      const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
+                      const total = precio * cant;
+
+                      return (
+                        <TableRow key={idx} className="bo-table-row">
+                          <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
+                          <TableCell>
+                            <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                              {baja.tipoBaja}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">
+                            <div>{fecha}</div>
+                            <div className="text-xs text-slate-400">{hora}</div>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-700">{cant}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
+                          <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
+                          <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </div>
       </BackofficeTablePanel>

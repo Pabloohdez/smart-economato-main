@@ -37,6 +37,14 @@ type RegistroHistorial = RegistroRendimiento & {
   categoria?: string;
 };
 
+function formatFechaHistorial(raw: string) {
+  const d = new Date(String(raw ?? ""));
+  if (Number.isNaN(d.getTime())) return { fecha: String(raw ?? ""), hora: "" };
+  const fecha = d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const hora = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  return { fecha, hora };
+}
+
 export default function RendimientoPage() {
   const queryClient = useQueryClient();
   const [fechaActual, setFechaActual] = useState("");
@@ -833,18 +841,83 @@ export default function RendimientoPage() {
             </div>
           }
         >
-          <div className="w-full overflow-x-auto">
+          {/* Móvil: cards (evita solapes) */}
+          <div className="hidden max-[640px]:block">
+            {loadingHistorial ? (
+              <div className="py-6 text-center text-slate-500">Cargando historial...</div>
+            ) : registrosFiltradosHistorial.length === 0 ? (
+              <div className="py-6 text-center text-slate-500">El historial de análisis aparecerá aquí</div>
+            ) : (
+              <div className="grid gap-3">
+                {registrosFiltradosHistorial.map((item) => {
+                  const f = formatFechaHistorial(item.fecha);
+                  return (
+                    <div
+                      key={`hist-analisis-m-${item.id}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-[14px] font-extrabold text-slate-900">{item.ingrediente}</div>
+                          <div className="mt-1 text-[12px] text-slate-500">
+                            {f.fecha}{f.hora ? ` · ${f.hora}` : ""} ·{" "}
+                            <span className="font-semibold text-slate-700">{item.categoria || "General"}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn text-slate-500"
+                          title="Eliminar del historial"
+                          onClick={() => eliminarRegistroHistorial(item.id)}
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Bruto/Neto</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">
+                            {Number(item.pesoBruto).toFixed(3)} → {Number(item.pesoNeto).toFixed(3)} kg
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Rend./Merma</div>
+                          <div className="mt-1 flex flex-wrap gap-2">
+                            <Badge variant={item.rendimiento >= 75 ? "success" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                              {Number(item.rendimiento).toFixed(1)}%
+                            </Badge>
+                            <Badge variant={item.merma >= 30 ? "destructive" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                              {Number(item.merma).toFixed(1)}%
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-[12px] text-slate-600">
+                        <span className="font-semibold text-slate-700">Obs.:</span>{" "}
+                        <span className="break-words">{item.observaciones || "-"}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Tablet/Desktop: tabla */}
+          <div className="w-full overflow-x-auto max-[640px]:hidden">
             <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                  <TableHead className="rounded-l-2xl">Ingrediente</TableHead>
-                  <TableHead className="whitespace-nowrap min-w-[90px]">Fecha</TableHead>
-                  <TableHead className="whitespace-nowrap min-w-[100px]">Categoría</TableHead>
-                  <TableHead>Bruto / Neto</TableHead>
-                  <TableHead>Rendimiento</TableHead>
-                  <TableHead>Merma</TableHead>
-                  <TableHead>Observaciones</TableHead>
-                  <TableHead className="rounded-r-2xl">Acción</TableHead>
+                  <TableHead className="rounded-l-2xl min-w-[180px]">Ingrediente</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[120px]">Fecha</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Categoría</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[190px]">Bruto / Neto</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[120px]">Rendimiento</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[110px]">Merma</TableHead>
+                  <TableHead className="min-w-[220px]">Observaciones</TableHead>
+                  <TableHead className="rounded-r-2xl whitespace-nowrap w-[86px] text-center">Acción</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -861,12 +934,17 @@ export default function RendimientoPage() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  registrosFiltradosHistorial.map((item) => (
+                  registrosFiltradosHistorial.map((item) => {
+                    const f = formatFechaHistorial(item.fecha);
+                    return (
                     <TableRow key={item.id} className="bo-table-row">
                       <TableCell className="text-slate-900">
-                        <strong>{item.ingrediente}</strong>
+                        <div className="font-semibold">{item.ingrediente}</div>
                       </TableCell>
-                      <TableCell className="text-sm text-slate-700 whitespace-nowrap">{item.fecha}</TableCell>
+                      <TableCell className="text-sm text-slate-700 whitespace-nowrap">
+                        <div>{f.fecha}</div>
+                        {f.hora ? <div className="text-xs text-slate-400">{f.hora}</div> : null}
+                      </TableCell>
                       <TableCell className="text-sm text-slate-700 whitespace-nowrap">{item.categoria || "General"}</TableCell>
                       <TableCell className="text-sm text-slate-700 whitespace-nowrap">
                         {Number(item.pesoBruto).toFixed(3)} kg → {Number(item.pesoNeto).toFixed(3)} kg
@@ -881,10 +959,10 @@ export default function RendimientoPage() {
                           {Number(item.merma).toFixed(1)}%
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-[280px] truncate text-sm text-slate-600">
+                      <TableCell className="max-w-[360px] truncate text-sm text-slate-600">
                         {item.observaciones || "-"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <button
                           type="button"
                           className="bo-table-action-btn text-slate-500"
@@ -895,7 +973,8 @@ export default function RendimientoPage() {
                         </button>
                       </TableCell>
                     </TableRow>
-                  ))
+                    );
+                  })
                 )}
               </TableBody>
             </Table>

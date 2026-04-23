@@ -415,7 +415,81 @@ export default function EscandallosPage() {
             </div>
           }
         >
-          <div className="overflow-x-auto">
+          {/* Móvil: cards */}
+          <div className="hidden max-[640px]:block">
+            {escandallosFiltrados.length === 0 ? (
+              <div className="py-8 text-center text-slate-500">No se encontraron recetas.</div>
+            ) : (
+              <div className="grid gap-3">
+                {escandallosFiltrados.map((esc) => {
+                  const margen = esc.pvp > 0 ? ((esc.pvp - esc.coste) / esc.pvp) * 100 : 0;
+                  return (
+                    <div
+                      key={`esc-m-${esc.id}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-[14px] font-extrabold text-slate-900">{esc.nombre}</div>
+                          <div className="mt-1 text-[12px] text-slate-500">
+                            Autor: <span className="font-semibold text-slate-700">{esc.autor || "Admin"}</span> ·{" "}
+                            {esc.items?.length ?? 0} ingredientes
+                          </div>
+                        </div>
+                        <Badge
+                          variant={margen < 20 ? "destructive" : margen < 50 ? "warning" : "success"}
+                          className="px-3 py-1 text-[11px] font-semibold shrink-0"
+                        >
+                          {margen.toFixed(1)}%
+                        </Badge>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Coste</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{esc.coste.toFixed(2)} €</div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">PVP</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{esc.pvp.toFixed(2)} €</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-slate-600 hover:bg-slate-50"
+                          onClick={() => abrirVerReceta(esc)}
+                          title="Ver"
+                        >
+                          <Eye strokeWidth={1.5} size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => abrirEditarReceta(esc)}
+                          title="Editar"
+                        >
+                          <Pencil strokeWidth={1.5} size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-red-500 hover:bg-red-50 hover:text-red-600"
+                          onClick={() => eliminarEscandallo(esc.id)}
+                          title="Eliminar"
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Tablet/Desktop: tabla */}
+          <div className="overflow-x-auto max-[640px]:hidden">
             <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">

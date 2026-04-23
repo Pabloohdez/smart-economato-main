@@ -76,9 +76,9 @@ export default function InventarioToolbar({
 
   return (
     <div className="mb-4 border-b border-[#e2e8f0] pb-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid w-full grid-cols-12 gap-2 max-[640px]:gap-3">
         {/* Buscador */}
-        <div className="relative min-w-[140px] flex-[2]">
+        <div className="relative col-span-12 min-w-0 md:col-span-5">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2} />
           <input
             type="text"
@@ -91,7 +91,7 @@ export default function InventarioToolbar({
         </div>
 
         {/* Filtros */}
-        <div className="min-w-[160px] flex-1">
+        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
           <ToolbarFilterDropdown
             label="Familias"
             valueLabel={catLabel}
@@ -106,7 +106,7 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="min-w-[160px] flex-1">
+        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
           <ToolbarFilterDropdown
             label="Stock"
             valueLabel={stockLabel}
@@ -125,7 +125,7 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="min-w-[160px] flex-1">
+        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
           <ToolbarFilterDropdown
             label="Proveedor"
             valueLabel={provLabel}
@@ -144,7 +144,7 @@ export default function InventarioToolbar({
         <button
           type="button"
           onClick={() => setOrden(orden === "asc" ? "desc" : "asc")}
-          className="bo-toolbar-secondary flex-shrink-0 px-3"
+          className="bo-toolbar-secondary col-span-6 sm:col-span-3 md:col-span-1 px-3 w-full justify-center"
           title={orden === "asc" ? "Precio ascendente — clic para invertir" : "Precio descendente — clic para invertir"}
           aria-label="Invertir orden por precio"
         >
@@ -158,7 +158,7 @@ export default function InventarioToolbar({
         <button
           type="button"
           onClick={onCreateProduct}
-          className="bo-toolbar-primary-blue active:scale-[0.98] flex-shrink-0"
+          className="bo-toolbar-primary-blue active:scale-[0.98] col-span-12 sm:col-span-6 md:col-span-2 w-full justify-center"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nuevo Producto
@@ -169,7 +169,7 @@ export default function InventarioToolbar({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`group bo-toolbar-secondary relative flex-shrink-0 px-3 ${hasActiveFilters ? "border-[rgba(179,49,49,0.35)] text-[var(--color-brand-500)]" : ""}`}
+              className={`group bo-toolbar-secondary relative col-span-6 sm:col-span-3 md:col-span-1 px-3 w-full justify-center ${hasActiveFilters ? "border-[rgba(179,49,49,0.35)] text-[var(--color-brand-500)]" : ""}`}
               aria-label="Más acciones"
               title="Más acciones"
             >

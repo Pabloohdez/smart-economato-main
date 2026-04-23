@@ -163,10 +163,20 @@ export default function AppLayout() {
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 820px)");
-    const update = () => setIsSmallViewport(mq.matches);
+    const update = () => setIsSmallViewport(!!mq.matches);
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+
+    // Safari/iOS antiguos no soportan addEventListener en MediaQueryList
+    const anyMq = mq as any;
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+    if (typeof anyMq.addListener === "function") {
+      anyMq.addListener(update);
+      return () => anyMq.removeListener(update);
+    }
+    return;
   }, []);
 
   useEffect(() => {
@@ -399,7 +409,9 @@ export default function AppLayout() {
           className={[
             isInicio ? "flex-1 w-full min-w-0 min-h-0 m-0 p-0" : "flex-1 w-full min-w-0 min-h-0 m-0 p-[28px_32px_32px] max-[820px]:p-5",
             isInicio
-              ? (isSmallViewport ? "overflow-y-auto overflow-x-hidden overscroll-contain [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch]" : "overflow-hidden")
+              ? (isSmallViewport
+                  ? "overflow-y-scroll overflow-x-hidden touch-pan-y [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch]"
+                  : "overflow-hidden")
               : "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]",
           ].join(" ")}
           id="main-content"

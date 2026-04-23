@@ -33,6 +33,14 @@ type FiltrosAuditoria = {
   fechaHasta: string;
 };
 
+function formatFechaCorta(fechaStr: string) {
+  const d = new Date(String(fechaStr ?? ""));
+  if (Number.isNaN(d.getTime())) return { fecha: String(fechaStr ?? ""), hora: "" };
+  const fecha = d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const hora = d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+  return { fecha, hora };
+}
+
 export default function AuditoriaPage() {
   const { user: authUser } = useAuth();
 
@@ -440,15 +448,61 @@ export default function AuditoriaPage() {
               />
             }
           >
-            <div className="w-full overflow-x-auto">
+            {/* Móvil: cards (evita solapes y scroll lateral) */}
+            <div className="hidden max-[640px]:block">
+              {visible.length === 0 ? (
+                <div className="py-6 text-center text-slate-500">No hay registros.</div>
+              ) : (
+                <div className="grid gap-3">
+                  {visible.map((reg) => {
+                    const badge = getAccionBadge(reg.accion);
+                    const f = formatFechaCorta(reg.fecha);
+                    const usuario = String(reg.usuario_nombre || reg.usuario_id || "—");
+                    return (
+                      <div
+                        key={`aud-m-${String(reg.id)}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-[12px] text-slate-500">
+                              {f.fecha}{f.hora ? ` · ${f.hora}` : ""}
+                            </div>
+                            <div className="mt-1 truncate text-[14px] font-extrabold text-slate-900">{usuario}</div>
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
+                              <Badge variant={badge.variant} className="px-3 py-1 text-[11px] font-semibold">
+                                {badge.texto}
+                              </Badge>
+                              <span className="truncate text-[12px] font-semibold text-slate-700">{reg.entidad || "—"}</span>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="bo-table-action-btn text-slate-500"
+                            onClick={() => abrirModal(reg)}
+                            title="Ver detalle"
+                            aria-label="Ver detalle"
+                          >
+                            <Eye strokeWidth={1.5} size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Tablet/Desktop: tabla */}
+            <div className="w-full overflow-x-auto max-[640px]:hidden">
               <Table className="min-w-[920px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
                 <TableHeader>
                   <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Fecha/Hora</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Acción</TableHead>
-                    <TableHead>Entidad</TableHead>
-                    <TableHead className="rounded-r-2xl text-right">Detalles</TableHead>
+                    <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[140px]">Fecha/Hora</TableHead>
+                    <TableHead className="min-w-[180px]">Usuario</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[130px]">Acción</TableHead>
+                    <TableHead className="min-w-[140px]">Entidad</TableHead>
+                    <TableHead className="rounded-r-2xl text-right whitespace-nowrap w-[88px]">Detalles</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -461,9 +515,13 @@ export default function AuditoriaPage() {
                   ) : (
                     visible.map((reg) => {
                       const badge = getAccionBadge(reg.accion);
+                      const f = formatFechaCorta(reg.fecha);
                       return (
                         <TableRow key={String(reg.id)} className="bo-table-row">
-                          <TableCell className="whitespace-nowrap text-sm font-medium text-slate-900">{formatearFecha(reg.fecha)}</TableCell>
+                          <TableCell className="whitespace-nowrap text-sm font-medium text-slate-900">
+                            <div>{f.fecha}</div>
+                            {f.hora ? <div className="text-xs text-slate-400">{f.hora}</div> : null}
+                          </TableCell>
                           <TableCell className="text-sm text-slate-700">{reg.usuario_nombre || reg.usuario_id || "—"}</TableCell>
                           <TableCell>
                             <Badge variant={badge.variant} className="px-3 py-1 text-[11px] font-semibold">

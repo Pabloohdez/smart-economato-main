@@ -183,7 +183,80 @@ export default function PedidosGrid({
       }
     >
 
-      <div className="w-full overflow-x-auto">
+      {/* Móvil: cards */}
+      <div className="hidden max-[640px]:block">
+        {visible.length === 0 ? (
+          <div className="py-8 text-center text-slate-500">No hay pedidos que coincidan.</div>
+        ) : (
+          <div className="grid gap-3">
+            {visible.map((p) => {
+              const estado = String(p.estado ?? "").toUpperCase();
+              const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
+              const total = Number(p.total ?? 0);
+              return (
+                <div
+                  key={`pedido-m-${String(p.id)}`}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                        Pedido #{p.id}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 min-w-0">
+                        <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 shrink-0">
+                          <Building2 className="h-4 w-4" />
+                        </span>
+                        <div className="min-w-0">
+                          <div className="truncate text-[14px] font-extrabold text-slate-900">
+                            {p.proveedor_nombre || "Proveedor"}
+                          </div>
+                          <div className="mt-0.5 text-[12px] text-slate-500">
+                            Total: <span className="font-semibold text-slate-800">{total.toFixed(2)} €</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Badge
+                      variant={
+                        estado === "COMPLETADO"
+                          ? "success"
+                          : estado === "PENDIENTE" || estado === "INCOMPLETO"
+                            ? "warning"
+                            : "outline"
+                      }
+                      className="px-3 py-1 text-[11px] font-semibold shrink-0"
+                    >
+                      {p.estado}
+                    </Badge>
+                  </div>
+
+                  <div className="mt-3">
+                    {canReceive ? (
+                      <button
+                        type="button"
+                        className="inline-flex w-full min-h-[44px] items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-[13px] font-extrabold text-white shadow-sm transition-all duration-150 hover:brightness-95"
+                        onClick={() => onIrARecepcion(p.id)}
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                        Ir a Recepción
+                      </button>
+                    ) : (
+                      <div className="w-full rounded-xl bg-slate-50 px-4 py-3 text-center text-[12px] font-semibold text-slate-600">
+                        Completado
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Tablet/Desktop: tabla */}
+      <div className="w-full overflow-x-auto max-[640px]:hidden">
         <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
           <TableHeader>
             <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
@@ -210,59 +283,59 @@ export default function PedidosGrid({
                 </TableRow>
               ) : (
                 visible.map((p) => {
-                const estado = String(p.estado ?? "").toUpperCase();
-                const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
-                return (
-                  <motion.tr
-                    key={String(p.id)}
-                    variants={paginatedRowVariants}
-                    className="bo-table-row"
-                  >
-                    <TableCell className="text-sm font-medium text-slate-900">{p.id}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
-                          <Building2 className="h-4 w-4" />
-                        </span>
-                        <div className="min-w-0">
-                          <div className="truncate text-sm font-semibold text-slate-900">{p.proveedor_nombre}</div>
-                          <div className="mt-0.5 text-[12px] text-slate-500">Pedido #{p.id}</div>
+                  const estado = String(p.estado ?? "").toUpperCase();
+                  const canReceive = estado === "PENDIENTE" || estado === "INCOMPLETO";
+                  return (
+                    <motion.tr
+                      key={String(p.id)}
+                      variants={paginatedRowVariants}
+                      className="bo-table-row"
+                    >
+                      <TableCell className="text-sm font-medium text-slate-900">{p.id}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600">
+                            <Building2 className="h-4 w-4" />
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-slate-900">{p.proveedor_nombre}</div>
+                            <div className="mt-0.5 text-[12px] text-slate-500">Pedido #{p.id}</div>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          estado === "COMPLETADO"
-                            ? "success"
-                            : estado === "PENDIENTE" || estado === "INCOMPLETO"
-                              ? "warning"
-                              : "outline"
-                        }
-                        className="px-3 py-1 text-[11px] font-semibold"
-                      >
-                        {p.estado}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-sm font-semibold text-slate-900">{Number(p.total ?? 0).toFixed(2)} €</TableCell>
-                    <TableCell>
-                      {canReceive ? (
-                        <button
-                          type="button"
-                          className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:brightness-95"
-                          onClick={() => onIrARecepcion(p.id)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            estado === "COMPLETADO"
+                              ? "success"
+                              : estado === "PENDIENTE" || estado === "INCOMPLETO"
+                                ? "warning"
+                                : "outline"
+                          }
+                          className="px-3 py-1 text-[11px] font-semibold"
                         >
-                          <ArrowRight className="h-4 w-4" />
-                          Ir a Recepción
-                        </button>
-                      ) : (
-                        <span className="inline-block rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 whitespace-nowrap">
-                          Completado
-                        </span>
-                      )}
-                    </TableCell>
-                  </motion.tr>
-                );
+                          {p.estado}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm font-semibold text-slate-900">{Number(p.total ?? 0).toFixed(2)} €</TableCell>
+                      <TableCell>
+                        {canReceive ? (
+                          <button
+                            type="button"
+                            className="inline-flex min-h-[40px] items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:brightness-95"
+                            onClick={() => onIrARecepcion(p.id)}
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                            Ir a Recepción
+                          </button>
+                        ) : (
+                          <span className="inline-block rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 whitespace-nowrap">
+                            Completado
+                          </span>
+                        )}
+                      </TableCell>
+                    </motion.tr>
+                  );
                 })
               )}
             </motion.tbody>

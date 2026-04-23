@@ -440,7 +440,100 @@ export default function ProveedoresPage() {
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
-            <div className="w-full overflow-x-auto">
+            {/* Móvil: lista/card (sin tabla ancha) */}
+            <div className="hidden max-[640px]:block">
+              {visible.length === 0 ? (
+                <div className="py-8 text-center text-slate-500">No hay proveedores para mostrar.</div>
+              ) : (
+                <div className="grid gap-3">
+                  {visible.map((p) => (
+                    <div
+                      key={`prov-m-${String(p.id)}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span
+                            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${getAvatarColor(p.nombre)}`}
+                          >
+                            {getInitials(p.nombre)}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-[14px] font-extrabold text-slate-900">{p.nombre}</div>
+                            <div className="mt-0.5 text-[12px] text-slate-500">Proveedor registrado</div>
+                          </div>
+                        </div>
+
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            title="Editar"
+                            onClick={() => {
+                              setForm({
+                                id: String(p.id),
+                                nombre: p.nombre,
+                                contacto: p.contacto || "",
+                                telefono: p.telefono || "",
+                                email: p.email || "",
+                              });
+                              setModalOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                          </button>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button type="button" className="bo-table-action-btn text-slate-500" aria-label="Más acciones">
+                                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  setForm({
+                                    id: String(p.id),
+                                    nombre: p.nombre,
+                                    contacto: p.contacto || "",
+                                    telefono: p.telefono || "",
+                                    email: p.email || "",
+                                  });
+                                  setModalOpen(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" /> Editar proveedor
+                              </DropdownMenuItem>
+                              <DropdownMenuItem variant="destructive" onSelect={() => eliminarProveedor(String(p.id))}>
+                                <Trash2 className="h-4 w-4" /> Eliminar proveedor
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 text-[13px] text-slate-700">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Contacto</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.contacto || "-"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Teléfono</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.telefono || "-"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Email</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.email || "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop/Tablet: tabla */}
+            <div className="w-full overflow-x-auto max-[640px]:hidden">
               <Table className="min-w-[840px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
                 <TableHeader>
                   <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
