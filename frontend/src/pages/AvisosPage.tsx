@@ -444,7 +444,7 @@ export default function AvisosPage() {
             <CalendarDays className="h-4 w-4" />
             <span>{hoyES()}</span>
           </div>
-          {timestamp ? <div className="mt-1">{timestamp.replace("Actualizado", "Ultima actualizacion")}</div> : null}
+          {timestamp ? <div className="mt-1 text-xs">{timestamp.replace("Actualizado", "Ultima actualizacion")}</div> : null}
         </div>
       </StaggerItem>
 
@@ -514,7 +514,7 @@ export default function AvisosPage() {
                   </p>
                 </div>
 
-                <div className="flex w-12 items-center justify-center max-[768px]:col-start-2 max-[768px]:mt-2">
+                <div className="flex w-12 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
                   <button
                     type="button"
                     className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -582,7 +582,7 @@ export default function AvisosPage() {
                     </p>
                   </div>
 
-                  <div className="flex w-12 items-center justify-center max-[768px]:col-start-2 max-[768px]:mt-2">
+                  <div className="flex w-12 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
                     <button
                       type="button"
                       className="bo-table-action-btn text-slate-500 hover:bg-[rgba(179,49,49,0.08)] hover:text-[var(--color-brand-500)]"
@@ -710,7 +710,12 @@ export default function AvisosPage() {
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
             </h3>
-            <button type="button" className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-400 transition hover:bg-slate-50 hover:text-slate-700" onClick={cerrarModal}>
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-0 bg-transparent text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              onClick={cerrarModal}
+              aria-label="Cerrar"
+            >
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -736,15 +741,14 @@ export default function AvisosPage() {
 
             <div>
               <label htmlFor="modal-cantidad" className="block text-[12px] font-medium text-[#374151] mb-1.5">Cantidad</label>
-              <div className="flex items-center rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
                 <button
                   type="button"
-                  className="inline-flex h-11 w-11 items-center justify-center border-0 border-r border-r-slate-200 bg-slate-50 text-[16px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
-                  onMouseDown={() => startHoldCantidad(-1)}
-                  onMouseUp={stopHoldCantidad}
-                  onMouseLeave={stopHoldCantidad}
-                  onTouchStart={() => startHoldCantidad(-1)}
-                  onTouchEnd={stopHoldCantidad}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-0 bg-transparent text-[18px] font-extrabold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onPointerDown={() => startHoldCantidad(-1)}
+                  onPointerUp={stopHoldCantidad}
+                  onPointerCancel={stopHoldCantidad}
+                  onPointerLeave={stopHoldCantidad}
                 >
                   -
                 </button>
@@ -756,17 +760,16 @@ export default function AvisosPage() {
                   max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
                   onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
-                  className="flex-1 border-0 text-center text-[16px] font-semibold py-2.5 outline-none [appearance:textfield]"
+                  className="flex-1 min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 py-2 text-center text-[16px] font-semibold outline-none [appearance:textfield] focus:bg-white focus:border-slate-300"
                 />
 
                 <button
                   type="button"
-                  className="inline-flex h-11 w-11 items-center justify-center border-0 border-l border-l-slate-200 bg-slate-50 text-[16px] font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
-                  onMouseDown={() => startHoldCantidad(1)}
-                  onMouseUp={stopHoldCantidad}
-                  onMouseLeave={stopHoldCantidad}
-                  onTouchStart={() => startHoldCantidad(1)}
-                  onTouchEnd={stopHoldCantidad}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-0 bg-transparent text-[18px] font-extrabold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onPointerDown={() => startHoldCantidad(1)}
+                  onPointerUp={stopHoldCantidad}
+                  onPointerCancel={stopHoldCantidad}
+                  onPointerLeave={stopHoldCantidad}
                 >
                   +
                 </button>

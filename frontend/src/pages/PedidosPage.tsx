@@ -127,7 +127,7 @@ function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; d
   const [display, setDisplay] = useState(0);
   useEffect(() => {
     const target = Number.isFinite(value) ? value : 0;
-    const duration = 700;
+    const duration = 1200;
     const start = performance.now();
     let raf = 0;
     const tick = (now: number) => {

@@ -77,7 +77,7 @@ function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; d
 
   useEffect(() => {
     const target = Number.isFinite(value) ? value : 0;
-    const duration = 700;
+    const duration = 1200;
     const start = performance.now();
 
     let raf = 0;

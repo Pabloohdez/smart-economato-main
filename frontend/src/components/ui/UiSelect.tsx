@@ -99,9 +99,14 @@ export default function UiSelect(props: UiSelectProps) {
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
             position="popper"
+            side="bottom"
+            align="start"
             sideOffset={8}
+            collisionPadding={12}
             className={cn(
-                "z-[99999] w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+              // z-index alto para no quedar detrás de botones/paneles con stacking contexts
+              // En móvil el trigger puede ser estrecho; permitimos que el menú crezca hasta 92vw.
+              "z-[2147483647] w-[min(92vw,var(--radix-select-trigger-width))] min-w-[min(92vw,220px)] max-w-[92vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
               contentClassName,
             )}
             onCloseAutoFocus={() => setSearchTerm("")}
@@ -121,7 +126,7 @@ export default function UiSelect(props: UiSelectProps) {
                 </div>
               </div>
             ) : null}
-            <SelectPrimitive.Viewport className="max-h-60 w-full overflow-y-auto overflow-x-hidden p-2">
+            <SelectPrimitive.Viewport className="max-h-[min(320px,calc(100vh-180px))] w-full overflow-y-auto overscroll-contain overflow-x-hidden p-2">
               {visibleOptions.length === 0 ? (
                 <div className="px-3 py-2 text-[13px] text-slate-500">Sin resultados</div>
               ) : null}
@@ -130,7 +135,7 @@ export default function UiSelect(props: UiSelectProps) {
                   key={String(opt.value)}
                   value={opt.value === "" ? EMPTY_OPTION_VALUE : opt.value}
                   disabled={opt.disabled}
-                  className="relative flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2.5 text-[14px] capitalize text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:bg-slate-100 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
+                  className="relative flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2.5 text-[14px] capitalize text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
                 >
                   <SelectPrimitive.ItemText>
                     <span className="block w-full truncate">{opt.label}</span>

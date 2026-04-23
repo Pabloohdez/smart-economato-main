@@ -18,10 +18,10 @@ import {
   LogOut,
   Menu,
   PackagePlus,
-  Settings,
   Truck,
   UserCircle2,
   LayoutDashboard,
+  Settings2,
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
@@ -52,7 +52,7 @@ const navItems = [
   {
     to: "/configuracion",
     label: "Configuración",
-    icon: Settings,
+    icon: Settings2,
     separated: true,
     roles: ["administrador", "profesor"],
   },

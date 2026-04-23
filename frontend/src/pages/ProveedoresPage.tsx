@@ -5,6 +5,7 @@ import { Building2, CalendarDays, Download, Filter, Mail, MoreHorizontal, Pencil
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
+import { Badge } from "../components/ui/badge";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 import { showNotification, showConfirm } from "../utils/notifications";
@@ -355,9 +356,9 @@ export default function ProveedoresPage() {
         </StaggerItem>
       )}
 
+      {/* Toolbar separado (como Inventario) */}
       <StaggerItem>
-      <BackofficeTablePanel
-        header={
+        <div className="rounded-[30px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
           <div className="grid w-full grid-cols-1 gap-3 min-[1180px]:grid-cols-[minmax(340px,1.6fr)_minmax(180px,0.7fr)_minmax(220px,0.9fr)_auto]">
             <SearchInput
               value={q}
@@ -423,6 +424,17 @@ export default function ProveedoresPage() {
             >
               <Plus className="h-4 w-4" /> Nuevo Proveedor
             </button>
+          </div>
+        </div>
+      </StaggerItem>
+
+      <StaggerItem>
+      <BackofficeTablePanel
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+              {filtered.length} proveedor(es)
+            </Badge>
           </div>
         }
         footer={

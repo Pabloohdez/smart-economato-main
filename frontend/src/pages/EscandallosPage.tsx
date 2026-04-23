@@ -516,13 +516,9 @@ export default function EscandallosPage() {
                     return (
                       <TableRow key={esc.id} className="bo-table-row">
                         <TableCell>
-                          <button
-                            type="button"
-                            className="inline-flex max-w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition-[background-color,border-color,color] duration-200 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-                            onClick={() => abrirVerReceta(esc)}
-                          >
-                            <span className="truncate">{esc.nombre}</span>
-                          </button>
+                          <span className="block max-w-full truncate text-sm font-semibold text-slate-700">
+                            {esc.nombre}
+                          </span>
                         </TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.autor || "Admin"}</TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.items?.length ?? 0} ingredientes</TableCell>
@@ -584,18 +580,18 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
           <motion.div
-            className="w-full max-w-[1120px] overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
+            className="w-full max-w-[900px] overflow-hidden rounded-[26px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
             initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
           >
-            <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-8 py-7 text-white">
+            <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-6 py-5 text-white">
               <div>
                 <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
                   Ficha de escandallo
                 </p>
-                <h2 className="m-0 text-3xl font-black tracking-tight">
+                <h2 className="m-0 text-2xl font-black tracking-tight">
                   {detalleEscandallo.nombre}
                 </h2>
                 <p className="mt-2 text-sm font-medium text-white/80">
@@ -613,37 +609,38 @@ export default function EscandallosPage() {
               </button>
             </div>
 
-            <div className="px-7 py-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 text-center">
+            <div className="px-6 py-5">
+              <div className="grid gap-3 md:grid-cols-3">
+                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-center">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Coste total
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-slate-800">
+                  <span className="mt-2 block text-2xl font-black text-slate-800">
                     {detalleCoste.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-6 py-5 text-center">
+                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-5 py-4 text-center">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
                     PVP
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-[var(--color-brand-500)]">
+                  <span className="mt-2 block text-2xl font-black text-[var(--color-brand-500)]">
                     {detallePvp.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
+                <article className="rounded-3xl border border-slate-200 bg-white px-5 py-4 text-center shadow-sm">
                   <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Margen
                   </span>
-                  <span className={`mt-2 inline-flex rounded-full px-4 py-2 text-2xl font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
+                  <span className={`mt-2 inline-flex rounded-full px-4 py-2 text-xl font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
                     {detalleMargen.toFixed(1)}%
                   </span>
                 </article>
               </div>
 
-              <section className="mt-8 rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
                   <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
@@ -692,7 +689,7 @@ export default function EscandallosPage() {
                 </Table>
               </section>
 
-              <section className="mt-8 rounded-[26px] border border-slate-200 bg-slate-50 p-6">
+              <section className="rounded-[26px] border border-slate-200 bg-slate-50 p-5">
                 <div className="mb-4 flex items-center gap-3">
                   <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
                   <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
@@ -700,12 +697,13 @@ export default function EscandallosPage() {
                   </h3>
                 </div>
 
-                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-5 text-sm leading-7 text-slate-600 whitespace-pre-wrap">
+                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-5 py-4 text-sm leading-7 text-slate-600 whitespace-pre-wrap">
                   {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
                 </div>
               </section>
+              </div>
 
-              <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+              <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
                 <button
                   type="button"
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
@@ -741,7 +739,7 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
             <motion.div
-              className="relative w-[95%] max-w-[960px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
+              className="relative w-[95%] max-w-[860px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
               initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.96, opacity: 0 }}
@@ -755,9 +753,9 @@ export default function EscandallosPage() {
               >
                 <i className="fa-solid fa-xmark" />
               </button>
-              <div className="p-6">
+              <div className="p-5">
 
-            <h2 className="m-0 mt-0 text-[1.5rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-5 mb-7">
+            <h2 className="m-0 mt-0 text-[1.25rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-4 mb-5">
               {modoLectura
                 ? "Ver Receta"
                 : editEscandalloId
@@ -766,7 +764,7 @@ export default function EscandallosPage() {
             </h2>
 
             <form onSubmit={guardarEscandallo}>
-              <div className="grid grid-cols-2 gap-6 mb-7 max-[768px]:grid-cols-1">
+              <div className="grid grid-cols-2 gap-4 mb-5 max-[768px]:grid-cols-1">
                 <div className="flex flex-col gap-2 mb-4">
                   <label htmlFor="nombrePlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
                     <i className="fa-solid fa-utensils"></i>

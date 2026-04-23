@@ -1177,7 +1177,81 @@ export default function Recepcion() {
           </div>
         }
       >
-        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto">
+        {/* Móvil: cards (evita cabeceras solapadas) */}
+        <div className="hidden max-[640px]:block">
+          {!recepcion.length ? (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-600 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+              <div className="mx-auto mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
+                <i className="fa-solid fa-inbox text-[22px] opacity-70" />
+              </div>
+              <p className="m-0 font-bold text-slate-900">No hay productos en la recepción actual</p>
+              <small className="opacity-80">Busca y selecciona productos para comenzar</small>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {recepcion.map((r, idx) => (
+                <div
+                  key={`recep-m-${String(r.producto_id)}-${idx}`}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate text-[14px] font-extrabold text-slate-900">{r.nombre}</div>
+                      <div className="mt-1 text-[12px] text-slate-500">
+                        <span className="font-semibold text-slate-700">{r.proveedor || "N/A"}</span>
+                      </div>
+                    </div>
+                    <button
+                      className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => eliminarFila(idx)}
+                      title="Eliminar"
+                      type="button"
+                      aria-label="Eliminar"
+                    >
+                      <Trash2 strokeWidth={1.5} size={18} />
+                    </button>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Stock</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{r.stock}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Unidad</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{String(r.unidad ?? "ud")}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Recibido</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{r.cantidadRecibida}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Nuevo stock</div>
+                      <div className="text-[13px] font-extrabold text-[var(--color-brand-600)]">{r.stock + r.cantidadRecibida}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="text-[12px] text-slate-500">
+                      Precio: <span className="font-semibold text-slate-700">{formatEUR(r.precio)}</span>
+                    </div>
+                    <div className="text-[14px] font-extrabold text-slate-900">{formatEUR(r.precio * r.cantidadRecibida)}</div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">Total recepción</div>
+                  <div className="text-[18px] font-extrabold text-[var(--color-brand-500)]">{formatEUR(totalRecepcion)}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Tablet/Desktop: tabla */}
+        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto max-[640px]:hidden">
           <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white max-[1024px]:min-w-0">
             <TableHeader>
               <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">

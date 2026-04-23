@@ -102,8 +102,9 @@ export default function PedidosGrid({
   }).length;
 
   return (
-    <BackofficeTablePanel
-      header={
+    <div className="space-y-3">
+      {/* Toolbar separado (como Inventario) */}
+      <div className="rounded-[30px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
         <div className="grid w-full grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(280px,1.6fr)_minmax(180px,0.7fr)_minmax(200px,0.8fr)_auto]">
           <SearchInput
             value={q}
@@ -125,7 +126,7 @@ export default function PedidosGrid({
             triggerClassName="h-11 rounded-xl"
             options={[
               { value: "", label: "Estado: Todos" },
-              ...estadosUnicos.map((s) => ({ value: s, label: s }))
+              ...estadosUnicos.map((s) => ({ value: s, label: s })),
             ]}
           />
 
@@ -169,19 +170,33 @@ export default function PedidosGrid({
             <Plus className="h-4 w-4" /> Nuevo Pedido
           </button>
         </div>
-      }
-      footer={
-        <TablePagination
-          totalItems={filtered.length}
-          page={safePage}
-          pageSize={pageSize}
-          onPageChange={setPage}
-          onPageSizeChange={setPageSize}
-          pageSizeOptions={[10, 25, 50]}
-          label="pedidos"
-        />
-      }
-    >
+      </div>
+
+      <BackofficeTablePanel
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+                {filtered.length} pedido(s)
+              </Badge>
+              <Badge variant="warning" className="px-3 py-1 text-[11px] font-semibold">
+                {pendientes} pendiente(s)
+              </Badge>
+            </div>
+          </div>
+        }
+        footer={
+          <TablePagination
+            totalItems={filtered.length}
+            page={safePage}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[10, 25, 50]}
+            label="pedidos"
+          />
+        }
+      >
 
       {/* Móvil: cards */}
       <div className="hidden max-[640px]:block">
@@ -342,6 +357,7 @@ export default function PedidosGrid({
           </AnimatePresence>
         </Table>
       </div>
-    </BackofficeTablePanel>
+      </BackofficeTablePanel>
+    </div>
   );
 }
