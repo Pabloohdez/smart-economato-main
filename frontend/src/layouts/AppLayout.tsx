@@ -21,6 +21,7 @@ import {
   Settings,
   Truck,
   UserCircle2,
+  LayoutDashboard,
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
@@ -350,6 +351,21 @@ export default function AppLayout() {
               >
                 <Menu className="h-[18px] w-[18px]" />
               </button>
+
+              {isInicio ? (
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    <LayoutDashboard className="h-4 w-4 text-[var(--color-brand-500)]" />
+                    Inicio
+                  </div>
+                  <div className="mt-1 text-[16px] font-extrabold tracking-[-0.02em] text-[var(--color-text-strong)] leading-tight">
+                    Panel de inicio
+                  </div>
+                  <div className="mt-0.5 text-[12px] text-[var(--color-text-muted)] leading-snug truncate max-w-[48vw]">
+                    Acceso rápido a secciones del panel
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="flex items-center gap-3 max-[520px]:gap-2">
