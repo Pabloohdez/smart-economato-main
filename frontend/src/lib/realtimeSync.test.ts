@@ -62,4 +62,22 @@ describe("realtimeSync", () => {
 
     cleanup();
   });
+
+  it("si llega un payload inválido, invalida todas las queries live", async () => {
+    const queryClient = {
+      invalidateQueries: vi.fn().mockResolvedValue(undefined),
+    } as any;
+
+    const cleanup = setupRealtimeSync(queryClient);
+
+    // Emitimos un "invalidate" que no es JSON válido (forzamos el catch)
+    MockEventSource.lastInstance?.listeners.get("invalidate")?.({ data: "no-json" } as any);
+
+    await Promise.resolve();
+
+    // En modo fallback invalida varias keys (no comprobamos todas, solo que se llamó)
+    expect(queryClient.invalidateQueries).toHaveBeenCalled();
+
+    cleanup();
+  });
 });

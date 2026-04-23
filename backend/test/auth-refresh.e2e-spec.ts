@@ -8,6 +8,7 @@ import { LoginService } from '../src/login/login.service';
 import { AuthService } from '../src/auth/auth.service';
 import { DatabaseService } from '../src/database/database.service';
 import { ResponseInterceptor } from '../src/common/response.interceptor';
+import { AccountSecurityService } from '../src/auth/account-security.service';
 
 type StoredUser = {
   id: string;
@@ -16,6 +17,7 @@ type StoredUser = {
   nombre: string;
   apellidos: string;
   email: string;
+  emailVerifiedAt?: string | null;
   telefono: string;
   role: string;
   alergias: string[];
@@ -50,6 +52,7 @@ class FakeDatabaseService {
             nombre: user.nombre,
             apellidos: user.apellidos,
             email: user.email,
+            emailVerifiedAt: user.emailVerifiedAt ?? null,
             telefono: user.telefono,
             role: user.role,
             alergias: user.alergias,
@@ -132,6 +135,7 @@ describe('Refresh token cycle (e2e)', () => {
         nombre: 'Administrador',
         apellidos: 'Demo',
         email: 'admin@example.com',
+        emailVerifiedAt: new Date().toISOString(),
         telefono: '600000000',
         role: 'admin',
         alergias: ['Gluten'],
@@ -146,6 +150,16 @@ describe('Refresh token cycle (e2e)', () => {
         {
           provide: DatabaseService,
           useValue: fakeDb,
+        },
+        {
+          provide: AccountSecurityService,
+          useValue: {
+            sendVerificationEmail: async () => ({ deliveryMode: 'log' }),
+            verifyAccount: async () => ({ message: 'ok' }),
+            resendVerification: async () => ({ message: 'ok' }),
+            requestPasswordReset: async () => ({ message: 'ok' }),
+            resetPassword: async () => ({ message: 'ok' }),
+          },
         },
       ],
     }).compile();
@@ -162,7 +176,9 @@ describe('Refresh token cycle (e2e)', () => {
 
   afterAll(async () => {
     process.env = previousEnv;
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   it('completa login, rota el refresh token y rechaza reutilizar el antiguo', async () => {

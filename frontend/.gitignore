@@ -23,4 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 .env
-ANALISIS_ARQUITECTURA.md
+.env.*
+
+# Build output
+build
+
+# Coverage
+coverage
