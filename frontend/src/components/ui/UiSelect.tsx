@@ -77,9 +77,9 @@ export default function UiSelect(props: UiSelectProps) {
           id={id}
           aria-label={ariaLabel ?? label ?? placeholder}
           className={cn(
-            "group bo-select w-full justify-between gap-3",
-            active && "border-slate-300 bg-slate-50 text-slate-900 shadow-[0_0_0_4px_rgba(148,163,184,0.12)]",
-            !selected && "text-[var(--color-text-muted)]",
+            "group bo-select w-full justify-between gap-3 h-11 rounded-xl border border-slate-200 bg-white px-4 text-[13px] font-medium text-slate-700 shadow-sm transition-all duration-150 hover:border-slate-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-20 focus:border-red-500",
+            active && "border-red-300 bg-red-50 text-slate-900 shadow-md ring-2 ring-red-500 ring-opacity-20",
+            !selected && "text-slate-500",
             triggerClassName,
           )}
         >
@@ -92,7 +92,7 @@ export default function UiSelect(props: UiSelectProps) {
             </SelectPrimitive.Value>
           </span>
           <SelectPrimitive.Icon asChild>
-            <ChevronDown className="h-4 w-4 text-[#94a3b8] transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            <ChevronDown className="h-4 w-4 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180 group-data-[state=open]:text-red-500" />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
 
@@ -104,15 +104,13 @@ export default function UiSelect(props: UiSelectProps) {
             sideOffset={8}
             collisionPadding={12}
             className={cn(
-              // z-index alto para no quedar detrás de botones/paneles con stacking contexts
-              // En móvil el trigger puede ser estrecho; permitimos que el menú crezca hasta 92vw.
-              "z-[2147483647] w-[min(92vw,var(--radix-select-trigger-width))] min-w-[min(92vw,220px)] max-w-[92vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+              "z-[2147483647] w-[min(92vw,var(--radix-select-trigger-width))] min-w-[min(92vw,220px)] max-w-[92vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_56px_rgba(15,23,42,0.12),0_16px_40px_rgba(15,23,42,0.08)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:duration-100 data-[state=open]:duration-200",
               contentClassName,
             )}
             onCloseAutoFocus={() => setSearchTerm("")}
           >
             {searchable && options.length > 8 ? (
-              <div className="border-b border-slate-200 p-2">
+              <div className="border-b border-slate-200 p-2 mb-1">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
                   <input
@@ -120,29 +118,30 @@ export default function UiSelect(props: UiSelectProps) {
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     onKeyDown={(event) => event.stopPropagation()}
+                    autoFocus
                     placeholder="Buscar opcion..."
-                    className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-[13px] text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                    className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[12px] font-medium text-slate-700 outline-none transition-all duration-150 focus:border-red-500 focus:bg-white focus:ring-2 focus:ring-red-500 focus:ring-opacity-20"
                   />
                 </div>
               </div>
             ) : null}
             <SelectPrimitive.Viewport className="max-h-[min(320px,calc(100vh-180px))] w-full overflow-y-auto overscroll-contain overflow-x-hidden p-2">
               {visibleOptions.length === 0 ? (
-                <div className="px-3 py-2 text-[13px] text-slate-500">Sin resultados</div>
+                <div className="px-3 py-2 text-[12px] text-slate-500">Sin resultados</div>
               ) : null}
               {visibleOptions.map((opt) => (
                 <SelectPrimitive.Item
                   key={String(opt.value)}
                   value={opt.value === "" ? EMPTY_OPTION_VALUE : opt.value}
                   disabled={opt.disabled}
-                  className="relative flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2.5 text-[14px] capitalize text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
+                  className="relative flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-[12px] font-medium capitalize text-slate-700 outline-none transition-all duration-150 select-none hover:bg-slate-50 focus:bg-red-50 focus:text-red-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:bg-red-50 data-[state=checked]:font-semibold data-[state=checked]:text-red-700"
                 >
                   <SelectPrimitive.ItemText>
                     <span className="block w-full truncate">{opt.label}</span>
                   </SelectPrimitive.ItemText>
                   <span className="absolute right-3 flex size-4 items-center justify-center">
                     <SelectPrimitive.ItemIndicator>
-                      <Check className="h-3.5 w-3.5 text-slate-900" />
+                      <Check className="h-3.5 w-3.5 text-red-600 font-bold" />
                     </SelectPrimitive.ItemIndicator>
                   </span>
                 </SelectPrimitive.Item>

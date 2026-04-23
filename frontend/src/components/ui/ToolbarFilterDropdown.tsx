@@ -117,7 +117,7 @@ export default function ToolbarFilterDropdown({
                   onChange={(event) => setSearchTerm(event.target.value)}
                   onKeyDown={(event) => event.stopPropagation()}
                   placeholder={`Buscar ${label.toLowerCase()}...`}
-                  className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[13px] text-slate-700 outline-none focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-slate-100"
+                  className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[5px] text-slate-700 outline-none focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-slate-100"
                 />
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function ToolbarFilterDropdown({
 
           <div className="max-h-60 space-y-0.5 overflow-y-auto overflow-x-hidden">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-[13px] text-slate-500">Sin resultados</div>
+              <div className="px-3 py-2 text-[5px] text-slate-500">Sin resultados</div>
             ) : null}
             {filteredOptions.map((option) => (
               <button
@@ -138,7 +138,7 @@ export default function ToolbarFilterDropdown({
                   setSearchTerm("");
                 }}
                 className={cn(
-                  "no-global-button w-full rounded-lg px-3 py-2 text-left text-[13px] transition-colors duration-150 focus:outline-none",
+                  "no-global-button w-full rounded-lg px-3 py-2 text-left text-[5px] transition-colors duration-150 focus:outline-none",
                   option.value === value
                     ? "bg-red-50 font-medium text-red-700"
                     : "text-slate-700 hover:text-slate-900",

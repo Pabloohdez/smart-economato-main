@@ -99,9 +99,9 @@ export default function InventarioToolbar({
             active={Boolean(catId)}
             leadingIcon={<Filter className="h-3.5 w-3.5" strokeWidth={2} />}
             onChange={setCatId}
-            options={[{ value: "", label: "Todas" }, ...cats.map((cat) => ({ value: String(cat.id), label: cat.nombre }))]}
+            options={[{ value: "", label: "Todas las familias" }, ...cats.map((cat) => ({ value: String(cat.id), label: cat.nombre }))]}
             triggerClassName={dropdownTriggerClassName}
-            searchable={false}
+            searchable={true}
             menuClassName="rounded-xl border-slate-300"
           />
         </div>

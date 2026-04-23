@@ -580,7 +580,7 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
           <motion.div
-            className="w-full max-w-[680px] overflow-hidden rounded-[26px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col max-h-[90vh]"
+            className="w-full max-w-[680px] overflow-hidden rounded-[26px] bg-white shadow-2xl flex flex-col max-h-[90vh]"
             initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
@@ -602,7 +602,7 @@ export default function EscandallosPage() {
               <button
                 type="button"
                 onClick={cerrarDetalle}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20 active:scale-95"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 text-lg text-slate-600 transition hover:bg-slate-200 hover:text-slate-700 active:scale-95"
                 aria-label="Cerrar detalle"
               >
                 <i className="fa-solid fa-xmark"></i>

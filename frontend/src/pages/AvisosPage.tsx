@@ -285,8 +285,9 @@ export default function AvisosPage() {
   }
 
   function abrirModalBajaLote(l: LoteCaducadoAviso) {
+    const producto = productos.find((p) => String(p.id) === String(l.productoId)) ?? null;
     setLoteSeleccionado(l);
-    setProductoSeleccionado(null);
+    setProductoSeleccionado(producto);
     setAccionActual("baja");
     setCantidadModal(l.cantidadCaducada || 1);
     setModalOpen(true);
@@ -572,7 +573,7 @@ export default function AvisosPage() {
 
               return (
                 <div
-                  className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
+                  className="grid [grid-template-columns:4px_1fr_48px_170px] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
                   key={`stock-${p.id}`}
                 >
                   <div className="w-1 h-10 rounded bg-[#f59e0b]"></div>
@@ -596,12 +597,13 @@ export default function AvisosPage() {
                     </button>
                   </div>
 
-                  <div className="w-[120px] h-1.5 bg-[#f3f4f6] rounded overflow-hidden max-[768px]:col-start-2 max-[768px]:w-full max-[768px]:mt-2" title={`${p.stockNum} / ${p.stockMinimoNum}`}>
-                    <div className={`h-full rounded transition-[width] duration-300 ${barClass}`} style={{ width: `${pct}%` }}></div>
-                  </div>
-
-                  <div className="text-right text-[12px] text-[#6b7280] min-w-20 whitespace-nowrap max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
-                    <strong>{p.stockNum}</strong> / {p.stockMinimoNum}
+                  <div className="max-[768px]:col-start-2 max-[768px]:mt-1">
+                    <div className="w-full h-1.5 bg-[#f3f4f6] rounded overflow-hidden" title={`${p.stockNum} / ${p.stockMinimoNum}`}>
+                      <div className={`h-full rounded transition-[width] duration-300 ${barClass}`} style={{ width: `${pct}%` }}></div>
+                    </div>
+                    <div className="mt-1 text-right text-[12px] text-[#6b7280] whitespace-nowrap max-[768px]:text-left">
+                      <strong>{p.stockNum}</strong> / {p.stockMinimoNum}
+                    </div>
                   </div>
                 </div>
               );
@@ -815,7 +817,8 @@ export default function AvisosPage() {
                   id="modal-cantidad"
                   type="number"
                   min={1}
-                  max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
+                  step="0.001"
+                  max={accionActual === "baja" ? loteSeleccionado?.cantidadCaducada ?? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
                   onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
                   className="flex-1 min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 py-2 text-center text-[16px] font-semibold outline-none [appearance:textfield] focus:bg-white focus:border-slate-300"

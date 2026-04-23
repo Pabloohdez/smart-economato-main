@@ -228,10 +228,10 @@ export default function InventarioPage() {
   }, []);
 
   return (
-    <StaggerPage className="mx-auto w-full max-w-[1460px] px-[clamp(12px,2.4vw,24px)] pb-8 pt-0">
+    <StaggerPage className="mx-auto w-full max-w-[1460px] px-[clamp(18px,2.8vw,30px)] pb-8 pt-0">
       <StaggerItem>
-        <div className="mb-4 flex items-center gap-4 pt-4 pb-1">
-          <div className="shrink-0 flex flex-col items-center gap-1">
+        <div className="mb-4 flex items-start gap-4 pt-1 pb-1 pl-1">
+          <div className="shrink-0 flex flex-col items-center gap-1.5">
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Boxes className="h-5 w-5" strokeWidth={2} />
             </div>
@@ -239,7 +239,7 @@ export default function InventarioPage() {
               {filtered.length} productos listados
             </p>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 pt-1">
             <h1 className="text-3xl font-bold leading-none text-primary">Inventario</h1>
           </div>
         </div>

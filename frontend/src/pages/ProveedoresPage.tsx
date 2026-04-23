@@ -358,7 +358,7 @@ export default function ProveedoresPage() {
 
       {/* Toolbar separado (como Inventario) */}
       <StaggerItem>
-        <div className="rounded-[30px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
+        <div className="mb-5 border-b border-[#e2e8f0] pb-4">
           <div className="grid w-full grid-cols-1 gap-3 min-[1180px]:grid-cols-[minmax(340px,1.6fr)_minmax(180px,0.7fr)_minmax(220px,0.9fr)_auto]">
             <SearchInput
               value={q}
