@@ -369,44 +369,6 @@ export default function AppLayout() {
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{todayLabel}</span>
               </div>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
-                    aria-label="Abrir menú de usuario"
-                  >
-                    <div className="hidden text-right md:block">
-                      <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRole || "Usuario"}</div>
-                    </div>
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
-                  <DropdownMenuLabel className="flex items-center gap-3">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem disabled>
-                    <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={logout}>
-                    <LogOut className="h-4 w-4" /> Cerrar sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </header>
