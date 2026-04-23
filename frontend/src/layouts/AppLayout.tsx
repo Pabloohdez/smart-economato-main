@@ -182,8 +182,11 @@ export default function AppLayout() {
 
     // Solo ocultar overflow en viewport movil cuando sidebar esta abierto
     const isMobileViewport = window.innerWidth <= 820;
-    // En Inicio: header fijo y scroll solo en el contenido (main)
-    const shouldHideScroll = (isMobileViewport && sidebarOpen) || isInicio;
+    // En Inicio:
+    // - móvil: permitir scroll (el body puede scrollear si el main no captura bien en iOS)
+    // - escritorio: mantenerlo estático
+    const shouldHideScroll =
+      (isMobileViewport && sidebarOpen) || (isInicio && !isMobileViewport);
 
     if (shouldHideScroll) {
       document.body.style.overflow = "hidden";
@@ -254,7 +257,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[var(--color-bg-canvas)] text-[var(--color-text-strong)] font-[var(--font-family-base)] relative">
+    <div className="h-[100dvh] w-full min-w-0 overflow-x-hidden bg-[var(--color-bg-canvas)] text-[var(--color-text-strong)] font-[var(--font-family-base)] relative">
       <div
         className={`fixed inset-0 bg-[rgba(15,23,42,0.45)] z-[90] transition-opacity duration-300 ${sidebarOpen ? "opacity-100 block" : "opacity-0 hidden"}`}
         onClick={() => setSidebarOpen(false)}
