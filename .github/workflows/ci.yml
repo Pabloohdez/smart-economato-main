@@ -24,6 +24,7 @@ jobs:
       - run: npm run lint
       - run: npm run type-check
       - run: npm run test
+      - run: npm run test:coverage
       - run: npm run build
 
 backend:
@@ -45,4 +46,6 @@ backend:
       - run: npm ci
       - run: npm run type-check
       - run: npm run test
+      - run: npm run test:coverage
+      - run: npm run test:e2e
       - run: npm run build  

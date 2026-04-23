@@ -30,4 +30,15 @@ yarn-error.log*
 
 # Build
 build/
->>>>>>> origin/Pablo
+
+# Frontend/Backend builds
+frontend/dist/
+backend/dist/
+
+# Coverage
+coverage/
+frontend/coverage/
+backend/coverage/
+
+# Keep repo clean (Cursor/agents)
+.cursor/
