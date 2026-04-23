@@ -49,11 +49,11 @@ export default function TablePaginationControls({
 
   return (
     <>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">Mostrando</span>
+      <div className="flex flex-wrap items-center gap-2 max-[640px]:w-full max-[640px]:justify-between">
+        <span className="text-sm text-gray-500 max-[640px]:w-full max-[640px]:text-left">Mostrando</span>
         <div className="relative">
           <details ref={pageSizeDetailsRef} className="group">
-            <summary className="list-none flex items-center gap-1.5 rounded-md border border-black bg-white px-2.5 py-1 text-sm text-gray-700 cursor-pointer select-none hover:bg-gray-50">
+            <summary className="list-none flex items-center gap-1.5 rounded-md border border-black bg-white px-2.5 py-1 text-sm text-gray-700 cursor-pointer select-none hover:bg-gray-50 max-[640px]:w-[72px] max-[640px]:justify-between">
               <span className="font-medium">{pageSize}</span>
               <ChevronDown className="w-3 h-3 text-gray-400 group-open:rotate-180 transition-transform" />
             </summary>
@@ -84,10 +84,12 @@ export default function TablePaginationControls({
             </div>
           </details>
         </div>
-        <span className="text-sm text-gray-500">de {totalItems} {totalLabel}</span>
+        <span className="text-sm text-gray-500 max-[640px]:w-full max-[640px]:text-left">
+          de {totalItems} {totalLabel}
+        </span>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1 max-[640px]:w-full max-[640px]:justify-center">
         <button
           onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -96,7 +98,7 @@ export default function TablePaginationControls({
             }, 320);
           }}
           disabled={safePage === 1}
-          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40 max-[640px]:h-10 max-[640px]:min-w-10"
           type="button"
         >
           {"«"}
@@ -107,7 +109,7 @@ export default function TablePaginationControls({
             onPageChange(Math.max(1, safePage - 1));
           }}
           disabled={safePage === 1}
-          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40 max-[640px]:h-10 max-[640px]:min-w-10"
           type="button"
         >
           {"‹"}
@@ -126,7 +128,7 @@ export default function TablePaginationControls({
                   pageNumber === safePage
                     ? "border-[var(--brand-700)] bg-[var(--brand-600)] text-white font-semibold"
                     : "border-black bg-white text-gray-700 hover:bg-gray-50"
-                }`}
+                } max-[640px]:h-10 max-[640px]:min-w-10`}
                 type="button"
               >
                 {pageNumber}
@@ -139,7 +141,7 @@ export default function TablePaginationControls({
             onPageChange(Math.min(totalPages, safePage + 1));
           }}
           disabled={safePage === totalPages}
-          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40 max-[640px]:h-10 max-[640px]:min-w-10"
           type="button"
         >
           {"›"}
@@ -150,7 +152,7 @@ export default function TablePaginationControls({
             onPageChange(totalPages);
           }}
           disabled={safePage === totalPages}
-          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40"
+          className="rounded-md border border-black bg-white px-2 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-50 disabled:opacity-40 max-[640px]:h-10 max-[640px]:min-w-10"
           type="button"
         >
           {"»"}

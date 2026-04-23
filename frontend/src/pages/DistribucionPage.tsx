@@ -773,7 +773,56 @@ export default function DistribucionPage() {
           </div>
         }
       >
-        <div className="max-h-[400px] overflow-y-auto">
+        {/* Móvil: cards (evita solapes de columnas) */}
+        <div className="hidden max-[640px]:block">
+          {loadingHistorial ? (
+            <div className="py-6 text-center">
+              <Spinner size="sm" label="Cargando historial..." />
+            </div>
+          ) : historial.length === 0 ? (
+            <div className="py-6 text-center text-[#666]">No hay salidas registradas</div>
+          ) : (
+            <div className="grid gap-3">
+              {historial.map((mov, idx) => {
+                const { fecha, hora } = formatFechaHora(mov.fecha);
+                const motivoTxt = mov.motivo || "Sin especificar";
+                const cls = badgeDestinoClass(motivoTxt);
+                return (
+                  <div
+                    key={`mov-m-${idx}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[12px] text-slate-500">
+                          {fecha} · <span className="text-slate-400">{hora}</span>
+                        </div>
+                        <div className="mt-1 truncate text-[14px] font-extrabold text-slate-900">
+                          {mov.producto_nombre || "Producto desconocido"}
+                        </div>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <span className={`inline-block rounded-[20px] px-3 py-1.5 text-[12px] font-normal uppercase tracking-[0.5px] ${cls}`}>
+                            {motivoTxt}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--color-border-default)] px-2.5 py-1 text-[12px] font-normal text-[var(--color-text-muted)]">
+                            {mov.usuario_nombre || "Desconocido"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cantidad</div>
+                        <div className="text-[16px] font-extrabold text-slate-900">{mov.cantidad}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Tablet/Desktop: tabla */}
+        <div className="max-h-[400px] overflow-y-auto max-[640px]:hidden">
           <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
             <TableHeader className="sticky top-0 z-[1] bg-white">
               <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
