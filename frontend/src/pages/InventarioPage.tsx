@@ -230,14 +230,16 @@ export default function InventarioPage() {
   return (
     <StaggerPage className="mx-auto w-full max-w-[1460px] px-[clamp(12px,2.4vw,24px)] pb-8 pt-0">
       <StaggerItem>
-        <div className="mb-3 flex items-start gap-4 pt-1">
+        <div className="mb-3 grid grid-cols-[auto_1fr] items-center gap-4 pt-1">
           <div className="shrink-0 text-center">
             <div className="mx-auto inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Boxes className="h-5 w-5" strokeWidth={2} />
             </div>
-            <p className="mt-1 text-[13px] font-semibold text-slate-500">{filtered.length} productos listados</p>
+            <p className="mt-1 text-[13px] font-semibold text-slate-500">
+              {filtered.length} productos listados
+            </p>
           </div>
-          <div className="min-w-0 pt-1">
+          <div className="min-w-0">
             <h1 className="text-3xl font-bold leading-none text-primary">Inventario</h1>
           </div>
         </div>

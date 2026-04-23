@@ -94,12 +94,12 @@ export default function TablePagination({
 
   return (
     <motion.div
-      className="bo-table-pagination gap-4 px-4 py-3 sm:px-5"
+      className="bo-table-pagination flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-5 max-[640px]:flex-col max-[640px]:items-stretch"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="flex flex-1 flex-wrap items-center gap-3 text-sm text-slate-500">
+      <div className="flex flex-1 flex-wrap items-center gap-3 text-sm text-slate-500 max-[640px]:flex-col max-[640px]:items-stretch">
         <div className="flex items-center gap-2.5 rounded-2xl border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm">
           <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Filas</span>
           <div className="w-[88px]">
@@ -114,14 +114,18 @@ export default function TablePagination({
           </div>
         </div>
 
-        <div className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-[var(--color-border-default)] bg-slate-50/80 px-4 py-2 text-[13px] font-semibold text-slate-600">
-          <span>Mostrando {startItem}-{endItem}</span>
-          <span className="text-slate-300">|</span>
-          <span>{totalItems} {label}</span>
+        <div className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-[var(--color-border-default)] bg-slate-50/80 px-4 py-2 text-[13px] font-semibold text-slate-600 max-[640px]:w-full max-[640px]:justify-between">
+          <span className="whitespace-nowrap">
+            Mostrando {startItem}-{endItem}
+          </span>
+          <span className="text-slate-300 max-[640px]:hidden">|</span>
+          <span className="whitespace-nowrap">
+            {totalItems} {label}
+          </span>
         </div>
       </div>
 
-      <div className="inline-flex flex-wrap items-center gap-1.5" aria-label="Paginación de tabla">
+      <div className="inline-flex flex-wrap items-center gap-1.5 max-[640px]:w-full max-[640px]:justify-center" aria-label="Paginación de tabla">
         <button
           className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white text-slate-500 shadow-sm transition-[background,color,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 sm:inline-flex"
           type="button"

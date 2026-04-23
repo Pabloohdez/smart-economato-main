@@ -665,7 +665,48 @@ export default function AvisosPage() {
             </div>
           }
         >
-          <div className="overflow-x-auto">
+          {/* Móvil: cards */}
+          <div className="hidden max-[640px]:block">
+            {loading ? (
+              <div className="py-6 text-center">
+                <Spinner size="sm" label="Cargando datos financieros..." />
+              </div>
+            ) : gastosMensuales.length === 0 ? (
+              <div className="py-6 text-center text-slate-500">No hay datos de gastos registrados</div>
+            ) : (
+              <div className="grid gap-3">
+                {gastosMensuales.map((g, idx) => (
+                  <div
+                    key={`gastos-m-${g.mes}-${g.nombre_usuario}-${idx}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                          {formatearMes(g.mes)}
+                        </div>
+                        <div className="mt-1 truncate text-[14px] font-extrabold text-slate-900">
+                          {g.nombre_usuario}
+                        </div>
+                        <div className="mt-2 text-[12px] text-slate-600">
+                          Pedidos: <span className="font-semibold text-slate-800">{g.num_pedidos}</span>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</div>
+                        <div className="text-[16px] font-extrabold text-slate-900">
+                          {Number(g.total_mes).toFixed(2)} €
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Tablet/Desktop: tabla */}
+          <div className="overflow-x-auto max-[640px]:hidden">
             <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">

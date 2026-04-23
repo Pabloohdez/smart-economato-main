@@ -666,7 +666,100 @@ export default function RendimientoPage() {
             </div>
           }
         >
-          <div className="w-full overflow-x-auto">
+          {/* Móvil: cards */}
+          <div className="hidden max-[640px]:block">
+            {registrosRendimiento.length === 0 ? (
+              <div className="py-10 text-center text-slate-400">
+                <div className="flex flex-col items-center gap-2">
+                  <Table2 className="h-8 w-8 opacity-50" />
+                  <p className="m-0 font-semibold text-slate-500">No hay registros de rendimiento</p>
+                  <small className="text-[12px] text-slate-400">Haz clic en "Nuevo Análisis" para comenzar</small>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {registrosRendimiento.map((reg, index) => {
+                  const porcTotal =
+                    totalesActuales.pesoBruto > 0
+                      ? (reg.pesoBruto / totalesActuales.pesoBruto) * 100
+                      : 0;
+                  return (
+                    <div
+                      key={`rend-act-m-${reg.id}-${index}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-[14px] font-extrabold text-slate-900">{reg.ingrediente}</div>
+                          <div className="mt-2 flex flex-wrap items-center gap-2">
+                            <Badge variant={reg.rendimiento >= 75 ? "success" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                              Rend. {reg.rendimiento.toFixed(1)}%
+                            </Badge>
+                            <Badge variant={reg.merma >= 30 ? "destructive" : "secondary"} className="px-3 py-1 text-[11px] font-semibold">
+                              Merma {reg.merma.toFixed(1)}%
+                            </Badge>
+                            <span className="text-[12px] font-semibold text-slate-600">
+                              % Total {porcTotal.toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="bo-table-action-btn text-slate-500"
+                          title="Eliminar registro"
+                          onClick={() => eliminarRegistro(index)}
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Bruto</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{reg.pesoBruto.toFixed(3)}</div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Neto</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{reg.pesoNeto.toFixed(3)}</div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Desp.</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{reg.desperdicio.toFixed(3)}</div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">Totales</div>
+                    <div className="text-[16px] font-extrabold text-[var(--color-brand-500)]">
+                      {totalesActuales.rendimiento.toFixed(1)}% / {totalesActuales.merma.toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Bruto</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{totalesActuales.pesoBruto.toFixed(3)}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Neto</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{totalesActuales.pesoNeto.toFixed(3)}</div>
+                    </div>
+                    <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Desp.</div>
+                      <div className="text-[13px] font-extrabold text-slate-900">{totalesActuales.desperdicio.toFixed(3)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Tablet/Desktop: tabla */}
+          <div className="w-full overflow-x-auto max-[640px]:hidden">
             <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
