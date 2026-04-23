@@ -336,10 +336,8 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
-        <header
-          className="hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block"
-        >
-          <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <header className="sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl">
+          <div className={isInicio ? "flex items-center justify-between gap-4 px-6 py-4 max-[820px]:px-4 max-[820px]:py-3" : "hidden max-[820px]:flex items-center justify-between gap-4 px-4 py-3"}>
             <div className="flex min-w-0 items-center gap-3">
               <button
                 className="hidden h-[42px] w-[42px] items-center justify-center rounded-[14px] border border-[var(--color-border-default)] text-[var(--color-text-strong)] transition-[background] duration-150 hover:bg-[#f1f5f9] max-[820px]:inline-flex"
@@ -352,20 +350,18 @@ export default function AppLayout() {
                 <Menu className="h-[18px] w-[18px]" />
               </button>
 
-              {isInicio ? (
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                    <LayoutDashboard className="h-4 w-4 text-[var(--color-brand-500)]" />
-                    Inicio
-                  </div>
-                  <div className="mt-1 text-[16px] font-extrabold tracking-[-0.02em] text-[var(--color-text-strong)] leading-tight">
-                    Panel de inicio
-                  </div>
-                  <div className="mt-0.5 text-[12px] text-[var(--color-text-muted)] leading-snug truncate max-w-[48vw]">
-                    Acceso rápido a secciones del panel
-                  </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  <LayoutDashboard className="h-4 w-4 text-[var(--color-brand-500)]" />
+                  Inicio
                 </div>
-              ) : null}
+                <div className="mt-1 text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text-strong)] leading-tight max-[820px]:text-[16px]">
+                  Panel de inicio
+                </div>
+                <div className="mt-0.5 text-[12px] text-[var(--color-text-muted)] leading-snug truncate max-w-[48vw]">
+                  Acceso rápido a secciones del panel
+                </div>
+              </div>
             </div>
 
             <div className="flex items-center gap-3 max-[520px]:gap-2">
