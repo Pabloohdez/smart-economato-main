@@ -1,3 +1,0 @@
-admin_create=ok
-admin_login=ok
-admin_route_status=403
