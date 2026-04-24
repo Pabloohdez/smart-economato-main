@@ -523,12 +523,12 @@ export default function RendimientoPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[768px]:grid-cols-2 max-[480px]:grid-cols-1">
+      <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
         <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="min-w-0 flex flex-col gap-1">
             <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Ingredientes Analizados</span>
             <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">{estadisticas.ingredientes}</span>
           </div>
@@ -538,7 +538,7 @@ export default function RendimientoPage() {
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#f0fff4] text-[#38a169]">
             <i className="fa-solid fa-arrow-trend-up"></i>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="min-w-0 flex flex-col gap-1">
             <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Rendimiento Medio</span>
             <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
               {estadisticas.rendimientoMedio.toFixed(1)}%
@@ -550,7 +550,7 @@ export default function RendimientoPage() {
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-arrow-trend-down"></i>
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="min-w-0 flex flex-col gap-1">
             <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Merma Media</span>
             <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
               {estadisticas.mermaMedia.toFixed(1)}%
@@ -562,10 +562,11 @@ export default function RendimientoPage() {
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
             <Trash2 strokeWidth={1.5} size={22} />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="min-w-0 flex flex-col gap-1">
             <span className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">Desperdicio Total</span>
-            <span className="text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
-              {estadisticas.desperdicioTotal.toFixed(2)} kg
+            <span className="break-words text-[1.5rem] font-extrabold text-[var(--color-text-strong)]">
+              {estadisticas.desperdicioTotal.toFixed(2)}{" "}
+              <span className="whitespace-nowrap">kg</span>
             </span>
           </div>
         </div>
@@ -666,8 +667,8 @@ export default function RendimientoPage() {
             </div>
           }
         >
-          {/* Móvil: cards */}
-          <div className="hidden max-[640px]:block">
+          {/* Móvil/Tablet (incluye iPad): cards */}
+          <div className="hidden max-[1366px]:block">
             {registrosRendimiento.length === 0 ? (
               <div className="py-10 text-center text-slate-400">
                 <div className="flex flex-col items-center gap-2">
@@ -758,19 +759,19 @@ export default function RendimientoPage() {
             )}
           </div>
 
-          {/* Tablet/Desktop: tabla */}
-          <div className="w-full overflow-x-auto max-[640px]:hidden">
+          {/* Desktop grande: tabla */}
+          <div className="w-full overflow-x-auto max-[1366px]:hidden">
             <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                  <TableHead className="rounded-l-2xl">Ingrediente</TableHead>
-                  <TableHead>Peso Bruto (kg)</TableHead>
-                  <TableHead>Peso Neto (kg)</TableHead>
-                  <TableHead>Desperdicio (kg)</TableHead>
-                  <TableHead>% Total</TableHead>
-                  <TableHead>% Rendimiento</TableHead>
-                  <TableHead>% Merma</TableHead>
-                  <TableHead className="rounded-r-2xl">Acción</TableHead>
+                  <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[220px]">Ingrediente</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Peso Bruto (kg)</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Peso Neto (kg)</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[160px]">Desperdicio (kg)</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[110px]">% Total</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[150px]">% Rendimiento</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[120px]">% Merma</TableHead>
+                  <TableHead className="rounded-r-2xl whitespace-nowrap w-[90px] text-center">Acción</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -934,8 +935,8 @@ export default function RendimientoPage() {
             </div>
           }
         >
-          {/* Móvil: cards (evita solapes) */}
-          <div className="hidden max-[640px]:block">
+          {/* Móvil/Tablet (incluye iPad): cards */}
+          <div className="hidden max-[1366px]:block">
             {loadingHistorial ? (
               <div className="py-6 text-center text-slate-500">Cargando historial...</div>
             ) : registrosFiltradosHistorial.length === 0 ? (
@@ -998,8 +999,8 @@ export default function RendimientoPage() {
             )}
           </div>
 
-          {/* Tablet/Desktop: tabla */}
-          <div className="w-full overflow-x-auto max-[640px]:hidden">
+          {/* Desktop grande: tabla */}
+          <div className="w-full overflow-x-auto max-[1366px]:hidden">
             <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">

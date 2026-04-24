@@ -1177,8 +1177,8 @@ export default function Recepcion() {
           </div>
         }
       >
-        {/* Móvil: cards (evita cabeceras solapadas) */}
-        <div className="hidden max-[640px]:block">
+        {/* Móvil/Tablet (incluye iPad): cards (evita cabeceras solapadas) */}
+        <div className="hidden max-[1366px]:block">
           {!recepcion.length ? (
             <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-600 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
               <div className="mx-auto mb-2 inline-flex size-12 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
@@ -1250,20 +1250,20 @@ export default function Recepcion() {
           )}
         </div>
 
-        {/* Tablet/Desktop: tabla */}
-        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto max-[640px]:hidden">
-          <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white max-[1024px]:min-w-0">
+        {/* Desktop grande: tabla */}
+        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto max-[1366px]:hidden">
+          <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
             <TableHeader>
               <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                <TableHead>Producto</TableHead>
-                <TableHead className="max-[1024px]:hidden">Proveedor</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Unidad</TableHead>
-                <TableHead>Cantidad Recibida</TableHead>
-                <TableHead>Nuevo Stock</TableHead>
-                <TableHead className="max-[1024px]:hidden">Precio</TableHead>
-                <TableHead>Subtotal</TableHead>
-                <TableHead>Acción</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[260px]">Producto</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[180px]">Proveedor</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[110px]">Unidad</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[160px]">Cantidad Recibida</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Nuevo Stock</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Precio</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[130px]">Subtotal</TableHead>
+                <TableHead className="whitespace-nowrap w-[90px] text-center">Acción</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -1283,17 +1283,17 @@ export default function Recepcion() {
               ) : (
                 recepcion.map((r, idx) => (
                   <TableRow key={`${String(r.producto_id)}-${idx}`} className="bo-table-row">
-                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{r.nombre}</TableCell>
-                    <TableCell className="text-sm text-gray-500 max-[1024px]:hidden">{r.proveedor}</TableCell>
-                    <TableCell className="text-sm text-gray-500 max-[1024px]:text-[12px]">{r.stock}</TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-gray-500 max-[1024px]:text-[12px]">{String(r.unidad ?? "ud")}</TableCell>
-                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{r.cantidadRecibida}</TableCell>
-                    <TableCell className="text-sm font-medium text-primary max-[1024px]:text-[12px]">{r.stock + r.cantidadRecibida}</TableCell>
-                    <TableCell className="text-sm text-gray-500 max-[1024px]:hidden">{formatEUR(r.precio)}</TableCell>
-                    <TableCell className="text-sm font-medium text-gray-900 max-[1024px]:text-[12px]">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-900">{r.nombre}</TableCell>
+                    <TableCell className="text-sm text-gray-500">{r.proveedor}</TableCell>
+                    <TableCell className="text-sm text-gray-500">{r.stock}</TableCell>
+                    <TableCell className="whitespace-nowrap text-sm text-gray-500">{String(r.unidad ?? "ud")}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-900">{r.cantidadRecibida}</TableCell>
+                    <TableCell className="text-sm font-medium text-primary">{r.stock + r.cantidadRecibida}</TableCell>
+                    <TableCell className="text-sm text-gray-500">{formatEUR(r.precio)}</TableCell>
+                    <TableCell className="text-sm font-medium text-gray-900">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
                     <TableCell>
                       <button
-                        className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500 max-[1024px]:h-11 max-[1024px]:w-11"
+                        className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
                         onClick={() => eliminarFila(idx)}
                         title="Eliminar"
                         type="button"

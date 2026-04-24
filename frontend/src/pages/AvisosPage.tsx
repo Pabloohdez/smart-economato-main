@@ -13,7 +13,7 @@ import {
 import Spinner from "../components/ui/Spinner";
 import { useAuth } from "../contexts/AuthContext";
 import { getGastosMensuales, type GastoMensual } from "../services/informesService";
-import { getLotesProducto, type LoteProducto } from "../services/lotesService";
+import { consumirLote, getLotesProducto, type LoteProducto } from "../services/lotesService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
@@ -111,9 +111,11 @@ export default function AvisosPage() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.productos }),
         queryClient.invalidateQueries({ queryKey: queryKeys.informesGastosMensuales }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.lotesProducto }),
       ]);
       broadcastQueryInvalidation(queryKeys.productos);
       broadcastQueryInvalidation(queryKeys.informesGastosMensuales);
+      broadcastQueryInvalidation(queryKeys.lotesProducto);
     },
   });
 
@@ -358,6 +360,13 @@ export default function AvisosPage() {
             : "Caducidad registrada desde Centro de Avisos",
         });
 
+        // Si es un lote real (id > 0), también consumimos su cantidad para que el aviso desaparezca.
+        if (loteSeleccionado && loteSeleccionado.loteId > 0) {
+          await consumirLote({ loteId: loteSeleccionado.loteId, cantidad: cantidadModal });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.lotesProducto });
+          broadcastQueryInvalidation(queryKeys.lotesProducto);
+        }
+
         mostrarToast("Baja registrada correctamente", "success");
       } else if (accionActual === "pedido") {
         if (!productoSeleccionado) return;
@@ -365,7 +374,6 @@ export default function AvisosPage() {
           proveedorId:
             productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,
           total: cantidadModal * productoSeleccionado.precioNum,
-          usuarioId: String(user?.id ?? "admin"),
           items: [
             {
               producto_id: productoSeleccionado.id,

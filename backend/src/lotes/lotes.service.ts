@@ -95,5 +95,34 @@ export class LotesService {
       return created;
     });
   }
+
+  async consumir(input: { loteId: number; cantidad: number }) {
+    await this.ensureTable();
+    const loteId = Number(input.loteId);
+    const cantidad = Number(input.cantidad);
+
+    return this.db.transaction(async (client) => {
+      const { rows } = await client.query<{ cantidad: string | number }>(
+        'SELECT cantidad FROM lotes_producto WHERE id = $1 FOR UPDATE',
+        [loteId],
+      );
+      const row = rows[0];
+      if (!row) {
+        throw new Error('Lote no encontrado');
+      }
+      const actual = Number((row as any).cantidad);
+      if (!Number.isFinite(actual) || actual <= 0) {
+        throw new Error('Lote sin cantidad disponible');
+      }
+      if (cantidad > actual) {
+        throw new Error(`Cantidad de lote insuficiente (disponible: ${actual}, solicitado: ${cantidad})`);
+      }
+
+      const nuevo = Number((actual - cantidad).toFixed(3));
+      await client.query('UPDATE lotes_producto SET cantidad = $1 WHERE id = $2', [nuevo, loteId]);
+
+      return { loteId, cantidadAnterior: actual, cantidadNueva: nuevo, message: 'Lote actualizado' };
+    });
+  }
 }
 

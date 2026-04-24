@@ -415,8 +415,8 @@ export default function EscandallosPage() {
             </div>
           }
         >
-          {/* Móvil: cards */}
-          <div className="hidden max-[640px]:block">
+          {/* Móvil/Tablet (incluye iPad): cards (evita tablas aplastadas) */}
+          <div className="hidden max-[1366px]:block">
             {escandallosFiltrados.length === 0 ? (
               <div className="py-8 text-center text-slate-500">No se encontraron recetas.</div>
             ) : (
@@ -488,18 +488,18 @@ export default function EscandallosPage() {
             )}
           </div>
 
-          {/* Tablet/Desktop: tabla */}
-          <div className="overflow-x-auto max-[640px]:hidden">
-            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+          {/* Desktop grande: tabla */}
+          <div className="overflow-x-auto max-[1366px]:hidden">
+            <Table className="min-w-[1120px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                  <TableHead className="rounded-l-2xl">Nombre</TableHead>
-                  <TableHead>Autor</TableHead>
-                  <TableHead>Ingredientes</TableHead>
-                  <TableHead>Coste Total</TableHead>
-                  <TableHead>PVP</TableHead>
-                  <TableHead>Beneficio %</TableHead>
-                  <TableHead className="rounded-r-2xl text-center min-w-[140px] w-[140px]">Acciones</TableHead>
+                  <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Nombre</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Autor</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Ingredientes</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Coste total</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[110px]">PVP</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Beneficio %</TableHead>
+                  <TableHead className="rounded-r-2xl whitespace-nowrap text-center min-w-[160px] w-[160px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

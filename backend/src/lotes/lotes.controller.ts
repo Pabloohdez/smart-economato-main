@@ -9,6 +9,11 @@ type CrearLoteBody = {
   cantidad: number;
 };
 
+type ConsumirLoteBody = {
+  loteId: number;
+  cantidad: number;
+};
+
 @Controller('lotes')
 export class LotesController {
   constructor(private readonly lotesService: LotesService) {}
@@ -63,6 +68,22 @@ export class LotesController {
         };
       }),
     );
+  }
+
+  @Roles('admin')
+  @Post('consumir')
+  async consumir(@Body() body: ConsumirLoteBody) {
+    const loteId = Number((body as any)?.loteId);
+    const cantidad = Number((body as any)?.cantidad);
+
+    if (!Number.isFinite(loteId) || loteId <= 0) {
+      throw new HttpException('loteId inválido', HttpStatus.BAD_REQUEST);
+    }
+    if (!Number.isFinite(cantidad) || cantidad <= 0) {
+      throw new HttpException('Cantidad inválida', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.lotesService.consumir({ loteId, cantidad });
   }
 }
 
