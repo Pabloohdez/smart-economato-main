@@ -588,11 +588,14 @@ export default function EscandallosPage() {
           >
             <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5">
               <div>
+                <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-[var(--color-text-muted)]">
+                  Ficha de escandallo
+                </p>
                 <h2 className="m-0 text-[1.25rem] font-bold text-[var(--color-text-strong)]">
                   {detalleEscandallo.nombre}
                 </h2>
                 <p className="mt-1.5 text-sm font-medium text-[var(--color-text-muted)]">
-                  Ficha de escandallo • Autor: {detalleEscandallo.autor || "Admin"}
+                  Ficha de escandallo · Autor: {detalleEscandallo.autor || "Admin"}
                 </p>
               </div>
 
@@ -601,6 +604,8 @@ export default function EscandallosPage() {
                 className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
                 aria-label="Cerrar ventana"
                 onClick={cerrarDetalle}
+                className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
+                aria-label="Cerrar ventana"
               >
                 <i className="fa-solid fa-xmark" />
               </button>
