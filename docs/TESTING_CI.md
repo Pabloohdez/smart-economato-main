@@ -1,4 +1,4 @@
-# Tests y CI — Smart Economato
+  # Tests y CI — Smart Economato
 
 Este documento reúne **cómo ejecutar tests localmente** y qué valida el **pipeline de CI**.
 
