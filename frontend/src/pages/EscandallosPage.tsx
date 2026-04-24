@@ -276,13 +276,12 @@ export default function EscandallosPage() {
     }
 
     const payload = {
-      nombre: nombrePlato.trim(),
-      pvp: Number.parseFloat(pvpPlato || "0") || 0,
-      elaboracion: elaboracionPlato,
-      items: [...ingredientesReceta],
-      coste_total: costeTotal,
-      autor: String(user?.nombre ?? user?.username ?? "Admin"),
-    };
+    nombre: nombrePlato.trim(),
+    pvp: Number(String(pvpPlato).replace(",", ".")) || 0,
+    elaboracion: elaboracionPlato,
+    items: [...ingredientesReceta],
+    autor: String(user?.nombre ?? user?.username ?? "Admin"),
+  } as Parameters<typeof saveEscandallo>[0];
 
     if (!payload.nombre) {
       showNotification("El nombre del plato es obligatorio.", "warning");
@@ -914,7 +913,7 @@ export default function EscandallosPage() {
                       <input
                         type="number"
                         id="cantidadIngrediente"
-                        step="0.001"
+                        step="0.1"
                         placeholder="0"
                         className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                         value={cantidadIngrediente}
@@ -966,8 +965,8 @@ export default function EscandallosPage() {
                                 ) : (
                                   <input
                                     type="number"
-                                    step="0.001"
-                                    min="0.001"
+                                    step="0.1"
+                                    min="0.1"
                                     className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                                     value={String(ing.cantidad)}
                                     onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
