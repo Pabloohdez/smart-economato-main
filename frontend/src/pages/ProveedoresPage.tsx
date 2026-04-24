@@ -430,6 +430,7 @@ export default function ProveedoresPage() {
 
       <StaggerItem>
       <BackofficeTablePanel
+        className="mt-3"
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
