@@ -847,14 +847,15 @@ export default function Recepcion() {
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
         <div
-          className={`fixed inset-0 z-[1000] backdrop-blur-[4px] transition-[background,opacity] duration-200 ${cerrandoDrawerPedidos ? "bg-[rgba(11,18,32,0)]" : "bg-[rgba(11,18,32,0.42)]"} flex items-stretch justify-end`}
+          className={`fixed inset-0 z-[1000] overflow-y-auto backdrop-blur-[4px] transition-[background,opacity] duration-200 ${cerrandoDrawerPedidos ? "bg-[rgba(11,18,32,0)]" : "bg-[rgba(11,18,32,0.42)]"}`}
           onClick={cerrarDrawerPedidos}
         >
+        <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
           <aside
-            className={`w-[min(38vw,620px)] max-w-[100vw] h-full bg-[var(--color-bg-surface)] border-l border-[var(--color-border-default)] shadow-[-16px_0_40px_rgba(0,0,0,0.18)] p-6 overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "translate-x-9 opacity-55" : "translate-x-0 opacity-100"} max-[1280px]:w-[min(58vw,760px)] max-[1024px]:w-[min(78vw,920px)] max-[768px]:w-screen max-[768px]:p-4`}
+            className={`w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "scale-[0.985] opacity-55" : "scale-100 opacity-100"}`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-3 mb-5">
+            <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5 max-[768px]:px-4">
               <h3 className="m-0 flex items-center gap-2">
                 <Import className="h-5 w-5 text-[var(--color-brand-500)]" /> Importar Pedido Pendiente
               </h3>
@@ -868,7 +869,7 @@ export default function Recepcion() {
               </button>
             </div>
 
-            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1">
+            <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1 px-6 pb-6 max-[768px]:px-4 max-[768px]:pb-4 [scrollbar-gutter:stable]">
 
             {pedidosPendientesQuery.isLoading || pedidosPendientesQuery.isFetching ? (
               <div className="flex-1 flex items-center justify-center">
@@ -1172,12 +1173,13 @@ export default function Recepcion() {
             )}
             </div>
 
-            <div className="mt-5 pt-[18px] pb-2 border-t border-[var(--color-border-default)] bg-[var(--color-bg-surface)]">
+            <div className="border-t border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-4 max-[768px]:px-4">
               <button className="w-full min-h-12 px-3 py-3 rounded-lg font-semibold cursor-pointer border-0 bg-[var(--color-border-default)] text-[var(--color-text-muted)]" onClick={cerrarDrawerPedidos}>
                 Cerrar
               </button>
             </div>
           </aside>
+          </div>
         </div>,
         document.body
       )}
@@ -1187,11 +1189,12 @@ export default function Recepcion() {
 
       {lotesModalOpen && createPortal(
         <div
-          className="fixed inset-0 bg-black/50 z-[11000] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 z-[11000] overflow-y-auto"
           onClick={(e) => e.target === e.currentTarget && cerrarLotes()}
         >
-          <div className="w-full max-w-[560px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
-            <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex items-center justify-between gap-3">
+          <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
+          <div className="w-full max-w-[620px] max-h-[calc(100dvh-3rem)] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden flex flex-col min-h-0">
+            <div className="px-6 py-5 max-[640px]:px-4 max-[640px]:py-4 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex items-center justify-between gap-3">
               <div className="font-extrabold text-[16px]">Lotes por caducidad</div>
               <button
                 type="button"
@@ -1202,8 +1205,8 @@ export default function Recepcion() {
                 <i className="fa-solid fa-xmark" />
               </button>
             </div>
-            <div className="p-6 grid gap-4">
-              <div className="text-[13px] text-[var(--color-text-muted)] font-semibold">
+            <div className="p-6 max-[640px]:p-4 grid gap-5 overflow-y-auto min-h-0 [scrollbar-gutter:stable]">
+              <div className="text-[13px] leading-6 text-[var(--color-text-muted)] font-semibold">
                 Cantidad a recibir ahora:{" "}
                 <strong>{Number(verifQty[lotesDetalleId] ?? 0).toFixed(3)} {lotesUnidad}</strong>
               </div>
@@ -1232,7 +1235,7 @@ export default function Recepcion() {
 
               <button
                 type="button"
-                className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[10px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)]"
+                className="min-h-11 bg-[var(--color-bg-soft)] text-[var(--color-text-muted)] border-2 border-[var(--color-border-default)] px-5 py-2.5 rounded-[12px] font-semibold cursor-pointer hover:bg-[var(--color-border-default)]"
                 onClick={agregarLote}
               >
                 <i className="fa-solid fa-plus" /> Añadir lote
@@ -1284,6 +1287,7 @@ export default function Recepcion() {
                 </button>
               </div>
             </div>
+          </div>
           </div>
         </div>,
         document.body
@@ -1392,29 +1396,33 @@ export default function Recepcion() {
               <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
                 <TableHeader>
                   <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                    <TableHead className="whitespace-nowrap min-w-[260px]">Producto</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[180px]">Proveedor</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[110px]">Unidad</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[160px]">Cantidad Recibida</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[140px]">Nuevo Stock</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[120px]">Precio</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[130px]">Subtotal</TableHead>
-                    <TableHead className="whitespace-nowrap w-[90px] text-center">Acción</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[260px] px-5 py-4">Producto</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[180px] px-5 py-4">Proveedor</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[120px] px-5 py-4">Stock Actual</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[110px] px-5 py-4">Unidad</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[160px] px-5 py-4">Cantidad Recibida</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[140px] px-5 py-4">Nuevo Stock</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[120px] px-5 py-4">Precio</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[130px] px-5 py-4">Subtotal</TableHead>
+                    <TableHead className="whitespace-nowrap w-[90px] px-5 py-4 text-center">Acción</TableHead>
                   </TableRow>
                 </TableHeader>
 
                 <TableBody>
                   {recepcion.map((r, idx) => (
                     <TableRow key={`${String(r.producto_id)}-${idx}`} className="bo-table-row">
-                      <TableCell className="text-sm font-medium text-gray-900">{r.nombre}</TableCell>
-                      <TableCell className="text-sm text-gray-500">{r.proveedor}</TableCell>
-                      <TableCell className="text-sm text-gray-500">{r.stock}</TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-gray-500">{String(r.unidad ?? "ud")}</TableCell>
-                      <TableCell className="text-sm font-medium text-gray-900">{r.cantidadRecibida}</TableCell>
-                      <TableCell className="text-sm font-medium text-primary">{r.stock + r.cantidadRecibida}</TableCell>
-                      <TableCell className="text-sm text-gray-500">{formatEUR(r.precio)}</TableCell>
-                      <TableCell className="text-sm font-medium text-gray-900">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
+                      <TableCell className="px-5 py-4 text-sm font-medium text-gray-900">
+                        <div className="min-w-0 truncate">{r.nombre}</div>
+                      </TableCell>
+                      <TableCell className="px-5 py-4 text-sm text-gray-500">
+                        <div className="min-w-0 truncate">{r.proveedor}</div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm text-gray-500">{r.stock}</TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm text-gray-500">{String(r.unidad ?? "ud")}</TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm font-medium text-gray-900">{r.cantidadRecibida}</TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm font-medium text-primary">{r.stock + r.cantidadRecibida}</TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm text-gray-500">{formatEUR(r.precio)}</TableCell>
+                      <TableCell className="whitespace-nowrap px-5 py-4 text-sm font-medium text-gray-900">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
                       <TableCell>
                         <button
                           className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"

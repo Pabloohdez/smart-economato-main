@@ -381,7 +381,6 @@ export default function DistribucionPage() {
         cantidad: item.cantidad,
         tipo: "SALIDA",
         motivo: motivo,
-        usuarioId: user?.id || "admin",
       };
 
       try {
