@@ -86,9 +86,11 @@ export default function ToolbarFilterDropdown({
               </span>
             ) : null}
             <span className="min-w-0 truncate font-medium text-slate-700">{label}</span>
-            <span className={cn("shrink-0 capitalize transition-colors duration-150", active ? "text-red-600 font-semibold" : "text-slate-500")}>
-              ({valueLabel})
-            </span>
+            {active ? (
+              <span className={cn("shrink-0 capitalize transition-colors duration-150", "text-red-600 font-semibold")}>
+                {valueLabel}
+              </span>
+            ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
             {active ? <span className="h-1.5 w-1.5 rounded-full bg-red-600" /> : null}

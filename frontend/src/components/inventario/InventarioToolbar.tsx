@@ -109,7 +109,7 @@ export default function InventarioToolbar({
 
           <div className="min-w-[180px] flex-1 max-[520px]:min-w-0 max-[520px]:w-full">
             <ToolbarFilterDropdown
-              label="Stock"
+              label="Filtrar"
               valueLabel={stockLabel}
               value={stockMode}
               active={stockMode !== "todos"}
