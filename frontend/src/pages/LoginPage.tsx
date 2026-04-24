@@ -212,6 +212,10 @@ export default function LoginPage() {
                   </Link>
                 </p>
               </div>
+              
+              <div className="mt-6 flex justify-center opacity-40 hover:opacity-100 transition-opacity duration-300">
+                <img src="/logo-pdsg.png" alt="PDSG Logo" className="h-20 w-auto grayscale hover:grayscale-0 transition-all duration-300" />
+              </div>
             </div>
           </section>
         </div>
