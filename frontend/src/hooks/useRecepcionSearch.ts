@@ -1,28 +1,48 @@
 import { useMemo, useState } from "react";
-import type { Producto } from "../types";
-import { useDebouncedValue } from "./useDebouncedValue";
+import type { Producto } from "../services/productosService";
 
-type Params = {
+type UseRecepcionSearchProps = {
   productos: Producto[];
 };
 
-export function useRecepcionSearch({ productos }: Params) {
+export function useRecepcionSearch({ productos }: UseRecepcionSearchProps) {
   const [term, setTerm] = useState("");
-  const [provFiltro, setProvFiltro] = useState<string>("");
-  const [catFiltro, setCatFiltro] = useState<string>("");
-  const debouncedTerm = useDebouncedValue(term, 250);
+  const [provFiltro, setProvFiltro] = useState("");
+  const [catFiltro, setCatFiltro] = useState("");
 
   const resultadosAutocomplete = useMemo(() => {
-    const t = debouncedTerm.trim().toLowerCase();
-    if (!t) return [];
+    const s = term.trim().toLowerCase();
 
-    return productos.filter((p) => {
-      const matchText = String(p.nombre ?? "").toLowerCase().includes(t);
-      const matchProv = !provFiltro || String(p.proveedorId ?? "") === String(provFiltro);
-      const matchCat = !catFiltro || String(p.categoriaId ?? "") === String(catFiltro);
-      return matchText && matchProv && matchCat;
+    let list = productos.slice();
+
+    if (provFiltro) {
+      list = list.filter(
+        (p) => String(p.proveedorId ?? "") === String(provFiltro),
+      );
+    }
+
+    if (catFiltro) {
+      list = list.filter(
+        (p) => String(p.categoriaId ?? "") === String(catFiltro),
+      );
+    }
+
+    if (!s) return list;
+
+    return list.filter((p) => {
+      const nombre = String(p.nombre ?? "").toLowerCase();
+      const codigoBarras = String((p as any).codigoBarras ?? "").toLowerCase();
+      const marca = String((p as any).marca ?? "").toLowerCase();
+      const id = String(p.id ?? "").toLowerCase();
+
+      return (
+        nombre.includes(s) ||
+        codigoBarras.includes(s) ||
+        marca.includes(s) ||
+        id.includes(s)
+      );
     });
-  }, [catFiltro, debouncedTerm, productos, provFiltro]);
+  }, [productos, term, provFiltro, catFiltro]);
 
   return {
     term,
