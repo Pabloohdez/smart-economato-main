@@ -920,107 +920,234 @@ export default function Recepcion() {
                         {items.length === 0 ? (
                           <p>Sin items</p>
                         ) : (
-                          <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
-                            <TableHeader>
-                              <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                                <TableHead className="rounded-l-2xl">Producto</TableHead>
-                                <TableHead>Unidad</TableHead>
-                                <TableHead>Pedida</TableHead>
-                                <TableHead>Recibida (Antes)</TableHead>
-                                <TableHead className="rounded-r-2xl text-center w-[160px] max-[1024px]:w-[148px]">A Recibir Ahora</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {items.map((it) => {
-                                const qtyVerif = verifQty[it.id] ?? 0;
-                                const maxRecibir = Math.max(
-                                  0,
-                                  (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0)
-                                );
-                                const unidad = (it.unidad ?? "ud") as string;
-                                const step = stepDeUnidad(unidad);
-                                return (
-                                  <TableRow key={String(it.id)} className="bo-table-row">
-                                    <TableCell>{it.producto_nombre}</TableCell>
-                                    <TableCell className="whitespace-nowrap">{unidad}</TableCell>
-                                    <TableCell>{it.cantidad}</TableCell>
-                                    <TableCell>{it.cantidad_recibida || 0}</TableCell>
-                                    <TableCell className="text-center">
-                                      {!completado ? (
-                                        <div className="inline-flex w-full items-center justify-center gap-2">
-                                          <button
-                                            type="button"
-                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                            aria-label={`Reducir cantidad de ${it.producto_nombre}`}
-                                            onClick={() =>
-                                              actualizarCantidadVerificada(
-                                                String(it.id),
-                                                Number(qtyVerif || 0) - step,
-                                                maxRecibir
-                                              )
-                                            }
-                                          >
-                                            -
-                                          </button>
-                                          <input
-                                            type="number"
-                                            min={0}
-                                            max={maxRecibir}
-                                            step={step}
-                                            value={qtyVerif}
-                                            onChange={(e) =>
-                                              actualizarCantidadVerificada(
-                                                String(it.id),
-                                                Number(e.target.value || 0),
-                                                maxRecibir
-                                              )
-                                            }
-                                            className="w-[74px] min-h-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
-                                            inputMode="numeric"
-                                          />
-                                          <button
-                                            type="button"
-                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
-                                            aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
-                                            title="Usar lectura de báscula"
-                                            onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
-                                            disabled={!scale.connected || scale.weightKg == null || step === 1}
-                                          >
-                                            <Scale className="h-4 w-4" />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
-                                            aria-label={`Gestionar lotes de ${it.producto_nombre}`}
-                                            title="Lotes (caducidad)"
-                                            onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
-                                          >
-                                            <CalendarDays className="h-4 w-4" />
-                                          </button>
-                                          <button
-                                            type="button"
-                                            className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
-                                            aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
-                                            onClick={() =>
-                                              actualizarCantidadVerificada(
-                                                String(it.id),
-                                                Number(qtyVerif || 0) + step,
-                                                maxRecibir
-                                              )
-                                            }
-                                          >
-                                            +
-                                          </button>
+                          <>
+                            {/* Móvil/Tablet (incluye iPad): cards */}
+                            <div className="hidden max-[1366px]:block">
+                              <div className="mt-2.5 grid gap-3">
+                                {items.map((it) => {
+                                  const qtyVerif = verifQty[it.id] ?? 0;
+                                  const maxRecibir = Math.max(
+                                    0,
+                                    (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0),
+                                  );
+                                  const unidad = (it.unidad ?? "ud") as string;
+                                  const step = stepDeUnidad(unidad);
+
+                                  return (
+                                    <div
+                                      key={`ped-item-m-${String(ped.id)}-${String(it.id)}`}
+                                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                                    >
+                                      <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                          <div className="truncate text-[14px] font-extrabold text-slate-900">
+                                            {it.producto_nombre}
+                                          </div>
+                                          <div className="mt-1 text-[12px] text-slate-500">
+                                            <span className="font-semibold text-slate-700">{unidad}</span>{" "}
+                                            · Pedida <span className="font-semibold text-slate-700">{it.cantidad}</span>{" "}
+                                            · Recibida{" "}
+                                            <span className="font-semibold text-slate-700">
+                                              {it.cantidad_recibida || 0}
+                                            </span>
+                                          </div>
                                         </div>
-                                      ) : (
-                                        "—"
-                                      )}
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
+
+                                        {!completado ? (
+                                          <div className="inline-flex items-center gap-2">
+                                            <button
+                                              type="button"
+                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                                              aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
+                                              title="Usar lectura de báscula"
+                                              onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
+                                              disabled={!scale.connected || scale.weightKg == null || step === 1}
+                                            >
+                                              <Scale className="h-4 w-4" />
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
+                                              aria-label={`Gestionar lotes de ${it.producto_nombre}`}
+                                              title="Lotes (caducidad)"
+                                              onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
+                                            >
+                                              <CalendarDays className="h-4 w-4" />
+                                            </button>
+                                          </div>
+                                        ) : null}
+                                      </div>
+
+                                      <div className="mt-3">
+                                        {!completado ? (
+                                          <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2">
+                                            <button
+                                              type="button"
+                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+                                              aria-label={`Reducir cantidad de ${it.producto_nombre}`}
+                                              onClick={() =>
+                                                actualizarCantidadVerificada(
+                                                  String(it.id),
+                                                  Number(qtyVerif || 0) - step,
+                                                  maxRecibir,
+                                                )
+                                              }
+                                            >
+                                              -
+                                            </button>
+                                            <input
+                                              type="number"
+                                              min={0}
+                                              max={maxRecibir}
+                                              step={step}
+                                              value={qtyVerif}
+                                              onChange={(e) =>
+                                                actualizarCantidadVerificada(
+                                                  String(it.id),
+                                                  Number(e.target.value || 0),
+                                                  maxRecibir,
+                                                )
+                                              }
+                                              className="min-h-11 w-full rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-3 py-2 text-center font-semibold [appearance:textfield]"
+                                              inputMode="numeric"
+                                            />
+                                            <button
+                                              type="button"
+                                              className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+                                              aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
+                                              onClick={() =>
+                                                actualizarCantidadVerificada(
+                                                  String(it.id),
+                                                  Number(qtyVerif || 0) + step,
+                                                  maxRecibir,
+                                                )
+                                              }
+                                            >
+                                              +
+                                            </button>
+                                          </div>
+                                        ) : (
+                                          <div className="text-[13px] font-semibold text-slate-500">Pedido completado</div>
+                                        )}
+
+                                        <div className="mt-2 text-[12px] text-slate-500">
+                                          Máx. recibir ahora:{" "}
+                                          <span className="font-semibold text-slate-700">{maxRecibir}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Desktop grande: tabla */}
+                            <div className="max-[1366px]:hidden">
+                              <div className="w-full overflow-x-auto">
+                                <Table className="mt-2.5 min-w-[720px] overflow-hidden rounded-[20px] border border-slate-100 bg-white text-[12px]">
+                                  <TableHeader>
+                                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                                      <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Producto</TableHead>
+                                      <TableHead className="whitespace-nowrap min-w-[90px]">Unidad</TableHead>
+                                      <TableHead className="whitespace-nowrap min-w-[90px]">Pedida</TableHead>
+                                      <TableHead className="whitespace-nowrap min-w-[140px]">Recibida (Antes)</TableHead>
+                                      <TableHead className="rounded-r-2xl whitespace-nowrap text-center min-w-[260px]">A Recibir Ahora</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {items.map((it) => {
+                                      const qtyVerif = verifQty[it.id] ?? 0;
+                                      const maxRecibir = Math.max(
+                                        0,
+                                        (Number(it.cantidad) || 0) - (Number(it.cantidad_recibida) || 0),
+                                      );
+                                      const unidad = (it.unidad ?? "ud") as string;
+                                      const step = stepDeUnidad(unidad);
+                                      return (
+                                        <TableRow key={String(it.id)} className="bo-table-row">
+                                          <TableCell className="max-w-[320px] truncate">{it.producto_nombre}</TableCell>
+                                          <TableCell className="whitespace-nowrap">{unidad}</TableCell>
+                                          <TableCell>{it.cantidad}</TableCell>
+                                          <TableCell>{it.cantidad_recibida || 0}</TableCell>
+                                          <TableCell className="text-center">
+                                            {!completado ? (
+                                              <div className="inline-flex w-full flex-wrap items-center justify-center gap-2">
+                                                <button
+                                                  type="button"
+                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+                                                  aria-label={`Reducir cantidad de ${it.producto_nombre}`}
+                                                  onClick={() =>
+                                                    actualizarCantidadVerificada(
+                                                      String(it.id),
+                                                      Number(qtyVerif || 0) - step,
+                                                      maxRecibir,
+                                                    )
+                                                  }
+                                                >
+                                                  -
+                                                </button>
+                                                <input
+                                                  type="number"
+                                                  min={0}
+                                                  max={maxRecibir}
+                                                  step={step}
+                                                  value={qtyVerif}
+                                                  onChange={(e) =>
+                                                    actualizarCantidadVerificada(
+                                                      String(it.id),
+                                                      Number(e.target.value || 0),
+                                                      maxRecibir,
+                                                    )
+                                                  }
+                                                  className="w-[84px] min-h-11 rounded-[10px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-2.5 py-2 text-center font-semibold [appearance:textfield]"
+                                                  inputMode="numeric"
+                                                />
+                                                <button
+                                                  type="button"
+                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+                                                  aria-label={`Usar lectura de báscula para ${it.producto_nombre}`}
+                                                  title="Usar lectura de báscula"
+                                                  onClick={() => capturarBasculaParaDetalle(String(it.id), unidad, maxRecibir)}
+                                                  disabled={!scale.connected || scale.weightKg == null || step === 1}
+                                                >
+                                                  <Scale className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[var(--color-text-strong)]"
+                                                  aria-label={`Gestionar lotes de ${it.producto_nombre}`}
+                                                  title="Lotes (caducidad)"
+                                                  onClick={() => abrirLotes(String(it.id), unidad, maxRecibir)}
+                                                >
+                                                  <CalendarDays className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="bo-table-action-btn h-11 w-11 min-h-11 min-w-11 rounded-[10px] text-[22px] font-bold leading-none"
+                                                  aria-label={`Aumentar cantidad de ${it.producto_nombre}`}
+                                                  onClick={() =>
+                                                    actualizarCantidadVerificada(
+                                                      String(it.id),
+                                                      Number(qtyVerif || 0) + step,
+                                                      maxRecibir,
+                                                    )
+                                                  }
+                                                >
+                                                  +
+                                                </button>
+                                              </div>
+                                            ) : (
+                                              "—"
+                                            )}
+                                          </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
 
@@ -1250,72 +1377,68 @@ export default function Recepcion() {
           )}
         </div>
 
-        {/* Desktop grande: tabla */}
-        <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto max-[1366px]:hidden">
-          <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
-            <TableHeader>
-              <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-                <TableHead className="whitespace-nowrap min-w-[260px]">Producto</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[180px]">Proveedor</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[110px]">Unidad</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[160px]">Cantidad Recibida</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[140px]">Nuevo Stock</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[120px]">Precio</TableHead>
-                <TableHead className="whitespace-nowrap min-w-[130px]">Subtotal</TableHead>
-                <TableHead className="whitespace-nowrap w-[90px] text-center">Acción</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {!recepcion.length ? (
-                <TableRow>
-                  <TableCell colSpan={9}>
-                    <div className="px-5 py-[60px]">
-                      <div className="flex flex-col items-center justify-center gap-2 text-center">
-                        <i className="fa-solid fa-inbox mb-1 text-[48px] opacity-55" />
-                        <p className="m-0 font-bold">No hay productos en la recepción actual</p>
-                        <small className="opacity-80">Busca y selecciona productos para comenzar</small>
-                      </div>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recepcion.map((r, idx) => (
-                  <TableRow key={`${String(r.producto_id)}-${idx}`} className="bo-table-row">
-                    <TableCell className="text-sm font-medium text-gray-900">{r.nombre}</TableCell>
-                    <TableCell className="text-sm text-gray-500">{r.proveedor}</TableCell>
-                    <TableCell className="text-sm text-gray-500">{r.stock}</TableCell>
-                    <TableCell className="whitespace-nowrap text-sm text-gray-500">{String(r.unidad ?? "ud")}</TableCell>
-                    <TableCell className="text-sm font-medium text-gray-900">{r.cantidadRecibida}</TableCell>
-                    <TableCell className="text-sm font-medium text-primary">{r.stock + r.cantidadRecibida}</TableCell>
-                    <TableCell className="text-sm text-gray-500">{formatEUR(r.precio)}</TableCell>
-                    <TableCell className="text-sm font-medium text-gray-900">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
-                    <TableCell>
-                      <button
-                        className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-                        onClick={() => eliminarFila(idx)}
-                        title="Eliminar"
-                        type="button"
-                      >
-                        <Trash2 strokeWidth={1.5} size={18} />
-                      </button>
-                    </TableCell>
+        {/* Desktop grande: tabla / estado vacío limpio */}
+        <div className="max-[1366px]:hidden">
+          {!recepcion.length ? (
+            <div className="rounded-[24px] border border-slate-100 bg-white px-6 py-[64px] text-center text-slate-600 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+              <div className="mx-auto mb-2 inline-flex size-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-500">
+                <i className="fa-solid fa-inbox text-[24px] opacity-70" />
+              </div>
+              <p className="m-0 font-bold text-slate-900">No hay productos en la recepción actual</p>
+              <small className="opacity-80">Busca y selecciona productos para comenzar</small>
+            </div>
+          ) : (
+            <div className="[-webkit-overflow-scrolling:touch] w-full overflow-x-auto">
+              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                <TableHeader>
+                  <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
+                    <TableHead className="whitespace-nowrap min-w-[260px]">Producto</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[180px]">Proveedor</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[110px]">Unidad</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[160px]">Cantidad Recibida</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[140px]">Nuevo Stock</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[120px]">Precio</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[130px]">Subtotal</TableHead>
+                    <TableHead className="whitespace-nowrap w-[90px] text-center">Acción</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
+                </TableHeader>
 
-            {!!recepcion.length && (
-              <TableFooter>
-                <TableRow className="text-[16px] hover:bg-[var(--color-bg-soft)]">
-                  <TableCell colSpan={6}><strong>TOTAL DE LA RECEPCIÓN</strong></TableCell>
-                  <TableCell className="text-[20px] font-bold text-[var(--color-brand-500)]">{formatEUR(totalRecepcion)}</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableFooter>
-            )}
-          </Table>
+                <TableBody>
+                  {recepcion.map((r, idx) => (
+                    <TableRow key={`${String(r.producto_id)}-${idx}`} className="bo-table-row">
+                      <TableCell className="text-sm font-medium text-gray-900">{r.nombre}</TableCell>
+                      <TableCell className="text-sm text-gray-500">{r.proveedor}</TableCell>
+                      <TableCell className="text-sm text-gray-500">{r.stock}</TableCell>
+                      <TableCell className="whitespace-nowrap text-sm text-gray-500">{String(r.unidad ?? "ud")}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900">{r.cantidadRecibida}</TableCell>
+                      <TableCell className="text-sm font-medium text-primary">{r.stock + r.cantidadRecibida}</TableCell>
+                      <TableCell className="text-sm text-gray-500">{formatEUR(r.precio)}</TableCell>
+                      <TableCell className="text-sm font-medium text-gray-900">{formatEUR(r.precio * r.cantidadRecibida)}</TableCell>
+                      <TableCell>
+                        <button
+                          className="bo-table-action-btn inline-flex text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+                          onClick={() => eliminarFila(idx)}
+                          title="Eliminar"
+                          type="button"
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+
+                <TableFooter>
+                  <TableRow className="text-[16px] hover:bg-[var(--color-bg-soft)]">
+                    <TableCell colSpan={6}><strong>TOTAL DE LA RECEPCIÓN</strong></TableCell>
+                    <TableCell className="text-[20px] font-bold text-[var(--color-brand-500)]">{formatEUR(totalRecepcion)}</TableCell>
+                    <TableCell />
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </div>
+          )}
         </div>
       </BackofficeTablePanel>
       </StaggerItem>
