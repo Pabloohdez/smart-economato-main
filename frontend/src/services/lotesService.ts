@@ -31,3 +31,11 @@ export async function crearLotesBatch(items: CrearLotePayload[]): Promise<LotePr
   }));
 }
 
+export async function consumirLote(payload: { loteId: number; cantidad: number }) {
+  return apiFetch("/lotes/consumir", {
+    method: "POST",
+    headers: { "X-Requested-With": "XMLHttpRequest" },
+    body: JSON.stringify(payload),
+  });
+}
+

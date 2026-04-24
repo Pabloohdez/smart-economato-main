@@ -452,8 +452,8 @@ export default function ProveedoresPage() {
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
-            {/* Móvil: lista/card (sin tabla ancha) */}
-            <div className="hidden max-[640px]:block">
+            {/* Móvil/Tablet: lista/card (evita tabla aplastada en iPad) */}
+            <div className="hidden max-[1024px]:block">
               {visible.length === 0 ? (
                 <div className="py-8 text-center text-slate-500">No hay proveedores para mostrar.</div>
               ) : (
@@ -544,16 +544,16 @@ export default function ProveedoresPage() {
               )}
             </div>
 
-            {/* Desktop/Tablet: tabla */}
-            <div className="w-full overflow-x-auto max-[640px]:hidden">
-              <Table className="min-w-[840px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+            {/* Desktop: tabla */}
+            <div className="w-full overflow-x-auto max-[1024px]:hidden">
+              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
                 <TableHeader>
                   <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Proveedor</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="rounded-r-2xl text-right">Acciones</TableHead>
+                    <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[260px]">Proveedor</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[200px]">Contacto</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[150px]">Teléfono</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[220px]">Email</TableHead>
+                    <TableHead className="rounded-r-2xl whitespace-nowrap text-right min-w-[140px]">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <AnimatePresence mode="wait" initial={false}>

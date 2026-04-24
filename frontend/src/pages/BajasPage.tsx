@@ -708,18 +708,91 @@ export default function BajasPage() {
           </div>
         }
       >
-        <div className="overflow-x-auto">
-          <Table id="tablaBajas" className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+        {/* Móvil/Tablet (incluye iPad): cards (evita cabeceras aplastadas) */}
+        <div className="hidden max-[1366px]:block">
+          {productosBaja.length === 0 ? (
+            <div className="py-10 text-center text-slate-400">
+              <div className="flex flex-col items-center gap-2">
+                <FileText className="h-8 w-8 opacity-50" />
+                <p className="m-0 text-[16px] font-semibold text-slate-500">No hay productos registrados en esta baja</p>
+                <small className="block text-[13px] text-slate-400">Busca y selecciona productos para comenzar</small>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {productosBaja.map((p, index) => {
+                const stockFinal = Number(p.stock) - Number(p.cantidadBaja);
+                return (
+                  <div
+                    key={`baja-act-m-${String(p.id)}-${index}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-[14px] font-extrabold text-slate-900">{p.nombre}</div>
+                        <div className="mt-0.5 text-[12px] text-slate-500">{p.nombreCategoria}</div>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge variant={variantTipoBaja(p.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                            {p.tipoBaja}
+                          </Badge>
+                          <span className="text-[12px] font-semibold text-slate-600">
+                            Stock {p.stock} → <span className="text-slate-900">{stockFinal}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="bo-table-action-btn text-slate-500"
+                        title="Eliminar producto"
+                        onClick={() => eliminarProductoBaja(index)}
+                        aria-label={`Eliminar ${p.nombre}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cant.</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{p.cantidadBaja}</div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Precio</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{Number(p.precio ?? 0).toFixed(2)} €</div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Pérdida</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{p.valorPerdido.toFixed(2)} €</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">Valor total</div>
+                  <div className="text-[16px] font-extrabold text-[#c53030]">{totalValorBajas.toFixed(2)} €</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop grande: tabla */}
+        <div className="overflow-x-auto max-[1366px]:hidden">
+          <Table id="tablaBajas" className="min-w-[1100px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
             <TableHeader>
               <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                <TableHead className="rounded-l-2xl">Producto</TableHead>
-                <TableHead>Tipo de Baja</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Cantidad Baja</TableHead>
-                <TableHead>Stock Final</TableHead>
-                <TableHead>Precio Unit.</TableHead>
-                <TableHead>Valor Perdido</TableHead>
-                <TableHead className="rounded-r-2xl">Acción</TableHead>
+                <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Producto</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Tipo de Baja</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Cantidad Baja</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Final</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[130px]">Precio Unit.</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Valor Perdido</TableHead>
+                <TableHead className="rounded-r-2xl whitespace-nowrap w-[90px] text-center">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody id="tbodyBajas">
@@ -750,7 +823,7 @@ export default function BajasPage() {
                     <TableCell className="text-sm font-semibold text-primary">{Number(p.stock) - Number(p.cantidadBaja)}</TableCell>
                     <TableCell className="text-sm text-slate-600">{Number(p.precio ?? 0).toFixed(2)} €</TableCell>
                     <TableCell className="text-sm font-semibold text-primary">{p.valorPerdido.toFixed(2)} €</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <button
                         className="bo-table-action-btn text-slate-500"
                         type="button"

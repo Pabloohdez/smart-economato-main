@@ -415,8 +415,8 @@ export default function EscandallosPage() {
             </div>
           }
         >
-          {/* Móvil: cards */}
-          <div className="hidden max-[640px]:block">
+          {/* Móvil/Tablet (incluye iPad): cards (evita tablas aplastadas) */}
+          <div className="hidden max-[1366px]:block">
             {escandallosFiltrados.length === 0 ? (
               <div className="py-8 text-center text-slate-500">No se encontraron recetas.</div>
             ) : (
@@ -488,18 +488,18 @@ export default function EscandallosPage() {
             )}
           </div>
 
-          {/* Tablet/Desktop: tabla */}
-          <div className="overflow-x-auto max-[640px]:hidden">
-            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+          {/* Desktop grande: tabla */}
+          <div className="overflow-x-auto max-[1366px]:hidden">
+            <Table className="min-w-[1120px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                  <TableHead className="rounded-l-2xl">Nombre</TableHead>
-                  <TableHead>Autor</TableHead>
-                  <TableHead>Ingredientes</TableHead>
-                  <TableHead>Coste Total</TableHead>
-                  <TableHead>PVP</TableHead>
-                  <TableHead>Beneficio %</TableHead>
-                  <TableHead className="rounded-r-2xl text-center min-w-[140px] w-[140px]">Acciones</TableHead>
+                  <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Nombre</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Autor</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Ingredientes</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Coste total</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[110px]">PVP</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Beneficio %</TableHead>
+                  <TableHead className="rounded-r-2xl whitespace-nowrap text-center min-w-[160px] w-[160px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -732,38 +732,41 @@ export default function EscandallosPage() {
       <AnimatePresence>
         {modalOpen && (
           <motion.div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
+            className="fixed inset-0 z-[1000] overflow-y-auto bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
           >
-            <motion.div
-              className="relative w-[95%] max-w-[860px] overflow-hidden rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10"
-              initial={{ scale: 0.96, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.96, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            >
-              <button
-                type="button"
-                className="no-global-button absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)]"
-                aria-label="Cerrar ventana"
-                onClick={cerrarModal}
+            <div className="flex min-h-[100dvh] w-full items-start justify-center px-4 py-6">
+              <motion.div
+                className="relative w-full max-w-[860px] rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10 max-h-[calc(100dvh-3rem)] flex flex-col min-h-0"
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.96, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
               >
-                <i className="fa-solid fa-xmark" />
-              </button>
-              <div className="p-5">
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-5 py-4">
+                  <h2 className="m-0 text-[1.15rem] font-bold text-[var(--color-text-strong)]">
+                    {modoLectura
+                      ? "Ver Receta"
+                      : editEscandalloId
+                        ? "Editar Receta"
+                        : "Nueva Receta"}
+                  </h2>
 
-            <h2 className="m-0 mt-0 text-[1.25rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-4 mb-5">
-              {modoLectura
-                ? "Ver Receta"
-                : editEscandalloId
-                  ? "Editar Receta"
-                  : "Nueva Receta"}
-            </h2>
+                  <button
+                    type="button"
+                    className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
+                    aria-label="Cerrar ventana"
+                    onClick={cerrarModal}
+                  >
+                    <i className="fa-solid fa-xmark" />
+                  </button>
+                </div>
 
-            <form onSubmit={guardarEscandallo}>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [scrollbar-gutter:stable]">
+                  <form onSubmit={guardarEscandallo}>
               <div className="grid grid-cols-2 gap-4 mb-5 max-[768px]:grid-cols-1">
                 <div className="flex flex-col gap-2 mb-4">
                   <label htmlFor="nombrePlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
@@ -1062,9 +1065,10 @@ export default function EscandallosPage() {
                   </button>
                 )}
               </div>
-            </form>
-              </div>
-            </motion.div>
+                  </form>
+                </div>
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

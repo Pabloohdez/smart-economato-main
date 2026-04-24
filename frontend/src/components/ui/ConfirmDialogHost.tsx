@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "./Button";
 import { registerConfirmDialogHandler, type ConfirmOptions } from "../../utils/notifications";
 
@@ -88,7 +89,7 @@ export default function ConfirmDialogHost() {
 
   if (!activeDialog) return null;
 
-  return (
+  const dialog = (
     <div
       className="fixed inset-0 z-[99998] grid place-items-center bg-black/45 p-4 backdrop-blur-[3px]"
       onMouseDown={(event) => {
@@ -139,4 +140,6 @@ export default function ConfirmDialogHost() {
       </div>
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(dialog, document.body) : dialog;
 }

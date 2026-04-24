@@ -15,6 +15,7 @@ export default function RegistroPage() {
   const [msg, setMsg] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   function validar(): string | null {
     if (!form.usuario.trim()) return "El nombre de usuario es obligatorio.";
@@ -61,133 +62,230 @@ export default function RegistroPage() {
   const hasError = msg && !success;
 
   return (
-    <div className="m-0 min-h-screen flex flex-col justify-center items-center bg-[linear-gradient(140deg,#fff1f1_0%,#ffe5e5_48%,#fff8f6_100%)] bg-fixed overflow-x-hidden relative font-[var(--font-family-base)] before:content-[''] before:absolute before:w-[400px] before:h-[400px] before:bg-[radial-gradient(#ffc2c2,transparent_70%)] before:top-[-100px] before:left-[-100px] before:z-0 before:opacity-60 after:content-[''] after:absolute after:w-[300px] after:h-[300px] after:bg-[radial-gradient(#ffc2c2,transparent_70%)] after:bottom-[-50px] after:right-[-50px] after:z-0 after:opacity-60">
-      <div className="absolute top-5 left-10 w-[calc(100%-80px)] flex justify-between items-center z-10 max-[480px]:top-2.5 max-[480px]:left-5">
-        <img
-          src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
-          alt="Virgen de la Candelaria"
-          className="w-40 h-auto [filter:drop-shadow(0_2px_4px_rgba(0,0,0,0.1))]"
-        />
-      </div>
-      <div className="bg-white/90 border border-white/75 p-[42px] rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] text-center w-full max-w-[420px] relative z-[5] animate-fadeInUp backdrop-blur-[12px] max-[480px]:w-[88%] max-[480px]:p-[28px_20px]">
-        <h2 className="mt-0 mb-[var(--space-5)] text-[1.65rem] font-bold tracking-[-0.02em] text-[var(--color-brand-500)]">Crear Cuenta</h2>
-        <form className="flex flex-col w-full" onSubmit={onSubmit} noValidate aria-describedby={msg ? "registro-msg" : undefined}>
+    <div className="login-page min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
+      <main className="flex min-h-[100dvh] w-full items-stretch p-0">
+        <div className="grid min-h-[100dvh] w-full grid-cols-[1.15fr_minmax(340px,520px)] overflow-hidden rounded-none border-0 bg-white/60 shadow-none backdrop-blur max-[960px]:grid-cols-1">
+          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)] text-white">
+            <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" aria-hidden="true" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(179,49,49,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(217,119,69,0.25),transparent_45%)]" aria-hidden="true" />
+            <div className="relative z-[1] flex h-full flex-col">
+              <div className="inline-flex items-center gap-4">
+                <div className="flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-white/10 p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
+                  <img
+                    src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
+                    alt="CIFP Virgen de la Candelaria"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
 
-          <div className="w-full">
-            <label htmlFor="reg-usuario" className="sr-only">Nombre de usuario</label>
-            <input
-              id="reg-usuario"
-              type="text"
-              value={form.usuario}
-              onChange={(e) => setForm((f) => ({ ...f, usuario: e.target.value }))}
-              placeholder="Nombre de usuario *"
-              className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-              required
-              autoComplete="username"
-              minLength={3}
-              aria-required="true"
-              aria-invalid={hasError ? true : undefined}
-            />
-          </div>
+                <div className="min-w-0">
+                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/70">
+                    Smart Economato
+                  </p>
+                  <h1 className="m-0 mt-2 text-[40px] font-extrabold tracking-[-0.05em] text-white max-[1100px]:text-[36px] max-[960px]:text-[30px]">
+                    Solicitud de alta
+                  </h1>
+                </div>
+              </div>
 
-          <div className="w-full">
-            <label htmlFor="reg-password" className="sr-only">Contraseña</label>
-            <input
-              id="reg-password"
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              placeholder="Contraseña * (mín. 8 caracteres)"
-              className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-              required
-              autoComplete="new-password"
-              minLength={8}
-              aria-required="true"
-              aria-invalid={hasError ? true : undefined}
-            />
-          </div>
+              <p className="mt-8 max-w-[520px] text-[15px] leading-7 text-white/80 max-[960px]:mt-6">
+                Crea tu cuenta para acceder al panel operativo. Recibirás un mensaje de confirmación tras el registro.
+              </p>
 
-          <div className="flex gap-2.5 w-full">
-            <div className="w-full">
-              <label htmlFor="reg-nombre" className="sr-only">Nombre</label>
-              <input
-                id="reg-nombre"
-                type="text"
-                value={form.nombre}
-                onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
-                placeholder="Nombre"
-                className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-                autoComplete="given-name"
-              />
+              <div className="login-page__features mt-8 grid gap-5 max-[960px]:mt-6">
+                {[
+                  { title: "Datos", text: "Rellena usuario, contraseña y datos de contacto." },
+                  { title: "Acceso", text: "Podrás iniciar sesión una vez creada la cuenta." },
+                  { title: "Soporte", text: "Si hay incidencias, puedes solicitar reenvío de verificación." },
+                ].map((item) => (
+                  <article key={item.title} className="grid gap-1">
+                    <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-white/55">
+                      {item.title}
+                    </p>
+                    <p className="m-0 text-[13px] leading-6 text-white/78">
+                      {item.text}
+                    </p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-auto pt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 max-[960px]:pt-8">
+                Centro operativo del CIFP Virgen de la Candelaria
+              </div>
             </div>
-            <div className="w-full">
-              <label htmlFor="reg-apellidos" className="sr-only">Apellidos</label>
-              <input
-                id="reg-apellidos"
-                type="text"
-                value={form.apellidos}
-                onChange={(e) => setForm((f) => ({ ...f, apellidos: e.target.value }))}
-                placeholder="Apellidos"
-                className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-                autoComplete="family-name"
-              />
+          </section>
+
+          <section className="flex items-center justify-center px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)]">
+            <div className="w-full max-w-[520px] rounded-[28px] border border-slate-200/80 bg-white px-[clamp(18px,3.6vw,32px)] py-[clamp(18px,3.6vh,32px)] shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+              <div className="mb-7">
+                <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                  Registro
+                </p>
+                <h2 className="m-0 mt-2 text-[28px] font-extrabold tracking-[-0.04em] text-slate-900">
+                  Crear cuenta
+                </h2>
+                <p className="m-0 mt-2 text-[13px] leading-6 text-slate-500">
+                  Completa los datos para solicitar el alta. Podrás iniciar sesión después.
+                </p>
+              </div>
+
+              <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate aria-describedby={msg ? "registro-msg" : undefined}>
+                <div>
+                  <label htmlFor="reg-usuario" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                    Usuario
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                      <i className="fa-regular fa-user" />
+                    </span>
+                    <input
+                      id="reg-usuario"
+                      type="text"
+                      value={form.usuario}
+                      onChange={(e) => setForm((f) => ({ ...f, usuario: e.target.value }))}
+                      placeholder="Nombre de usuario"
+                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      required
+                      minLength={3}
+                      autoComplete="username"
+                      aria-invalid={hasError ? true : undefined}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="reg-password" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                    Contraseña
+                  </label>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
+                      <i className="fa-solid fa-lock" />
+                    </span>
+                    <input
+                      id="reg-password"
+                      type={showPassword ? "text" : "password"}
+                      value={form.password}
+                      onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                      placeholder="Mínimo 8 caracteres"
+                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-12 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      required
+                      minLength={8}
+                      autoComplete="new-password"
+                      aria-invalid={hasError ? true : undefined}
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-[10px] top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] border-0 bg-transparent text-slate-400 transition-[background,color] duration-150 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      onClick={() => setShowPassword((v) => !v)}
+                      aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    >
+                      <i
+                        className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} w-4 min-w-4 text-center leading-none`}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+                  <div>
+                    <label htmlFor="reg-nombre" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                      Nombre
+                    </label>
+                    <input
+                      id="reg-nombre"
+                      type="text"
+                      value={form.nombre}
+                      onChange={(e) => setForm((f) => ({ ...f, nombre: e.target.value }))}
+                      placeholder="Nombre (opcional)"
+                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      autoComplete="given-name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="reg-apellidos" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                      Apellidos
+                    </label>
+                    <input
+                      id="reg-apellidos"
+                      type="text"
+                      value={form.apellidos}
+                      onChange={(e) => setForm((f) => ({ ...f, apellidos: e.target.value }))}
+                      placeholder="Apellidos (opcional)"
+                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      autoComplete="family-name"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="reg-email" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                    Correo electrónico
+                  </label>
+                  <input
+                    id="reg-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                    placeholder="correo@centro.es (opcional)"
+                    className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                    autoComplete="email"
+                    aria-invalid={hasError ? true : undefined}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="reg-telefono" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                    Teléfono
+                  </label>
+                  <input
+                    id="reg-telefono"
+                    type="tel"
+                    value={form.telefono}
+                    onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
+                    placeholder="Teléfono (opcional)"
+                    className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                    autoComplete="tel"
+                  />
+                </div>
+
+                {msg ? (
+                  <p
+                    id="registro-msg"
+                    className={`m-0 rounded-[14px] border px-4 py-3 text-[14px] font-medium ${
+                      success
+                        ? "border-[#c6f6d5] bg-[#f0fff4] text-[#276749]"
+                        : "border-[#f6caca] bg-[#fff4f4] text-[#9f2a2a]"
+                    }`}
+                    role={hasError ? "alert" : "status"}
+                  >
+                    {msg}
+                  </p>
+                ) : null}
+
+                <button
+                  type="submit"
+                  className="mt-1 inline-flex min-h-[56px] w-full items-center justify-center rounded-[18px] border-0 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_58%,#d97745_100%)] px-4 py-4 text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_20px_40px_rgba(179,49,49,0.22)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(179,49,49,0.26)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={loading}
+                  aria-busy={loading}
+                >
+                  {loading ? "Registrando..." : "Registrarse"}
+                </button>
+              </form>
+
+              <div className="mt-6 grid gap-4 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
+                <p className="m-0">
+                  ¿Ya tienes cuenta?{" "}
+                  <Link className="font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]" to="/login">
+                    Iniciar sesión
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="w-full">
-            <label htmlFor="reg-email" className="sr-only">Correo electrónico</label>
-            <input
-              id="reg-email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              placeholder="Correo electrónico"
-              className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-              autoComplete="email"
-            />
-          </div>
-
-          <div className="w-full">
-            <label htmlFor="reg-telefono" className="sr-only">Teléfono</label>
-            <input
-              id="reg-telefono"
-              type="tel"
-              value={form.telefono}
-              onChange={(e) => setForm((f) => ({ ...f, telefono: e.target.value }))}
-              placeholder="Teléfono"
-              className="w-full box-border py-[15px] px-4 mb-[var(--space-3)] border-2 border-transparent bg-[#f8fafc] rounded-[var(--radius-md)] text-[14px] font-inherit text-[var(--color-text-default)] transition-[border-color,box-shadow,background-color,transform] duration-150 placeholder:text-[#9ca3af] focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-              autoComplete="tel"
-            />
-          </div>
-
-          {msg && (
-            <p
-              id="registro-msg"
-              className={`mt-2.5 min-h-5 text-[14px] font-medium ${success ? "text-[var(--color-success-500)]" : "text-[var(--color-brand-500)]"}`}
-              role={hasError ? "alert" : "status"}
-            >
-              {msg}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className="mt-[var(--space-2)] w-full py-[15px] px-4 rounded-[var(--radius-md)] border-0 cursor-pointer text-white font-semibold tracking-[0.35px] bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow,background] duration-150 disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:bg-[linear-gradient(135deg,#c93838_0%,var(--color-brand-500)_100%)] hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] active:translate-y-0"
-            disabled={loading}
-            aria-busy={loading}
-          >
-            {loading ? "Registrando..." : "Registrarse"}
-          </button>
-        </form>
-        <div className="mt-5">
-          <Link className="text-[13px] text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-brand-500)] font-semibold" to="/login">
-            ¿Ya tienes cuenta? Iniciar sesión
-          </Link>
+          </section>
         </div>
-      </div>
-      <footer className="fixed bottom-0 left-0 w-full py-[15px] bg-white/90 backdrop-blur-[5px] text-[12px] text-center border-t border-[#eee] z-10 text-[var(--color-text-muted)]">
-        © 2025 Pablo Hdez. Todos los derechos reservados.
-      </footer>
+      </main>
     </div>
   );
 }
