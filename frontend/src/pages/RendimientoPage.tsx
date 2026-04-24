@@ -184,7 +184,19 @@ export default function RendimientoPage() {
         const categoriaNombre = String(
           (p as any).categoria_nombre ?? p.categoria?.nombre ?? "",
         ).toLowerCase();
-        return nombre.includes(texto) || categoriaNombre.includes(texto);
+        const codigoBarras = String((p as any).codigoBarras ?? "").toLowerCase();
+        const codigoBarrasSnake = String((p as any).codigo_barras ?? "").toLowerCase();
+        const marca = String((p as any).marca ?? "").toLowerCase();
+        const id = String(p.id ?? "").toLowerCase();
+
+        return (
+          nombre.includes(texto) ||
+          categoriaNombre.includes(texto) ||
+          codigoBarras.includes(texto) ||
+          codigoBarrasSnake.includes(texto) ||
+          marca.includes(texto) ||
+          id.includes(texto)
+        );
       })
       .slice(0, 8);
 
