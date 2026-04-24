@@ -645,45 +645,47 @@ export default function EscandallosPage() {
                   </h3>
                 </div>
 
-                <Table className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 hover:bg-slate-50">
-                      <TableHead className="px-5 py-4 normal-case tracking-[0.18em] text-slate-400">Producto</TableHead>
-                      <TableHead className="px-5 py-4 text-center normal-case tracking-[0.18em] text-slate-400">Cantidad</TableHead>
-                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Coste unidad</TableHead>
-                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Subtotal</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detalleItems.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
-                          Este escandallo no tiene ingredientes registrados.
-                        </TableCell>
+                <div className="overflow-x-auto w-full pb-2">
+                  <Table className="w-full min-w-[500px] overflow-hidden rounded-2xl border border-slate-100 bg-white">
+                    <TableHeader>
+                      <TableRow className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 hover:bg-slate-50">
+                        <TableHead className="px-5 py-4 normal-case tracking-[0.18em] text-slate-400 min-w-[220px]">Producto</TableHead>
+                        <TableHead className="px-5 py-4 text-center normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Cantidad</TableHead>
+                        <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Coste ud.</TableHead>
+                        <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Subtotal</TableHead>
                       </TableRow>
-                    ) : (
-                      detalleItems.map((item, index) => {
-                        const subtotal = Number(item.cantidad) * Number(item.precio);
-                        return (
-                          <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
-                            <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
-                              {item.nombre}
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-center text-slate-500">
-                              {item.cantidad}
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-right text-slate-500">
-                              {Number(item.precio).toFixed(2)} €
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-right font-bold text-slate-700">
-                              {subtotal.toFixed(2)} €
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {detalleItems.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
+                            Este escandallo no tiene ingredientes registrados.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        detalleItems.map((item, index) => {
+                          const subtotal = Number(item.cantidad) * Number(item.precio);
+                          return (
+                            <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
+                              <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700 min-w-[220px] whitespace-normal break-words">
+                                {item.nombre}
+                              </TableCell>
+                              <TableCell className="px-5 py-4 text-center text-slate-500 whitespace-nowrap">
+                                {item.cantidad}
+                              </TableCell>
+                              <TableCell className="px-5 py-4 text-right text-slate-500 whitespace-nowrap">
+                                {Number(item.precio).toFixed(2)} €
+                              </TableCell>
+                              <TableCell className="px-5 py-4 text-right font-bold text-slate-700 whitespace-nowrap">
+                                {subtotal.toFixed(2)} €
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </section>
 
               <section className="rounded-[26px] border border-slate-200 bg-slate-50 p-5">
