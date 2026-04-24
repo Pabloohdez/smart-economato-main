@@ -591,21 +591,21 @@ export default function EscandallosPage() {
                 <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
                   Ficha de escandallo
                 </p>
-                <h2 className="m-0 text-2xl font-black tracking-tight">
+                <h2 className="m-0 text-[1.25rem] font-bold text-[var(--color-text-strong)]">
                   {detalleEscandallo.nombre}
                 </h2>
-                <p className="mt-2 text-sm font-medium text-white/80">
-                  Autor: {detalleEscandallo.autor || "Admin"}
+                <p className="mt-1.5 text-sm font-medium text-[var(--color-text-muted)]">
+                  Ficha de escandallo · Autor: {detalleEscandallo.autor || "Admin"}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={cerrarDetalle}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20 active:scale-95"
+                className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
                 aria-label="Cerrar detalle"
               >
-                <i className="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark" />
               </button>
             </div>
 
