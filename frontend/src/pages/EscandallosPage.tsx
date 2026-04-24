@@ -601,6 +601,8 @@ export default function EscandallosPage() {
 
               <button
                 type="button"
+                className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
+                aria-label="Cerrar ventana"
                 onClick={cerrarDetalle}
                 className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
                 aria-label="Cerrar ventana"
