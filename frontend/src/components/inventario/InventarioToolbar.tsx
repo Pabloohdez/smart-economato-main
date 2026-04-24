@@ -75,10 +75,11 @@ export default function InventarioToolbar({
   const dropdownTriggerClassName = "h-12";
 
   return (
-    <div className="mb-4 border-b border-[#e2e8f0] pb-4">
-      <div className="grid w-full grid-cols-12 gap-2 max-[640px]:gap-3">
+    <div className="mb-4">
+      <div className="rounded-[30px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
+      <div className="grid w-full grid-cols-1 gap-3 min-[1100px]:grid-cols-[minmax(280px,1.6fr)_minmax(170px,0.7fr)_minmax(170px,0.7fr)_minmax(200px,0.8fr)_auto_auto]">
         {/* Buscador */}
-        <div className="relative col-span-12 min-w-0 md:col-span-5">
+        <div className="relative min-w-0">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" strokeWidth={2} />
           <input
             type="text"
@@ -91,9 +92,9 @@ export default function InventarioToolbar({
         </div>
 
         {/* Filtros */}
-        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
+        <div className="min-w-0">
           <ToolbarFilterDropdown
-            label="Familias"
+            label="Familia"
             valueLabel={catLabel}
             value={catId}
             active={Boolean(catId)}
@@ -106,7 +107,7 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
+        <div className="min-w-0">
           <ToolbarFilterDropdown
             label="Stock"
             valueLabel={stockLabel}
@@ -125,7 +126,7 @@ export default function InventarioToolbar({
           />
         </div>
 
-        <div className="col-span-12 min-w-0 sm:col-span-6 md:col-span-2">
+        <div className="min-w-0">
           <ToolbarFilterDropdown
             label="Proveedor"
             valueLabel={provLabel}
@@ -140,25 +141,28 @@ export default function InventarioToolbar({
           />
         </div>
 
-        {/* Ordenar — icono solo */}
+        {/* Ordenar */}
         <button
           type="button"
           onClick={() => setOrden(orden === "asc" ? "desc" : "asc")}
-          className="bo-toolbar-secondary col-span-6 sm:col-span-3 md:col-span-1 px-3 w-full justify-center"
-          title={orden === "asc" ? "Precio ascendente — clic para invertir" : "Precio descendente — clic para invertir"}
+          className="bo-toolbar-secondary h-12 w-full justify-center gap-2 px-4"
+          title={orden === "asc" ? "Orden: precio ascendente (clic para invertir)" : "Orden: precio descendente (clic para invertir)"}
           aria-label="Invertir orden por precio"
         >
           <ArrowUpDown
             className={`h-4 w-4 transition-transform duration-300 ease-out ${orden !== "asc" ? "scale-110 rotate-180 text-[var(--color-brand-500)]" : "rotate-0"}`}
             strokeWidth={2}
           />
+          <span className="text-[13px] font-semibold">
+            Orden: {orden === "asc" ? "Precio ↑" : "Precio ↓"}
+          </span>
         </button>
 
         {/* Nuevo Producto */}
         <button
           type="button"
           onClick={onCreateProduct}
-          className="bo-toolbar-primary-blue active:scale-[0.98] col-span-12 sm:col-span-6 md:col-span-2 w-full justify-center"
+          className="bo-toolbar-primary-blue active:scale-[0.98] h-12 w-full justify-center"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Nuevo Producto
@@ -169,11 +173,12 @@ export default function InventarioToolbar({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className={`group bo-toolbar-secondary relative col-span-6 sm:col-span-3 md:col-span-1 px-3 w-full justify-center ${hasActiveFilters ? "border-[rgba(179,49,49,0.35)] text-[var(--color-brand-500)]" : ""}`}
+              className={`group bo-toolbar-secondary relative h-12 w-full justify-center gap-2 px-4 ${hasActiveFilters ? "border-[rgba(179,49,49,0.35)] text-[var(--color-brand-500)]" : ""}`}
               aria-label="Más acciones"
               title="Más acciones"
             >
               <MoreVertical className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-90" strokeWidth={2} />
+              <span className="text-[13px] font-semibold">Acciones</span>
               {hasActiveFilters && (
                 <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-[var(--color-brand-500)]" aria-hidden="true" />
               )}
@@ -203,6 +208,7 @@ export default function InventarioToolbar({
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
       </div>
     </div>
   );
