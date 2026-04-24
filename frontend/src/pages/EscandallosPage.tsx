@@ -580,145 +580,145 @@ export default function EscandallosPage() {
             transition={{ duration: 0.18 }}
           >
           <motion.div
-            className="w-full max-w-[900px] overflow-hidden rounded-[26px] bg-white shadow-2xl ring-1 ring-slate-200 flex flex-col"
+            className="w-full max-w-[850px] max-h-[calc(100dvh-2.5rem)] overflow-hidden rounded-[24px] bg-[var(--color-bg-surface)] shadow-2xl ring-1 ring-slate-200 flex flex-col min-h-0"
             initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
           >
-            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5">
+            <div className="sticky top-0 z-10 shrink-0 flex items-start justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-5 py-4">
               <div>
-                <h2 className="m-0 text-[1.25rem] font-bold text-[var(--color-text-strong)]">
+                <h2 className="m-0 text-[1.15rem] font-bold text-[var(--color-text-strong)]">
                   {detalleEscandallo.nombre}
                 </h2>
-                <p className="mt-1.5 text-sm font-medium text-[var(--color-text-muted)]">
+                <p className="mt-1 text-[13px] font-medium text-[var(--color-text-muted)]">
                   Ficha de escandallo • Autor: {detalleEscandallo.autor || "Admin"}
                 </p>
               </div>
 
               <button
                 type="button"
-                className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
+                className="no-global-button flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-sm transition hover:bg-slate-50 hover:text-[var(--color-brand-500)] active:scale-95"
                 aria-label="Cerrar ventana"
                 onClick={cerrarDetalle}
               >
-                <i className="fa-solid fa-xmark" />
+                <i className="fa-solid fa-xmark text-sm" />
               </button>
             </div>
 
-            <div className="px-6 py-5">
+            <div className="px-5 py-4 flex-1 overflow-y-auto overscroll-contain">
               <div className="grid gap-3 md:grid-cols-3">
-                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-5 py-4 text-center">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                <article className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Coste total
                   </span>
-                  <span className="mt-2 block text-2xl font-black text-slate-800">
+                  <span className="mt-1.5 block text-xl font-black text-slate-800">
                     {detalleCoste.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-5 py-4 text-center">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                <article className="rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3 text-center">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
                     PVP
                   </span>
-                  <span className="mt-2 block text-2xl font-black text-[var(--color-brand-500)]">
+                  <span className="mt-1.5 block text-xl font-black text-[var(--color-brand-500)]">
                     {detallePvp.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-slate-200 bg-white px-5 py-4 text-center shadow-sm">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                <article className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Margen
                   </span>
-                  <span className={`mt-2 inline-flex rounded-full px-4 py-2 text-xl font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
+                  <span className={`mt-1.5 inline-flex rounded-full px-3 py-1 text-lg font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
                     {detalleMargen.toFixed(1)}%
                   </span>
                 </article>
               </div>
 
-              <div className="mt-5 grid gap-5 lg:grid-cols-2">
-              <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
-                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
-                    Ingredientes
-                  </h3>
-                </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <section className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm min-w-0">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="h-[2px] w-6 bg-[var(--color-brand-500)]"></span>
+                    <h3 className="m-0 text-xs font-black uppercase tracking-[0.2em] text-slate-700">
+                      Ingredientes
+                    </h3>
+                  </div>
 
-                <div className="overflow-x-auto w-full pb-2">
-                  <Table className="w-full min-w-[500px] overflow-hidden rounded-2xl border border-slate-100 bg-white">
-                    <TableHeader>
-                      <TableRow className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 hover:bg-slate-50">
-                        <TableHead className="px-5 py-4 normal-case tracking-[0.18em] text-slate-400 min-w-[220px]">Producto</TableHead>
-                        <TableHead className="px-5 py-4 text-center normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Cantidad</TableHead>
-                        <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Coste ud.</TableHead>
-                        <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400 whitespace-nowrap">Subtotal</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {detalleItems.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
-                            Este escandallo no tiene ingredientes registrados.
-                          </TableCell>
+                  <div className="overflow-x-auto w-full pb-2">
+                    <Table className="w-full min-w-[500px] overflow-hidden rounded-xl border border-slate-100 bg-white">
+                      <TableHeader>
+                        <TableRow className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:bg-slate-50">
+                          <TableHead className="px-3 py-2.5 normal-case tracking-[0.15em] text-slate-400 min-w-[180px]">Producto</TableHead>
+                          <TableHead className="px-3 py-2.5 text-center normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Cant.</TableHead>
+                          <TableHead className="px-3 py-2.5 text-right normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Coste ud.</TableHead>
+                          <TableHead className="px-3 py-2.5 text-right normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Subtotal</TableHead>
                         </TableRow>
-                      ) : (
-                        detalleItems.map((item, index) => {
-                          const subtotal = Number(item.cantidad) * Number(item.precio);
-                          return (
-                            <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
-                              <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700 min-w-[220px] whitespace-normal break-words">
-                                {item.nombre}
-                              </TableCell>
-                              <TableCell className="px-5 py-4 text-center text-slate-500 whitespace-nowrap">
-                                {item.cantidad}
-                              </TableCell>
-                              <TableCell className="px-5 py-4 text-right text-slate-500 whitespace-nowrap">
-                                {Number(item.precio).toFixed(2)} €
-                              </TableCell>
-                              <TableCell className="px-5 py-4 text-right font-bold text-slate-700 whitespace-nowrap">
-                                {subtotal.toFixed(2)} €
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
-              </section>
+                      </TableHeader>
+                      <TableBody>
+                        {detalleItems.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={4} className="px-3 py-6 text-center text-xs text-slate-500">
+                              Este escandallo no tiene ingredientes registrados.
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          detalleItems.map((item, index) => {
+                            const subtotal = Number(item.cantidad) * Number(item.precio);
+                            return (
+                              <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
+                                <TableCell className="px-3 py-2.5 font-bold uppercase tracking-[0.05em] text-slate-700 text-xs whitespace-normal align-middle">
+                                  {item.nombre}
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-center text-slate-500 text-xs whitespace-nowrap align-middle">
+                                  {item.cantidad}
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-right text-slate-500 text-xs whitespace-nowrap align-middle">
+                                  {Number(item.precio).toFixed(2)} €
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-right font-bold text-slate-700 text-xs whitespace-nowrap align-middle">
+                                  {subtotal.toFixed(2)} €
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </section>
 
-              <section className="rounded-[26px] border border-slate-200 bg-slate-50 p-5">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
-                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
-                    Elaboración
-                  </h3>
-                </div>
+                <section className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 min-w-0">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="h-[2px] w-6 bg-[var(--color-brand-500)]"></span>
+                    <h3 className="m-0 text-xs font-black uppercase tracking-[0.2em] text-slate-700">
+                      Elaboración
+                    </h3>
+                  </div>
 
-                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-5 py-4 text-sm leading-7 text-slate-600 whitespace-pre-wrap">
-                  {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
-                </div>
-              </section>
+                  <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white px-4 py-3 text-[13px] leading-relaxed text-slate-600 whitespace-pre-wrap">
+                    {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
+                  </div>
+                </section>
               </div>
 
-              <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-5">
+              <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-600 transition hover:bg-slate-50"
                   onClick={cerrarDetalle}
                 >
                   Cerrar
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-2xl bg-[var(--color-brand-500)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-200/70 transition hover:bg-[var(--color-brand-600)]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-brand-500)] px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-red-200/50 transition hover:bg-[var(--color-brand-600)]"
                   onClick={() => {
                     cerrarDetalle();
                     abrirEditarReceta(detalleEscandallo);
                   }}
                 >
-                  <Pencil strokeWidth={1.5} size={16} className="mr-2" />
+                  <Pencil strokeWidth={1.5} size={14} className="mr-2" />
                   Editar receta
                 </button>
               </div>
