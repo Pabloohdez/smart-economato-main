@@ -586,9 +586,9 @@ export default function EscandallosPage() {
             exit={{ scale: 0.95, opacity: 0, y: 16 }}
             transition={{ type: "spring", stiffness: 380, damping: 30 }}
           >
-            <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-6 py-5 text-white">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5">
               <div>
-                <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
+                <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-[var(--color-text-muted)]">
                   Ficha de escandallo
                 </p>
                 <h2 className="m-0 text-[1.25rem] font-bold text-[var(--color-text-strong)]">
@@ -603,7 +603,7 @@ export default function EscandallosPage() {
                 type="button"
                 onClick={cerrarDetalle}
                 className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
-                aria-label="Cerrar detalle"
+                aria-label="Cerrar ventana"
               >
                 <i className="fa-solid fa-xmark" />
               </button>
