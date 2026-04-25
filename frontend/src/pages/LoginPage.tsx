@@ -196,6 +196,15 @@ export default function LoginPage() {
                     "Acceder al Economato"
                   )}
                 </motion.button>
+
+                {/* Logo PDSG */}
+                <div className="mt-10 flex flex-col items-center justify-center">
+                  <img 
+                    src="/logo-pdsg.png" 
+                    alt="Logo PDSG" 
+                    className="h-16 w-auto opacity-40 grayscale transition-all duration-500 hover:opacity-100 hover:grayscale-0"
+                  />
+                </div>
               </form>
 
               <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
