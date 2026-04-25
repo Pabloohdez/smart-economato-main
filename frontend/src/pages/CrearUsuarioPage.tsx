@@ -12,7 +12,7 @@ type NuevoUsuarioPayload = {
   nombre: string;
   apellidos: string;
   email: string;
-  telefono: string;
+  telefono?: string;
 };
 
 type CrearUsuarioResponse = {
@@ -81,7 +81,7 @@ export default function CrearUsuarioPage() {
         nombre: nombre.trim(),
         apellidos: apellidos.trim(),
         email: normalizedEmail,
-        telefono: telefono.trim(),
+        ...(telefono.trim() ? { telefono: telefono.trim() } : {}),
       };
 
       const data = await crearUsuario(payload);

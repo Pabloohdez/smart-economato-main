@@ -131,6 +131,7 @@ export default function PedidosPage() {
   const [manualUnidad, setManualUnidad] = useState<"ud" | "kg" | "l">("ud");
   const [manualPrecio, setManualPrecio] = useState("");
   const [manualCantidad, setManualCantidad] = useState("");
+  const [importandoExcel, setImportandoExcel] = useState(false);
 
   const [err, setErr] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState<string>("");
@@ -448,6 +449,143 @@ export default function PedidosPage() {
     }
   }
 
+  async function exportarPedidosExcel() {
+    try {
+      const XLSX = await import("xlsx");
+      const rows = pedidos.map((p) => ({
+        PedidoId: String(p.id),
+        Proveedor: String(p.proveedor_nombre ?? ""),
+        Estado: String(p.estado ?? ""),
+        Total: Number(p.total ?? 0),
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pedidos");
+      const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([out], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `pedidos-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showNotification("Pedidos exportados a Excel.", "success");
+    } catch (error) {
+      console.error(error);
+      showNotification("No se pudo exportar el Excel de pedidos.", "error");
+    }
+  }
+
+  async function importarPedidosExcel(file: File) {
+    setImportandoExcel(true);
+    try {
+      const [XLSX, proveedoresImport, productosImport] = await Promise.all([
+        import("xlsx"),
+        getProveedores(),
+        getProductos(),
+      ]);
+
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+
+      const proveedoresPorId = new Map(proveedoresImport.map((p) => [String(p.id), p]));
+      const proveedoresPorNombre = new Map(
+        proveedoresImport.map((p) => [String(p.nombre ?? "").trim().toLowerCase(), p]),
+      );
+      const productosPorId = new Map(productosImport.map((p) => [String(p.id), p]));
+      const productosPorNombre = new Map(
+        productosImport.map((p) => [String(p.nombre ?? "").trim().toLowerCase(), p]),
+      );
+
+      const pedidosPorProveedor: Record<string, { proveedorId: string; items: ItemPedido[]; total: number }> = {};
+
+      for (const row of rows) {
+        const proveedorIdRaw = String(
+          row.proveedorId ?? row.ProveedorId ?? row.proveedor_id ?? row.proveedorID ?? "",
+        ).trim();
+        const proveedorNombreRaw = String(
+          row.Proveedor ?? row.proveedor ?? row.proveedor_nombre ?? "",
+        ).trim();
+
+        const proveedorObj =
+          (proveedorIdRaw ? proveedoresPorId.get(proveedorIdRaw) : undefined)
+          ?? (proveedorNombreRaw ? proveedoresPorNombre.get(proveedorNombreRaw.toLowerCase()) : undefined);
+
+        if (!proveedorObj) continue;
+
+        const productoIdRaw = String(
+          row.producto_id ?? row.ProductoId ?? row.productoId ?? row.productoID ?? "",
+        ).trim();
+        const productoNombreRaw = String(
+          row.Producto ?? row.producto ?? row.producto_nombre ?? "",
+        ).trim();
+
+        const productoObj =
+          (productoIdRaw ? productosPorId.get(productoIdRaw) : undefined)
+          ?? (productoNombreRaw ? productosPorNombre.get(productoNombreRaw.toLowerCase()) : undefined);
+
+        if (!productoObj) continue;
+
+        const cantidad = Number(String(row.Cantidad ?? row.cantidad ?? "0").replace(",", "."));
+        if (!Number.isFinite(cantidad) || cantidad <= 0) continue;
+
+        const precioRaw = Number(String(row.Precio ?? row.precio ?? "").replace(",", "."));
+        const precio = Number.isFinite(precioRaw) && precioRaw >= 0 ? precioRaw : Number(productoObj.precio ?? 0);
+        const unidad = String(row.Unidad ?? row.unidad ?? normalizarUnidad(productoObj.unidadMedida ?? "ud")).trim() || "ud";
+        const proveedorId = String(proveedorObj.id);
+
+        if (!pedidosPorProveedor[proveedorId]) {
+          pedidosPorProveedor[proveedorId] = {
+            proveedorId,
+            items: [],
+            total: 0,
+          };
+        }
+
+        const base = unidadBaseDeProducto(productoObj);
+        const factor = factorAUnidadBase(unidad, base);
+        const cantidadBase = cantidad * factor;
+
+        pedidosPorProveedor[proveedorId].items.push({
+          producto_id: productoObj.id,
+          nombre: productoObj.nombre,
+          precio,
+          cantidad: cantidadBase,
+          unidad: base,
+          unidadBase: base,
+          proveedor_id: proveedorObj.id,
+        });
+
+        pedidosPorProveedor[proveedorId].total += cantidadBase * precio;
+      }
+
+      const proveedoresAProcesar = Object.keys(pedidosPorProveedor);
+      if (proveedoresAProcesar.length === 0) {
+        showNotification("No se encontraron filas válidas para importar pedidos.", "warning");
+        return;
+      }
+
+      const { exitos, errores } = await guardarPedidosMutation.mutateAsync(pedidosPorProveedor);
+      if (exitos > 0 && errores === 0) {
+        showNotification(`Importación completada: ${exitos} pedido(s).`, "success");
+      } else if (exitos > 0) {
+        showNotification(`Importación parcial: ${exitos} creados, ${errores} fallidos.`, "warning");
+      } else {
+        showNotification("No se pudo importar ningún pedido.", "error");
+      }
+    } catch (error) {
+      console.error(error);
+      showNotification("No se pudo importar el Excel de pedidos.", "error");
+    } finally {
+      setImportandoExcel(false);
+    }
+  }
+
   const irARecepcion = useCallback(
     (id: number | string) => {
       console.log("Pedido a recepcionar:", id);
@@ -525,6 +663,9 @@ export default function PedidosPage() {
               estadoFiltro={estadoFiltro}
               onEstadoFiltroChange={setEstadoFiltro}
               estadosUnicos={estadosUnicos}
+              onExportar={() => void exportarPedidosExcel()}
+              onImportar={(file) => void importarPedidosExcel(file)}
+              importando={importandoExcel}
             />
           )}
           </div>

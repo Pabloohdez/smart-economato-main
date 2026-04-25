@@ -14,6 +14,12 @@ function normalizeOptionalEmail(value: unknown) {
   return normalized || undefined;
 }
 
+function normalizeOptionalPhone(value: unknown) {
+  if (typeof value !== 'string') return value;
+  const normalized = value.trim();
+  return normalized || undefined;
+}
+
 export class CreateUsuarioDto {
   @IsString()
   @MinLength(3)
@@ -35,6 +41,7 @@ export class CreateUsuarioDto {
   @IsEmail()
   email!: string;
 
+  @Transform(({ value }) => normalizeOptionalPhone(value))
   @IsOptional()
   @Matches(/^[+\d()\s-]{7,20}$/)
   telefono?: string;
