@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { Public } from '../auth/public.decorator';
 import { AccountSecurityService } from '../auth/account-security.service';
@@ -14,11 +14,17 @@ export class UsuariosController {
     private readonly accountSecurityService: AccountSecurityService,
   ) {}
 
-  @Roles('admin')
+  @Roles('admin', 'administrador')
   @Get()
   async getById(@Query('id') id: string) {
     if (!id) return null;
     return this.usuariosService.findByIdOrUsername(id);
+  }
+
+  @Roles('admin', 'administrador')
+  @Get('requests')
+  async getPendingRequests() {
+    return this.usuariosService.getPendingRequests();
   }
 
   @Public()
@@ -34,6 +40,18 @@ export class UsuariosController {
       telefono: body.telefono,
       rol: 'usuario',
     });
+  }
+
+  @Roles('admin', 'administrador')
+  @Post(':id/approve')
+  async approveRequest(@Param('id') id: string) {
+    return this.usuariosService.approveRequest(id);
+  }
+
+  @Roles('admin', 'administrador')
+  @Delete(':id/reject')
+  async rejectRequest(@Param('id') id: string) {
+    return this.usuariosService.rejectRequest(id);
   }
 
   @Public()

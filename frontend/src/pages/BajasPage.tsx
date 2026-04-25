@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { showConfirm, showNotification } from "../utils/notifications";
 import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
@@ -504,7 +505,7 @@ export default function BajasPage() {
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <AlertCircle className="h-5 w-5" />
             </span>
-            GESTIÓN DE BAJAS
+            Gestión de Bajas
           </h1>
           <p className="text-[#50596D] text-[14px] m-0">Registra roturas, caducados, mermas y ajustes de inventario</p>
         </div>
@@ -1075,11 +1076,25 @@ export default function BajasPage() {
       </StaggerItem>
 
       {/* MODAL */}
-      <div
-        id="modalDetalleBaja"
-        className={`fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] [backdrop-filter:blur(4px)] ${modalOpen ? "" : "hidden"}`}
-      >
-        <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[450px]" role="dialog" aria-modal="true" aria-label="Detalles de la baja">
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[1000] [backdrop-filter:blur(4px)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[450px]"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Detalles de la baja"
+              initial={{ scale: 0.96, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 10 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            >
           <h3 className="m-0 mb-[15px] text-[var(--color-text-strong)] flex items-center gap-2.5">
             <i className="fa-solid fa-circle-minus" />
             Detalles de la Baja
@@ -1178,8 +1193,10 @@ export default function BajasPage() {
               Registrar Baja
             </button>
           </div>
-        </div>
-      </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StaggerPage>
   );
 }

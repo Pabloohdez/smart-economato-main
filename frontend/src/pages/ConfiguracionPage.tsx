@@ -369,7 +369,7 @@ export default function ConfiguracionPage() {
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
             <i className="fa-solid fa-gear" />
           </span>
-          CONFIGURACIÓN DE PERFIL
+          Configuración del Perfil
         </h1>
         <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
           Gestiona tu información personal y configuración de alergias

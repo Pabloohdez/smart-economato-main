@@ -22,6 +22,11 @@ export class PedidosController {
     return this.pedidosService.findAll(p, l);
   }
 
+  @Get('pending-today-count')
+  async getPendingTodayCount() {
+    return this.pedidosService.getPendingTodayCount();
+  }
+
   @Get(':id')
   async uno(@Param('id') id: string) {
     const numId = parseInt(id, 10);

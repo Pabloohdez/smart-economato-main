@@ -24,6 +24,19 @@ export class ProductosController {
     return this.productosService.findAll(p, l);
   }
 
+  @Public()
+  @Get('stock-bajo-count')
+  async getStockBajoCount() {
+    return this.productosService.getStockBajoCount();
+  }
+
+  @Public()
+  @Get('avisos/alerts-count')
+  async getAvisosAlertsCount() {
+    // Get alerts count (can be combined with avisos module later)
+    return this.productosService.getAvisosAlertsCount();
+  }
+
   @Roles('admin')
   @Post()
   async crear(@Body() body: CreateProductoDto) {

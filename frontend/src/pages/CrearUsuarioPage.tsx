@@ -1,8 +1,10 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { apiFetch } from "../services/apiClient";
+import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import Alert from "../components/ui/Alert";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 type NuevoUsuarioPayload = {
   usuario: string;
@@ -49,6 +51,19 @@ export default function CrearUsuarioPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg("");
+    
+    if (!nombre.trim()) {
+      setMsgTipo("error");
+      setMsg("El nombre es obligatorio");
+      return;
+    }
+
+    if (!apellidos.trim()) {
+      setMsgTipo("error");
+      setMsg("Los apellidos son obligatorios");
+      return;
+    }
+
     const normalizedEmail = normalizeOptionalEmail(email);
 
     if (!normalizedEmail || !isValidOptionalEmail(normalizedEmail)) {
@@ -73,16 +88,23 @@ export default function CrearUsuarioPage() {
 
       if (data?.success || data?.ok || data?.id) {
         setMsgTipo("success");
-        setMsg(data?.message || "Cuenta creada. Revisa tu correo para verificarla.");
+        setMsg(data?.message || "Solicitud de alta recibida. Un administrador la revisará pronto.");
         setTimeout(() => {
-          nav(`/verificar-cuenta?email=${encodeURIComponent(normalizedEmail)}`);
-        }, 1200);
+          nav("/login");
+        }, 2000);
       } else {
         setMsgTipo("error");
         setMsg(data?.error?.message || data?.message || "No se pudo crear la cuenta");
       }
     } catch (error) {
-      console.error(error);
+      const apiError = error as ApiRequestError;
+      if (apiError?.status === 409) {
+        setMsgTipo("error");
+        setMsg(
+          "Ya existe una cuenta con ese usuario o correo. Verifica tu cuenta o solicita recuperar contraseña.",
+        );
+        return;
+      }
       setMsgTipo("error");
       setMsg(error instanceof Error ? error.message : "Error al crear la cuenta");
     } finally {
@@ -91,158 +113,158 @@ export default function CrearUsuarioPage() {
   }
 
   return (
-    <div className="login-page min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
-      <main className="flex min-h-[100dvh] w-full items-stretch p-0">
-        <div className="grid min-h-[100dvh] w-full grid-cols-[1.15fr_minmax(340px,520px)] overflow-hidden rounded-none border-0 bg-white/60 shadow-none backdrop-blur max-[960px]:grid-cols-1">
-          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)] text-white">
-            <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" aria-hidden="true" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(179,49,49,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(217,119,69,0.25),transparent_45%)]" aria-hidden="true" />
-            <div className="relative z-[1] flex h-full flex-col">
-              <div className="inline-flex items-center gap-4">
-                <div className="flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-white/10 p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-                  <img
-                    src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
-                    alt="CIFP Virgen de la Candelaria"
-                    className="h-full w-full object-contain"
+    <div className="fixed inset-0 overflow-y-auto bg-[#dfe4ec] font-[var(--font-family-base)] text-slate-900">
+      <main className="grid min-h-full w-full lg:grid-cols-[1.25fr_1fr]">
+        {/* PANEL IZQUIERDO */}
+        <section className="relative hidden overflow-hidden bg-[linear-gradient(135deg,#b33131_0%,#8e2626_50%,#6b1f1f_100%)] text-white lg:flex lg:flex-col lg:min-h-screen">
+          <div className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:58px_58px]" aria-hidden="true" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_25%,rgba(44,113,255,0.18),transparent_44%),radial-gradient(circle_at_78%_64%,rgba(34,197,94,0.10),transparent_46%)]" aria-hidden="true" />
+
+          {/* --- CONTENEDOR MAESTRO --- */}
+          {/* El pl-[...] genera el hueco vacío a la izquierda */}
+          <div className="relative z-10 flex flex-1 pl-[clamp(40px,6vw,90px)]">
+            
+            {/* 1. LÍNEA VERTICAL LARGA (border-l) */}
+            {/* Como tiene flex-1, va obligatoriamente de arriba a abajo de la pantalla */}
+            <div className="flex flex-1 flex-col border-l border-white/20">
+              
+              {/* Contenido Principal (Empuja el footer hacia abajo) */}
+              <div className="flex flex-1 flex-col justify-center px-[clamp(32px,4vw,64px)] py-12">
+                <div className="max-w-[560px]">
+                  <p className="m-0 text-[10px] font-medium uppercase tracking-[0.38em] text-white/60">Sistema interno</p>
+                  <h1 className="m-0 mt-5 text-[clamp(38px,4.2vw,64px)] font-semibold leading-[0.95] tracking-[-0.04em] text-white">
+                    Solicitud
+                    <br />
+                    de alta
+                  </h1>
+                  <p className="m-0 mt-8 text-[clamp(14px,1vw,18px)] font-normal leading-[1.6] text-white/84">
+                    Crea tu cuenta para acceder al panel operativo. Recibirás un mensaje de confirmación tras el registro.
+                  </p>
+                </div>
+
+                {/* 2. LÍNEA VERTICAL CORTA (Para los 3 items) */}
+                <div className="mt-14 max-w-[560px] space-y-8 border-l border-white/60 py-2 pl-6">
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Datos</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Rellena usuario, contraseña y datos de contacto.</p>
+                  </article>
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Verificación</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Recibirás un enlace para verificar tu correo electrónico.</p>
+                  </article>
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Acceso</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Una vez verificado, podrás iniciar sesión en el panel.</p>
+                  </article>
+                </div>
+              </div>
+
+              {/* 3. LÍNEA HORIZONTAL (Footer border-t) */}
+              {/* Conecta directamente con la esquina de la vertical larga */}
+              <div className="flex h-[90px] items-center justify-between border-t border-white/20 px-[clamp(32px,4vw,64px)] text-[11px] font-normal text-white/56">
+                <span>Uso interno de Smart Economato. Acceso reservado a personal autorizado.</span>
+                <span>© {new Date().getFullYear()}</span>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* PANEL DERECHO */}
+        <section className="relative flex min-h-screen w-full items-center justify-center bg-[#dfe4ec] px-6 py-10 lg:min-h-full">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-full max-w-[480px] rounded-[30px] border border-slate-200 bg-[#fbfcfe] shadow-2xl"
+          >
+            <div className="border-b border-slate-200 px-[clamp(20px,3.4vw,34px)] py-[clamp(18px,3vh,28px)]">
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-[#b33131]">Registro</p>
+              <h2 className="m-0 mt-3 text-[32px] font-semibold leading-[1.02] tracking-[-0.02em] text-slate-900">Crear cuenta</h2>
+              <p className="m-0 mt-3 text-[14px] font-normal leading-7 text-slate-500">
+                Completa los datos para solicitar el alta. Podrás iniciar sesión después.
+              </p>
+            </div>
+
+            <div className="px-[clamp(20px,3.4vw,34px)] py-[clamp(20px,3.4vw,32px)]">
+              <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+                <div>
+                  <label htmlFor="cu-usuario" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                    Usuario
+                  </label>
+                  <input
+                    id="cu-usuario"
+                    type="text"
+                    value={usuario}
+                    onChange={(e) => setUsuario(e.target.value)}
+                    placeholder="Nombre de usuario"
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
+                    required
+                    autoComplete="username"
                   />
                 </div>
 
-                <div className="min-w-0">
-                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/70">
-                    Smart Economato
-                  </p>
-                  <h1 className="m-0 mt-2 text-[40px] font-extrabold tracking-[-0.05em] text-white max-[1100px]:text-[36px] max-[960px]:text-[30px]">
-                    Crear cuenta
-                  </h1>
-                </div>
-              </div>
-
-              <p className="mt-8 max-w-[520px] text-[15px] leading-7 text-white/80 max-[960px]:mt-6">
-                Completa los datos para solicitar el alta. Si ya tienes cuenta, vuelve al login.
-              </p>
-
-              <div className="login-page__features mt-8 grid gap-5 max-[960px]:mt-6">
-                {[
-                  { title: "Datos", text: "Usuario, contraseña y datos de contacto." },
-                  { title: "Verificación", text: "Podrás verificar la cuenta desde el enlace recibido." },
-                  { title: "Acceso", text: "Después podrás iniciar sesión y acceder al panel." },
-                ].map((item) => (
-                  <article key={item.title} className="grid gap-1">
-                    <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-white/55">
-                      {item.title}
-                    </p>
-                    <p className="m-0 text-[13px] leading-6 text-white/78">
-                      {item.text}
-                    </p>
-                  </article>
-                ))}
-              </div>
-
-              <div className="mt-auto pt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 max-[960px]:pt-8">
-                Centro operativo del CIFP Virgen de la Candelaria
-              </div>
-            </div>
-          </section>
-
-          <section className="flex items-center justify-center px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)]">
-            <div className="w-full max-w-[520px] rounded-[28px] border border-slate-200/80 bg-white px-[clamp(18px,3.6vw,32px)] py-[clamp(18px,3.6vh,32px)] shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-              <div className="mb-7">
-                <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
-                  Registro
-                </p>
-                <h2 className="m-0 mt-2 text-[28px] font-extrabold tracking-[-0.04em] text-slate-900">
-                  Crear cuenta
-                </h2>
-                <p className="m-0 mt-2 text-[13px] leading-6 text-slate-500">
-                  Completa los datos para crear el usuario. Te redirigiremos a verificación.
-                </p>
-              </div>
-
-              <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
                 <div>
-                  <label htmlFor="cu-usuario" className="mb-2 block text-[13px] font-semibold text-slate-700">
-                    Usuario
-                  </label>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
-                      <i className="fa-regular fa-user" />
-                    </span>
-                    <input
-                      id="cu-usuario"
-                      type="text"
-                      value={usuario}
-                      onChange={(e) => setUsuario(e.target.value)}
-                      placeholder="Nombre de usuario"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-                      required
-                      autoComplete="username"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="cu-password" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                  <label htmlFor="cu-password" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
                     Contraseña
                   </label>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
-                      <i className="fa-solid fa-lock" />
-                    </span>
                     <input
                       id="cu-password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Mínimo 8 caracteres"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-12 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 pr-12 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                       required
                       autoComplete="new-password"
                     />
                     <button
                       type="button"
-                      className="absolute right-[10px] top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] border-0 bg-transparent text-slate-400 transition-[background,color] duration-150 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      className="absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
                       onClick={() => setShowPassword((v) => !v)}
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                      title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
-                      <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} w-4 min-w-4 text-center leading-none`} aria-hidden="true" />
+                      {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 max-[520px]:grid-cols-1">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label htmlFor="cu-nombre" className="mb-2 block text-[13px] font-semibold text-slate-700">
-                      Nombre
+                    <label htmlFor="cu-nombre" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                      Nombre *
                     </label>
                     <input
                       id="cu-nombre"
                       type="text"
                       value={nombre}
                       onChange={(e) => setNombre(e.target.value)}
-                      placeholder="Nombre"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      placeholder="Tu nombre"
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
+                      required
                       autoComplete="given-name"
                     />
                   </div>
                   <div>
-                    <label htmlFor="cu-apellidos" className="mb-2 block text-[13px] font-semibold text-slate-700">
-                      Apellidos
+                    <label htmlFor="cu-apellidos" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                      Apellidos *
                     </label>
                     <input
                       id="cu-apellidos"
                       type="text"
                       value={apellidos}
                       onChange={(e) => setApellidos(e.target.value)}
-                      placeholder="Apellidos"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      placeholder="Tus apellidos"
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
+                      required
                       autoComplete="family-name"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="cu-email" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                  <label htmlFor="cu-email" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
                     Correo electrónico
                   </label>
                   <input
@@ -251,14 +273,14 @@ export default function CrearUsuarioPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="correo@centro.es"
-                    className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                     required
                     autoComplete="email"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="cu-telefono" className="mb-2 block text-[13px] font-semibold text-slate-700">
+                  <label htmlFor="cu-telefono" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
                     Teléfono
                   </label>
                   <input
@@ -267,43 +289,58 @@ export default function CrearUsuarioPage() {
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
                     placeholder="Teléfono"
-                    className="w-full rounded-[16px] border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
-                    required
+                    className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                     autoComplete="tel"
                   />
                 </div>
 
-                {msg ? <Alert type={msgTipo}>{msg}</Alert> : null}
+                {msg && (
+                  <div
+                    className={`rounded-xl border px-4 py-3 text-[13px] font-medium ${
+                      msgTipo === "success"
+                        ? "border-[#c6f6d5] bg-[#f0fff4] text-[#276749]"
+                        : "border-[#f6caca] bg-[#fff4f4] text-[#9f2a2a]"
+                    }`}
+                    role={msgTipo === "error" ? "alert" : "status"}
+                  >
+                    {msg}
+                  </div>
+                )}
 
-                <button
+                <div className="pt-1" />
+
+                <motion.button
                   type="submit"
-                  className="mt-1 inline-flex min-h-[56px] w-full items-center justify-center rounded-[18px] border-0 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_58%,#d97745_100%)] px-4 py-4 text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_20px_40px_rgba(179,49,49,0.22)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(179,49,49,0.26)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  whileHover={{ scale: loading ? 1 : 1.01 }}
+                  whileTap={{ scale: loading ? 1 : 0.98 }}
+                  className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-xl border-0 bg-[linear-gradient(135deg,#c0392b_0%,#96281b_100%)] px-4 text-[18px] font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-150 hover:shadow-xl hover:shadow-red-500/30 disabled:cursor-not-allowed disabled:opacity-75"
                   disabled={loading}
-                  aria-busy={loading}
                 >
-                  {loading ? "Registrando..." : "Registrarse"}
-                </button>
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                      Registrando...
+                    </>
+                  ) : (
+                    "Registrarse"
+                  )}
+                </motion.button>
               </form>
 
-              <div className="mt-6 grid gap-4 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
-                <Link
-                  className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[var(--color-brand-500)]"
-                  to="/verificar-cuenta"
-                >
-                  <i className="fa-regular fa-circle-check" aria-hidden="true" />
-                  Verificar cuenta o reenviar correo de activación
+              <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
+                <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/verificar-cuenta">
+                  Verificar cuenta o reenviar correo
                 </Link>
-
                 <p className="m-0">
                   ¿Ya tienes cuenta?{" "}
-                  <Link className="font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]" to="/login">
+                  <Link className="font-semibold text-[#b33131] transition-colors hover:text-[#8f2323]" to="/login">
                     Iniciar sesión
                   </Link>
                 </p>
               </div>
             </div>
-          </section>
-        </div>
+          </motion.div>
+        </section>
       </main>
     </div>
   );

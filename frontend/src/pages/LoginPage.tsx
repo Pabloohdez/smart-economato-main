@@ -2,6 +2,8 @@ import { useState } from "react";
 import { login } from "../services/authService";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const nav = useNavigate();
@@ -11,6 +13,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeField, setActiveField] = useState<"username" | "password" | null>(null);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -29,133 +32,122 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page min-h-[100dvh] w-full overflow-x-hidden overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(179,49,49,0.10),transparent_40%),linear-gradient(135deg,#f6f7fb_0%,#eef2f7_55%,#f8fafc_100%)] text-slate-800 font-[var(--font-family-base)]">
-      <main className="flex min-h-[100dvh] w-full items-stretch p-0">
-        <div className="grid min-h-[100dvh] w-full grid-cols-[1.15fr_minmax(340px,520px)] overflow-hidden rounded-none border-0 bg-white/60 shadow-none backdrop-blur max-[960px]:grid-cols-1">
-          <section className="relative overflow-hidden bg-[linear-gradient(145deg,#0b1220_0%,#0f172a_55%,#111827_100%)] px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)] text-white">
-            <div className="absolute inset-0 opacity-70 [background-image:linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:56px_56px]" aria-hidden="true" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(179,49,49,0.35),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(217,119,69,0.25),transparent_45%)]" aria-hidden="true" />
-            <div className="relative z-[1] flex h-full flex-col">
-              <div className="inline-flex items-center gap-4">
-                <div className="flex h-[64px] w-[64px] items-center justify-center rounded-[18px] bg-white/10 p-3 backdrop-blur-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.16)]">
-                  <img
-                    src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
-                    alt="CIFP Virgen de la Candelaria"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
+    <div className="fixed inset-0 overflow-y-auto bg-[#dfe4ec] font-[var(--font-family-base)] text-slate-900">
+      <main className="grid min-h-full w-full lg:grid-cols-[1.25fr_1fr]">
+        
+        {/* MITAD IZQUIERDA (PANEL ROJO) */}
+        <section className="relative hidden overflow-hidden bg-[linear-gradient(135deg,#b33131_0%,#8e2626_50%,#6b1f1f_100%)] text-white lg:flex lg:flex-col lg:min-h-screen">
+          {/* Fondos (Grid y Gradientes) */}
+          <div
+            className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:58px_58px]"
+            aria-hidden="true"
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_25%,rgba(44,113,255,0.22),transparent_44%),radial-gradient(circle_at_78%_64%,rgba(34,197,94,0.12),transparent_46%)]" aria-hidden="true" />
 
-                <div className="min-w-0">
-                  <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/70">
-                    Smart Economato
-                  </p>
-                  <h1 className="m-0 mt-2 text-[40px] font-extrabold tracking-[-0.05em] text-white max-[1100px]:text-[36px] max-[960px]:text-[30px]">
-                    Panel de Administración
+          {/* --- CONTENEDOR MAESTRO (WIRE FRAME) --- */}
+          {/* El pl-[...] genera el hueco vacío a la izquierda */}
+          <div className="relative z-10 flex flex-1 pl-[clamp(40px,6vw,90px)]">
+            
+            {/* 1. LÍNEA VERTICAL LARGA (border-l) */}
+            <div className="flex flex-1 flex-col border-l border-white/20">
+              
+              {/* Contenido Principal */}
+              <div className="flex flex-1 flex-col justify-center px-[clamp(32px,4vw,64px)] py-12">
+                <div className="max-w-[560px]">
+                  <p className="m-0 text-[10px] font-medium uppercase tracking-[0.38em] text-white/60">Sistema interno</p>
+                  <h1 className="m-0 mt-5 text-[clamp(38px,4.2vw,64px)] font-semibold leading-[0.95] tracking-[-0.04em] text-white">
+                    Panel de
+                    <br />
+                    Administración
                   </h1>
+                  <p className="m-0 mt-8 text-[clamp(14px,1vw,18px)] font-normal leading-[1.6] text-white/84">
+                    Gestiona el economato con stock, compras y entregas desde un único panel operativo.
+                  </p>
+                </div>
+
+                {/* 2. LÍNEA VERTICAL CORTA (Para los 3 items) */}
+                <div className="mt-14 max-w-[560px] space-y-8 border-l border-white/60 py-2 pl-6">
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Operativa</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Control de artículos, pedidos y recepciones en un flujo claro y eficiente.</p>
+                  </article>
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Seguridad</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Acceso restringido por roles, con acciones registradas para cada usuario.</p>
+                  </article>
+                  <article>
+                    <p className="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">Seguimiento</p>
+                    <p className="m-0 mt-1.5 text-sm font-normal leading-relaxed text-white/90">Trazabilidad de stock y movimientos para cada lote, proveedor y centro.</p>
+                  </article>
                 </div>
               </div>
 
-              <p className="mt-8 max-w-[520px] text-[15px] leading-7 text-white/80 max-[960px]:mt-6">
-                Acceso unificado para recepción, inventario, distribución, pedidos y control de incidencias del economato.
-              </p>
-
-              <div className="login-page__features mt-8 grid gap-5 max-[960px]:mt-6">
-                {[
-                  {
-                    title: "Operativa",
-                    text: "Catálogo, entradas y salidas con un flujo claro y consistente.",
-                  },
-                  {
-                    title: "Seguridad",
-                    text: "Acceso por roles con acciones registradas y trazabilidad.",
-                  },
-                  {
-                    title: "Seguimiento",
-                    text: "Avisos y métricas listos para actuar sin pasos sobrantes.",
-                  },
-                ].map((item) => (
-                  <article key={item.title} className="grid gap-1">
-                    <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-white/55">
-                      {item.title}
-                    </p>
-                    <p className="m-0 text-[13px] leading-6 text-white/78">
-                      {item.text}
-                    </p>
-                  </article>
-                ))}
+              {/* 3. LÍNEA HORIZONTAL (Footer border-t) */}
+              <div className="flex h-[90px] items-center justify-between border-t border-white/20 px-[clamp(32px,4vw,64px)] text-[11px] font-normal text-white/56">
+                <span>Uso interno de Smart Economato. Acceso reservado a personal autorizado.</span>
+                <span>© {new Date().getFullYear()}</span>
               </div>
 
-              <div className="mt-auto pt-10 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/50 max-[960px]:pt-8">
-                Centro operativo del CIFP Virgen de la Candelaria
-              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section className="flex items-center justify-center px-[clamp(16px,4vw,44px)] py-[clamp(16px,4vh,44px)]">
-            <div className="w-full max-w-[520px] rounded-[28px] border border-slate-200/80 bg-white px-[clamp(18px,3.6vw,32px)] py-[clamp(18px,3.6vh,32px)] shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-              <div className="mb-7">
-                <p className="m-0 text-[11px] font-semibold uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
-                  Acceso seguro
-                </p>
-                <h2 className="m-0 mt-2 text-[28px] font-extrabold tracking-[-0.04em] text-slate-900">
-                  Iniciar sesión
-                </h2>
-                <p className="m-0 mt-2 text-[13px] leading-6 text-slate-500">
-                  Introduce tus credenciales para acceder al panel operativo de Smart Economato.
-                </p>
-              </div>
+        {/* MITAD DERECHA (FORMULARIO) */}
+        <section className="relative flex min-h-screen w-full items-center justify-center bg-[#dfe4ec] px-6 py-10 lg:min-h-full">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="w-full max-w-[480px] rounded-[30px] border border-slate-200 bg-[#fbfcfe] shadow-2xl"
+          >
+            <div className="border-b border-slate-200 px-[clamp(20px,3.4vw,34px)] py-[clamp(18px,3vh,28px)]">
+              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-[#b33131]">Acceso seguro</p>
+              <h2 className="m-0 mt-3 text-[32px] font-semibold leading-[1.02] tracking-[-0.02em] text-slate-900">Iniciar sesión</h2>
+              <p className="m-0 mt-3 text-[14px] font-normal leading-7 text-slate-500">
+                Introduce tus credenciales para acceder al panel operativo de Smart Economato.
+              </p>
+            </div>
 
-              <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
+            <div className="px-[clamp(20px,3.4vw,34px)] py-[clamp(20px,3.4vw,32px)]">
+              <form className="flex flex-col gap-5" onSubmit={onSubmit} noValidate>
                 <div>
-                  <label htmlFor="username" className="mb-2 block text-[13px] font-semibold text-slate-700">
-                    Usuario o correo
+                  <label htmlFor="username" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                    Correo electrónico
                   </label>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
-                      <i className="fa-regular fa-user" />
-                    </span>
+                    <Mail className={`pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${activeField === "username" ? "text-[#b33131]" : "text-slate-400"}`} aria-hidden="true" />
                     <input
                       id="username"
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="usuario o nombre@centro.es"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-4 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      onFocus={() => setActiveField("username")}
+                      onBlur={() => setActiveField(null)}
+                      placeholder="usuario@ejemplo.com"
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] pl-11 pr-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                       required
                       autoComplete="username"
-                      aria-describedby={msg ? "login-error" : "login-hint"}
+                      aria-describedby={msg ? "login-error" : undefined}
                       aria-invalid={!!msg || undefined}
                     />
                   </div>
-                  <p id="login-hint" className="m-0 mt-2 text-[12px] text-slate-500">
-                    Si sueles entrar con correo, también está permitido.
-                  </p>
                 </div>
 
                 <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <label htmlFor="password" className="block text-[13px] font-semibold text-slate-700">
-                      Contraseña
-                    </label>
-                    <Link
-                      className="text-[12px] font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]"
-                      to="/recuperar-password"
-                    >
-                      Recuperar acceso
-                    </Link>
-                  </div>
-
+                  <label htmlFor="password" className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                    Contraseña
+                  </label>
                   <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true">
-                      <i className="fa-solid fa-lock" />
-                    </span>
+                    <Lock className={`pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors duration-200 ${activeField === "password" ? "text-[#b33131]" : "text-slate-400"}`} aria-hidden="true" />
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => setActiveField("password")}
+                      onBlur={() => setActiveField(null)}
                       placeholder="Tu contraseña"
-                      className="w-full rounded-[16px] border border-slate-200 bg-slate-50 pl-11 pr-12 py-4 text-[15px] font-inherit text-slate-800 transition-[border-color,box-shadow,background-color] duration-150 placeholder:text-slate-400 focus:bg-white focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(127,29,29,0.08)] focus:outline-none focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
+                      className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] pl-11 pr-12 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                       required
                       autoComplete="current-password"
                       aria-describedby={msg ? "login-error" : undefined}
@@ -163,62 +155,63 @@ export default function LoginPage() {
                     />
                     <button
                       type="button"
-                      className="absolute right-[10px] top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-[10px] border-0 bg-transparent text-slate-400 transition-[background,color] duration-150 hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-[3px] focus-visible:outline-[var(--color-brand-500)] focus-visible:outline-offset-2"
                       onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-[8px] top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg border-0 bg-transparent text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
                       aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                       title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     >
-                      <i
-                        className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} w-4 min-w-4 text-center leading-none`}
-                        aria-hidden="true"
-                      />
+                      {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                     </button>
+                  </div>
+                  {/* ENLACE MOVIDO AQUÍ ABAJO */}
+                  <div className="mt-2 flex justify-end">
+                    <Link className="text-[13px] font-semibold text-slate-500 transition-colors hover:text-[#b33131]" to="/recuperar-password">
+                      Recuperar acceso
+                    </Link>
                   </div>
                 </div>
 
                 {msg ? (
-                  <p
-                    id="login-error"
-                    className="m-0 rounded-[14px] border border-[#f6caca] bg-[#fff4f4] px-4 py-3 text-[14px] font-medium text-[#9f2a2a]"
-                    role="alert"
-                  >
+                  <p id="login-error" className="m-0 rounded-2xl border border-[#ffd1d1] bg-[#fff6f6] px-4 py-3 text-[13px] font-medium text-[#9f2a2a]" role="alert">
                     {msg}
                   </p>
                 ) : null}
 
-                <button
+                <div className="pt-2" />
+
+                <motion.button
                   type="submit"
-                  className="mt-1 inline-flex min-h-[56px] w-full items-center justify-center rounded-[18px] border-0 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_58%,#d97745_100%)] px-4 py-4 text-[15px] font-semibold tracking-[0.01em] text-white shadow-[0_20px_40px_rgba(179,49,49,0.22)] transition-[transform,box-shadow,filter] duration-150 hover:-translate-y-0.5 hover:shadow-[0_24px_44px_rgba(179,49,49,0.26)] hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                  whileHover={{ scale: loading ? 1 : 1.01 }}
+                  whileTap={{ scale: loading ? 1 : 0.98 }}
+                  className="mt-1 inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-xl border-0 bg-[linear-gradient(135deg,#c0392b_0%,#96281b_100%)] px-4 text-[18px] font-semibold text-white shadow-lg shadow-red-500/20 transition-all duration-150 hover:shadow-xl hover:shadow-red-500/30 disabled:cursor-not-allowed disabled:opacity-75"
                   disabled={loading}
                   aria-busy={loading}
                 >
-                  {loading ? "Accediendo..." : "Entrar al panel"}
-                </button>
+                  {loading ? (
+                    <>
+                      Iniciando sesión
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    </>
+                  ) : (
+                    "Acceder al Economato"
+                  )}
+                </motion.button>
               </form>
 
-              <div className="mt-6 grid gap-4 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
-                <Link
-                  className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[var(--color-brand-500)]"
-                  to="/verificar-cuenta"
-                >
-                  <i className="fa-regular fa-circle-check" aria-hidden="true" />
+              <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
+                <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/verificar-cuenta">
                   Verificar cuenta o reenviar correo de activación
                 </Link>
-
                 <p className="m-0">
                   ¿Aún no tienes cuenta?{" "}
-                  <Link className="font-semibold text-[var(--color-brand-500)] transition-colors hover:text-[var(--color-brand-600)]" to="/registro">
+                  <Link className="font-semibold text-[#b33131] transition-colors hover:text-[#8e2626]" to="/registro">
                     Solicitar alta de usuario
                   </Link>
                 </p>
               </div>
-              
-              <div className="mt-6 flex justify-center opacity-40 hover:opacity-100 transition-opacity duration-300">
-                <img src="/logo-pdsg.png" alt="PDSG Logo" className="h-20 w-auto grayscale hover:grayscale-0 transition-all duration-300" />
-              </div>
             </div>
-          </section>
-        </div>
+          </motion.div>
+        </section>
       </main>
     </div>
   );

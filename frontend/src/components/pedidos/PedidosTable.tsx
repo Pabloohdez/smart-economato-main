@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, Building2, Download, Filter, Plus, Upload } from "lucide-react";
+import { ArrowRight, Building2, ChevronDown, Download, Filter, Plus, Upload } from "lucide-react";
 import type { PedidoHistorial } from "../../types";
 import SearchInput from "../ui/SearchInput";
 import TablePagination from "../ui/TablePagination";
@@ -73,6 +73,7 @@ export default function PedidosGrid({
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [importMenuOpen, setImportMenuOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -130,17 +131,20 @@ export default function PedidosGrid({
             ]}
           />
 
-          <DropdownMenu>
+          <DropdownMenu open={importMenuOpen} onOpenChange={setImportMenuOpen}>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
                 className="inline-flex h-11 items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
               >
                 <span className="inline-flex items-center gap-2"><Download className="h-4 w-4" /> Exportar / Importar</span>
-                <i className="fa-solid fa-chevron-down text-[11px] text-slate-500" />
+                <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${importMenuOpen ? "rotate-180" : "rotate-0"}`} />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[220px] rounded-xl border-slate-300">
+            <DropdownMenuContent
+              align="start"
+              className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[var(--radix-dropdown-menu-trigger-width)] p-0 rounded-xl border-slate-300"
+            >
               <DropdownMenuItem onSelect={() => onExportar?.()}>
                 <Download className="h-4 w-4" /> Exportar Excel
               </DropdownMenuItem>

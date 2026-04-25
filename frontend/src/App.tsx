@@ -14,6 +14,7 @@ import RendimientoPage from "./pages/RendimientoPage";
 import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
+import AdminApprovalPage from "./pages/AdminApprovalPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Spinner from "./components/ui/Spinner";
@@ -53,6 +54,7 @@ function AppRoutes() {
           >
             <Route index element={<Navigate to="/inicio" replace />} />
             <Route path="inicio" element={<InicioPage />} />
+            <Route path="solicitudes-aprobacion" element={<AdminApprovalPage />} />
             <Route path="recepcion" element={<RecepcionPage />} />
             <Route path="distribucion" element={<DistribucionPage />} />
             <Route path="inventario" element={<InventarioPage />} />

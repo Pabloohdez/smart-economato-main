@@ -96,8 +96,9 @@ html, body {
   color: var(--color-text-strong);
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
-  scrollbar-gutter: stable;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 /* Evitar que Radix Select/Dialog bloquee el scroll de la pagina */
@@ -107,17 +108,20 @@ body[data-scroll-locked] {
 }
 body {
   margin: 0;
+  padding: 0;
   background: var(--color-bg-canvas);
   min-height: 100dvh;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 #root,
 .smart-economato-app {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
-  min-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Forzar borde coherente en TODOS los botones con borde */
@@ -484,6 +488,63 @@ a {
     border-color: rgba(59, 130, 246, 0.16);
   }
 
+  .rendimiento-printable {
+    display: none;
+  }
+
+  @media print {
+    body.rendimiento-printing * {
+      visibility: hidden !important;
+    }
+
+    body.rendimiento-printing .rendimiento-printable,
+    body.rendimiento-printing .rendimiento-printable * {
+      visibility: visible !important;
+    }
+
+    body.rendimiento-printing .rendimiento-printable {
+      display: block !important;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      padding: 24px;
+      background: #fff;
+      color: #000;
+    }
+
+    body.rendimiento-printing .rendimiento-printable table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    body.rendimiento-printing .rendimiento-printable table th,
+    body.rendimiento-printing .rendimiento-printable table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: left;
+    }
+
+    body.rendimiento-printing .rendimiento-printable table th {
+      background-color: #f3f4f6;
+      font-weight: bold;
+    }
+
+    body.rendimiento-printing .rendimiento-printable table tr {
+      page-break-inside: avoid;
+    }
+
+    body.rendimiento-printing .rendimiento-printable h1 {
+      page-break-after: avoid;
+    }
+
+    body.rendimiento-printing .rendimiento-printable h2 {
+      page-break-after: avoid;
+    }
+
+    body.rendimiento-printing .rendimiento-printable .grid {
+      page-break-inside: avoid;
+    }
+  }
 }
 
 @keyframes bo-shimmer {

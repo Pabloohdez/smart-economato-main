@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Building2, CalendarDays, Download, Filter, Mail, MoreHorizontal, Pencil, Plus, Trash2, Upload } from "lucide-react";
+import { Building2, CalendarDays, ChevronDown, Download, Filter, Mail, MoreHorizontal, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
@@ -102,6 +102,7 @@ export default function ProveedoresPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [importandoExcel, setImportandoExcel] = useState(false);
+  const [importMenuOpen, setImportMenuOpen] = useState(false);
 
   const [form, setForm] = useState({
     id: "",
@@ -385,17 +386,20 @@ export default function ProveedoresPage() {
               ]}
             />
 
-            <DropdownMenu>
+            <DropdownMenu open={importMenuOpen} onOpenChange={setImportMenuOpen}>
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
                   className="inline-flex h-11 items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
                 >
                   <span className="inline-flex items-center gap-2"><Download className="h-4 w-4" /> Exportar / Importar</span>
-                  <i className="fa-solid fa-chevron-down text-[11px] text-slate-500" />
+                  <ChevronDown className={`h-4 w-4 text-slate-500 transition-transform duration-200 ${importMenuOpen ? "rotate-180" : "rotate-0"}`} />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-[240px] rounded-xl border-slate-300">
+              <DropdownMenuContent
+                align="start"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] min-w-[var(--radix-dropdown-menu-trigger-width)] p-0 rounded-xl border-slate-300"
+              >
                 <DropdownMenuItem onSelect={() => void exportarExcel()}>
                   <Download className="h-4 w-4" /> Exportar Excel
                 </DropdownMenuItem>
@@ -496,32 +500,14 @@ export default function ProveedoresPage() {
                             <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                           </button>
 
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button type="button" className="bo-table-action-btn text-slate-500" aria-label="Más acciones">
-                                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                              </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-44">
-                              <DropdownMenuItem
-                                onSelect={() => {
-                                  setForm({
-                                    id: String(p.id),
-                                    nombre: p.nombre,
-                                    contacto: p.contacto || "",
-                                    telefono: p.telefono || "",
-                                    email: p.email || "",
-                                  });
-                                  setModalOpen(true);
-                                }}
-                              >
-                                <Pencil className="h-4 w-4" /> Editar proveedor
-                              </DropdownMenuItem>
-                              <DropdownMenuItem variant="destructive" onSelect={() => eliminarProveedor(String(p.id))}>
-                                <Trash2 className="h-4 w-4" /> Eliminar proveedor
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <button
+                            type="button"
+                            className="bo-table-action-btn text-slate-500 transition-colors hover:text-red-600"
+                            aria-label="Eliminar proveedor"
+                            onClick={() => eliminarProveedor(String(p.id))}
+                          >
+                            <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                          </button>
                         </div>
                       </div>
 
@@ -607,36 +593,14 @@ export default function ProveedoresPage() {
                             >
                               <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <button
-                                  type="button"
-                                  className="bo-table-action-btn text-slate-500"
-                                  aria-label="Más acciones"
-                                >
-                                  <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} />
-                                </button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
-                                <DropdownMenuItem
-                                  onSelect={() => {
-                                    setForm({
-                                      id: String(p.id),
-                                      nombre: p.nombre,
-                                      contacto: p.contacto || "",
-                                      telefono: p.telefono || "",
-                                      email: p.email || "",
-                                    });
-                                    setModalOpen(true);
-                                  }}
-                                >
-                                  <Pencil className="h-4 w-4" /> Editar proveedor
-                                </DropdownMenuItem>
-                                <DropdownMenuItem variant="destructive" onSelect={() => eliminarProveedor(String(p.id))}>
-                                  <Trash2 className="h-4 w-4" /> Eliminar proveedor
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            <button
+                              type="button"
+                              className="bo-table-action-btn text-slate-500 transition-colors hover:text-red-600"
+                              aria-label="Eliminar proveedor"
+                              onClick={() => eliminarProveedor(String(p.id))}
+                            >
+                              <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                            </button>
                           </div>
                         </TableCell>
                       </motion.tr>

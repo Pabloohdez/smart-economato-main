@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { ClipboardList } from "lucide-react";
 import { getProductos, getProveedores } from "../services/productosService";
 import PedidosGrid from "../components/pedidos/PedidosTable";
 import Spinner from "../components/ui/Spinner";
@@ -132,6 +133,7 @@ export default function PedidosPage() {
   const [manualCantidad, setManualCantidad] = useState("");
 
   const [err, setErr] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState<string>("");
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -246,6 +248,15 @@ export default function PedidosPage() {
   });
 
   const pedidos = pedidosQuery.data ?? [];
+  const estadosUnicos = useMemo(() => {
+    return Array.from(
+      new Set(
+        pedidos
+          .map((pedido) => String(pedido.estado ?? "").toUpperCase())
+          .filter(Boolean),
+      ),
+    ).sort();
+  }, [pedidos]);
   const proveedores = proveedoresQuery.data ?? [];
   const productos = productosQuery.data ?? [];
   const loadingPedidos = pedidosQuery.isLoading;
@@ -451,7 +462,9 @@ export default function PedidosPage() {
         <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
           <div>
             <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-              <i className="fa-solid fa-file-invoice-dollar text-[var(--color-brand-500)]"></i>
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--color-brand-500)] text-white shadow-sm">
+                <ClipboardList className="h-5 w-5" />
+              </span>
               Pedidos y Compras
             </h2>
             <p className="mt-2 mb-0 text-[14px] text-[var(--color-text-muted)]">Historial de compras y generación de pedidos por proveedor.</p>
@@ -462,23 +475,6 @@ export default function PedidosPage() {
               <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
               <span>{hoyES()}</span>
             </div>
-
-            <Button
-              type="button"
-              className="max-[900px]:w-full max-[900px]:justify-center"
-              onClick={irANuevoPedido}
-            >
-              <i className="fa-solid fa-plus"></i> Nuevo Pedido
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              className="max-[900px]:w-full max-[900px]:justify-center"
-              onClick={irAHistorial}
-            >
-              <i className="fa-solid fa-list"></i> Ver Historial
-            </Button>
           </div>
         </div>
       </StaggerItem>
@@ -526,6 +522,9 @@ export default function PedidosPage() {
               pedidos={pedidos}
               onIrARecepcion={irARecepcion}
               onNuevoPedido={irANuevoPedido}
+              estadoFiltro={estadoFiltro}
+              onEstadoFiltroChange={setEstadoFiltro}
+              estadosUnicos={estadosUnicos}
             />
           )}
           </div>
@@ -548,6 +547,14 @@ export default function PedidosPage() {
                   <Badge variant="secondary" className="px-3 py-1 text-[11px] font-semibold">
                     Total: {totalPedido.toFixed(2)} €
                   </Badge>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="text-[11px] px-3 py-1.5"
+                    onClick={irAHistorial}
+                  >
+                    <i className="fa-solid fa-list"></i> Ver Historial
+                  </Button>
                 </div>
               </div>
             }
