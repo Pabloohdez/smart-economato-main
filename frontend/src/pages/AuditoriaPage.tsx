@@ -71,7 +71,7 @@ export default function AuditoriaPage() {
   const pageSize = 20;
 
   useEffect(() => {
-    if (!esAdmin(authUser)) {
+    if (!esAdminOProfesor(authUser)) {
       setAccesoDenegado(true);
       setLoading(false);
       return;
@@ -180,7 +180,7 @@ export default function AuditoriaPage() {
             ? (apiError.payload as { error?: string })
             : undefined;
         setAccesoDenegado(true);
-        setErrorMsg(payload?.error || apiError.message || "Se requieren permisos de administrador");
+        setErrorMsg(payload?.error || apiError.message || "Se requieren permisos de administrador o profesor");
       } else {
         setErrorMsg("Error de conexión");
       }
@@ -765,7 +765,7 @@ function obtenerUsuarioId(usuario: UsuarioActivo | null) {
   return String(usuario.id ?? usuario.usuario ?? usuario.username ?? "");
 }
 
-function esAdmin(usuario: UsuarioActivo | null) {
+function esAdminOProfesor(usuario: UsuarioActivo | null) {
   const rol = String(usuario?.rol ?? usuario?.role ?? "").toLowerCase();
-  return rol === "admin" || rol === "administrador";
+  return rol === "admin" || rol === "administrador" || rol === "profesor";
 }

@@ -67,6 +67,7 @@ function AppRoutes() {
             <Route path="configuracion" element={<ConfiguracionPage />} />
             <Route path="auditoria" element={<AuditoriaPage />} />
           </Route>
+          <Route path="/error-500" element={<ErrorPage code={500} />} />
           <Route path="*" element={<ErrorPage code={404} />} />
         </Routes>
       </Suspense>

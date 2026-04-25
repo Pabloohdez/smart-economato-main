@@ -230,6 +230,9 @@ async function executeApiRequest<T>(
         window.location.replace("/login");
       }
     }
+    if (res.status === 500 && typeof window !== "undefined" && window.location.pathname !== "/error-500") {
+      window.location.replace("/error-500");
+    }
     throw Object.assign(new Error(msg), {
       status: res.status,
       payload: data,
