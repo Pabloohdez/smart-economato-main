@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import { Public } from '../auth/public.decorator';
 
 @Public()
@@ -18,5 +18,10 @@ export class HealthController {
       status: 'ready',
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Get('error-500')
+  error500() {
+    throw new InternalServerErrorException('Error 500 de prueba');
   }
 }

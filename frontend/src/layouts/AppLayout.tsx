@@ -63,7 +63,7 @@ const navItems = [
     separated: true,
     roles: ["administrador", "profesor", "alumno"],
   },
-  { to: "/auditoria", label: "Auditoría", icon: ClipboardList, roles: ["administrador"] },
+  { to: "/auditoria", label: "Auditoría", icon: ClipboardList, roles: ["administrador", "profesor"] },
 ];
 
 function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno" | "usuario" {
