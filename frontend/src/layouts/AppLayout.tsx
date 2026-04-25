@@ -294,7 +294,7 @@ export default function AppLayout() {
             aria-label="Ir a Inicio"
           >
             <img
-              src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
+              src="/favicon.png"
               alt="CIFP Virgen de la Candelaria"
               className="block h-[50px] w-[50px] rounded-full border border-slate-200 bg-white object-contain p-1 shadow-[0_8px_18px_rgba(15,23,42,0.08)] max-[520px]:h-[44px] max-[520px]:w-[44px]"
             />

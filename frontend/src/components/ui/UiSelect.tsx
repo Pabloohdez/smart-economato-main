@@ -53,11 +53,9 @@ export default function UiSelect(props: UiSelectProps) {
   const visibleOptions = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
     if (!normalized) return options;
-    // Search by word start: "Coc" matches "Coca Cola" but not "Garbanzos Cocidos"
     return options.filter((opt) => {
-      const label = opt.label.toLowerCase();
-      // Split by spaces and check if any word starts with the search term
-      return label.split(/\s+/).some(word => word.startsWith(normalized));
+      const labelText = opt.label.toLowerCase();
+      return labelText.split(/\s+/).some((word) => word.startsWith(normalized));
     });
   }, [options, searchTerm]);
 
@@ -82,7 +80,7 @@ export default function UiSelect(props: UiSelectProps) {
           id={id}
           aria-label={ariaLabel ?? label ?? placeholder}
           className={cn(
-            "group bo-select w-full justify-between gap-3",
+            "group bo-select w-full justify-between gap-3 box-border",
             active && "border-slate-300 bg-slate-50 text-slate-900 shadow-[0_0_0_4px_rgba(148,163,184,0.12)]",
             !selected && "text-[var(--color-text-muted)]",
             triggerClassName,
@@ -91,13 +89,13 @@ export default function UiSelect(props: UiSelectProps) {
           <span className="flex min-w-0 items-center gap-2.5">
             {leadingIcon ? <span className="shrink-0 text-slate-400">{leadingIcon}</span> : null}
             <SelectPrimitive.Value asChild placeholder={placeholder}>
-              <span className="min-w-0 flex-1 truncate capitalize">
+              <span className="min-w-0 flex-1 truncate capitalize text-left">
                 {selected ? selected.label : placeholder}
               </span>
             </SelectPrimitive.Value>
           </span>
           <SelectPrimitive.Icon asChild>
-            <ChevronDown className="h-4 w-4 text-[#94a3b8] transition-transform duration-200 group-data-[state=open]:rotate-180" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-[#94a3b8] transition-transform duration-200 group-data-[state=open]:rotate-180" />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
 
@@ -109,43 +107,45 @@ export default function UiSelect(props: UiSelectProps) {
             sideOffset={8}
             collisionPadding={12}
             className={cn(
-              "z-[2147483647] w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+              "z-[2147483647] w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)] box-border",
               contentClassName,
             )}
             onCloseAutoFocus={() => setSearchTerm("")}
           >
             {searchable && options.length > 8 ? (
-              <div className="border-b border-slate-200 p-2">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <div className="mb-1.5 border-b border-slate-100 pb-1.5 w-full box-border">
+                <div className="relative w-full box-border">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     value={searchTerm}
                     onChange={(event) => setSearchTerm(event.target.value)}
                     onKeyDown={(event) => event.stopPropagation()}
-                    placeholder="Buscar opcion..."
-                    className="h-9 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-3 text-[13px] text-slate-700 shadow-sm outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
+                    placeholder="Buscar opción..."
+                    className="box-border h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[13px] text-slate-700 outline-none focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-slate-100"
                   />
                 </div>
               </div>
             ) : null}
-            <SelectPrimitive.Viewport className="max-h-[min(320px,calc(100vh-180px))] w-full overflow-y-auto overscroll-contain overflow-x-hidden p-2">
+            
+            <SelectPrimitive.Viewport className="max-h-[min(320px,calc(100vh-180px))] w-full overflow-y-auto overscroll-contain overflow-x-hidden space-y-0.5 box-border">
               {visibleOptions.length === 0 ? (
-                <div className="px-3 py-2 text-[13px] text-slate-500">Sin resultados</div>
+                <div className="px-3 py-2 text-center text-[13px] text-slate-500">Sin resultados</div>
               ) : null}
+              
               {visibleOptions.map((opt) => (
                 <SelectPrimitive.Item
                   key={String(opt.value)}
                   value={opt.value === "" ? EMPTY_OPTION_VALUE : opt.value}
                   disabled={opt.disabled}
-                  className="relative flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 focus:font-semibold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
+                  className="relative flex w-full cursor-pointer items-center justify-center rounded-lg px-8 py-2.5 text-center text-[13px] font-medium text-slate-600 outline-none transition-all duration-150 focus:bg-slate-50 focus:text-slate-900 focus:font-semibold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:bg-slate-50 data-[state=checked]:font-bold data-[state=checked]:text-slate-900 box-border"
                 >
                   <SelectPrimitive.ItemText>
-                    <span className="block w-full truncate">{opt.label}</span>
+                    <span className="block w-full truncate text-center">{opt.label}</span>
                   </SelectPrimitive.ItemText>
                   <span className="absolute right-3 flex size-4 items-center justify-center">
                     <SelectPrimitive.ItemIndicator>
-                      <Check className="h-3.5 w-3.5 text-slate-900" />
+                      <Check className="h-4 w-4 text-slate-900" strokeWidth={2.5} />
                     </SelectPrimitive.ItemIndicator>
                   </span>
                 </SelectPrimitive.Item>
@@ -157,4 +157,3 @@ export default function UiSelect(props: UiSelectProps) {
     </div>
   );
 }
-

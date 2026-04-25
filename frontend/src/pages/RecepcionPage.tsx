@@ -136,7 +136,6 @@ export default function Recepcion() {
   const [cantidadSel, setCantidadSel] = useState<number>(1);
 
   // Modal pedidos
-  const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
   const [verifCaptured, setVerifCaptured] = useState<Record<string, number>>({}); // detalle_id -> kg capturados
   const [verifLotes, setVerifLotes] = useState<Record<string, Array<{ fecha: string; cantidad: number }>>>({});
@@ -149,7 +148,6 @@ export default function Recepcion() {
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
-  const drawerPedidosTimerRef = useRef<number | null>(null);
 
   // Obtener usuario activo para auditoría
   const { user } = useAuth();
@@ -204,14 +202,6 @@ export default function Recepcion() {
       broadcastQueryInvalidation(queryKeys.pedidos);
     },
   });
-
-  useEffect(() => {
-    return () => {
-      if (drawerPedidosTimerRef.current) {
-        window.clearTimeout(drawerPedidosTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     void recargarBaseRecepcion();
@@ -415,43 +405,37 @@ export default function Recepcion() {
   }
 
   // ===== Pedidos (importación) =====
+  const construirVerificadosIniciales = useCallback((pendientes: Pedido[]) => {
+    const initialVerifQty: Record<string, number> = {};
+    pendientes.forEach((ped) => {
+      (ped.items ?? []).forEach((item) => {
+        initialVerifQty[String(item.id)] = Math.max(
+          0,
+          (Number(item.cantidad) || 0) - (Number(item.cantidad_recibida) || 0),
+        );
+      });
+    });
+    return initialVerifQty;
+  }, []);
+
   const abrirModalPedidos = useCallback(async () => {
     console.log("[Recepcion] abrirModalPedidos called");
-    setCerrandoDrawerPedidos(false);
     setModalPedidosOpen(true);
     setVerifQty({}); // Reset quantities for new verification
 
     try {
       const pendientes = await pedidosPendientesQuery.refetch().then((result) => result.data ?? []);
-
-      // Initialize verifQty for all items in all pending orders
-      const initialVerifQty: Record<string, number> = {};
-      pendientes.forEach(ped => {
-        (ped.items ?? []).forEach(item => {
-          // Default to remaining quantity. If already fully received, it will be 0
-          initialVerifQty[String(item.id)] = (Number(item.cantidad) || 0) - (Number(item.cantidad_recibida) || 0);
-        });
-      });
-      setVerifQty(initialVerifQty);
+      setVerifQty(construirVerificadosIniciales(pendientes));
 
     } catch (e: any) {
       console.error(e);
       showNotification("Error cargando pedidos pendientes", "error");
     }
-  }, [pedidosPendientesQuery]);
+  }, [construirVerificadosIniciales, pedidosPendientesQuery]);
 
   const cerrarDrawerPedidos = useCallback(() => {
-    if (!modalPedidosOpen || cerrandoDrawerPedidos) return;
-    setCerrandoDrawerPedidos(true);
-    if (drawerPedidosTimerRef.current) {
-      window.clearTimeout(drawerPedidosTimerRef.current);
-    }
-    drawerPedidosTimerRef.current = window.setTimeout(() => {
-      setModalPedidosOpen(false);
-      setCerrandoDrawerPedidos(false);
-      drawerPedidosTimerRef.current = null;
-    }, 220);
-  }, [cerrandoDrawerPedidos, modalPedidosOpen]);
+    setModalPedidosOpen(false);
+  }, []);
 
   const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
     const TOLERANCIA = 0.05; // 50g aprox (solo aplica a kg)
@@ -566,14 +550,15 @@ export default function Recepcion() {
       }
 
       showNotification(message, "success");
-      // Refresh the list of pending orders
-      await abrirModalPedidos();
+      // Refresh sin reabrir modal para evitar parpadeo visual.
+      const pendientesActualizados = await pedidosPendientesQuery.refetch().then((result) => result.data ?? []);
+      setVerifQty(construirVerificadosIniciales(pendientesActualizados));
     } catch (e) {
       console.error(e);
       const apiError = e as ApiRequestError;
       showNotification("Error de conexión: " + apiError.message, "error");
     }
-  }, [verifQty, verifCaptured, productos, abrirModalPedidos, recibirPedidoMutation, scale]);
+  }, [construirVerificadosIniciales, pedidosPendientesQuery, verifQty, verifCaptured, productos, recibirPedidoMutation, scale]);
 
   const pedidosPendientes = pedidosPendientesQuery.data ?? [];
   const pedidosPendientesError = pedidosPendientesQuery.error instanceof Error ? pedidosPendientesQuery.error.message : "";
@@ -827,14 +812,20 @@ export default function Recepcion() {
 
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
-        <div
-          className={`fixed inset-0 z-[1000] overflow-y-auto backdrop-blur-[4px] transition-[background,opacity] duration-200 ${cerrandoDrawerPedidos ? "bg-[rgba(11,18,32,0)]" : "bg-[rgba(11,18,32,0.42)]"}`}
+        <motion.div
+          className="fixed inset-0 z-[1000] overflow-y-auto bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
           onClick={cerrarDrawerPedidos}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18 }}
         >
         <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
-          <aside
-            className={`w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "scale-[0.985] opacity-55" : "scale-100 opacity-100"}`}
+          <motion.aside
+            className="w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.98, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5 max-[768px]:px-4">
               <h3 className="m-0 flex items-center gap-2">
@@ -1159,9 +1150,9 @@ export default function Recepcion() {
                 Cerrar
               </button>
             </div>
-          </aside>
+          </motion.aside>
           </div>
-        </div>,
+        </motion.div>,
         document.body
       )}
 

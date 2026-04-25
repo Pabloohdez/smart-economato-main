@@ -23,18 +23,33 @@ type ApprovalResponse = {
   message?: string;
 };
 
+type ApiEnvelope<T> = {
+  success?: boolean;
+  data?: T;
+  error?: { message?: string };
+  message?: string;
+};
+
 export default function AdminApprovalPage() {
   const queryClient = useQueryClient();
   const [approvingId, setApprovingId] = useState<number | string | null>(null);
   const [rejectingId, setRejectingId] = useState<number | string | null>(null);
 
-  const { data: pendingUsers = [], isLoading, isError, error } = useQuery({
+  const { data: pendingUsers = [], isLoading, isError, error } = useQuery<PendingUser[]>({
     queryKey: ["pendingUsers"],
     queryFn: async () => {
-      const response = await apiFetch<PendingUser[]>("/usuarios/requests", {
+      const response = await apiFetch<PendingUser[] | ApiEnvelope<PendingUser[]>>("/usuarios/requests", {
         method: "GET",
       });
-      return response || [];
+      if (Array.isArray(response)) {
+        return response;
+      }
+
+      if (response && typeof response === "object" && Array.isArray((response as ApiEnvelope<PendingUser[]>).data)) {
+        return (response as ApiEnvelope<PendingUser[]>).data as PendingUser[];
+      }
+
+      return [];
     },
     refetchInterval: 10000,
   });

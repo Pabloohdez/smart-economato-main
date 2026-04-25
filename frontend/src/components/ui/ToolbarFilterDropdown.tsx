@@ -106,29 +106,29 @@ export default function ToolbarFilterDropdown({
 
         <div
           className={cn(
-            "absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-lg",
+            "absolute z-20 mt-2 w-full rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg",
             menuClassName,
           )}
         >
           {searchable ? (
-            <div className="mb-2 border-b border-slate-100 pb-2">
+            <div className="mb-1.5 border-b border-slate-100 pb-1.5">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   onKeyDown={(event) => event.stopPropagation()}
                   placeholder={`Buscar ${label.toLowerCase()}...`}
-                  className="h-9 w-full rounded-lg border border-slate-200 bg-slate-50 pl-9 pr-3 text-[13px] text-slate-700 outline-none focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-slate-100"
+                  className="h-7 w-full rounded-md border border-slate-200 bg-slate-50 pl-7 pr-2 text-[10px] text-slate-700 outline-none focus:border-slate-300 focus:bg-white focus:ring-2 focus:ring-slate-100"
                 />
               </div>
             </div>
           ) : null}
 
-          <div className="max-h-60 space-y-1 overflow-y-auto overflow-x-hidden">
+          <div className="max-h-60 space-y-0.5 overflow-y-auto overflow-x-hidden">
             {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-[13px] text-slate-500">Sin resultados</div>
+              <div className="px-2 py-1 text-center text-[10px] text-slate-500">Sin resultados</div>
             ) : null}
             
             {filteredOptions.map((option) => {
@@ -144,15 +144,15 @@ export default function ToolbarFilterDropdown({
                     setSearchTerm("");
                   }}
                   className={cn(
-                    "no-global-button flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[13px] transition-colors duration-150 focus:outline-none",
+                    "relative no-global-button bg-transparent flex w-full items-center justify-center rounded-md px-5 py-1 text-center text-[10px] transition-all duration-150 focus:outline-none",
                     isSelected
-                      ? "bg-slate-50 font-bold text-slate-900"
-                      : "font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                      ? "font-bold text-slate-900"
+                      : "font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 hover:font-semibold",
                   )}
                 >
                   <span className="truncate">{option.label}</span>
                   {isSelected && (
-                    <Check className="ml-2 h-4 w-4 shrink-0 text-slate-900" strokeWidth={2} />
+                    <Check className="absolute right-2 h-3 w-3 text-slate-900" strokeWidth={2.5} />
                   )}
                 </button>
               );
