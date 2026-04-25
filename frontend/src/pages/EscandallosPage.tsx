@@ -388,11 +388,11 @@ export default function EscandallosPage() {
             />
           </div>
 
-          <Button type="button" variant="secondary" onClick={mostrarTodo}>
+          <Button type="button" variant="secondary" className="h-11" onClick={mostrarTodo}>
             <i className="fa-solid fa-sync"></i> Mostrar Todo
           </Button>
 
-          <Button type="button" variant="success" className="max-[768px]:w-full" onClick={abrirNuevaReceta}>
+          <Button type="button" variant="primary" className="h-11 max-[768px]:w-full" onClick={abrirNuevaReceta}>
             <i className="fa-solid fa-plus"></i> Nueva Receta
           </Button>
         </div>

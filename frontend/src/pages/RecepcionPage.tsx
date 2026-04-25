@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import { showConfirm, showNotification } from "../utils/notifications";
-import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
-import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
-import { useAuth } from "../contexts/AuthContext";
 import { useRecepcionSearch } from "../hooks/useRecepcionSearch";
+import { useAuth } from "../contexts/AuthContext";
 import { getCategorias, getProductos, getProveedores } from "../services/productosService";
 import { getPedidosPendientes, recibirPedido } from "../services/pedidosService";
+import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
@@ -20,7 +20,7 @@ import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
 import { Badge } from "../components/ui/badge";
 import Spinner from "../components/ui/Spinner";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Trash2, Truck } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, Scale, Search, Trash2, Truck } from "lucide-react";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -274,17 +274,6 @@ export default function Recepcion() {
     setCantidadSel(step);
     setModalCantidadOpen(true);
     console.log("[Recepcion] modalCantidadOpen set to true");
-  }
-
-  async function escanearCodigoBarras() {
-    const code = await scanBarcodeFromCamera();
-    if (!code) {
-      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
-      return;
-    }
-    setTerm(code);
-    setResultadosOpen(true);
-    showNotification(`Codigo leido: ${code}`, "success");
   }
 
   function cerrarModalCantidad() {
@@ -613,7 +602,7 @@ export default function Recepcion() {
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Import className="h-5 w-5" />
             </span>
-            RECEPCIÓN DE MERCANCÍA
+            Recepción de Mercancia
           </h1>
           <p className="m-0 text-[14px] text-[#50596D]">
             Registra las entregas de proveedores y actualiza el inventario
@@ -766,15 +755,7 @@ export default function Recepcion() {
 
 
 
-              <button
-                className="inline-flex h-12 w-12 min-w-12 items-center justify-center rounded-[18px] border border-gray-300 bg-white text-gray-400 shadow-sm cursor-pointer transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 touch-manipulation"
-                type="button"
-                onClick={escanearCodigoBarras}
-                aria-label="Escanear codigo de barras"
-                title="Escanear codigo"
-              >
-                <ScanLine className="h-4 w-4" />
-              </button>
+              {/* QR scanner button removed */}
             </div>
 
             {/* Dropdown de resultados */}
@@ -1491,9 +1472,23 @@ export default function Recepcion() {
       </StaggerItem>
 
       {/* Modal Cantidad (usando Portal) */}
-      {modalCantidadOpen && createPortal(
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] p-4">
-          <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[400px]">
+      {createPortal(
+        <AnimatePresence>
+          {modalCantidadOpen && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <motion.div
+                className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[400px]"
+                initial={{ scale: 0.96, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.96, opacity: 0, y: 10 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
             <h3 className="m-0 mb-[15px] text-[var(--color-text-strong)] flex items-center gap-2.5">
               <i className="fa-solid fa-box-open" /> Cantidad Recibida
             </h3>
@@ -1612,8 +1607,10 @@ export default function Recepcion() {
                 Añadir
               </button>
             </div>
-          </div>
-        </div>,
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </StaggerPage>

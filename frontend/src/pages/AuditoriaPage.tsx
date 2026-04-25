@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
@@ -289,7 +290,7 @@ export default function AuditoriaPage() {
     <StaggerPage className="w-full">
       <StaggerItem className="mb-[28px] pb-5 border-b-2 border-[var(--color-border-default)]">
         <h1 className="text-[28px] font-bold text-primary m-0 mb-2 flex items-center gap-3">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><ClipboardList className="h-5 w-5" /></span> REGISTRO DE AUDITORÍA
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm"><ClipboardList className="h-5 w-5" /></span> Registro de Auditoría
         </h1>
         <p className="text-[14px] text-[var(--color-text-muted)] m-0">
           Historial completo de actividades del sistema
@@ -551,12 +552,23 @@ export default function AuditoriaPage() {
         )}
       </StaggerItem>
 
-      {modalOpen && registroSeleccionado && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]"
-          onClick={(e) => e.target === e.currentTarget && cerrarModal()}
-        >
-          <div className="bg-[var(--color-bg-surface)] rounded-[var(--radius-md)] w-[90%] max-w-[600px] max-h-[80vh] overflow-hidden shadow-[var(--shadow-lg)]">
+      <AnimatePresence>
+        {modalOpen && registroSeleccionado && (
+          <motion.div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]"
+            onClick={(e) => e.target === e.currentTarget && cerrarModal()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="bg-[var(--color-bg-surface)] rounded-[var(--radius-md)] w-[90%] max-w-[600px] max-h-[80vh] overflow-hidden shadow-[var(--shadow-lg)]"
+              initial={{ scale: 0.96, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 10 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            >
             <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex justify-between items-center">
               <h3 className="m-0 text-[18px] flex items-center gap-3">
                 <i className="fa-solid fa-info-circle"></i> Detalles de la
@@ -631,9 +643,10 @@ export default function AuditoriaPage() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StaggerPage>
   );
 }

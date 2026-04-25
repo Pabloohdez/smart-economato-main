@@ -21,7 +21,8 @@ import {
   Truck,
   UserCircle2,
   LayoutDashboard,
-  Settings2,
+  Cog,
+  CheckCircle2,
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
@@ -50,9 +51,16 @@ const navItems = [
   { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor"] },
   { to: "/avisos", label: "Avisos", icon: BellRing, roles: ["administrador", "profesor", "alumno"] },
   {
+    to: "/solicitudes-aprobacion",
+    label: "Solicitudes",
+    icon: CheckCircle2,
+    separated: true,
+    roles: ["administrador"],
+  },
+  {
     to: "/configuracion",
     label: "Configuración",
-    icon: Settings2,
+    icon: Cog,
     separated: true,
     roles: ["administrador", "profesor"],
   },

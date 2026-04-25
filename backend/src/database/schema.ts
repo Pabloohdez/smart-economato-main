@@ -35,6 +35,7 @@ export const usuarios = pgTable('usuarios', {
   nombre: varchar('nombre', { length: 100 }),
   apellidos: varchar('apellidos', { length: 100 }),
   email: varchar('email', { length: 100 }),
+  status: varchar('status', { length: 20 }).default('pending_approval'),
   emailVerifiedAt: timestamp('email_verified_at', { mode: 'string' }),
   verificationSentAt: timestamp('verification_sent_at', { mode: 'string' }),
   telefono: varchar('telefono', { length: 20 }),

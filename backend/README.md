@@ -24,6 +24,24 @@ Variables de entorno: crea un archivo `.env` en `backend/` (copia de `.env.examp
 
 La conexión usa **SSL** por defecto (obligatorio en Supabase). Si falla la conexión, comprueba usuario/contraseña y que el proyecto Supabase no esté pausado.
 
+### Migrar el esquema en Supabase
+
+Hay un script SQL de migración en `backend/drizzle/20260425_add_usuario_status.sql` que añade la columna `status` a la tabla `usuarios` y marca los usuarios existentes como `approved`.
+
+Opciones de aplicación:
+
+1. Con Drizzle y la conexión Supabase en `backend/.env`:
+   - `cd backend`
+   - `npm install`
+   - `npm run db:push`
+
+2. O directamente en el editor SQL de Supabase:
+   - Copia el contenido de `backend/drizzle/20260425_add_usuario_status.sql`
+   - Ejecútalo en el SQL Editor de tu proyecto Supabase
+
+3. Si quieres verificar después:
+   - En Supabase SQL Editor: `SELECT id, status FROM usuarios LIMIT 10;`
+
 ## Ejecución
 
 ```bash

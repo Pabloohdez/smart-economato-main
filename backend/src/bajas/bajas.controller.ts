@@ -21,6 +21,11 @@ export class BajasController {
     return this.bajasService.findAll(mesNum, anioNum);
   }
 
+  @Get('weekly-percentage')
+  async getWeeklyPercentage() {
+    return this.bajasService.getWeeklyPercentage();
+  }
+
   @Post()
   async crear(@Body() body: CreateBajaDto, @Req() req: AuthenticatedRequest) {
     const ip = req.socket?.remoteAddress;

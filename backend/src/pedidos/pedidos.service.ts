@@ -256,5 +256,14 @@ export class PedidosService {
     await this.db.query('UPDATE pedidos SET estado = $1 WHERE id = $2', [estado, id]);
     return { message: 'Estado actualizado' };
   }
+
+  async getPendingTodayCount(): Promise<{ count: number }> {
+    const { rows } = await this.db.query(
+      `SELECT COUNT(*) as count FROM pedidos 
+       WHERE estado IN ('PENDIENTE', 'INCOMPLETO')`,
+    );
+    const row = rows[0] as Record<string, unknown> | undefined;
+    return { count: parseInt(String(row?.count ?? 0), 10) };
+  }
 }
 

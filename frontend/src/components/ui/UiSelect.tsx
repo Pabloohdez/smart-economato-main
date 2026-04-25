@@ -53,7 +53,12 @@ export default function UiSelect(props: UiSelectProps) {
   const visibleOptions = useMemo(() => {
     const normalized = searchTerm.trim().toLowerCase();
     if (!normalized) return options;
-    return options.filter((opt) => opt.label.toLowerCase().includes(normalized));
+    // Search by word start: "Coc" matches "Coca Cola" but not "Garbanzos Cocidos"
+    return options.filter((opt) => {
+      const label = opt.label.toLowerCase();
+      // Split by spaces and check if any word starts with the search term
+      return label.split(/\s+/).some(word => word.startsWith(normalized));
+    });
   }, [options, searchTerm]);
 
   function handleValueChange(nextValue: string) {
@@ -104,9 +109,7 @@ export default function UiSelect(props: UiSelectProps) {
             sideOffset={8}
             collisionPadding={12}
             className={cn(
-              // z-index alto para no quedar detrás de botones/paneles con stacking contexts
-              // En móvil el trigger puede ser estrecho; permitimos que el menú crezca hasta 92vw.
-              "z-[2147483647] w-[min(92vw,var(--radix-select-trigger-width))] min-w-[min(92vw,220px)] max-w-[92vw] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
+              "z-[2147483647] w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_20px_48px_rgba(15,23,42,0.08),0_12px_36px_rgba(226,232,240,0.55)]",
               contentClassName,
             )}
             onCloseAutoFocus={() => setSearchTerm("")}
@@ -135,7 +138,7 @@ export default function UiSelect(props: UiSelectProps) {
                   key={String(opt.value)}
                   value={opt.value === "" ? EMPTY_OPTION_VALUE : opt.value}
                   disabled={opt.disabled}
-                  className="relative flex cursor-pointer items-center gap-2 rounded-[10px] px-3 py-2.5 text-[14px] capitalize text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
+                  className="relative flex cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-700 outline-none transition-colors focus:bg-slate-100 focus:text-slate-900 focus:font-semibold data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[state=checked]:font-semibold data-[state=checked]:text-slate-900"
                 >
                   <SelectPrimitive.ItemText>
                     <span className="block w-full truncate">{opt.label}</span>
