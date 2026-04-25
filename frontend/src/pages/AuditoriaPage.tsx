@@ -14,7 +14,7 @@ import Button from "../components/ui/Button";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { CalendarDays, ClipboardList, Eye, Users } from "lucide-react";
+import { ClipboardList, Eye } from "lucide-react";
 
 type RegistroAuditoria = {
   id: number | string;
@@ -385,26 +385,6 @@ export default function AuditoriaPage() {
               <i className="fa-solid fa-eraser"></i> Limpiar
             </Button>
           </div>
-        </div>
-      </StaggerItem>
-
-      <StaggerItem className="flex gap-4 mb-5 flex-wrap max-[768px]:flex-col">
-        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
-          <ClipboardList className="h-4 w-4 text-primary" />
-          <span>
-            <strong>{resumen.total}</strong> registros
-          </span>
-        </div>
-        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
-          <CalendarDays className="h-4 w-4 text-primary" />
-          <span>{resumen.rangoFechas}</span>
-        </div>
-        <div className="flex min-w-40 flex-1 items-center gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 text-[14px] text-[var(--color-text-muted)] shadow-[0_12px_28px_rgba(15,23,42,0.06)]">
-          <Users className="h-4 w-4 text-primary" />
-          <span>
-            <strong>{resumen.usuariosUnicos}</strong> usuario
-            {resumen.usuariosUnicos !== 1 ? "s" : ""}
-          </span>
         </div>
       </StaggerItem>
 

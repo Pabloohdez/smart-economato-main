@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
               <p className="m-0 text-[11px] font-bold uppercase tracking-[0.28em] text-[#b33131]">Recuperación de acceso</p>
               <h2 className="m-0 mt-3 text-[32px] font-semibold leading-[1.02] tracking-[-0.02em] text-slate-900">Recuperar contraseña</h2>
               <p className="m-0 mt-3 text-[14px] font-normal leading-7 text-slate-500">
-                Introduce tu correo y te enviaremos un enlace real para restablecer la contraseña.
+                Introduce tu correo y enviaremos una solicitud para que administración/profesorado actualice tu contraseña.
               </p>
             </div>
 
@@ -145,16 +145,13 @@ export default function ForgotPasswordPage() {
                 >
                   {loading ? (
                     <><Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Enviando...</>
-                  ) : "Enviar enlace"}
+                  ) : "Enviar solicitud"}
                 </motion.button>
               </form>
 
               <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
                 <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/login">
                   Volver al inicio de sesión
-                </Link>
-                <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/verificar-cuenta">
-                  ¿Necesitas reenviar el correo de verificación?
                 </Link>
               </div>
             </div>

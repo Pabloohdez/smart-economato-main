@@ -484,7 +484,7 @@ export default function RendimientoPage() {
   }
 
   return (
-    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
+    <StaggerPage>
       <div className="rendimiento-printable hidden">
         <div className="bg-white text-slate-900 p-8">
           <div className="mb-6">
@@ -550,7 +550,7 @@ export default function RendimientoPage() {
             </span>
             Rendimiento
           </h1>
-          <p className="text-[14px] text-[var(--color-text-muted)] m-0 italic">
+          <p className="text-[14px] text-[var(--color-text-muted)] m-0">
             Toda materia prima susceptible de manipulación o preelaboración
             tendrá una merma y un rendimiento real
           </p>
@@ -603,7 +603,7 @@ export default function RendimientoPage() {
       </StaggerItem>
 
       <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
           </div>
@@ -613,7 +613,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#f0fff4] text-[#38a169]">
             <i className="fa-solid fa-arrow-trend-up"></i>
           </div>
@@ -625,7 +625,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-arrow-trend-down"></i>
           </div>
@@ -637,7 +637,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
             <Trash2 strokeWidth={1.5} size={22} />
           </div>

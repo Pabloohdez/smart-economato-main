@@ -7,6 +7,7 @@ import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
+import TablePagination from "../components/ui/TablePagination";
 import { Badge } from "../components/ui/badge";
 import SearchInput from "../components/ui/SearchInput";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
@@ -114,6 +115,11 @@ export default function BajasPage() {
   const [loadingHistorial, setLoadingHistorial] = useState(true);
   const [errorHistorial, setErrorHistorial] = useState("");
   const [filtroTipoHistorial, setFiltroTipoHistorial] = useState("");
+  const [historialBusqueda, setHistorialBusqueda] = useState("");
+  const [historialFechaDesde, setHistorialFechaDesde] = useState("");
+  const [historialFechaHasta, setHistorialFechaHasta] = useState("");
+  const [historialPage, setHistorialPage] = useState(1);
+  const [historialPageSize, setHistorialPageSize] = useState(10);
 
   // búsqueda + filtros
   const [q, setQ] = useState("");
@@ -491,9 +497,59 @@ export default function BajasPage() {
   const totalValorBajas = useMemo(() => productosBaja.reduce((sum, p) => sum + p.valorPerdido, 0), [productosBaja]);
 
   const historialFiltrado = useMemo(() => {
-    if (!filtroTipoHistorial) return historial;
-    return historial.filter((h) => String(h.tipoBaja) === String(filtroTipoHistorial));
-  }, [historial, filtroTipoHistorial]);
+    const termino = historialBusqueda.trim().toLowerCase();
+    const desde = historialFechaDesde ? new Date(`${historialFechaDesde}T00:00:00`) : null;
+    const hasta = historialFechaHasta ? new Date(`${historialFechaHasta}T23:59:59`) : null;
+
+    return historial.filter((h) => {
+      if (filtroTipoHistorial && String(h.tipoBaja) !== String(filtroTipoHistorial)) {
+        return false;
+      }
+
+      if (termino) {
+        const producto = String(h.producto_nombre ?? "").toLowerCase();
+        const usuario = String(h.usuario_nombre ?? "").toLowerCase();
+        const motivoTxt = String(h.motivo ?? "").toLowerCase();
+        const tipoTxt = String(h.tipoBaja ?? "").toLowerCase();
+        if (!producto.includes(termino) && !usuario.includes(termino) && !motivoTxt.includes(termino) && !tipoTxt.includes(termino)) {
+          return false;
+        }
+      }
+
+      if (desde || hasta) {
+        const fechaBaja = new Date(String(h.fechaBaja ?? ""));
+        if (Number.isNaN(fechaBaja.getTime())) {
+          return false;
+        }
+        if (desde && fechaBaja < desde) {
+          return false;
+        }
+        if (hasta && fechaBaja > hasta) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [historial, filtroTipoHistorial, historialBusqueda, historialFechaDesde, historialFechaHasta]);
+
+  const historialTotalPages = Math.max(1, Math.ceil(historialFiltrado.length / historialPageSize));
+  const historialSafePage = Math.min(Math.max(historialPage, 1), historialTotalPages);
+
+  const historialVisible = useMemo(() => {
+    const start = (historialSafePage - 1) * historialPageSize;
+    return historialFiltrado.slice(start, start + historialPageSize);
+  }, [historialFiltrado, historialSafePage, historialPageSize]);
+
+  useEffect(() => {
+    if (historialPage > historialTotalPages) {
+      setHistorialPage(historialTotalPages);
+    }
+  }, [historialPage, historialTotalPages]);
+
+  useEffect(() => {
+    setHistorialPage(1);
+  }, [filtroTipoHistorial, historialBusqueda, historialFechaDesde, historialFechaHasta, historialPageSize]);
 
   return (
     <StaggerPage>
@@ -933,30 +989,75 @@ export default function BajasPage() {
       <StaggerItem>
       <BackofficeTablePanel
         header={
-          <div className="flex justify-between items-center gap-3 max-[768px]:flex-col max-[768px]:items-stretch">
-            <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
-              <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Bajas
-            </h3>
+          <div className="flex justify-between items-start gap-3 max-[1024px]:flex-col max-[1024px]:items-stretch">
+            <div>
+              <h3 className="m-0 flex items-center gap-2.5 text-[18px] font-semibold text-[var(--color-text-strong)]">
+                <History className="h-5 w-5 text-[var(--color-brand-500)]" /> Historial de Bajas
+              </h3>
+            </div>
 
-            <div className="flex items-center gap-2.5 max-[768px]:w-full">
-              <UiSelect
-                id="selectFiltroTipoBaja"
-                value={filtroTipoHistorial}
-                onChange={setFiltroTipoHistorial}
-                options={[
-                  { value: "", label: "Todos los tipos" },
-                  { value: "Rotura", label: "Roturas" },
-                  { value: "Caducado", label: "Caducados" },
-                  { value: "Merma", label: "Mermas" },
-                  { value: "Ajuste", label: "Ajustes" },
-                  { value: "Otro", label: "Otros" },
-                ]}
+            <div className="flex flex-wrap items-center justify-end gap-2.5 max-[1024px]:w-full max-[1024px]:justify-start">
+              <div className="w-[280px] max-[640px]:w-full">
+                <SearchInput
+                  value={historialBusqueda}
+                  onChange={setHistorialBusqueda}
+                  placeholder="Buscar en historial..."
+                  ariaLabel="Buscar por producto, usuario o motivo"
+                />
+              </div>
+
+              <input
+                type="date"
+                value={historialFechaDesde}
+                onChange={(e) => setHistorialFechaDesde(e.target.value)}
+                className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/20"
+                aria-label="Filtrar historial desde fecha"
+                title="Desde"
               />
+
+              <input
+                type="date"
+                value={historialFechaHasta}
+                onChange={(e) => setHistorialFechaHasta(e.target.value)}
+                className="h-12 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/20"
+                aria-label="Filtrar historial hasta fecha"
+                title="Hasta"
+              />
+
+              <div className="w-[170px] max-[640px]:w-full">
+                <UiSelect
+                  id="selectFiltroTipoBaja"
+                  value={filtroTipoHistorial}
+                  onChange={setFiltroTipoHistorial}
+                  searchable={false}
+                  triggerClassName="h-12"
+                  options={[
+                    { value: "", label: "Todos" },
+                    { value: "Rotura", label: "Roturas" },
+                    { value: "Caducado", label: "Caducados" },
+                    { value: "Merma", label: "Mermas" },
+                    { value: "Ajuste", label: "Ajustes" },
+                    { value: "Otro", label: "Otros" },
+                  ]}
+                />
+              </div>
+
               <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
                 {historialFiltrado.length} registro(s)
               </Badge>
             </div>
           </div>
+        }
+        footer={
+          <TablePagination
+            totalItems={historialFiltrado.length}
+            page={historialSafePage}
+            pageSize={historialPageSize}
+            onPageChange={setHistorialPage}
+            onPageSizeChange={setHistorialPageSize}
+            pageSizeOptions={[10, 25, 50]}
+            label="bajas"
+          />
         }
       >
         <div id="contenedorHistorial" className="min-h-[200px]">
@@ -973,7 +1074,7 @@ export default function BajasPage() {
               {/* Móvil: lista/card (sin solapes) */}
               <div className="hidden max-[640px]:block">
                 <div className="grid gap-3">
-                  {historialFiltrado.map((baja, idx) => {
+                  {historialVisible.map((baja, idx) => {
                     const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                     const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
                     const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
@@ -1040,7 +1141,7 @@ export default function BajasPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {historialFiltrado.map((baja, idx) => {
+                    {historialVisible.map((baja, idx) => {
                       const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                       const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
                       const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;

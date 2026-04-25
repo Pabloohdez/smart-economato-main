@@ -81,28 +81,67 @@ export class UsuariosService {
   }
 
   async getPendingRequests() {
-    const { rows } = await this.db.query(
-      `SELECT id, username, nombre, apellidos, email, telefono, verification_sent_at AS fecha_creacion
+    const { rows: accountRows } = await this.db.query(
+      `SELECT id, username AS usuario, nombre, apellidos, email, telefono, verification_sent_at AS fecha_creacion
        FROM usuarios
        WHERE status = $1
        ORDER BY verification_sent_at DESC NULLS LAST, username ASC`,
       ['pending_approval'],
     );
-    return rows;
+
+    const { rows: passwordRows } = await this.db.query(
+      `SELECT
+         prt.id as token_id,
+         u.id,
+         u.username AS usuario,
+         u.nombre,
+         u.apellidos,
+         u.email,
+         u.telefono,
+         prt.created_at as fecha_creacion
+       FROM password_reset_tokens prt
+       INNER JOIN usuarios u ON u.id = prt.usuario_id
+       WHERE prt.consumed_at IS NULL
+         AND prt.expires_at > CURRENT_TIMESTAMP
+       ORDER BY prt.created_at DESC`,
+    );
+
+    return [
+      ...accountRows.map((row) => ({
+        ...row,
+        request_type: 'account_creation',
+      })),
+      ...passwordRows.map((row) => ({
+        ...row,
+        request_type: 'password_change',
+      })),
+    ];
   }
 
-  async approveRequest(userId: string) {
+  async approveRequest(userId: string, role?: string) {
     const { rows } = await this.db.query(`SELECT id FROM usuarios WHERE id = $1`, [userId]);
     if (rows.length === 0) {
       throw new NotFoundException('Usuario no encontrado');
     }
 
+    const normalizedRole = String(role ?? 'usuario').trim().toLowerCase();
+    const allowedRoles = new Set(['usuario', 'alumno', 'profesor', 'administrador', 'admin']);
+    if (!allowedRoles.has(normalizedRole)) {
+      throw new BadRequestException('Rol inválido para la aprobación.');
+    }
+
+    const roleToStore = normalizedRole === 'admin' ? 'administrador' : normalizedRole;
+
     await this.db.query(
-      `UPDATE usuarios SET status = $1, email_verified_at = CURRENT_TIMESTAMP WHERE id = $2`,
-      ['approved', userId],
+      `UPDATE usuarios
+       SET status = $1,
+           role = $2,
+           email_verified_at = CURRENT_TIMESTAMP
+       WHERE id = $3`,
+      ['approved', roleToStore, userId],
     );
 
-    return { message: 'Solicitud aprobada. El usuario ya puede acceder al sistema.' };
+    return { message: `Solicitud aprobada. Rol asignado: ${roleToStore}.` };
   }
 
   async rejectRequest(userId: string) {
@@ -114,5 +153,59 @@ export class UsuariosService {
     await this.db.query(`DELETE FROM usuarios WHERE id = $1`, [userId]);
 
     return { message: 'Solicitud rechazada. El usuario ha sido eliminado.' };
+  }
+
+  async applyPasswordChangeRequest(tokenId: string, nextPassword: string) {
+    if (nextPassword.trim().length < 8) {
+      throw new BadRequestException('La nueva contraseña debe tener al menos 8 caracteres.');
+    }
+
+    const { rows } = await this.db.query<{ usuarioId: string }>(
+      `SELECT usuario_id as "usuarioId"
+       FROM password_reset_tokens
+       WHERE id = $1
+         AND consumed_at IS NULL
+         AND expires_at > CURRENT_TIMESTAMP
+       LIMIT 1`,
+      [tokenId],
+    );
+
+    const request = rows[0];
+    if (!request) {
+      throw new NotFoundException('Solicitud de cambio de contraseña no encontrada o expirada.');
+    }
+
+    const hashed = await hash(nextPassword, 10);
+
+    await this.db.transaction(async (client) => {
+      await client.query(`UPDATE usuarios SET password = $1 WHERE id = $2`, [hashed, request.usuarioId]);
+      await client.query(
+        `UPDATE password_reset_tokens SET consumed_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [tokenId],
+      );
+      await client.query(
+        `UPDATE refresh_tokens
+         SET revoked_at = CURRENT_TIMESTAMP
+         WHERE usuario_id = $1 AND revoked_at IS NULL`,
+        [request.usuarioId],
+      );
+    });
+
+    return { message: 'Contraseña actualizada correctamente.' };
+  }
+
+  async rejectPasswordChangeRequest(tokenId: string) {
+    const { rowCount } = await this.db.query(
+      `UPDATE password_reset_tokens
+       SET consumed_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND consumed_at IS NULL`,
+      [tokenId],
+    );
+
+    if (!rowCount) {
+      throw new NotFoundException('Solicitud no encontrada.');
+    }
+
+    return { message: 'Solicitud de cambio de contraseña rechazada.' };
   }
 }

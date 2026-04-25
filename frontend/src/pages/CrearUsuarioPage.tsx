@@ -3,8 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import Alert from "../components/ui/Alert";
 import { isValidOptionalEmail, normalizeOptionalEmail } from "../utils/email";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { CheckCircle2, Eye, EyeOff, Loader2, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 type NuevoUsuarioPayload = {
   usuario: string;
@@ -39,6 +39,7 @@ export default function CrearUsuarioPage() {
   const [msg, setMsg] = useState("");
   const [msgTipo, setMsgTipo] = useState<"success" | "error">("error");
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   async function crearUsuario(payload: NuevoUsuarioPayload) {
     return apiFetch<CrearUsuarioResponse>("/usuarios", {
@@ -87,11 +88,10 @@ export default function CrearUsuarioPage() {
       const data = await crearUsuario(payload);
 
       if (data?.success || data?.ok || data?.id) {
-        setMsgTipo("success");
-        setMsg(data?.message || "Solicitud de alta recibida. Un administrador la revisará pronto.");
+        setShowSuccessModal(true);
         setTimeout(() => {
           nav("/login");
-        }, 2000);
+        }, 7000);
       } else {
         setMsgTipo("error");
         setMsg(data?.error?.message || data?.message || "No se pudo crear la cuenta");
@@ -287,8 +287,14 @@ export default function CrearUsuarioPage() {
                     id="cu-telefono"
                     type="tel"
                     value={telefono}
-                    onChange={(e) => setTelefono(e.target.value)}
-                    placeholder="Teléfono"
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, "").slice(0, 9);
+                      setTelefono(val);
+                    }}
+                    placeholder="9 dígitos"
+                    maxLength={9}
+                    inputMode="numeric"
+                    pattern="[0-9]{9}"
                     className="h-12 w-full rounded-xl border border-slate-200 bg-[#f2f5fa] px-4 text-[14px] font-medium text-slate-800 transition-all duration-150 placeholder:text-slate-400 focus:border-[#b33131] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#b33131]/20"
                     autoComplete="tel"
                   />
@@ -328,9 +334,6 @@ export default function CrearUsuarioPage() {
               </form>
 
               <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
-                <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/verificar-cuenta">
-                  Verificar cuenta o reenviar correo
-                </Link>
                 <p className="m-0">
                   ¿Ya tienes cuenta?{" "}
                   <Link className="font-semibold text-[#b33131] transition-colors hover:text-[#8f2323]" to="/login">
@@ -342,6 +345,95 @@ export default function CrearUsuarioPage() {
           </motion.div>
         </section>
       </main>
+
+      {/* Modal de éxito */}
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {/* Overlay */}
+            <motion.div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            />
+
+            {/* Card */}
+            <motion.div
+              className="relative z-10 w-full max-w-md rounded-[28px] border border-white/20 bg-white p-8 shadow-[0_32px_80px_rgba(15,23,42,0.18)] text-center"
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{ type: "spring", stiffness: 320, damping: 28, mass: 0.8 }}
+            >
+              {/* Icono animado */}
+              <motion.div
+                className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-[linear-gradient(135deg,#d4edda,#c3e6cb)]"
+                initial={{ scale: 0, rotate: -20 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 280, damping: 20, delay: 0.1 }}
+              >
+                <CheckCircle2 className="h-10 w-10 text-[#276749]" strokeWidth={2} />
+              </motion.div>
+
+              <motion.h2
+                className="m-0 text-[22px] font-bold text-slate-900"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                ¡Solicitud enviada!
+              </motion.h2>
+
+              <motion.p
+                className="m-0 mt-3 text-[14px] leading-relaxed text-slate-500"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.28 }}
+              >
+                Tu solicitud de alta ha sido recibida correctamente.
+                <br />
+                Un administrador la revisará pronto.
+              </motion.p>
+
+              <motion.p
+                className="m-0 mt-4 text-[12px] text-slate-400"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.38 }}
+              >
+                Serás redirigido al inicio de sesión en unos segundos...
+              </motion.p>
+
+              <motion.button
+                onClick={() => nav("/login")}
+                className="mt-6 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border-0 bg-[linear-gradient(135deg,#276749,#1d4e35)] text-[14px] font-semibold text-white shadow-md transition hover:opacity-90"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.42 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Ir al inicio de sesión
+              </motion.button>
+
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border-0 bg-slate-100 text-slate-400 transition hover:bg-slate-200 hover:text-slate-600"
+                aria-label="Cerrar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
