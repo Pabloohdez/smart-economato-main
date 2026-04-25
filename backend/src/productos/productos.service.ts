@@ -273,4 +273,40 @@ export class ProductosService {
       );
     }
   }
+
+  async getStockBajoCount(): Promise<{ count: number }> {
+    const { rows } = await this.db.query(
+      `SELECT COUNT(*) as count FROM productos 
+       WHERE stock <= stockminimo AND activo = true`,
+    );
+    const row = rows[0] as Record<string, unknown> | undefined;
+    return { count: parseInt(String(row?.count ?? 0), 10) };
+  }
+
+  async getAvisosAlertsCount(): Promise<{ count: number }> {
+    // Count different types of alerts
+    const stockBajoRes = await this.db.query(
+      `SELECT COUNT(*) as count FROM productos WHERE stock <= stockminimo AND activo = true`,
+    );
+    
+    const proximoCaducarRes = await this.db.query(
+      `SELECT COUNT(*) as count FROM productos 
+       WHERE fechacaducidad IS NOT NULL 
+       AND fechacaducidad <= CURRENT_DATE + INTERVAL '30 days'
+       AND fechacaducidad > CURRENT_DATE
+       AND activo = true`,
+    );
+    
+    const caducadosRes = await this.db.query(
+      `SELECT COUNT(*) as count FROM productos 
+       WHERE fechacaducidad < CURRENT_DATE AND activo = true`,
+    );
+    
+    const total = 
+      parseInt(String((stockBajoRes.rows[0] as any)?.count ?? 0), 10) +
+      parseInt(String((proximoCaducarRes.rows[0] as any)?.count ?? 0), 10) +
+      parseInt(String((caducadosRes.rows[0] as any)?.count ?? 0), 10);
+    
+    return { count: total };
+  }
 }

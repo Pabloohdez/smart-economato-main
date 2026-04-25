@@ -99,7 +99,7 @@ export default function RendimientoPage() {
 
   const eliminarHistorialMutation = useMutation({
     mutationFn: async (id: number) => {
-      const json = await apiFetch<{ success?: boolean; error?: string }>(`/rendimientos?id=${id}`, { method: "DELETE" });
+      const json = await apiFetch<{ success?: boolean; error?: string }>(`/rendimientos/${id}`, { method: "DELETE" });
 
       if (!json.success) {
         throw new Error(json.error || "Error al eliminar");
@@ -157,6 +157,18 @@ export default function RendimientoPage() {
         year: "numeric",
       }),
     );
+  }, []);
+
+  useEffect(() => {
+    const handleAfterPrint = () => {
+      document.body.classList.remove("rendimiento-printing");
+    };
+
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => {
+      window.removeEventListener("afterprint", handleAfterPrint);
+      document.body.classList.remove("rendimiento-printing");
+    };
   }, []);
 
   useEffect(() => {
@@ -355,6 +367,7 @@ export default function RendimientoPage() {
   }
 
   function imprimir() {
+    document.body.classList.add("rendimiento-printing");
     window.print();
   }
 
@@ -471,7 +484,61 @@ export default function RendimientoPage() {
   }
 
   return (
-    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
+    <StaggerPage>
+      <div className="rendimiento-printable hidden">
+        <div className="bg-white text-slate-900 p-8">
+          <div className="mb-6">
+            <h1 className="text-4xl font-extrabold mb-2">Informe de Rendimiento</h1>
+            <p className="text-base text-slate-600">Fecha: {fechaActual}</p>
+          </div>
+
+          <div className="grid gap-4 grid-cols-2 mb-8 text-slate-900">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm uppercase tracking-[0.18em] text-slate-500">Ingredientes Analizados</div>
+              <div className="mt-3 text-3xl font-bold">{estadisticas.ingredientes}</div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm uppercase tracking-[0.18em] text-slate-500">Rendimiento Medio</div>
+              <div className="mt-3 text-3xl font-bold">{estadisticas.rendimientoMedio.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm uppercase tracking-[0.18em] text-slate-500">Merma Media</div>
+              <div className="mt-3 text-3xl font-bold">{estadisticas.mermaMedia.toFixed(1)}%</div>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="text-sm uppercase tracking-[0.18em] text-slate-500">Desperdicio Total</div>
+              <div className="mt-3 text-3xl font-bold">{estadisticas.desperdicioTotal.toFixed(2)} kg</div>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Historial de Rendimiento</h2>
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr>
+                  <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">Fecha</th>
+                  <th className="border-b border-slate-200 px-3 py-2 text-left font-semibold">Ingrediente</th>
+                  <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">Rendimiento</th>
+                  <th className="border-b border-slate-200 px-3 py-2 text-right font-semibold">Merma</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historialRendimiento.map((item) => {
+                  const fecha = new Date(String(item.fecha)).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+                  return (
+                    <tr key={`print-${item.id}`}>
+                      <td className="border-b border-slate-200 px-3 py-2">{fecha}</td>
+                      <td className="border-b border-slate-200 px-3 py-2">{item.ingrediente}</td>
+                      <td className="border-b border-slate-200 px-3 py-2 text-right">{item.rendimiento.toFixed(1)}%</td>
+                      <td className="border-b border-slate-200 px-3 py-2 text-right">{item.merma.toFixed(1)}%</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
       <StaggerItem
         className="flex justify-between items-start mb-[25px] flex-wrap gap-4 max-[768px]:flex-col"
         data-print-date={new Date().toLocaleString("es-ES")}
@@ -483,7 +550,7 @@ export default function RendimientoPage() {
             </span>
             Rendimiento
           </h1>
-          <p className="text-[14px] text-[var(--color-text-muted)] m-0 italic">
+          <p className="text-[14px] text-[var(--color-text-muted)] m-0">
             Toda materia prima susceptible de manipulación o preelaboración
             tendrá una merma y un rendimiento real
           </p>
@@ -536,7 +603,7 @@ export default function RendimientoPage() {
       </StaggerItem>
 
       <StaggerItem className="grid grid-cols-4 gap-4 mb-[25px] max-[1100px]:grid-cols-2 max-[640px]:grid-cols-1">
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#ebf8ff] text-[#3182ce]">
             <i className="fa-solid fa-carrot"></i>
           </div>
@@ -546,7 +613,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#f0fff4] text-[#38a169]">
             <i className="fa-solid fa-arrow-trend-up"></i>
           </div>
@@ -558,7 +625,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fff5f5] text-[#e53e3e]">
             <i className="fa-solid fa-arrow-trend-down"></i>
           </div>
@@ -570,7 +637,7 @@ export default function RendimientoPage() {
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[var(--shadow-sm)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-sm)]">
+        <div className="bg-[var(--color-bg-surface)] rounded-[14px] p-5 flex items-center gap-4 shadow-[0_4px_20px_rgba(15,23,42,0.10)] border border-black/5 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
           <div className="w-[50px] h-[50px] rounded-xl flex items-center justify-center text-[1.3rem] flex-shrink-0 bg-[#fffaf0] text-[#dd6b20]">
             <Trash2 strokeWidth={1.5} size={22} />
           </div>
@@ -598,9 +665,9 @@ export default function RendimientoPage() {
             <UiSelect
               value={filtroCategoria}
               onChange={setFiltroCategoria}
-              placeholder="Todas las categorías"
+              placeholder="Todas las Categorías"
               options={[
-                { value: "", label: "Todas las categorías" },
+                { value: "", label: "Todas las Categorías" },
                 ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
               ]}
             />
@@ -933,9 +1000,9 @@ export default function RendimientoPage() {
                   <UiSelect
                     value={filtroCategoriaHistorial}
                     onChange={setFiltroCategoriaHistorial}
-                    placeholder="Todas las categorías"
+                    placeholder="Todas las Categorías"
                     options={[
-                      { value: "", label: "Todas las categorías" },
+                      { value: "", label: "Todas las Categorías" },
                       ...categoriasDisponibles.map((cat) => ({ value: cat.nombre, label: cat.nombre })),
                     ]}
                   />

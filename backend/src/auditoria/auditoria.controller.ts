@@ -3,7 +3,7 @@ import { AuditoriaControllerService } from './auditoria.controller.service';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { Roles } from '../auth/roles.decorator';
 
-@Roles('admin')
+@Roles('admin', 'administrador', 'profesor')
 @Controller('auditoria')
 export class AuditoriaController {
   constructor(private readonly service: AuditoriaControllerService) {}

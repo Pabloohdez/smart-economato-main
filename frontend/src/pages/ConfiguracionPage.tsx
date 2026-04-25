@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { showAlert, showNotification } from "../utils/notifications";
 import type { AlergenoCatalogo, UsuarioActivo } from "../types";
@@ -175,8 +176,11 @@ export default function ConfiguracionPage() {
   const [nuevosProductos, setNuevosProductos] = useState(false);
   const [filtradoBusqueda, setFiltradoBusqueda] = useState(false);
 
+  const [showPerfilGuardadoModal, setShowPerfilGuardadoModal] = useState(false);
   const [mensajeEstado, setMensajeEstado] = useState("");
   const [mensajeTipo, setMensajeTipo] = useState<
+// placeholder break
+// placeholder end
     "green" | "orange" | "red" | ""
   >("");
 
@@ -285,7 +289,7 @@ export default function ConfiguracionPage() {
     updateUser(actualizado);
     setUsuarioActual(actualizado);
     setEmail(normalizedEmail || "");
-    mostrarMensaje("✅ Perfil actualizado correctamente", "green");
+    setShowPerfilGuardadoModal(true);
   }
 
   function toggleAlergia(alergeno: string) {
@@ -369,7 +373,7 @@ export default function ConfiguracionPage() {
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
             <i className="fa-solid fa-gear" />
           </span>
-          CONFIGURACIÓN DE PERFIL
+          Configuración del Perfil
         </h1>
         <p className="m-0 text-[14px] text-[var(--color-text-muted)]">
           Gestiona tu información personal y configuración de alergias
@@ -498,7 +502,11 @@ export default function ConfiguracionPage() {
                   id="inputTelefonoPerfil"
                   className="py-3 px-4 border-2 border-[var(--color-border-default)] rounded-[10px] text-[15px] bg-[var(--color-bg-surface)] transition-[border-color,box-shadow] duration-200 focus:border-[var(--color-brand-500)] focus:shadow-[0_0_0_4px_rgba(179,49,49,0.1)] focus:outline-none"
                   value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
+                  onChange={(e) => setTelefono(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                  maxLength={9}
+                  inputMode="numeric"
+                  pattern="[0-9]{9}"
+                  placeholder="9 dígitos"
                 />
               </div>
             </div>
@@ -782,17 +790,58 @@ export default function ConfiguracionPage() {
         className={[
           "text-center font-semibold min-h-6 text-[14px] px-3 py-3 rounded-lg mt-5 transition-opacity",
           mensajeTipo ? "opacity-100" : "opacity-0",
-          mensajeTipo === "green"
-            ? "bg-[#f0fff4] text-[#2f855a] border-2 border-[#9ae6b4]"
-            : mensajeTipo === "orange"
-              ? "bg-[#fffaf0] text-[#c05621] border-2 border-[#fbd38d]"
-              : mensajeTipo === "red"
-                ? "bg-[#fff5f5] text-[#c53030] border-2 border-[#fc8181]"
-                : "bg-transparent text-transparent border-0",
+          mensajeTipo === "orange"
+            ? "bg-[#fffaf0] text-[#c05621] border-2 border-[#fbd38d]"
+            : mensajeTipo === "red"
+              ? "bg-[#fff5f5] text-[#c53030] border-2 border-[#fc8181]"
+              : "bg-transparent text-transparent border-0",
         ].join(" ")}
       >
         {mensajeEstado}
-            </StaggerItem>
-          </StaggerPage>
+      </StaggerItem>
+
+      <AnimatePresence>
+        {showPerfilGuardadoModal && (
+          <motion.div
+            className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setShowPerfilGuardadoModal(false)}
+          >
+            <motion.div
+              className="w-full max-w-[400px] rounded-2xl bg-white shadow-[0_25px_60px_rgba(0,0,0,0.22)] border border-slate-100 overflow-hidden"
+              initial={{ opacity: 0, scale: 0.88, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 24 }}
+              transition={{ type: "spring", stiffness: 340, damping: 28 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-[linear-gradient(135deg,#276749,#38a169)] px-6 py-5 flex items-center gap-3">
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+                  <i className="fa-solid fa-circle-check text-white text-[20px]" />
+                </span>
+                <h3 className="m-0 text-white font-bold text-[18px]">Cambios guardados</h3>
+              </div>
+              <div className="p-6">
+                <p className="m-0 text-slate-600 text-[14px] leading-relaxed">
+                  Tu perfil ha sido actualizado correctamente.
+                </p>
+                <div className="mt-5 flex justify-end">
+                  <button
+                    type="button"
+                    className="px-5 py-2.5 rounded-[10px] bg-[#276749] text-white font-semibold text-sm cursor-pointer hover:bg-[#1f5238] transition-colors"
+                    onClick={() => setShowPerfilGuardadoModal(false)}
+                  >
+                    Aceptar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </StaggerPage>
   );
 }

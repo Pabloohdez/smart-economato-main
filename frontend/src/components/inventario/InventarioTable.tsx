@@ -554,12 +554,23 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
         </div>
       </motion.div>
 
+      <AnimatePresence>
       {editOpen && editProducto && (
-        <div
+        <motion.div
           className="fixed inset-0 bg-black/50 z-[10000] flex items-center justify-center p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
           onClick={(e) => e.target === e.currentTarget && cerrarEdicion()}
         >
-          <div className="w-full max-w-[560px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
+          <motion.div
+            className="w-full max-w-[560px] rounded-2xl bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden"
+            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          >
             <div className="px-6 py-5 bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-white flex items-center justify-between gap-3">
               <div className="font-extrabold text-[16px]">
                 Editar producto: {editProducto.nombre}
@@ -652,9 +663,10 @@ export default function InventarioTable({ items, lotes }: { items: Producto[]; l
                 </button>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {lotesOpen && lotesProducto && (
         <div

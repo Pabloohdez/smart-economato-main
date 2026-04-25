@@ -14,6 +14,7 @@ import RendimientoPage from "./pages/RendimientoPage";
 import AvisosPage from "./pages/AvisosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import AuditoriaPage from "./pages/AuditoriaPage";
+import AdminApprovalPage from "./pages/AdminApprovalPage";
 import AppLayout from "./layouts/AppLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Spinner from "./components/ui/Spinner";
@@ -23,12 +24,12 @@ import ConfirmDialogHost from "./components/ui/ConfirmDialogHost";
 import { Toaster } from "./components/ui/sonner";
 import { AuthProvider } from "./contexts/AuthContext";
 import { queryClient } from "./lib/queryClient";
+import ErrorPage from "./pages/ErrorPage";
 
 const IngresarProductoPage = lazy(() => import("./pages/IngresarProductoPage"));
 const CrearUsuarioPage = lazy(() => import("./pages/CrearUsuarioPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
-const VerifyAccountPage = lazy(() => import("./pages/VerifyAccountPage"));
 
 function AppRoutes() {
   const location = useLocation();
@@ -42,7 +43,6 @@ function AppRoutes() {
           <Route path="/registro" element={<CrearUsuarioPage />} />
           <Route path="/recuperar-password" element={<ForgotPasswordPage />} />
           <Route path="/restablecer-password" element={<ResetPasswordPage />} />
-          <Route path="/verificar-cuenta" element={<VerifyAccountPage />} />
           <Route
             path="/"
             element={
@@ -53,6 +53,7 @@ function AppRoutes() {
           >
             <Route index element={<Navigate to="/inicio" replace />} />
             <Route path="inicio" element={<InicioPage />} />
+            <Route path="solicitudes-aprobacion" element={<AdminApprovalPage />} />
             <Route path="recepcion" element={<RecepcionPage />} />
             <Route path="distribucion" element={<DistribucionPage />} />
             <Route path="inventario" element={<InventarioPage />} />
@@ -66,7 +67,8 @@ function AppRoutes() {
             <Route path="configuracion" element={<ConfiguracionPage />} />
             <Route path="auditoria" element={<AuditoriaPage />} />
           </Route>
-          <Route path="*" element={<Navigate to="/inicio" replace />} />
+          <Route path="/error-500" element={<ErrorPage code={500} />} />
+          <Route path="*" element={<ErrorPage code={404} />} />
         </Routes>
       </Suspense>
     </RouteErrorBoundary>

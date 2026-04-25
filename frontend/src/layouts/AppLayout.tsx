@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
-  Bell,
   BellRing,
   CalendarDays,
   ChartPie,
@@ -21,7 +20,8 @@ import {
   Truck,
   UserCircle2,
   LayoutDashboard,
-  Settings2,
+  Cog,
+  CheckCircle2,
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
@@ -40,23 +40,30 @@ import { getProductos } from "../services/productosService";
 
 const navItems = [
   { to: "/inicio", label: "Inicio", icon: House, roles: ["administrador", "profesor", "alumno"] },
-  { to: "/recepcion", label: "Recepción", icon: PackagePlus, roles: ["administrador", "profesor"] },
-  { to: "/distribucion", label: "Distribución", icon: Truck, roles: ["administrador", "profesor"] },
+  { to: "/recepcion", label: "Recepción", icon: PackagePlus, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/distribucion", label: "Distribución", icon: Truck, roles: ["administrador", "profesor", "alumno"] },
   { to: "/inventario", label: "Inventario", icon: Boxes, roles: ["administrador", "profesor", "alumno"] },
-  { to: "/bajas", label: "Bajas", icon: HandCoins, roles: ["administrador", "profesor"] },
-  { to: "/proveedores", label: "Proveedores", icon: Building2, roles: ["administrador"] },
-  { to: "/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["administrador", "profesor"] },
+  { to: "/bajas", label: "Bajas", icon: HandCoins, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/proveedores", label: "Proveedores", icon: Building2, roles: ["administrador", "profesor", "alumno"] },
+  { to: "/pedidos", label: "Pedidos", icon: ClipboardList, roles: ["administrador", "profesor", "alumno"] },
   { to: "/escandallos", label: "Escandallos", icon: ChefHat, roles: ["administrador", "profesor", "alumno"] },
-  { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor"] },
+  { to: "/rendimiento", label: "Rendimiento", icon: ChartPie, roles: ["administrador", "profesor", "alumno"] },
   { to: "/avisos", label: "Avisos", icon: BellRing, roles: ["administrador", "profesor", "alumno"] },
   {
-    to: "/configuracion",
-    label: "Configuración",
-    icon: Settings2,
+    to: "/solicitudes-aprobacion",
+    label: "Solicitudes",
+    icon: CheckCircle2,
     separated: true,
     roles: ["administrador", "profesor"],
   },
-  { to: "/auditoria", label: "Auditoría", icon: ClipboardList, roles: ["administrador"] },
+  {
+    to: "/configuracion",
+    label: "Configuración",
+    icon: Cog,
+    separated: true,
+    roles: ["administrador", "profesor", "alumno"],
+  },
+  { to: "/auditoria", label: "Auditoría", icon: ClipboardList, roles: ["administrador", "profesor"] },
 ];
 
 function normalizeRole(roleRaw: string): "administrador" | "profesor" | "alumno" | "usuario" {
@@ -286,7 +293,7 @@ export default function AppLayout() {
             aria-label="Ir a Inicio"
           >
             <img
-              src="/assets/img/LOGO CIFP VIRGEN DE CANDELARIA.png"
+              src="/favicon.png"
               alt="CIFP Virgen de la Candelaria"
               className="block h-[50px] w-[50px] rounded-full border border-slate-200 bg-white object-contain p-1 shadow-[0_8px_18px_rgba(15,23,42,0.08)] max-[520px]:h-[44px] max-[520px]:w-[44px]"
             />
@@ -296,19 +303,6 @@ export default function AppLayout() {
                 Smart Economato
               </strong>
             </span>
-          </NavLink>
-
-          <NavLink
-            to="/avisos"
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--color-border-default)] bg-white text-[var(--color-brand-500)] shadow-sm transition hover:bg-[#f8fafc]"
-            aria-label="Ir a Avisos"
-          >
-            <Bell className="h-[18px] w-[18px]" aria-hidden="true" />
-            {avisosCount > 0 ? (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] rounded-full bg-[#ef4444] text-white text-[11px] font-bold inline-flex items-center justify-center px-1">
-                {avisosCount > 99 ? "99+" : avisosCount}
-              </span>
-            ) : null}
           </NavLink>
         </div>
 

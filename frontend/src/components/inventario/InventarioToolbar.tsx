@@ -1,5 +1,5 @@
 import type { Categoria, Proveedor } from "../../services/productosService";
-import { ArrowUpDown, ChevronDown, Filter, FilterX, MoreVertical, Plus, ScanLine, Search } from "lucide-react";
+import { ArrowUpDown, Download, Filter, FilterX, MoreVertical, Plus, Search } from "lucide-react";
 import { useMemo } from "react";
 import ToolbarFilterDropdown from "../ui/ToolbarFilterDropdown";
 import {
@@ -25,7 +25,6 @@ type Props = {
   setOnlyStockBajo: (v: boolean) => void;
   onlyProximoCaducar: boolean;
   setOnlyProximoCaducar: (v: boolean) => void;
-  onScanBarcode: () => void;
   onExportCsv: () => void;
   onExportXlsx: () => void;
   onCreateProduct: () => void;
@@ -48,7 +47,6 @@ export default function InventarioToolbar({
   setOnlyStockBajo,
   onlyProximoCaducar,
   setOnlyProximoCaducar,
-  onScanBarcode,
   onExportCsv,
   onExportXlsx,
   onCreateProduct,
@@ -173,22 +171,19 @@ export default function InventarioToolbar({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="origin-top-right data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+              style={{ width: "var(--radix-popper-anchor-width)" }}
+              className="min-w-0 origin-top-right rounded-xl border-slate-300 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
             >
-              <DropdownMenuItem onClick={onScanBarcode}>
-                <ScanLine className="h-4 w-4" strokeWidth={2} /> Escanear código
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onExportCsv}>
-                Exportar CSV
+                <Download className="h-4 w-4" /> Exportar CSV
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onExportXlsx}>
-                Exportar XLSX
+                <Download className="h-4 w-4" /> Exportar XLSX
               </DropdownMenuItem>
               {hasActiveFilters && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={limpiarFiltros} className="text-[var(--color-brand-600)]">
+                  <DropdownMenuItem onClick={limpiarFiltros} className="text-[#b33131] focus:text-[#b33131] focus:bg-red-50">
                     <FilterX className="h-4 w-4" strokeWidth={2} /> Limpiar Filtros
                   </DropdownMenuItem>
                 </>
@@ -209,4 +204,3 @@ export default function InventarioToolbar({
     </div>
   );
 }
-

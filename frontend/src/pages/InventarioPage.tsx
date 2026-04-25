@@ -238,7 +238,7 @@ export default function InventarioPage() {
   }, []);
 
   return (
-    <StaggerPage className="mx-auto w-full max-w-[1460px] px-[clamp(12px,2.4vw,24px)] pb-8 pt-0">
+    <StaggerPage>
       <StaggerItem>
         <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[768px]:items-stretch">
           <div>
@@ -246,10 +246,10 @@ export default function InventarioPage() {
               <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
                 <Boxes className="h-5 w-5" strokeWidth={2} />
               </span>
-              INVENTARIO
+              Inventario
             </h1>
             <p className="m-0 text-[14px] text-[#50596D]">
-              {filtered.length} productos listados.
+              Consulta existencias, lotes y disponibilidad para planificar compras y reposicion.
             </p>
           </div>
           <div />
@@ -272,7 +272,6 @@ export default function InventarioPage() {
           setOnlyStockBajo={setOnlyStockBajo}
           onlyProximoCaducar={onlyProximoCaducar}
           setOnlyProximoCaducar={setOnlyProximoCaducar}
-          onScanBarcode={escanearCodigoBarras}
           onExportCsv={exportarProductosCsv}
           onExportXlsx={exportarProductosXlsx}
           onCreateProduct={() => nav("/inventario/nuevo")}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   getCategorias,
   getProductos,
@@ -435,7 +436,7 @@ export default function AvisosPage() {
   }, [lotesCaducados, stockBajo]);
 
   return (
-    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
+    <StaggerPage>
       <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="m-0 mb-1 flex items-center gap-3 text-[28px] font-semibold text-primary">
@@ -753,8 +754,22 @@ export default function AvisosPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      <div className={`fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000] transition-opacity duration-200 ${modalOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
-        <div className={`bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${modalOpen ? "translate-y-0 scale-100" : "translate-y-5 scale-95"}`}>
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 [backdrop-filter:blur(4px)] flex items-center justify-center z-[1000]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <motion.div
+              className="bg-[var(--color-bg-surface)] w-[90%] max-w-[400px] rounded-xl border border-[#e5e7eb] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1),0_10px_10px_-5px_rgba(0,0,0,0.04)]"
+              initial={{ scale: 0.96, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.96, opacity: 0, y: 10 }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+            >
           <div className="flex justify-between items-center px-5 py-4 border-b border-b-[#f3f4f6]">
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
@@ -853,8 +868,10 @@ export default function AvisosPage() {
               <span>Confirmar</span>
             </button>
           </div>
-        </div>
-      </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div
         className={`fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-[100px] opacity-0 bg-[#111827] text-white px-5 py-2.5 rounded-[30px] flex items-center gap-2.5 shadow-[0_10px_30px_rgba(0,0,0,0.2)] z-[2000] text-[13px] font-medium transition-[transform,opacity] duration-400 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] ${

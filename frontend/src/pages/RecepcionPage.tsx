@@ -1,14 +1,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { apiFetch, type ApiRequestError } from "../services/apiClient";
 import { showConfirm, showNotification } from "../utils/notifications";
-import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
-import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
-import { useAuth } from "../contexts/AuthContext";
 import { useRecepcionSearch } from "../hooks/useRecepcionSearch";
+import { useAuth } from "../contexts/AuthContext";
 import { getCategorias, getProductos, getProveedores } from "../services/productosService";
 import { getPedidosPendientes, recibirPedido } from "../services/pedidosService";
+import type { Producto, Categoria, Proveedor, PedidoItem, Pedido } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { useScaleSerial } from "../hooks/useScaleSerial";
@@ -20,7 +20,7 @@ import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
 import { Badge } from "../components/ui/badge";
 import Spinner from "../components/ui/Spinner";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, ScanLine, Scale, Search, Trash2, Truck } from "lucide-react";
+import { CalendarDays, ClipboardCheck, Copy, Import, PackageSearch, Plug, PlugZap, Scale, Search, Trash2, Truck } from "lucide-react";
 
 type RecepcionRow = {
   producto_id: number | string;
@@ -136,7 +136,6 @@ export default function Recepcion() {
   const [cantidadSel, setCantidadSel] = useState<number>(1);
 
   // Modal pedidos
-  const [cerrandoDrawerPedidos, setCerrandoDrawerPedidos] = useState(false);
   const [verifQty, setVerifQty] = useState<Record<string, number>>({}); // detalle_id -> qty
   const [verifCaptured, setVerifCaptured] = useState<Record<string, number>>({}); // detalle_id -> kg capturados
   const [verifLotes, setVerifLotes] = useState<Record<string, Array<{ fecha: string; cantidad: number }>>>({});
@@ -149,7 +148,6 @@ export default function Recepcion() {
 
   const buscadorWrapRef = useRef<HTMLDivElement | null>(null);
   const skipCloseRef = useRef(false);
-  const drawerPedidosTimerRef = useRef<number | null>(null);
 
   // Obtener usuario activo para auditoría
   const { user } = useAuth();
@@ -204,14 +202,6 @@ export default function Recepcion() {
       broadcastQueryInvalidation(queryKeys.pedidos);
     },
   });
-
-  useEffect(() => {
-    return () => {
-      if (drawerPedidosTimerRef.current) {
-        window.clearTimeout(drawerPedidosTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     void recargarBaseRecepcion();
@@ -274,17 +264,6 @@ export default function Recepcion() {
     setCantidadSel(step);
     setModalCantidadOpen(true);
     console.log("[Recepcion] modalCantidadOpen set to true");
-  }
-
-  async function escanearCodigoBarras() {
-    const code = await scanBarcodeFromCamera();
-    if (!code) {
-      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
-      return;
-    }
-    setTerm(code);
-    setResultadosOpen(true);
-    showNotification(`Codigo leido: ${code}`, "success");
   }
 
   function cerrarModalCantidad() {
@@ -426,43 +405,37 @@ export default function Recepcion() {
   }
 
   // ===== Pedidos (importación) =====
+  const construirVerificadosIniciales = useCallback((pendientes: Pedido[]) => {
+    const initialVerifQty: Record<string, number> = {};
+    pendientes.forEach((ped) => {
+      (ped.items ?? []).forEach((item) => {
+        initialVerifQty[String(item.id)] = Math.max(
+          0,
+          (Number(item.cantidad) || 0) - (Number(item.cantidad_recibida) || 0),
+        );
+      });
+    });
+    return initialVerifQty;
+  }, []);
+
   const abrirModalPedidos = useCallback(async () => {
     console.log("[Recepcion] abrirModalPedidos called");
-    setCerrandoDrawerPedidos(false);
     setModalPedidosOpen(true);
     setVerifQty({}); // Reset quantities for new verification
 
     try {
       const pendientes = await pedidosPendientesQuery.refetch().then((result) => result.data ?? []);
-
-      // Initialize verifQty for all items in all pending orders
-      const initialVerifQty: Record<string, number> = {};
-      pendientes.forEach(ped => {
-        (ped.items ?? []).forEach(item => {
-          // Default to remaining quantity. If already fully received, it will be 0
-          initialVerifQty[String(item.id)] = (Number(item.cantidad) || 0) - (Number(item.cantidad_recibida) || 0);
-        });
-      });
-      setVerifQty(initialVerifQty);
+      setVerifQty(construirVerificadosIniciales(pendientes));
 
     } catch (e: any) {
       console.error(e);
       showNotification("Error cargando pedidos pendientes", "error");
     }
-  }, [pedidosPendientesQuery]);
+  }, [construirVerificadosIniciales, pedidosPendientesQuery]);
 
   const cerrarDrawerPedidos = useCallback(() => {
-    if (!modalPedidosOpen || cerrandoDrawerPedidos) return;
-    setCerrandoDrawerPedidos(true);
-    if (drawerPedidosTimerRef.current) {
-      window.clearTimeout(drawerPedidosTimerRef.current);
-    }
-    drawerPedidosTimerRef.current = window.setTimeout(() => {
-      setModalPedidosOpen(false);
-      setCerrandoDrawerPedidos(false);
-      drawerPedidosTimerRef.current = null;
-    }, 220);
-  }, [cerrandoDrawerPedidos, modalPedidosOpen]);
+    setModalPedidosOpen(false);
+  }, []);
 
   const verificarPedidoLocal = useCallback(async (pedidoId: number | string, items: PedidoItem[], proveedor_nombre: string) => {
     const TOLERANCIA = 0.05; // 50g aprox (solo aplica a kg)
@@ -577,14 +550,15 @@ export default function Recepcion() {
       }
 
       showNotification(message, "success");
-      // Refresh the list of pending orders
-      await abrirModalPedidos();
+      // Refresh sin reabrir modal para evitar parpadeo visual.
+      const pendientesActualizados = await pedidosPendientesQuery.refetch().then((result) => result.data ?? []);
+      setVerifQty(construirVerificadosIniciales(pendientesActualizados));
     } catch (e) {
       console.error(e);
       const apiError = e as ApiRequestError;
       showNotification("Error de conexión: " + apiError.message, "error");
     }
-  }, [verifQty, verifCaptured, productos, abrirModalPedidos, recibirPedidoMutation, scale]);
+  }, [construirVerificadosIniciales, pedidosPendientesQuery, verifQty, verifCaptured, productos, recibirPedidoMutation, scale]);
 
   const pedidosPendientes = pedidosPendientesQuery.data ?? [];
   const pedidosPendientesError = pedidosPendientesQuery.error instanceof Error ? pedidosPendientesQuery.error.message : "";
@@ -613,7 +587,7 @@ export default function Recepcion() {
             <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
               <Import className="h-5 w-5" />
             </span>
-            RECEPCIÓN DE MERCANCÍA
+            Recepción de Mercancia
           </h1>
           <p className="m-0 text-[14px] text-[#50596D]">
             Registra las entregas de proveedores y actualiza el inventario
@@ -766,15 +740,7 @@ export default function Recepcion() {
 
 
 
-              <button
-                className="inline-flex h-12 w-12 min-w-12 items-center justify-center rounded-[18px] border border-gray-300 bg-white text-gray-400 shadow-sm cursor-pointer transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 touch-manipulation"
-                type="button"
-                onClick={escanearCodigoBarras}
-                aria-label="Escanear codigo de barras"
-                title="Escanear codigo"
-              >
-                <ScanLine className="h-4 w-4" />
-              </button>
+              {/* QR scanner button removed */}
             </div>
 
             {/* Dropdown de resultados */}
@@ -846,14 +812,20 @@ export default function Recepcion() {
 
       {/* Drawer Importar Pedidos (tablet-first) */}
       {modalPedidosOpen && createPortal(
-        <div
-          className={`fixed inset-0 z-[1000] overflow-y-auto backdrop-blur-[4px] transition-[background,opacity] duration-200 ${cerrandoDrawerPedidos ? "bg-[rgba(11,18,32,0)]" : "bg-[rgba(11,18,32,0.42)]"}`}
+        <motion.div
+          className="fixed inset-0 z-[1000] overflow-y-auto bg-[rgba(11,18,32,0.42)] backdrop-blur-[4px]"
           onClick={cerrarDrawerPedidos}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18 }}
         >
         <div className="flex min-h-[100dvh] w-full items-center justify-center px-4 py-6">
-          <aside
-            className={`w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col transition-[transform,opacity] duration-200 ${cerrandoDrawerPedidos ? "scale-[0.985] opacity-55" : "scale-100 opacity-100"}`}
+          <motion.aside
+            className="w-full max-w-[1000px] max-h-[calc(100dvh-3rem)] bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] shadow-[0_25px_50px_rgba(0,0,0,0.22)] rounded-[18px] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
+            initial={{ scale: 0.98, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="flex items-center justify-between gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-6 py-5 max-[768px]:px-4">
               <h3 className="m-0 flex items-center gap-2">
@@ -1178,9 +1150,9 @@ export default function Recepcion() {
                 Cerrar
               </button>
             </div>
-          </aside>
+          </motion.aside>
           </div>
-        </div>,
+        </motion.div>,
         document.body
       )}
 
@@ -1491,9 +1463,23 @@ export default function Recepcion() {
       </StaggerItem>
 
       {/* Modal Cantidad (usando Portal) */}
-      {modalCantidadOpen && createPortal(
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] p-4">
-          <div className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[400px]">
+      {createPortal(
+        <AnimatePresence>
+          {modalCantidadOpen && (
+            <motion.div
+              className="fixed inset-0 bg-black/50 backdrop-blur-[4px] flex items-center justify-center z-[1000] p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <motion.div
+                className="bg-[var(--color-bg-surface)] p-[30px] rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[90%] max-w-[400px]"
+                initial={{ scale: 0.96, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.96, opacity: 0, y: 10 }}
+                transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              >
             <h3 className="m-0 mb-[15px] text-[var(--color-text-strong)] flex items-center gap-2.5">
               <i className="fa-solid fa-box-open" /> Cantidad Recibida
             </h3>
@@ -1612,8 +1598,10 @@ export default function Recepcion() {
                 Añadir
               </button>
             </div>
-          </div>
-        </div>,
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </StaggerPage>

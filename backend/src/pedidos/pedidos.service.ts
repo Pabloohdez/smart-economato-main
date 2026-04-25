@@ -127,11 +127,6 @@ export class PedidosService {
     items?: Array<{ producto_id: string; unidad?: string; cantidad: number; precio: number }>;
   }) {
     const hasUnidadColumn = await this.supportsUnidadColumn();
-
-    if (!Array.isArray(body.items) || body.items.length === 0) {
-      throw new Error('No se puede crear un pedido sin items');
-    }
-
     let userId: string | number | undefined = body.usuarioId;
     if (userId != null) {
       const { rowCount } = await this.db.query('SELECT id FROM usuarios WHERE id = $1', [userId]);
@@ -223,7 +218,7 @@ export class PedidosService {
                 }
 
                 await client.query(
-                  'UPDATE productos SET stock = stock + $1, activo = true WHERE id = $2',
+                  'UPDATE productos SET stock = stock + $1 WHERE id = $2',
                   [cant, prodId],
                 );
 
@@ -261,35 +256,14 @@ export class PedidosService {
     await this.db.query('UPDATE pedidos SET estado = $1 WHERE id = $2', [estado, id]);
     return { message: 'Estado actualizado' };
   }
-  async remove(id: number) {
-  return this.db.transaction(async (client) => {
-    const { rows } = await client.query(
-      `SELECT p.id,
-              (
-                SELECT COUNT(*)
-                FROM detalles_pedido dp
-                WHERE dp.pedido_id = p.id
-              )::int as items_count
-       FROM pedidos p
-       WHERE p.id = $1`,
-      [id],
+
+  async getPendingTodayCount(): Promise<{ count: number }> {
+    const { rows } = await this.db.query(
+      `SELECT COUNT(*) as count FROM pedidos 
+       WHERE estado IN ('PENDIENTE', 'INCOMPLETO')`,
     );
-
-    if (rows.length === 0) {
-      throw new Error('Pedido no encontrado');
-    }
-
-    const pedido = rows[0] as { id: number; items_count: number };
-
-    // Si quieres permitir solo borrar vacíos, deja esta validación.
-    if (Number(pedido.items_count) > 0) {
-      throw new Error('Solo se pueden eliminar pedidos vacíos');
-    }
-
-    await client.query(`DELETE FROM pedidos WHERE id = $1`, [id]);
-
-    return { success: true, message: 'Pedido eliminado correctamente' };
-  });
-}
+    const row = rows[0] as Record<string, unknown> | undefined;
+    return { count: parseInt(String(row?.count ?? 0), 10) };
+  }
 }
 
