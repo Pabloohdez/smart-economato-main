@@ -51,7 +51,7 @@ export class AccountSecurityService {
     const verificationUrl = `${this.getFrontendUrl()}/verificar-cuenta?token=${encodeURIComponent(token)}`;
     const displayName = this.getDisplayName(user);
 
-    await this.mailService.sendMail({
+    const deliveryMode = await this.mailService.sendMail({
       to: user.email,
       subject: 'Verifica tu cuenta de Smart Economato',
       text:
@@ -64,6 +64,10 @@ export class AccountSecurityService {
         `<p><a href="${verificationUrl}">${verificationUrl}</a></p>` +
         `<p>El enlace caduca en ${this.getVerifyExpiryHours()} horas.</p>`,
     });
+
+    return {
+      deliveryMode,
+    };
   }
 
   async verifyAccount(rawToken: string) {

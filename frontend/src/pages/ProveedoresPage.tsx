@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Building2, CalendarDays, Mail, MoreHorizontal, Pencil, Phone, Plus, Trash2 } from "lucide-react";
+import { Building2, CalendarDays, Download, Filter, Mail, MoreHorizontal, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
 import Button from "../components/ui/Button";
+import { Badge } from "../components/ui/badge";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 
 import { showNotification, showConfirm } from "../utils/notifications";
@@ -16,7 +17,7 @@ import type { Proveedor } from "../types";
 import TablePagination from "../components/ui/TablePagination";
 import SearchInput from "../components/ui/SearchInput";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
-import { Badge } from "../components/ui/badge";
+import UiSelect from "../components/ui/UiSelect";
 import { Input } from "../components/ui/input";
 import {
   DropdownMenu,
@@ -58,6 +59,30 @@ const paginatedRowVariants = {
   },
 } as const;
 
+function getInitials(name: string): string {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+}
+
+const AVATAR_COLORS = [
+  "bg-violet-100 text-violet-700",
+  "bg-sky-100 text-sky-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-indigo-100 text-indigo-700",
+  "bg-teal-100 text-teal-700",
+  "bg-orange-100 text-orange-700",
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
 function hoyES() {
   const fecha = new Date();
   return fecha.toLocaleDateString("es-ES", {
@@ -73,8 +98,10 @@ export default function ProveedoresPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [q, setQ] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState<"all" | "active" | "inactive">("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [importandoExcel, setImportandoExcel] = useState(false);
 
   const [form, setForm] = useState({
     id: "",
@@ -114,8 +141,15 @@ export default function ProveedoresPage() {
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return proveedores;
-    return proveedores.filter((p) => {
+    const byEstado = proveedores.filter((p) => {
+      const activo = (p as any).activo !== false;
+      if (estadoFiltro === "active") return activo;
+      if (estadoFiltro === "inactive") return !activo;
+      return true;
+    });
+
+    if (!s) return byEstado;
+    return byEstado.filter((p) => {
       return (
         String(p.nombre ?? "").toLowerCase().includes(s)
         || String(p.contacto ?? "").toLowerCase().includes(s)
@@ -123,7 +157,7 @@ export default function ProveedoresPage() {
         || String(p.email ?? "").toLowerCase().includes(s)
       );
     });
-  }, [proveedores, q]);
+  }, [proveedores, q, estadoFiltro]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage = Math.min(Math.max(page, 1), totalPages);
@@ -131,16 +165,6 @@ export default function ProveedoresPage() {
     const start = (safePage - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, safePage, pageSize]);
-
-  const proveedoresResumen = useMemo(() => {
-    const conTelefono = proveedores.filter((p) => Boolean(String(p.telefono ?? "").trim())).length;
-    const conEmail = proveedores.filter((p) => Boolean(String(p.email ?? "").trim())).length;
-    return {
-      total: proveedores.length,
-      conTelefono,
-      conEmail,
-    };
-  }, [proveedores]);
 
   useEffect(() => {
     if (proveedoresQuery.error) {
@@ -151,6 +175,64 @@ export default function ProveedoresPage() {
 
   async function reintentarCarga() {
     await proveedoresQuery.refetch();
+  }
+
+  async function exportarExcel() {
+    const XLSX = await import("xlsx");
+    const rows = filtered.map((p) => ({
+      Nombre: String(p.nombre ?? ""),
+      Contacto: String(p.contacto ?? ""),
+      Telefono: String(p.telefono ?? ""),
+      Email: String(p.email ?? ""),
+      Estado: (p as any).activo === false ? "Inactiva" : "Activa",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Proveedores");
+    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `proveedores-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+    showNotification("Proveedores exportados a Excel.", "success");
+  }
+
+  async function importarExcel(file: File) {
+    setImportandoExcel(true);
+    try {
+      const XLSX = await import("xlsx");
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: "array" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(ws, { defval: "" });
+
+      let procesados = 0;
+      for (const row of rows) {
+        const nombre = String(row.Nombre ?? row.nombre ?? row.Proveedor ?? row.proveedor ?? row.Empresa ?? "").trim();
+        if (!nombre) continue;
+
+        await saveProveedor({
+          nombre,
+          contacto: String(row.Contacto ?? row.contacto ?? "").trim() || undefined,
+          telefono: String(row.Telefono ?? row.telefono ?? "").trim() || undefined,
+          email: normalizeOptionalEmail(String(row.Email ?? row.email ?? "")),
+        });
+        procesados += 1;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: queryKeys.proveedores });
+      broadcastQueryInvalidation(queryKeys.proveedores);
+      showNotification(`Importación completada: ${procesados} proveedor(es).`, "success");
+    } catch (error) {
+      console.error(error);
+      showNotification("No se pudo importar el Excel de proveedores.", "error");
+    } finally {
+      setImportandoExcel(false);
+    }
   }
 
   function abrirModal() {
@@ -241,8 +323,10 @@ export default function ProveedoresPage() {
       <StaggerItem>
       <div className="mb-[30px] border-b-2 border-[var(--color-border-default)] pb-5 flex flex-wrap items-end justify-between gap-4 max-[900px]:items-stretch">
         <div>
-          <h2 className="m-0 text-[28px] font-bold text-[var(--color-text-strong)] flex items-center gap-3">
-            <Building2 className="h-7 w-7 text-[var(--color-brand-500)]" />
+          <h2 className="m-0 text-[28px] font-bold text-primary flex items-center gap-3">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <Building2 className="h-5 w-5" />
+            </span>
             Gestión de Proveedores
           </h2>
           <p className="mt-2 mb-0 text-[14px] text-[#50596D]">
@@ -255,34 +339,8 @@ export default function ProveedoresPage() {
             <CalendarDays className="h-4 w-4 text-[var(--color-brand-500)]" />
             <span>{hoyES()}</span>
           </div>
-
-          <button
-            className="min-h-11 bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] text-white border-0 px-6 py-3 rounded-[10px] font-semibold cursor-pointer shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)] inline-flex items-center gap-2 max-[900px]:w-full max-[900px]:justify-center"
-            onClick={abrirModal}
-            type="button"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo Proveedor
-          </button>
         </div>
       </div>
-      </StaggerItem>
-
-      <StaggerItem>
-      <section className="grid grid-cols-3 gap-3 mb-[14px] max-[900px]:grid-cols-1" aria-label="Resumen de proveedores">
-        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[#50596D] text-[13px] font-semibold">Proveedores Totales</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.total}</strong>
-        </article>
-        <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#ffffff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[#50596D] text-[13px] font-semibold">Con Teléfono</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.conTelefono}</strong>
-        </article>
-        <article className="border border-[rgba(179,49,49,0.28)] rounded-[14px] bg-[linear-gradient(135deg,rgba(179,49,49,0.08)_0%,rgba(179,49,49,0.02)_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
-          <span className="text-[#50596D] text-[13px] font-semibold">Con Email</span>
-          <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{proveedoresResumen.conEmail}</strong>
-        </article>
-      </section>
       </StaggerItem>
 
       {proveedoresError && (
@@ -298,32 +356,86 @@ export default function ProveedoresPage() {
         </StaggerItem>
       )}
 
+      {/* Toolbar separado (como Inventario) */}
+      <StaggerItem>
+        <div className="rounded-[30px] border border-slate-200/90 bg-white p-4 shadow-[0_18px_44px_rgba(15,23,42,0.06),0_10px_24px_rgba(226,232,240,0.55)]">
+          <div className="grid w-full grid-cols-1 gap-3 min-[1180px]:grid-cols-[minmax(340px,1.6fr)_minmax(180px,0.7fr)_minmax(220px,0.9fr)_auto]">
+            <SearchInput
+              value={q}
+              onChange={(value) => {
+                setQ(value);
+                setPage(1);
+              }}
+              placeholder="Buscar proveedor, contacto, teléfono o email..."
+              ariaLabel="Buscar proveedor"
+            />
+
+            <UiSelect
+              value={estadoFiltro}
+              onChange={(value) => {
+                setEstadoFiltro((value as any) || "all");
+                setPage(1);
+              }}
+              leadingIcon={<Filter className="h-4 w-4" />}
+              triggerClassName="h-11 rounded-xl"
+              options={[
+                { value: "all", label: "Estado: Todas" },
+                { value: "active", label: "Estado: Activas" },
+                { value: "inactive", label: "Estado: Inactivas" },
+              ]}
+            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-11 items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white px-4 text-[13px] font-semibold text-slate-800 shadow-sm transition-colors hover:bg-slate-50"
+                >
+                  <span className="inline-flex items-center gap-2"><Download className="h-4 w-4" /> Exportar / Importar</span>
+                  <i className="fa-solid fa-chevron-down text-[11px] text-slate-500" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[240px] rounded-xl border-slate-300">
+                <DropdownMenuItem onSelect={() => void exportarExcel()}>
+                  <Download className="h-4 w-4" /> Exportar Excel
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = ".xlsx,.xls";
+                    input.onchange = () => {
+                      const file = input.files?.[0];
+                      if (file) void importarExcel(file);
+                    };
+                    input.click();
+                  }}
+                  disabled={importandoExcel}
+                >
+                  <Upload className="h-4 w-4" /> {importandoExcel ? "Importando..." : "Importar Excel"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] px-5 text-[13px] font-semibold text-white shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)]"
+              onClick={abrirModal}
+              type="button"
+            >
+              <Plus className="h-4 w-4" /> Nuevo Proveedor
+            </button>
+          </div>
+        </div>
+      </StaggerItem>
+
       <StaggerItem>
       <BackofficeTablePanel
+        className="mt-3"
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
-                {filtered.length} proveedor(es)
-              </Badge>
-              <Badge variant="outline" className="border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600">
-                <Phone className="h-3.5 w-3.5" /> {proveedoresResumen.conTelefono} con teléfono
-              </Badge>
-              <Badge variant="outline" className="border-primary/15 bg-primary/5 px-3 py-1 text-[11px] font-semibold text-primary">
-                <Mail className="h-3.5 w-3.5" /> {proveedoresResumen.conEmail} con email
-              </Badge>
-            </div>
-            <div className="w-full max-w-[360px]">
-              <SearchInput
-                value={q}
-                onChange={(value) => {
-                  setQ(value);
-                  setPage(1);
-                }}
-                placeholder="Buscar proveedor, contacto, teléfono o email..."
-                ariaLabel="Buscar proveedor"
-              />
-            </div>
+            <Badge variant="outline" className="border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold text-slate-600">
+              {filtered.length} proveedor(es)
+            </Badge>
           </div>
         }
         footer={
@@ -341,15 +453,108 @@ export default function ProveedoresPage() {
         {loading && <Spinner label="Cargando proveedores..." />}
         {!loading && (
           <>
-            <div className="w-full overflow-x-auto">
-              <Table className="min-w-[840px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+            {/* Móvil/Tablet: lista/card (evita tabla aplastada en iPad) */}
+            <div className="hidden max-[1024px]:block">
+              {visible.length === 0 ? (
+                <div className="py-8 text-center text-slate-500">No hay proveedores para mostrar.</div>
+              ) : (
+                <div className="grid gap-3">
+                  {visible.map((p) => (
+                    <div
+                      key={`prov-m-${String(p.id)}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span
+                            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${getAvatarColor(p.nombre)}`}
+                          >
+                            {getInitials(p.nombre)}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-[14px] font-extrabold text-slate-900">{p.nombre}</div>
+                            <div className="mt-0.5 text-[12px] text-slate-500">Proveedor registrado</div>
+                          </div>
+                        </div>
+
+                        <div className="inline-flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                            title="Editar"
+                            onClick={() => {
+                              setForm({
+                                id: String(p.id),
+                                nombre: p.nombre,
+                                contacto: p.contacto || "",
+                                telefono: p.telefono || "",
+                                email: p.email || "",
+                              });
+                              setModalOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
+                          </button>
+
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <button type="button" className="bo-table-action-btn text-slate-500" aria-label="Más acciones">
+                                <MoreHorizontal className="h-[18px] w-[18px]" strokeWidth={1.8} />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  setForm({
+                                    id: String(p.id),
+                                    nombre: p.nombre,
+                                    contacto: p.contacto || "",
+                                    telefono: p.telefono || "",
+                                    email: p.email || "",
+                                  });
+                                  setModalOpen(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" /> Editar proveedor
+                              </DropdownMenuItem>
+                              <DropdownMenuItem variant="destructive" onSelect={() => eliminarProveedor(String(p.id))}>
+                                <Trash2 className="h-4 w-4" /> Eliminar proveedor
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid gap-2 text-[13px] text-slate-700">
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Contacto</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.contacto || "-"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Teléfono</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.telefono || "-"}</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-slate-500">Email</span>
+                          <span className="font-semibold text-slate-800 truncate">{p.email || "-"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop: tabla */}
+            <div className="w-full overflow-x-auto max-[1024px]:hidden">
+              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
                 <TableHeader>
                   <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Proveedor</TableHead>
-                    <TableHead>Contacto</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead className="rounded-r-2xl text-right">Acciones</TableHead>
+                    <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[260px]">Proveedor</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[200px]">Contacto</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[150px]">Teléfono</TableHead>
+                    <TableHead className="whitespace-nowrap min-w-[220px]">Email</TableHead>
+                    <TableHead className="rounded-r-2xl whitespace-nowrap text-right min-w-[140px]">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <AnimatePresence mode="wait" initial={false}>
@@ -371,8 +576,8 @@ export default function ProveedoresPage() {
                       <motion.tr key={String(p.id)} variants={paginatedRowVariants} className="bo-table-row">
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-primary/10 bg-primary/5 text-primary">
-                              <Building2 className="h-4 w-4" />
+                            <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[13px] font-bold ${getAvatarColor(p.nombre)}`}>
+                              {getInitials(p.nombre)}
                             </span>
                             <div className="min-w-0">
                               <div className="truncate text-sm font-semibold text-slate-900">{p.nombre}</div>
@@ -387,7 +592,7 @@ export default function ProveedoresPage() {
                           <div className="inline-flex items-center gap-2">
                             <button
                               type="button"
-                              className="bo-table-action-btn text-slate-500"
+                              className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                               title="Editar"
                               onClick={() => {
                                 setForm({
@@ -445,9 +650,22 @@ export default function ProveedoresPage() {
         )}
       </BackofficeTablePanel>
 
+      <AnimatePresence>
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4">
-          <div className="relative w-[90%] max-w-[520px] rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-[30px] shadow-[0_24px_64px_rgba(0,0,0,0.28)]">
+        <motion.div
+          className="fixed inset-0 bg-black/60 backdrop-blur-[4px] flex items-center justify-center z-[2000] p-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <motion.div
+            className="relative w-[90%] max-w-[520px] rounded-[28px] border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] p-[30px] shadow-[0_24px_64px_rgba(0,0,0,0.28)]"
+            initial={{ scale: 0.96, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.96, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
             <button
               type="button"
               className="absolute top-3.5 right-3.5 w-[42px] h-[42px] rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] inline-flex items-center justify-center text-[#50596D] shadow-[var(--shadow-sm)] hover:text-[var(--color-brand-500)] hover:bg-[var(--color-bg-soft)]"
@@ -512,9 +730,10 @@ export default function ProveedoresPage() {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
       </StaggerItem>
     </StaggerPage>
   );

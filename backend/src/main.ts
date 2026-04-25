@@ -1,11 +1,12 @@
 import 'dotenv/config'; // reload trigger
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/response.interceptor';
 import { AllExceptionsFilter } from './common/http-exception.filter';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:8081')
     .split(',')
@@ -30,6 +31,6 @@ async function bootstrap() {
   });
   const port = parseInt(process.env.PORT || '3000', 10);
   await app.listen(port);
-  console.log(`API NestJS escuchando en http://localhost:${port}/api`);
+  logger.log(`API NestJS escuchando en http://localhost:${port}/api`);
 }
 bootstrap();

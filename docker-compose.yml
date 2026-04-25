@@ -58,12 +58,30 @@ services:
     environment:
       - PORT=3000
       - CHOKIDAR_USEPOLLING=true
+      - MAIL_MODE=${MAIL_MODE:-smtp}
+      - SMTP_HOST=${SMTP_HOST:-mailpit}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-Smart Economato <no-reply@smart-economato.local>}
     volumes:
       - ./backend:/app
       - /app/node_modules
+    depends_on:
+      mailpit:
+        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 20s
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: smart-economato-mailpit
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"

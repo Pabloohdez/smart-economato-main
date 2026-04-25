@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getProductos, type Producto } from "../services/productosService";
 import Spinner from "../components/ui/Spinner";
@@ -15,12 +16,7 @@ import { deleteEscandallo, getEscandallos, saveEscandallo } from "../services/es
 import type { Escandallo, EscandalloItem } from "../types";
 import { queryKeys } from "../lib/queryClient";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-
-function formatCantidad(cantidad: number) {
-  if (Number.isInteger(cantidad)) return String(cantidad);
-  return cantidad.toFixed(1);
-}
+import { Eye, Pencil, ReceiptText, Trash2 } from "lucide-react";
 
 export default function EscandallosPage() {
   const { user } = useAuth();
@@ -280,12 +276,12 @@ export default function EscandallosPage() {
     }
 
     const payload = {
-      nombre: nombrePlato.trim(),
-      pvp: Number.parseFloat(pvpPlato || "0") || 0,
-      elaboracion: elaboracionPlato,
-      items: [...ingredientesReceta],
-      autor: String(user?.nombre ?? user?.username ?? "Admin"),
-    };
+    nombre: nombrePlato.trim(),
+    pvp: Number(String(pvpPlato).replace(",", ".")) || 0,
+    elaboracion: elaboracionPlato,
+    items: [...ingredientesReceta],
+    autor: String(user?.nombre ?? user?.username ?? "Admin"),
+  } as Parameters<typeof saveEscandallo>[0];
 
     if (!payload.nombre) {
       showNotification("El nombre del plato es obligatorio.", "warning");
@@ -360,8 +356,10 @@ export default function EscandallosPage() {
   return (
     <StaggerPage className="w-full mb-8">
       <StaggerItem className="mb-6 w-full">
-        <h1 className="m-0 mb-6 text-[28px] font-extrabold text-[var(--color-brand-500)] flex items-center gap-3">
-          <i className="fa-solid fa-receipt text-[var(--color-brand-500)]" />
+        <h1 className="m-0 mb-6 flex items-center gap-3 text-[28px] font-extrabold text-[var(--color-brand-500)]">
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+            <ReceiptText className="h-5 w-5" />
+          </span>
           Escandallos y Recetas
         </h1>
 
@@ -416,17 +414,91 @@ export default function EscandallosPage() {
             </div>
           }
         >
-          <div className="overflow-x-auto">
-            <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+          {/* Móvil/Tablet (incluye iPad): cards (evita tablas aplastadas) */}
+          <div className="hidden max-[1366px]:block">
+            {escandallosFiltrados.length === 0 ? (
+              <div className="py-8 text-center text-slate-500">No se encontraron recetas.</div>
+            ) : (
+              <div className="grid gap-3">
+                {escandallosFiltrados.map((esc) => {
+                  const margen = esc.pvp > 0 ? ((esc.pvp - esc.coste) / esc.pvp) * 100 : 0;
+                  return (
+                    <div
+                      key={`esc-m-${esc.id}`}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="truncate text-[14px] font-extrabold text-slate-900">{esc.nombre}</div>
+                          <div className="mt-1 text-[12px] text-slate-500">
+                            Autor: <span className="font-semibold text-slate-700">{esc.autor || "Admin"}</span> ·{" "}
+                            {esc.items?.length ?? 0} ingredientes
+                          </div>
+                        </div>
+                        <Badge
+                          variant={margen < 20 ? "destructive" : margen < 50 ? "warning" : "success"}
+                          className="px-3 py-1 text-[11px] font-semibold shrink-0"
+                        >
+                          {margen.toFixed(1)}%
+                        </Badge>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Coste</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{esc.coste.toFixed(2)} €</div>
+                        </div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">PVP</div>
+                          <div className="text-[13px] font-extrabold text-slate-900">{esc.pvp.toFixed(2)} €</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-slate-600 hover:bg-slate-50"
+                          onClick={() => abrirVerReceta(esc)}
+                          title="Ver"
+                        >
+                          <Eye strokeWidth={1.5} size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                          onClick={() => abrirEditarReceta(esc)}
+                          title="Editar"
+                        >
+                          <Pencil strokeWidth={1.5} size={18} />
+                        </button>
+                        <button
+                          type="button"
+                          className="bo-table-action-btn w-full justify-center text-red-500 hover:bg-red-50 hover:text-red-600"
+                          onClick={() => eliminarEscandallo(esc.id)}
+                          title="Eliminar"
+                        >
+                          <Trash2 strokeWidth={1.5} size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop grande: tabla */}
+          <div className="overflow-x-auto max-[1366px]:hidden">
+            <Table className="min-w-[1120px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                  <TableHead className="rounded-l-2xl">Nombre</TableHead>
-                  <TableHead>Autor</TableHead>
-                  <TableHead>Ingredientes</TableHead>
-                  <TableHead>Coste Total</TableHead>
-                  <TableHead>PVP</TableHead>
-                  <TableHead>Beneficio %</TableHead>
-                  <TableHead className="rounded-r-2xl text-center">Acciones</TableHead>
+                  <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Nombre</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Autor</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Ingredientes</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[130px]">Coste total</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[110px]">PVP</TableHead>
+                  <TableHead className="whitespace-nowrap min-w-[140px]">Beneficio %</TableHead>
+                  <TableHead className="rounded-r-2xl whitespace-nowrap text-center min-w-[160px] w-[160px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -443,18 +515,12 @@ export default function EscandallosPage() {
                     return (
                       <TableRow key={esc.id} className="bo-table-row">
                         <TableCell>
-                          <button
-                            type="button"
-                            className="font-bold text-[var(--color-brand-500)] underline decoration-transparent transition hover:text-[#902424] hover:decoration-[var(--color-brand-500)]"
-                            onClick={() => abrirVerReceta(esc)}
-                          >
+                          <span className="block max-w-full truncate text-sm font-semibold text-slate-700">
                             {esc.nombre}
-                          </button>
+                          </span>
                         </TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.autor || "Admin"}</TableCell>
-                        <TableCell className="text-sm text-slate-700">
-                          {esc.items?.length ?? 0} ingrediente(s)
-                        </TableCell>
+                        <TableCell className="text-sm text-slate-700">{esc.items?.length ?? 0} ingredientes</TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.coste.toFixed(2)} €</TableCell>
                         <TableCell className="text-sm text-slate-700">{esc.pvp.toFixed(2)} €</TableCell>
                         <TableCell>
@@ -465,8 +531,8 @@ export default function EscandallosPage() {
                             {margen.toFixed(1)}%
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-center">
-                          <div className="inline-flex gap-2">
+                        <TableCell className="text-center pr-4">
+                          <div className="inline-flex min-w-[120px] justify-center gap-2">
                             <button
                               type="button"
                               className="bo-table-action-btn text-slate-500"
@@ -477,7 +543,7 @@ export default function EscandallosPage() {
                             </button>
                             <button
                               type="button"
-                              className="bo-table-action-btn text-slate-500"
+                              className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                               title="Editar"
                               onClick={() => abrirEditarReceta(esc)}
                             >
@@ -503,171 +569,203 @@ export default function EscandallosPage() {
         </BackofficeTablePanel>
       </StaggerItem>
 
-      {detalleEscandallo && (
-        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-hidden rounded-[28px] bg-white shadow-2xl ring-1 ring-slate-200">
-            <div className="flex items-start justify-between bg-gradient-to-r from-[var(--color-brand-500)] to-[var(--color-brand-600)] px-8 py-7 text-white">
+      <AnimatePresence>
+        {detalleEscandallo && (
+          <motion.div
+            className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+          <motion.div
+            className="w-full max-w-[850px] max-h-[calc(100dvh-2.5rem)] overflow-hidden rounded-[24px] bg-[var(--color-bg-surface)] shadow-2xl ring-1 ring-slate-200 flex flex-col min-h-0"
+            initial={{ scale: 0.95, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+            transition={{ type: "spring", stiffness: 380, damping: 30 }}
+          >
+            <div className="sticky top-0 z-10 shrink-0 flex items-start justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-5 py-4">
               <div>
-                <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-white/70">
-                  Ficha de escandallo
-                </p>
-                <h2 className="m-0 text-3xl font-black tracking-tight">
+                <h2 className="m-0 text-[1.15rem] font-bold text-[var(--color-text-strong)]">
                   {detalleEscandallo.nombre}
                 </h2>
-                <p className="mt-2 text-sm font-medium text-white/80">
-                  Autor: {detalleEscandallo.autor || "Admin"}
+                <p className="mt-1 text-[13px] font-medium text-[var(--color-text-muted)]">
+                  Ficha de escandallo • Autor: {detalleEscandallo.autor || "Admin"}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={cerrarDetalle}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl text-white transition hover:bg-white/20"
-                aria-label="Cerrar detalle"
+                className="no-global-button flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-sm transition hover:bg-slate-50 hover:text-[var(--color-brand-500)] active:scale-95"
+                aria-label="Cerrar ventana"
               >
-                <i className="fa-solid fa-xmark"></i>
+                <i className="fa-solid fa-xmark text-sm" />
               </button>
             </div>
 
-            <div className="max-h-[calc(92vh-96px)] overflow-y-auto px-8 py-8">
-              <div className="grid gap-4 md:grid-cols-3">
-                <article className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-5 text-center">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+            <div className="px-5 py-4 flex-1 overflow-y-auto overscroll-contain">
+              <div className="grid gap-3 md:grid-cols-3">
+                <article className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Coste total
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-slate-800">
+                  <span className="mt-1.5 block text-xl font-black text-slate-800">
                     {detalleCoste.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-red-100 bg-red-50/70 px-6 py-5 text-center">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
+                <article className="rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3 text-center">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-[var(--color-brand-500)]">
                     PVP
                   </span>
-                  <span className="mt-2 block text-3xl font-black text-[var(--color-brand-500)]">
+                  <span className="mt-1.5 block text-xl font-black text-[var(--color-brand-500)]">
                     {detallePvp.toFixed(2)} €
                   </span>
                 </article>
 
-                <article className="rounded-3xl border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
-                  <span className="block text-[11px] font-black uppercase tracking-[0.22em] text-slate-400">
+                <article className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
+                  <span className="block text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                     Margen
                   </span>
-                  <span className={`mt-2 inline-flex rounded-full px-4 py-2 text-2xl font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
+                  <span className={`mt-1.5 inline-flex rounded-full px-3 py-1 text-lg font-black ring-1 ${classMargenBadge(detalleMargen)}`}>
                     {detalleMargen.toFixed(1)}%
                   </span>
                 </article>
               </div>
 
-              <section className="mt-8 rounded-[26px] border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
-                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
-                    Ingredientes
-                  </h3>
-                </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <section className="rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm min-w-0">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="h-[2px] w-6 bg-[var(--color-brand-500)]"></span>
+                    <h3 className="m-0 text-xs font-black uppercase tracking-[0.2em] text-slate-700">
+                      Ingredientes
+                    </h3>
+                  </div>
 
-                <Table className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
-                  <TableHeader>
-                    <TableRow className="bg-slate-50 text-[11px] font-black uppercase tracking-[0.18em] text-slate-400 hover:bg-slate-50">
-                      <TableHead className="px-5 py-4 normal-case tracking-[0.18em] text-slate-400">Producto</TableHead>
-                      <TableHead className="px-5 py-4 text-center normal-case tracking-[0.18em] text-slate-400">Cantidad</TableHead>
-                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Coste unidad</TableHead>
-                      <TableHead className="px-5 py-4 text-right normal-case tracking-[0.18em] text-slate-400">Subtotal</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detalleItems.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
-                          Este escandallo no tiene ingredientes registrados.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      detalleItems.map((item, index) => {
-                        const subtotal = Number(item.cantidad) * Number(item.precio);
-                        return (
-                          <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
-                            <TableCell className="px-5 py-4 font-bold uppercase tracking-[0.06em] text-slate-700">
-                              {item.nombre}
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-center text-slate-500 font-semibold">
-                              {formatCantidad(Number(item.cantidad))}
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-right text-slate-500">
-                              {Number(item.precio).toFixed(2)} €
-                            </TableCell>
-                            <TableCell className="px-5 py-4 text-right font-bold text-slate-700">
-                              {subtotal.toFixed(2)} €
+                  <div className="overflow-x-auto w-full pb-2">
+                    <Table className="w-full min-w-[500px] overflow-hidden rounded-xl border border-slate-100 bg-white">
+                      <TableHeader>
+                        <TableRow className="bg-slate-50 text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 hover:bg-slate-50">
+                          <TableHead className="px-3 py-2.5 normal-case tracking-[0.15em] text-slate-400 min-w-[180px]">Producto</TableHead>
+                          <TableHead className="px-3 py-2.5 text-center normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Cant.</TableHead>
+                          <TableHead className="px-3 py-2.5 text-right normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Coste ud.</TableHead>
+                          <TableHead className="px-3 py-2.5 text-right normal-case tracking-[0.15em] text-slate-400 whitespace-nowrap">Subtotal</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detalleItems.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={4} className="px-3 py-6 text-center text-xs text-slate-500">
+                              Este escandallo no tiene ingredientes registrados.
                             </TableCell>
                           </TableRow>
-                        );
-                      })
-                    )}
-                  </TableBody>
-                </Table>
-              </section>
+                        ) : (
+                          detalleItems.map((item, index) => {
+                            const subtotal = Number(item.cantidad) * Number(item.precio);
+                            return (
+                              <TableRow key={`${item.producto_id}-${index}`} className="bo-table-row">
+                                <TableCell className="px-3 py-2.5 font-bold uppercase tracking-[0.05em] text-slate-700 text-xs whitespace-normal align-middle">
+                                  {item.nombre}
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-center text-slate-500 text-xs whitespace-nowrap align-middle">
+                                  {item.cantidad}
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-right text-slate-500 text-xs whitespace-nowrap align-middle">
+                                  {Number(item.precio).toFixed(2)} €
+                                </TableCell>
+                                <TableCell className="px-3 py-2.5 text-right font-bold text-slate-700 text-xs whitespace-nowrap align-middle">
+                                  {subtotal.toFixed(2)} €
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </section>
 
-              <section className="mt-8 rounded-[26px] border border-slate-200 bg-slate-50 p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="h-[2px] w-8 bg-[var(--color-brand-500)]"></span>
-                  <h3 className="m-0 text-sm font-black uppercase tracking-[0.2em] text-slate-700">
-                    Elaboración
-                  </h3>
-                </div>
+                <section className="rounded-[20px] border border-slate-200 bg-slate-50 p-4 min-w-0">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="h-[2px] w-6 bg-[var(--color-brand-500)]"></span>
+                    <h3 className="m-0 text-xs font-black uppercase tracking-[0.2em] text-slate-700">
+                      Elaboración
+                    </h3>
+                  </div>
 
-                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-5 text-sm leading-7 text-slate-600 whitespace-pre-wrap">
-                  {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
-                </div>
-              </section>
+                  <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white px-4 py-3 text-[13px] leading-relaxed text-slate-600 whitespace-pre-wrap">
+                    {detalleEscandallo.elaboracion?.trim() || "Sin instrucciones de elaboración registradas."}
+                  </div>
+                </section>
+              </div>
 
-              <div className="mt-8 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-6">
+              <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100 pt-4">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-bold text-slate-600 transition hover:bg-slate-50"
                   onClick={cerrarDetalle}
                 >
                   Cerrar
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center rounded-2xl bg-[var(--color-brand-500)] px-5 py-3 text-sm font-bold text-white shadow-lg shadow-red-200/70 transition hover:bg-[var(--color-brand-600)]"
+                  className="inline-flex items-center justify-center rounded-xl bg-[var(--color-brand-500)] px-4 py-2.5 text-[13px] font-bold text-white shadow-md shadow-red-200/50 transition hover:bg-[var(--color-brand-600)]"
                   onClick={() => {
                     cerrarDetalle();
                     abrirEditarReceta(detalleEscandallo);
                   }}
                 >
-                  <Pencil strokeWidth={1.5} size={16} className="mr-2" />
+                  <Pencil strokeWidth={1.5} size={14} className="mr-2" />
                   Editar receta
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {modalOpen && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="relative max-h-[90vh] w-[95%] max-w-[900px] overflow-y-auto rounded-2xl bg-[var(--color-bg-surface)] p-[30px] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10">
-            <button
-              type="button"
-              className="absolute right-6 top-5 text-[28px] leading-none text-[#a0aec0] hover:text-[#e53e3e] transition-colors bg-transparent border-0 cursor-pointer"
-              aria-label="Cerrar ventana"
-              onClick={cerrarModal}
-            >
-              &times;
-            </button>
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 z-[1000] overflow-y-auto bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+          >
+            <div className="flex min-h-[100dvh] w-full items-start justify-center px-4 py-6">
+              <motion.div
+                className="relative w-full max-w-[860px] rounded-2xl bg-[var(--color-bg-surface)] shadow-[0_25px_50px_rgba(0,0,0,0.25)] ring-1 ring-white/10 max-h-[calc(100dvh-3rem)] flex flex-col min-h-0"
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.96, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              >
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-b-[var(--color-border-default)] bg-[var(--color-bg-surface)] px-5 py-4">
+                  <h2 className="m-0 text-[1.15rem] font-bold text-[var(--color-text-strong)]">
+                    {modoLectura
+                      ? "Ver Receta"
+                      : editEscandalloId
+                        ? "Editar Receta"
+                        : "Nueva Receta"}
+                  </h2>
 
-            <h2 className="m-0 mt-0 text-[1.5rem] font-bold text-[var(--color-text-strong)] border-b-2 border-b-[var(--color-border-default)] pb-5 mb-7">
-              {modoLectura
-                ? "Ver Receta"
-                : editEscandalloId
-                  ? "Editar Receta"
-                  : "Nueva Receta"}
-            </h2>
+                  <button
+                    type="button"
+                    className="no-global-button flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-[var(--color-bg-surface)] text-[#50596D] shadow-[var(--shadow-sm)] transition hover:bg-[var(--color-bg-soft)] hover:text-[var(--color-brand-500)] active:scale-95"
+                    aria-label="Cerrar ventana"
+                    onClick={cerrarModal}
+                  >
+                    <i className="fa-solid fa-xmark" />
+                  </button>
+                </div>
 
-            <form onSubmit={guardarEscandallo}>
-              <div className="grid grid-cols-2 gap-6 mb-7 max-[768px]:grid-cols-1">
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [scrollbar-gutter:stable]">
+                  <form onSubmit={guardarEscandallo}>
+              <div className="grid grid-cols-2 gap-4 mb-5 max-[768px]:grid-cols-1">
                 <div className="flex flex-col gap-2 mb-4">
                   <label htmlFor="nombrePlato" className="text-[13px] font-semibold text-[var(--color-text-muted)] flex items-center gap-2">
                     <i className="fa-solid fa-utensils"></i>
@@ -725,7 +823,7 @@ export default function EscandallosPage() {
                 </h3>
 
                 {!modoLectura && (
-                  <div className="flex gap-4 mb-5 items-end max-[768px]:flex-col max-[768px]:items-stretch">
+                  <div className="grid grid-cols-[1fr_120px_auto] items-end gap-3 mb-5 max-[768px]:grid-cols-1 max-[768px]:items-stretch">
                     <div className="flex-1 flex flex-col gap-2">
                       <label
                         htmlFor="busquedaProductoIngrediente"
@@ -778,7 +876,7 @@ export default function EscandallosPage() {
                               <button
                                 key={String(producto.id)}
                                 type="button"
-                                className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition hover:bg-slate-50"
+                                className="no-global-button flex w-full items-center justify-between rounded-xl px-4 py-3 text-left transition hover:bg-slate-50"
                                 onClick={() => seleccionarIngrediente(producto)}
                               >
                                 <span className="min-w-0 pr-3">
@@ -805,7 +903,7 @@ export default function EscandallosPage() {
                       </div>
                     </div>
 
-                    <div className="w-[100px] flex flex-col gap-2">
+                    <div className="flex flex-col gap-2">
                       <label
                         htmlFor="cantidadIngrediente"
                         className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide"
@@ -816,33 +914,36 @@ export default function EscandallosPage() {
                         type="number"
                         id="cantidadIngrediente"
                         step="0.1"
-                        placeholder="0.0"
+                        placeholder="0"
                         className="w-full px-4 py-3 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
                         value={cantidadIngrediente}
                         onChange={(e) => setCantidadIngrediente(e.target.value)}
                       />
                     </div>
 
-                    <button
-                      type="button"
-                      className="h-[42px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(49,130,206,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#4299e1_0%,#3182ce_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
-                      title="Añadir ingrediente"
-                      onClick={agregarIngrediente}
-                    >
-                      <i className="fa-solid fa-plus"></i>
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <div className="invisible text-[12px] leading-none" aria-hidden="true">&nbsp;</div>
+                      <button
+                        type="button"
+                        className="no-global-button h-[46px] px-5 rounded-lg border-0 cursor-pointer shadow-[0_4px_12px_rgba(56,161,105,0.3)] transition-[transform,filter,box-shadow] duration-150 bg-[linear-gradient(135deg,#48bb78_0%,#38a169_100%)] text-white inline-flex items-center justify-center text-[18px] font-bold hover:-translate-y-0.5 hover:brightness-105"
+                        title="Añadir ingrediente"
+                        onClick={agregarIngrediente}
+                      >
+                        <i className="fa-solid fa-plus"></i>
+                      </button>
+                    </div>
                   </div>
                 )}
 
                 <div className="overflow-x-auto rounded-[24px] border border-slate-100 bg-white">
-                  <Table className="min-w-[680px] bg-white">
+                  <Table className="min-w-[700px] bg-white">
                     <TableHeader>
                       <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
                         <TableHead className="rounded-l-2xl text-left">Producto</TableHead>
-                        <TableHead className="text-left w-20">Cant.</TableHead>
-                        <TableHead className="text-left w-20">Coste U.</TableHead>
+                        <TableHead className="text-left w-24">Cant.</TableHead>
+                        <TableHead className="text-left w-24">Coste U.</TableHead>
                         <TableHead className="text-left w-[90px]">Total</TableHead>
-                        <TableHead className="rounded-r-2xl text-center w-[60px]">Acciones</TableHead>
+                        <TableHead className="rounded-r-2xl text-center w-[90px] min-w-[90px]">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -857,40 +958,23 @@ export default function EscandallosPage() {
                           const total = ing.cantidad * ing.precio;
                           return (
                             <TableRow key={`${ing.producto_id}-${index}`} className="bo-table-row">
-                              <TableCell className="text-[var(--color-text-strong)]">
-                                {ing.nombre}
-                              </TableCell>
-
+                              <TableCell className="text-[var(--color-text-strong)]">{ing.nombre}</TableCell>
                               <TableCell>
                                 {modoLectura ? (
-                                  <span className="font-semibold text-slate-700">
-                                    {formatCantidad(Number(ing.cantidad))}
-                                  </span>
+                                  ing.cantidad
                                 ) : (
-                                  <div className="flex items-center gap-2">
-                                    <input
-                                      type="number"
-                                      step="0.1"
-                                      min="0.1"
-                                      className="w-20 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-                                      value={String(ing.cantidad)}
-                                      onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
-                                    />
-                                    <span className="text-sm font-semibold text-slate-600 min-w-[48px]">
-                                      {formatCantidad(Number(ing.cantidad))}
-                                    </span>
-                                  </div>
+                                  <input
+                                    type="number"
+                                    step="0.1"
+                                    min="0.1"
+                                    className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-soft)] px-3.5 py-2.5 text-[14px] transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+                                    value={String(ing.cantidad)}
+                                    onChange={(e) => actualizarCantidadIngrediente(index, e.target.value)}
+                                  />
                                 )}
                               </TableCell>
-
-                              <TableCell className="text-[var(--color-text-strong)]">
-                                {ing.precio.toFixed(2)} €
-                              </TableCell>
-
-                              <TableCell className="text-[var(--color-text-strong)]">
-                                {total.toFixed(2)} €
-                              </TableCell>
-
+                              <TableCell className="text-[var(--color-text-strong)]">{ing.precio.toFixed(2)} €</TableCell>
+                              <TableCell className="text-[var(--color-text-strong)]">{total.toFixed(2)} €</TableCell>
                               <TableCell className="text-center">
                                 {!modoLectura && (
                                   <button
@@ -979,10 +1063,13 @@ export default function EscandallosPage() {
                   </button>
                 )}
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  </form>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </StaggerPage>
   );
 }

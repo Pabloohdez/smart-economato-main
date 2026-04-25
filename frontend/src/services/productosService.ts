@@ -32,11 +32,13 @@ export type RegistrarBajaPayload = {
 export type CrearPedidoPayload = {
   proveedorId: number | string | null | undefined;
   total: number;
+  usuarioId?: string;
   items: Array<{
     producto_id: number | string;
     unidad?: string;
     cantidad: number;
     precio: number;
+    nombre: string;
   }>;
 };
 
@@ -146,10 +148,28 @@ export async function registrarBaja(payload: RegistrarBajaPayload): Promise<unkn
 }
 
 export async function crearPedido(payload: CrearPedidoPayload): Promise<unknown> {
+  // El backend rechaza campos extra como `usuarioId` en /pedidos (whitelist estricto).
+  // El usuario se obtiene del JWT en el backend.
+  const { usuarioId: _usuarioId, ...rest } = payload as any;
+
+  // El backend solo acepta: proveedorId, total?, items[{ producto_id, unidad?, cantidad, precio }]
+  // (no acepta `nombre` dentro de items).
+  const body = {
+    ...rest,
+    proveedorId: Number((rest as any).proveedorId),
+    items: Array.isArray((rest as any).items)
+      ? (rest as any).items.map((it: any) => ({
+          producto_id: String(it.producto_id),
+          unidad: it.unidad,
+          cantidad: it.cantidad,
+          precio: it.precio,
+        }))
+      : undefined,
+  };
   return apiFetch("/pedidos", {
     method: "POST",
     headers: { "X-Requested-With": "XMLHttpRequest" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
     offlineQueue: {
       enabled: true,
       queuedMessage: "El pedido se ha guardado en cola y se enviará al recuperar conexión.",

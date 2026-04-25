@@ -10,7 +10,8 @@ const buttonVariants = cva(
         primary: "bg-primary text-white shadow-sm hover:bg-primary/95",
         secondary: "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:border-slate-300",
         success: "bg-[#2f9e63] text-white shadow-sm hover:brightness-95",
-        danger: "bg-[#dc2626] text-white shadow-sm hover:brightness-95",
+        danger:
+          "text-white shadow-sm bg-[linear-gradient(135deg,#ef4444,var(--color-danger-500))] hover:brightness-95",
         ghost: "bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700",
       },
       size: {

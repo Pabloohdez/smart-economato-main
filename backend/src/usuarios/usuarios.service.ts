@@ -66,13 +66,18 @@ export class UsuariosService {
       ],
     );
 
-    await this.accountSecurityService.sendVerificationEmail({
+    const verificationResult = await this.accountSecurityService.sendVerificationEmail({
       id,
       username: dto.usuario,
       nombre: dto.nombre ?? null,
       apellidos: dto.apellidos ?? null,
       email: normalizedEmail,
     });
+
+    const verificationMessage =
+      verificationResult.deliveryMode === 'smtp'
+        ? 'Cuenta creada. Revisa tu correo para verificarla.'
+        : 'Cuenta creada. El entorno está en modo local sin SMTP: revisa los logs del backend para abrir el enlace de verificación.';
 
     return {
       id,
@@ -82,7 +87,8 @@ export class UsuariosService {
       email: normalizedEmail,
       telefono: dto.telefono ?? null,
       rol: dto.rol ?? 'usuario',
-      message: 'Cuenta creada. Revisa tu correo para verificarla.',
+      message: verificationMessage,
+      mailMode: verificationResult.deliveryMode,
     };
   }
 }

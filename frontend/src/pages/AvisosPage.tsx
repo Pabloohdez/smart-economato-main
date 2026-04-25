@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   getCategorias,
@@ -13,14 +13,14 @@ import {
 import Spinner from "../components/ui/Spinner";
 import { useAuth } from "../contexts/AuthContext";
 import { getGastosMensuales, type GastoMensual } from "../services/informesService";
-import { getLotesProducto, type LoteProducto } from "../services/lotesService";
+import { consumirLote, getLotesProducto, type LoteProducto } from "../services/lotesService";
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import { StaggerItem, StaggerPage } from "../components/ui/PageTransition";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
 import { Badge } from "../components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { Trash2, Truck } from "lucide-react";
+import { Bell, CalendarDays, Trash2, Truck } from "lucide-react";
 
 type ProductoAviso = Producto & {
   nombreCategoria: string;
@@ -31,6 +31,18 @@ type ProductoAviso = Producto & {
   stockNum: number;
   precioNum: number;
   diasCaducado?: number;
+};
+
+type LoteCaducadoAviso = {
+  loteId: number;
+  productoId: string | number;
+  nombreProducto: string;
+  nombreCategoria: string;
+  nombreProveedor: string;
+  precioNum: number;
+  cantidadCaducada: number;
+  fechaCaducidad: string;
+  diasCaducado: number;
 };
 
 type ModalModo = "baja" | "pedido" | null;
@@ -50,12 +62,15 @@ export default function AvisosPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [accionActual, setAccionActual] = useState<ModalModo>(null);
   const [productoSeleccionado, setProductoSeleccionado] = useState<ProductoAviso | null>(null);
+  const [loteSeleccionado, setLoteSeleccionado] = useState<LoteCaducadoAviso | null>(null);
   const [cantidadModal, setCantidadModal] = useState(1);
   const [confirmando, setConfirmando] = useState(false);
 
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMensaje, setToastMensaje] = useState("");
   const [toastTipo, setToastTipo] = useState<"success" | "error">("success");
+  const holdIntervalRef = useRef<number | null>(null);
+  const holdTimeoutRef = useRef<number | null>(null);
 
   // Obtener usuario activo
   const { user } = useAuth();
@@ -96,9 +111,11 @@ export default function AvisosPage() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.productos }),
         queryClient.invalidateQueries({ queryKey: queryKeys.informesGastosMensuales }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.lotesProducto }),
       ]);
       broadcastQueryInvalidation(queryKeys.productos);
       broadcastQueryInvalidation(queryKeys.informesGastosMensuales);
+      broadcastQueryInvalidation(queryKeys.lotesProducto);
     },
   });
 
@@ -151,65 +168,68 @@ export default function AvisosPage() {
     });
   }, [categoriasQuery.data, productosQuery.data, proveedoresQuery.data]);
 
-  const caducados = useMemo<ProductoAviso[]>(() => {
+  const lotesCaducados = useMemo<LoteCaducadoAviso[]>(() => {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
     const lotes = lotesQuery.data ?? [];
-    const lotesPorProducto = new Map<string, LoteProducto[]>();
-    for (const l of lotes) {
-      const pid = String(l.productoId);
-      const arr = lotesPorProducto.get(pid) ?? [];
-      arr.push(l);
-      lotesPorProducto.set(pid, arr);
+    const productosPorId = new Map<string, ProductoAviso>();
+    for (const p of productos) {
+      productosPorId.set(String((p as any).id ?? p.id), p);
     }
 
-    const listaCaducados = productos.map((p) => {
-      const pid = String((p as any).id ?? "");
-      const lotesP = lotesPorProducto.get(pid) ?? [];
-      const tieneLotes = lotesP.length > 0;
+    const caducados: LoteCaducadoAviso[] = [];
+    for (const l of lotes) {
+      if (!l.fechaCaducidad) continue;
+      const fecha = new Date(l.fechaCaducidad);
+      if (Number.isNaN(fecha.getTime())) continue;
+      const cantidad = Number(l.cantidad ?? 0);
+      if (cantidad <= 0) continue;
+      if (fecha >= hoy) continue;
 
-      let cantidadCaducada = 0;
-      let minFechaCaducada: Date | null = null;
+      const p = productosPorId.get(String(l.productoId));
+      if (!p) continue;
 
-      for (const l of lotesP) {
-        if (!l.fechaCaducidad) continue;
-        const fecha = new Date(l.fechaCaducidad);
-        if (Number.isNaN(fecha.getTime())) continue;
-        if (fecha < hoy && Number(l.cantidad) > 0) {
-          cantidadCaducada += Number(l.cantidad);
-          if (!minFechaCaducada || fecha < minFechaCaducada) minFechaCaducada = fecha;
-        }
-      }
-
-      // Si hay lotes, el caducado viene SOLO de lotes (fuente de verdad)
-      if (tieneLotes) {
-        if (cantidadCaducada <= 0) return null;
-      } else {
-        // Fallback: productos antiguos sin lotes (todavía) -> usar fechaCaducidad del producto
-        // Si el stock ya está a 0, no tiene sentido mantener el aviso de "dar de baja"
-        if (p.stockNum <= 0) return null;
-        const raw = p.fechaCaducidadNormalizada;
-        if (!raw || raw === "NULL" || raw === "Sin fecha") return null;
-        const fecha = new Date(String(raw).replace(" ", "T"));
-        if (Number.isNaN(fecha.getTime()) || fecha >= hoy) return null;
-        cantidadCaducada = p.stockNum;
-        minFechaCaducada = fecha;
-      }
-
-      const diasCaducado = minFechaCaducada
-        ? Math.ceil((hoy.getTime() - minFechaCaducada.getTime()) / 86400000)
-        : 0;
-
-      // Para acciones/valorización, usamos el "stock caducado" (suma de lotes caducados)
-      return {
-        ...p,
-        stockNum: Number(cantidadCaducada.toFixed(3)),
+      const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
+      caducados.push({
+        loteId: Number(l.id),
+        productoId: (p as any).id ?? p.id,
+        nombreProducto: String((p as any).nombre ?? ""),
+        nombreCategoria: p.nombreCategoria,
+        nombreProveedor: p.nombreProveedor,
+        precioNum: p.precioNum,
+        cantidadCaducada: Number(cantidad.toFixed(3)),
+        fechaCaducidad: l.fechaCaducidad,
         diasCaducado,
-      };
-    }).filter(Boolean) as ProductoAviso[];
+      });
+    }
 
-    return listaCaducados.sort((a, b) => (b.diasCaducado ?? 0) - (a.diasCaducado ?? 0));
+    // Fallback: productos antiguos sin lotes (todavía) -> aviso por producto
+    // (pero lo tratamos como "lote virtual" para no perder visibilidad)
+    for (const p of productos) {
+      const pid = String((p as any).id ?? p.id);
+      const tieneLotes = lotes.some((l) => String(l.productoId) === pid);
+      if (tieneLotes) continue;
+      if (p.stockNum <= 0) continue;
+      const raw = p.fechaCaducidadNormalizada;
+      if (!raw || raw === "NULL" || raw === "Sin fecha") continue;
+      const fecha = new Date(String(raw).replace(" ", "T"));
+      if (Number.isNaN(fecha.getTime()) || fecha >= hoy) continue;
+      const diasCaducado = Math.ceil((hoy.getTime() - fecha.getTime()) / 86400000);
+      caducados.push({
+        loteId: -Number(pid) || -1,
+        productoId: (p as any).id ?? p.id,
+        nombreProducto: String((p as any).nombre ?? ""),
+        nombreCategoria: p.nombreCategoria,
+        nombreProveedor: p.nombreProveedor,
+        precioNum: p.precioNum,
+        cantidadCaducada: Number(p.stockNum.toFixed(3)),
+        fechaCaducidad: String(raw),
+        diasCaducado,
+      });
+    }
+
+    return caducados.sort((a, b) => b.diasCaducado - a.diasCaducado);
   }, [lotesQuery.data, productos]);
 
   const stockBajo = useMemo<ProductoAviso[]>(() => {
@@ -238,19 +258,24 @@ export default function AvisosPage() {
   }, [gastosMensualesQuery.dataUpdatedAt, productosQuery.dataUpdatedAt]);
 
   const valorRiesgo = useMemo(() => {
-    // "Riesgo" = valor caducados + valor de stock bajo (evitando duplicar por id)
-    const map = new Map<string, ProductoAviso>();
-    for (const p of caducados) map.set(String(p.id), p);
+    // "Riesgo" = valor de lotes caducados + valor de stock bajo.
+    // Para stock bajo evitamos duplicar por productoId (si ya está caducado por lotes, manda el caducado).
+    const map = new Map<string, { precioNum: number; cantidad: number }>();
+    for (const l of lotesCaducados) {
+      const id = String(l.productoId);
+      const prev = map.get(id);
+      map.set(id, { precioNum: l.precioNum, cantidad: (prev?.cantidad ?? 0) + l.cantidadCaducada });
+    }
     for (const p of stockBajo) {
       const id = String(p.id);
-      if (!map.has(id)) map.set(id, p);
+      if (!map.has(id)) map.set(id, { precioNum: p.precioNum, cantidad: p.stockNum });
     }
     let total = 0;
-    for (const p of map.values()) total += p.precioNum * p.stockNum;
+    for (const v of map.values()) total += v.precioNum * v.cantidad;
     return total;
-  }, [caducados, stockBajo]);
+  }, [lotesCaducados, stockBajo]);
 
-  const totalAlertas = caducados.length + stockBajo.length;
+  const totalAlertas = lotesCaducados.length + stockBajo.length;
 
   function tiempoRelativo(dias: number) {
     if (dias === 0) return "Hoy";
@@ -260,10 +285,11 @@ export default function AvisosPage() {
     return `Hace ${Math.floor(dias / 30)} meses`;
   }
 
-  function abrirModalBaja(p: ProductoAviso) {
-    setProductoSeleccionado(p);
+  function abrirModalBajaLote(l: LoteCaducadoAviso) {
+    setLoteSeleccionado(l);
+    setProductoSeleccionado(null);
     setAccionActual("baja");
-    setCantidadModal(p.stockNum || 1);
+    setCantidadModal(l.cantidadCaducada || 1);
     setModalOpen(true);
   }
 
@@ -275,52 +301,85 @@ export default function AvisosPage() {
   }
 
   function cerrarModal() {
+    stopHoldCantidad();
     setModalOpen(false);
     setProductoSeleccionado(null);
+    setLoteSeleccionado(null);
     setAccionActual(null);
     setCantidadModal(1);
     setConfirmando(false);
   }
 
+  const stopHoldCantidad = useCallback(() => {
+    if (holdTimeoutRef.current !== null) {
+      window.clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+    }
+    if (holdIntervalRef.current !== null) {
+      window.clearInterval(holdIntervalRef.current);
+      holdIntervalRef.current = null;
+    }
+  }, []);
+
+  const cambiarCantidad = useCallback((delta: number) => {
+    setCantidadModal((prev) => {
+      const maxPermitido = accionActual === "baja"
+        ? Number(loteSeleccionado?.cantidadCaducada ?? productoSeleccionado?.stockNum ?? prev)
+        : Number.POSITIVE_INFINITY;
+      const next = prev + delta;
+      return Math.max(1, Math.min(maxPermitido, next));
+    });
+  }, [accionActual, loteSeleccionado, productoSeleccionado]);
+
+  const startHoldCantidad = useCallback((delta: number) => {
+    cambiarCantidad(delta);
+    stopHoldCantidad();
+    holdTimeoutRef.current = window.setTimeout(() => {
+      holdIntervalRef.current = window.setInterval(() => cambiarCantidad(delta), 110);
+    }, 260);
+  }, [cambiarCantidad, stopHoldCantidad]);
+
+  useEffect(() => () => stopHoldCantidad(), [stopHoldCantidad]);
+
   async function confirmarAccion() {
-    if (!productoSeleccionado || !accionActual) return;
+    if (!accionActual) return;
     if (cantidadModal <= 0) return;
 
     try {
       setConfirmando(true);
 
       if (accionActual === "baja") {
-        const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
-        const cantidadNormalizada =
-          unidad === "ud"
-            ? Math.round(cantidadModal)
-            : Number(cantidadModal.toFixed(3));
-
+        const productoId = loteSeleccionado?.productoId ?? productoSeleccionado?.id;
+        if (!productoId) return;
         await bajaMutation.mutateAsync({
-          productoId: productoSeleccionado.id,
-          cantidad: cantidadNormalizada,
+          productoId,
+          cantidad: cantidadModal,
           tipoBaja: "Caducado",
-          motivo: "Caducidad registrada desde Centro de Avisos",
+          motivo: loteSeleccionado
+            ? `Caducidad registrada desde Centro de Avisos (lote ${loteSeleccionado.loteId}, fecha ${loteSeleccionado.fechaCaducidad})`
+            : "Caducidad registrada desde Centro de Avisos",
         });
 
-        mostrarToast("Baja registrada correctamente", "success");
-      }else if (accionActual === "pedido") {
-        const proveedorId =
-          productoSeleccionado.proveedorObj?.id ?? productoSeleccionado.proveedorId;
-
-        if (!proveedorId) {
-          throw new Error("El producto no tiene proveedor asociado");
+        // Si es un lote real (id > 0), también consumimos su cantidad para que el aviso desaparezca.
+        if (loteSeleccionado && loteSeleccionado.loteId > 0) {
+          await consumirLote({ loteId: loteSeleccionado.loteId, cantidad: cantidadModal });
+          await queryClient.invalidateQueries({ queryKey: queryKeys.lotesProducto });
+          broadcastQueryInvalidation(queryKeys.lotesProducto);
         }
 
+        mostrarToast("Baja registrada correctamente", "success");
+      } else if (accionActual === "pedido") {
+        if (!productoSeleccionado) return;
         await pedidoMutation.mutateAsync({
-          proveedorId,
+          proveedorId:
+            productoSeleccionado.proveedorObj?.id || productoSeleccionado.proveedorId,
           total: cantidadModal * productoSeleccionado.precioNum,
           items: [
             {
               producto_id: productoSeleccionado.id,
               cantidad: cantidadModal,
               precio: productoSeleccionado.precioNum,
-              unidad: "ud",
+              nombre: productoSeleccionado.nombre,
             },
           ],
         });
@@ -330,11 +389,8 @@ export default function AvisosPage() {
 
       cerrarModal();
     } catch (error) {
-      console.error("Error accion aviso:", error);
-      mostrarToast(
-        error instanceof Error ? error.message : "Error al realizar la acción",
-        "error"
-      );
+      console.error(error);
+      mostrarToast("Error al realizar la acción", "error");
       setConfirmando(false);
     }
   }
@@ -356,41 +412,47 @@ export default function AvisosPage() {
   }
 
   const financieroResumen = useMemo(() => {
-    const valorCaducado = caducados.reduce((s, p) => s + p.precioNum * p.stockNum, 0);
+    const valorCaducado = lotesCaducados.reduce((s, l) => s + l.precioNum * l.cantidadCaducada, 0);
     const valorStockBajo = stockBajo.reduce((s, p) => s + p.precioNum * p.stockNum, 0);
 
-    const todosEnRiesgo = [...caducados, ...stockBajo];
-    const masCaro =
-      todosEnRiesgo.length > 0
-        ? todosEnRiesgo.reduce((max, p) =>
-            p.precioNum * p.stockNum > max.precioNum * max.stockNum ? p : max
-          )
-        : null;
+    const masCaro = (() => {
+      const map = new Map<string, { nombre: string; precio: number; cantidad: number }>();
+      for (const l of lotesCaducados) {
+        const id = String(l.productoId);
+        const prev = map.get(id);
+        map.set(id, { nombre: l.nombreProducto, precio: l.precioNum, cantidad: (prev?.cantidad ?? 0) + l.cantidadCaducada });
+      }
+      for (const p of stockBajo) {
+        const id = String(p.id);
+        if (!map.has(id)) map.set(id, { nombre: p.nombre, precio: p.precioNum, cantidad: p.stockNum });
+      }
+      const values = Array.from(map.values());
+      if (values.length === 0) return null;
+      return values.reduce((max, v) => v.precio * v.cantidad > max.precio * max.cantidad ? v : max, values[0]);
+    })();
 
     return { valorCaducado, valorStockBajo, masCaro };
-  }, [caducados, stockBajo]);
+  }, [lotesCaducados, stockBajo]);
 
   return (
-    <StaggerPage className="p-6 max-w-[1400px] mx-auto max-[768px]:p-4">
+    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
       <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
-          <h1 className="text-[28px] font-semibold text-[#111827] m-0 mb-1 flex items-center gap-3">
-            <i className="fa-solid fa-bell"></i> Centro de Avisos
+          <h1 className="m-0 mb-1 flex items-center gap-3 text-[28px] font-semibold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <Bell className="h-5 w-5" />
+            </span>
+            Centro de Avisos
           </h1>
           <p className="text-[#6b7280] text-[14px] m-0">Resumen de alertas y notificaciones del sistema</p>
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap max-[768px]:w-full">
-          <div className="inline-flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] bg-[var(--color-bg-surface)] border border-[#e5e7eb] shadow-[0_2px_8px_rgba(15,23,42,0.05)] text-[#4b5563] text-[13px] font-semibold max-[768px]:w-full max-[768px]:justify-center">
-            <i className="fa-solid fa-calendar text-[var(--color-brand-500)]"></i>
+        <div className="text-right text-slate-500 text-sm max-[768px]:w-full max-[768px]:text-left">
+          <div className="inline-flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
             <span>{hoyES()}</span>
           </div>
-
-          {timestamp ? (
-            <div className="text-[12px] text-[#6b7280] px-3.5 py-2.5 bg-[#f9fafb] rounded-[10px] border border-[#e5e7eb] max-[768px]:w-full max-[768px]:text-center">
-              {timestamp}
-            </div>
-          ) : null}
+          {timestamp ? <div className="mt-1 text-xs">{timestamp.replace("Actualizado", "Ultima actualizacion")}</div> : null}
         </div>
       </StaggerItem>
 
@@ -410,8 +472,8 @@ export default function AvisosPage() {
             <i className="fa-solid fa-skull-crossbones"></i>
           </div>
           <div className="flex-1">
-            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : caducados.length}</span>
-            <span className="block text-[13px] text-[#6b7280] mt-0.5">Productos Caducados</span>
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : lotesCaducados.length}</span>
+            <span className="block text-[13px] text-[#6b7280] mt-0.5">Lotes Caducados</span>
           </div>
         </div>
 
@@ -430,52 +492,52 @@ export default function AvisosPage() {
         <div className="px-5 py-4 border-l-4 border-l-[#dc2626] flex justify-between items-center bg-[linear-gradient(90deg,#fef2f2_0%,#f9fafb_100%)]">
           <div className="flex items-center gap-2.5">
             <i className="fa-solid fa-calendar-xmark text-[16px] text-[#6b7280]"></i>
-            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Productos Caducados</h2>
+            <h2 className="m-0 text-[16px] font-semibold text-[#111827]">Lotes Caducados</h2>
           </div>
           <span className="bg-[var(--color-bg-surface)] text-[#374151] px-3 py-1 rounded-xl text-[13px] font-semibold border border-[#e5e7eb]">
-            {caducados.length}
+            {lotesCaducados.length}
           </span>
         </div>
 
         <div>
           {loading ? (
             <div className="py-10 text-center text-[#9ca3af]"><Spinner label="Cargando caducados..." /></div>
-          ) : caducados.length === 0 ? (
+          ) : lotesCaducados.length === 0 ? (
             <div className="py-10 text-center text-[#10b981]">
               <i className="fa-solid fa-circle-check block text-[32px] mb-2"></i>
-              <span>No hay productos caducados</span>
+              <span>No hay lotes caducados</span>
             </div>
           ) : (
-            caducados.map((p) => (
+            lotesCaducados.map((l) => (
               <div
                 className="grid [grid-template-columns:4px_1fr_auto_auto] gap-4 px-5 py-4 border-b border-b-[#f3f4f6] items-center transition-colors hover:bg-[#f9fafb] max-[768px]:[grid-template-columns:4px_1fr] max-[768px]:gap-3"
-                key={`cad-${p.id}`}
+                key={`cad-lote-${l.loteId}-${l.productoId}`}
               >
                 <div className="w-1 h-10 rounded bg-[#dc2626]"></div>
 
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{p.nombre}</p>
+                  <p className="m-0 mb-1 text-[14px] font-semibold text-[#111827]">{l.nombreProducto}</p>
                   <p className="m-0 text-[13px] text-[#6b7280]">
-                    {p.nombreCategoria} · Stock: {p.stockNum}
+                    {l.nombreCategoria} · Lote: {l.loteId} · Cantidad: {l.cantidadCaducada}
                   </p>
                 </div>
 
-                <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
+                <div className="flex w-12 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
                   <button
                     type="button"
                     className="bo-table-action-btn text-red-500 hover:bg-red-50 hover:text-red-600"
-                    onClick={() => abrirModalBaja(p)}
-                    title="Dar de baja"
-                    aria-label={`Dar de baja ${p.nombre}`}
+                    onClick={() => abrirModalBajaLote(l)}
+                    title="Dar de baja lote"
+                    aria-label={`Dar de baja lote ${l.loteId} de ${l.nombreProducto}`}
                   >
                     <Trash2 strokeWidth={1.5} size={18} />
                   </button>
                 </div>
 
                 <div className="text-right text-[12px] text-[#6b7280] min-w-20 max-[768px]:col-start-2 max-[768px]:text-left max-[768px]:mt-1">
-                  <strong>{p.precioNum.toFixed(2)} €</strong>
+                  <strong>{l.precioNum.toFixed(2)} €</strong>
                   <br />
-                  {tiempoRelativo(p.diasCaducado || 0)}
+                  {tiempoRelativo(l.diasCaducado)}
                 </div>
               </div>
             ))
@@ -528,7 +590,7 @@ export default function AvisosPage() {
                     </p>
                   </div>
 
-                  <div className="flex gap-2 max-[768px]:col-start-2 max-[768px]:mt-2">
+                  <div className="flex w-12 items-center justify-center self-center max-[768px]:col-start-2 max-[768px]:justify-end max-[768px]:mt-0">
                     <button
                       type="button"
                       className="bo-table-action-btn text-slate-500 hover:bg-[rgba(179,49,49,0.08)] hover:text-[var(--color-brand-500)]"
@@ -554,7 +616,7 @@ export default function AvisosPage() {
         </div>
       </StaggerItem>
 
-      <StaggerItem>
+      <StaggerItem className="mb-6">
         <BackofficeTablePanel
           header={
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -590,7 +652,7 @@ export default function AvisosPage() {
                   <div className="text-[18px] font-bold text-[#111827]">
                     {financieroResumen.masCaro.nombre}{" "}
                     <span className="text-[13px] font-normal text-[#6B7280]">
-                      — {(financieroResumen.masCaro.precioNum * financieroResumen.masCaro.stockNum).toFixed(2)} €
+                      — {(financieroResumen.masCaro.precio * financieroResumen.masCaro.cantidad).toFixed(2)} €
                     </span>
                   </div>
                 </div>
@@ -611,7 +673,48 @@ export default function AvisosPage() {
             </div>
           }
         >
-          <div className="overflow-x-auto">
+          {/* Móvil: cards */}
+          <div className="hidden max-[640px]:block">
+            {loading ? (
+              <div className="py-6 text-center">
+                <Spinner size="sm" label="Cargando datos financieros..." />
+              </div>
+            ) : gastosMensuales.length === 0 ? (
+              <div className="py-6 text-center text-slate-500">No hay datos de gastos registrados</div>
+            ) : (
+              <div className="grid gap-3">
+                {gastosMensuales.map((g, idx) => (
+                  <div
+                    key={`gastos-m-${g.mes}-${g.nombre_usuario}-${idx}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                          {formatearMes(g.mes)}
+                        </div>
+                        <div className="mt-1 truncate text-[14px] font-extrabold text-slate-900">
+                          {g.nombre_usuario}
+                        </div>
+                        <div className="mt-2 text-[12px] text-slate-600">
+                          Pedidos: <span className="font-semibold text-slate-800">{g.num_pedidos}</span>
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</div>
+                        <div className="text-[16px] font-extrabold text-slate-900">
+                          {Number(g.total_mes).toFixed(2)} €
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Tablet/Desktop: tabla */}
+          <div className="overflow-x-auto max-[640px]:hidden">
             <Table className="min-w-[760px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
               <TableHeader>
                 <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
@@ -656,7 +759,12 @@ export default function AvisosPage() {
             <h3>
               {accionActual === "baja" ? "Confirmar Baja de Producto" : "Solicitar Pedido"}
             </h3>
-            <button type="button" className="bg-transparent border-0 text-[#9ca3af] cursor-pointer text-[16px] p-1 rounded hover:bg-[#f3f4f6] hover:text-[#374151]" onClick={cerrarModal}>
+            <button
+              type="button"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border-0 bg-transparent text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+              onClick={cerrarModal}
+              aria-label="Cerrar"
+            >
               <i className="fa-solid fa-xmark"></i>
             </button>
           </div>
@@ -682,11 +790,14 @@ export default function AvisosPage() {
 
             <div>
               <label htmlFor="modal-cantidad" className="block text-[12px] font-medium text-[#374151] mb-1.5">Cantidad</label>
-              <div className="flex items-center border border-[#d1d5db] rounded-lg overflow-hidden">
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
                 <button
                   type="button"
-                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-r border-r-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
-                  onClick={() => setCantidadModal((v) => Math.max(1, v - 1))}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-0 bg-transparent text-[18px] font-extrabold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onPointerDown={() => startHoldCantidad(-1)}
+                  onPointerUp={stopHoldCantidad}
+                  onPointerCancel={stopHoldCantidad}
+                  onPointerLeave={stopHoldCantidad}
                 >
                   -
                 </button>
@@ -695,36 +806,19 @@ export default function AvisosPage() {
                   id="modal-cantidad"
                   type="number"
                   min={1}
-                  step={String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase() === "ud" ? 1 : 0.1}
                   max={accionActual === "baja" ? productoSeleccionado?.stockNum : undefined}
                   value={cantidadModal}
-                  onChange={(e) => {
-                    const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
-                    let value = Number(e.target.value) || 1;
-
-                    if (unidad === "ud") {
-                      value = Math.round(value);
-                    }
-
-                    setCantidadModal(Math.max(1, value));
-                  }}
-                  className="flex-1 border-0 text-center text-[16px] font-semibold py-2 outline-none [appearance:textfield]"
+                  onChange={(e) => setCantidadModal(Math.max(1, Number(e.target.value) || 1))}
+                  className="flex-1 min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 py-2 text-center text-[16px] font-semibold outline-none [appearance:textfield] focus:bg-white focus:border-slate-300"
                 />
 
                 <button
                   type="button"
-                  className="bg-[#f9fafb] border-0 w-10 h-10 text-[18px] text-[#6b7280] cursor-pointer border-l border-l-[#e5e7eb] hover:bg-[#f3f4f6] hover:text-[#111827]"
-                  onClick={() => {
-                    const unidad = String((productoSeleccionado as any)?.unidadMedida ?? "ud").toLowerCase();
-                    const incremento = unidad === "ud" ? 1 : 0.1;
-
-                    const max =
-                      accionActual === "baja"
-                        ? productoSeleccionado?.stockNum || cantidadModal + incremento
-                        : cantidadModal + incremento;
-
-                    setCantidadModal((v) => Math.min(max, Number((v + incremento).toFixed(3))));
-                  }}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-0 bg-transparent text-[18px] font-extrabold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 active:scale-[0.97]"
+                  onPointerDown={() => startHoldCantidad(1)}
+                  onPointerUp={stopHoldCantidad}
+                  onPointerCancel={stopHoldCantidad}
+                  onPointerLeave={stopHoldCantidad}
                 >
                   +
                 </button>

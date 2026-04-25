@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
-  BadgeAlert,
   Bell,
   BellRing,
   CalendarDays,
@@ -16,13 +15,13 @@ import {
   Building2,
   HandCoins,
   House,
-  LayoutDashboard,
   LogOut,
   Menu,
   PackagePlus,
-  Settings,
   Truck,
   UserCircle2,
+  LayoutDashboard,
+  Settings2,
 } from "lucide-react";
 import RouteErrorBoundary from "../components/app/RouteErrorBoundary";
 import PageTransition from "../components/ui/PageTransition";
@@ -53,7 +52,7 @@ const navItems = [
   {
     to: "/configuracion",
     label: "Configuración",
-    icon: Settings,
+    icon: Settings2,
     separated: true,
     roles: ["administrador", "profesor"],
   },
@@ -75,28 +74,14 @@ export default function AppLayout() {
   const outlet = useOutlet();
   const isInicio = location.pathname === "/inicio";
   const transitionKey = location.pathname;
-  const { user, refreshUser } = useAuth();
-
-  const userName = String(
-    user?.nombre ||
-    user?.username ||
-    user?.usuario ||
-    "Usuario"
-  ).trim();
-
+  const { user } = useAuth();
+  const userName = String(user?.nombre ?? "Administrador");
   const userEmail = String(user?.email ?? "").trim();
-
-  const userRole = String(
-    user?.role ||
-    user?.rol ||
-    "admin"
-  ).trim();
-
+  const userRole = String(user?.role ?? user?.rol ?? "usuario").trim();
   const normalizedRole = normalizeRole(userRole);
-  const userRoleDisplay =
-  normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isSmallViewport, setIsSmallViewport] = useState(false);
 
   const productosQuery = useQuery({
     queryKey: queryKeys.productos,
@@ -146,12 +131,14 @@ export default function AppLayout() {
     [visibleNavItems],
   );
 
-  const currentSection = useMemo(
-    () => visibleNavItems.find((item) => location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)) ?? null,
-    [location.pathname, visibleNavItems],
-  );
-  const isInventarioRoute = currentSection?.to === "/inventario";
-  const hideCurrentSectionTitle = isInventarioRoute;
+  const currentSection = useMemo(() => {
+    const path = location.pathname;
+    return (
+      visibleNavItems.find((item) => path === item.to || path.startsWith(`${item.to}/`)) ??
+      visibleNavItems.find((item) => item.to === "/inicio") ??
+      null
+    );
+  }, [location.pathname, visibleNavItems]);
 
   const todayLabel = useMemo(
     () => new Intl.DateTimeFormat("es-ES", {
@@ -175,27 +162,60 @@ export default function AppLayout() {
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia("(max-width: 820px)");
+    const update = () => setIsSmallViewport(!!mq.matches);
+    update();
+
+    // Safari/iOS antiguos no soportan addEventListener en MediaQueryList
+    const anyMq = mq as any;
+    if (typeof mq.addEventListener === "function") {
+      mq.addEventListener("change", update);
+      return () => mq.removeEventListener("change", update);
+    }
+    if (typeof anyMq.addListener === "function") {
+      anyMq.addListener(update);
+      return () => anyMq.removeListener(update);
+    }
+    return;
+  }, []);
+
+  useEffect(() => {
     document.body.classList.toggle("sidebar-mobile-open", sidebarOpen);
     return () => {
       document.body.classList.remove("sidebar-mobile-open");
     };
   }, [sidebarOpen]);
-  useEffect(() => {
-    if (!sidebarOpen) {
-      document.body.style.overflow = "";
-      return;
-    }
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [sidebarOpen]);
 
- function logout() {
-  logoutSession();
-  refreshUser();
-  nav("/login", { replace: true });
-}
+  useEffect(() => {
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+
+    // Solo ocultar overflow en viewport movil cuando sidebar esta abierto
+    const isMobileViewport = window.innerWidth <= 820;
+    // En Inicio:
+    // - móvil: permitir scroll (el body puede scrollear si el main no captura bien en iOS)
+    // - escritorio: mantenerlo estático
+    const shouldHideScroll =
+      (isMobileViewport && sidebarOpen) || (isInicio && !isMobileViewport);
+
+    if (shouldHideScroll) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+    }
+
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+    };
+  }, [isInicio, sidebarOpen]);
+
+  function logout() {
+    logoutSession();
+    nav("/login", { replace: true });
+  }
 
   function renderNavSection(items: typeof visibleNavItems, title: string) {
     if (items.length === 0) return null;
@@ -247,16 +267,16 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen w-full min-w-0 overflow-x-hidden bg-[var(--color-bg-canvas)] text-[var(--color-text-strong)] font-[var(--font-family-base)] relative">
+    <div className="h-[100dvh] w-full min-w-0 overflow-x-hidden bg-[var(--color-bg-canvas)] text-[var(--color-text-strong)] font-[var(--font-family-base)] relative">
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[90] transition-opacity duration-300 ${sidebarOpen ? "opacity-100 block" : "opacity-0 hidden"}`}
+        className={`fixed inset-0 bg-[rgba(15,23,42,0.45)] z-[90] transition-opacity duration-300 ${sidebarOpen ? "opacity-100 block" : "opacity-0 hidden"}`}
         onClick={() => setSidebarOpen(false)}
         aria-hidden="true"
       />
 
       <aside
         id="app-sidebar"
-        className={`grid [grid-template-rows:auto_1fr_auto] gap-4 fixed top-0 left-0 bottom-0 w-[294px] h-[100dvh] overflow-hidden z-[100] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border-r border-[var(--color-border-default)] p-[18px_14px_14px] text-[var(--color-text-strong)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[300px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.14)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[252px] max-[520px]:p-[14px_12px_12px]`}
+        className={`grid [grid-template-rows:auto_1fr_auto] gap-4 fixed top-0 left-0 bottom-0 w-[294px] h-[100dvh] overflow-hidden z-[100] bg-[linear-gradient(180deg,#ffffff_0%,#fbfcff_100%)] border-r border-[#d1d9e6] shadow-[6px_0_32px_rgba(15,23,42,0.07),2px_0_8px_rgba(15,23,42,0.04)] p-[18px_14px_14px] text-[var(--color-text-strong)] transition-transform duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] max-[820px]:w-[300px] ${sidebarOpen ? "max-[820px]:translate-x-0 max-[820px]:shadow-[10px_0_40px_rgba(0,0,0,0.14)]" : "max-[820px]:-translate-x-full"} max-[820px]:shadow-none max-[520px]:w-[252px] max-[520px]:p-[14px_12px_12px]`}
         aria-label="Navegacion principal"
       >
         <div className="flex items-center gap-3 rounded-[24px] border border-[var(--color-border-default)] bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] px-3 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
@@ -302,46 +322,32 @@ export default function AppLayout() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="w-full rounded-[20px] border border-[rgba(229,231,235,.95)] bg-[linear-gradient(180deg,#ffffff_0%,#fafbff_100%)] p-3 transition-[background,border-color,transform] duration-200 flex items-center gap-3 shadow-[0_10px_24px_rgba(15,23,42,.06)] hover:bg-white hover:border-[rgba(209,213,219,.95)]"
+                className="group flex w-full min-h-[46px] items-center gap-3 rounded-[14px] border border-slate-200 bg-white px-3 py-2.5 transition hover:bg-slate-50"
+                aria-label="Menú de perfil"
               >
-                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-[16px] bg-[var(--color-brand-500)] text-[15px] font-bold text-white" title="Usuario">
+                <div className="inline-flex h-8 w-8 items-center justify-center rounded-[10px] bg-[var(--color-brand-500)] text-xs font-bold text-white flex-shrink-0">
                   {userInitial}
                 </div>
-                <span className="min-w-0 flex flex-1 flex-col items-start gap-0.5">
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[14px] font-bold text-[var(--color-text-strong)]">{userName}</span>
-                  <span className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold text-[var(--color-text-muted)]">
-                    {userEmail || userRoleDisplay || "Usuario"}
-                  </span>
-                </span>
-                <span className="ml-auto text-[#9ca3af]" aria-hidden="true">
-                  <ChevronDown className="h-4 w-4" />
-                </span>
+                <div className="min-w-0 flex-1 text-left">
+                  <div className="truncate text-xs font-bold text-[var(--color-text-strong)]">{userName}</div>
+                  <div className="truncate text-[11px] text-[var(--color-text-muted)]">{normalizedRole}</div>
+                </div>
+                <ChevronDown className="h-3.5 w-3.5 flex-shrink-0 text-slate-400 transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side="top" className="w-[--radix-dropdown-menu-trigger-width] min-w-[260px] rounded-[20px] p-0">
-              <DropdownMenuLabel className="p-0">
-                <div className="flex items-center gap-3.5 border-b border-[var(--color-border-default)] p-[18px_18px_14px]">
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[18px] bg-[var(--color-brand-500)] text-[24px] font-semibold text-white">
-                    {userInitial}
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="text-[16px] font-extrabold text-[var(--color-text-strong)]">{userName}</div>
-                    <div className="text-[12px] font-semibold text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                    <span className={`role-badge role-badge--${normalizedRole}`}>
-                      {normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1)}
-                    </span>
-                  </div>
+            <DropdownMenuContent side="top" align="start" sideOffset={8} className="w-[var(--radix-dropdown-menu-trigger-width)]">
+              <DropdownMenuLabel className="flex items-center gap-2 flex-col">
+                <div className="inline-flex h-10 w-10 items-center justify-center rounded-[12px] bg-[linear-gradient(135deg,var(--color-brand-500),var(--color-brand-600))] text-sm font-bold text-white shadow-sm">
+                  {userInitial}
+                </div>
+                <div className="text-center">
+                  <div className="text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
+                  <div className="text-xs text-[var(--color-text-muted)] mt-1">{userEmail || "Sin email"}</div>
                 </div>
               </DropdownMenuLabel>
-              <DropdownMenuItem onSelect={() => nav("/avisos")}>
-                <Bell className="h-4 w-4" /> Centro de avisos
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => nav("/configuracion")}>
-                <Settings className="h-4 w-4" /> Configuración
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem disabled>
-                <CalendarDays className="h-4 w-4" /> {todayLabel}
+              <DropdownMenuItem disabled className="text-xs">
+                <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={logout}>
@@ -353,8 +359,14 @@ export default function AppLayout() {
       </aside>
 
       <div className="flex min-h-[100dvh] w-full min-w-0 flex-col pl-[294px] max-[820px]:pl-0">
-        <header className={isInventarioRoute ? "hidden border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl max-[820px]:block" : "sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl"}>
-          <div className={isInventarioRoute ? "flex items-center justify-between gap-4 px-4 py-3" : "flex items-center justify-between gap-4 px-6 py-4 max-[820px]:px-4 max-[820px]:py-3"}>
+        <header className="sticky top-0 z-20 border-b border-[var(--color-border-default)] bg-[rgba(244,246,251,0.86)] backdrop-blur-xl">
+          <div
+            className={
+              isInicio
+                ? "flex items-center justify-between gap-4 px-6 py-3 max-[820px]:px-4"
+                : "hidden max-[820px]:flex items-center justify-between gap-4 px-4 py-3"
+            }
+          >
             <div className="flex min-w-0 items-center gap-3">
               <button
                 className="hidden h-[42px] w-[42px] items-center justify-center rounded-[14px] border border-[var(--color-border-default)] text-[var(--color-text-strong)] transition-[background] duration-150 hover:bg-[#f1f5f9] max-[820px]:inline-flex"
@@ -368,20 +380,18 @@ export default function AppLayout() {
               </button>
 
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-slate-400">
-                  <LayoutDashboard className="h-3.5 w-3.5" /> Smart Economato
+                <div className="flex items-center gap-2 text-[18px] font-extrabold tracking-[-0.02em] text-[var(--color-text-strong)] leading-tight max-[820px]:text-[16px]">
+                  {currentSection ? (
+                    <currentSection.icon className="h-[18px] w-[18px] text-[var(--color-brand-500)]" />
+                  ) : (
+                    <LayoutDashboard className="h-[18px] w-[18px] text-[var(--color-brand-500)]" />
+                  )}
+                  <span className="truncate">{currentSection?.label ?? "Panel"}</span>
                 </div>
-                {!hideCurrentSectionTitle ? (
-                <div className="mt-1 flex min-w-0 items-center gap-2">
-                  <h2 className="truncate text-[22px] font-extrabold tracking-[-0.03em] text-[var(--color-text-strong)] max-[820px]:text-[18px]">
-                    {currentSection?.label || "Panel"}
-                  </h2>
-                  {currentSection?.to === "/avisos" && avisosCount > 0 ? (
-                    <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#fde2e2] px-2 text-[11px] font-bold text-[#ef4444]">
-                      {avisosCount > 99 ? "99+" : avisosCount}
-                    </span>
-                  ) : null}
-                </div>
+                {isInicio ? (
+                  <div className="mt-0.5 text-[12px] text-[var(--color-text-muted)] leading-snug truncate max-w-[56vw]">
+                    Acceso rápido a secciones del panel
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -391,73 +401,18 @@ export default function AppLayout() {
                 <CalendarDays className="h-4 w-4 text-primary" />
                 <span>{todayLabel}</span>
               </div>
-
-              <NavLink
-                to="/avisos"
-                className="relative inline-flex h-11 w-11 items-center justify-center rounded-[18px] border border-[var(--color-border-default)] bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
-                aria-label="Abrir avisos"
-              >
-                <BadgeAlert className="h-4.5 w-4.5" />
-                {avisosCount > 0 ? (
-                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ef4444] px-1 text-[10px] font-bold text-white">
-                    {avisosCount > 99 ? "99+" : avisosCount}
-                  </span>
-                ) : null}
-              </NavLink>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-3 rounded-[18px] border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm transition hover:bg-slate-50"
-                    aria-label="Abrir menú de usuario"
-                  >
-                    <div className="hidden text-right md:block">
-                      <div className="text-[13px] font-bold leading-none text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="mt-1 text-[11px] font-medium leading-none text-[var(--color-text-muted)]">{userEmail || userRoleDisplay || "Usuario"}</div>
-                    </div>
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <ChevronDown className="hidden h-4 w-4 text-slate-400 md:block" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[240px] rounded-[18px]">
-                  <DropdownMenuLabel className="flex items-center gap-3">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[14px] bg-[var(--color-brand-500)] text-sm font-bold text-white">
-                      {userInitial}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-bold text-[var(--color-text-strong)]">{userName}</div>
-                      <div className="truncate text-xs text-[var(--color-text-muted)]">{userEmail || "Gestor de Economato"}</div>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onSelect={() => nav("/configuracion")}>
-                    <Settings className="h-4 w-4" /> Configuración
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => nav("/avisos")}>
-                    <Bell className="h-4 w-4" /> Avisos
-                  </DropdownMenuItem>
-                  <DropdownMenuItem disabled>
-                    <UserCircle2 className="h-4 w-4" /> Rol: {normalizedRole}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive" onSelect={logout}>
-                    <LogOut className="h-4 w-4" /> Cerrar sesión
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
           </div>
         </header>
 
         <main
           className={[
-            isInventarioRoute
-              ? "flex-1 w-full min-w-0 m-0 p-[16px_20px_24px] max-[820px]:p-4"
-              : "flex-1 w-full min-w-0 p-[30px] pt-6 m-0 max-[520px]:p-4 max-[520px]:pt-4",
-            isInicio ? "overflow-hidden max-[768px]:overflow-auto" : "overflow-auto",
+            isInicio ? "flex-1 w-full min-w-0 min-h-0 m-0 p-0" : "flex-1 w-full min-w-0 min-h-0 m-0 p-[28px_32px_32px] max-[820px]:p-5",
+            isInicio
+              ? (isSmallViewport
+                  ? "overflow-y-scroll overflow-x-hidden touch-pan-y [scrollbar-gutter:stable] [-webkit-overflow-scrolling:touch]"
+                  : "overflow-hidden")
+              : "overflow-y-auto overflow-x-hidden [scrollbar-gutter:stable]",
           ].join(" ")}
           id="main-content"
         >

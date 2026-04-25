@@ -93,37 +93,41 @@ export default function TablePagination({
   };
 
   return (
-    <div className="bo-table-pagination px-5 py-4 sm:px-6">
-      <div className="flex flex-1 flex-wrap items-center gap-4 text-sm text-slate-500">
-        <div className="hidden items-center gap-2 lg:flex">
-          <span className="font-medium">Filas por página</span>
-          <div className="w-24">
+    <motion.div
+      className="bo-table-pagination flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-5 max-[640px]:flex-col max-[640px]:items-stretch"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="flex flex-1 flex-wrap items-center gap-3 text-sm text-slate-500 max-[640px]:flex-col max-[640px]:items-stretch">
+        <div className="flex items-center gap-2.5 rounded-2xl border border-[var(--color-border-default)] bg-white px-3 py-2 shadow-sm">
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Filas</span>
+          <div className="w-[88px]">
             <UiSelect
               value={String(pageSize)}
               onChange={(next) => handlePageSizeChange(Number(next))}
               ariaLabel="Cantidad por página"
+              triggerClassName="h-10 rounded-xl border-transparent bg-slate-50 px-3 py-2 text-sm shadow-none hover:border-[var(--color-border-default)]"
+              contentClassName="rounded-2xl"
               options={pageSizeOptions.map((size) => ({ value: String(size), label: String(size) }))}
             />
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[12px] font-semibold text-slate-600">
-          <span>{startItem}-{endItem}</span>
-          <span className="text-slate-400">de</span>
-          <span>{totalItems} {label}</span>
-        </div>
-
-        <div className="inline-flex items-center gap-1 text-sm font-medium text-slate-700">
-          <span>Página</span>
-          <span>{safePage}</span>
-          <span className="text-slate-400">de</span>
-          <span>{totalPages}</span>
+        <div className="inline-flex min-h-11 items-center gap-2 rounded-2xl border border-[var(--color-border-default)] bg-slate-50/80 px-4 py-2 text-[13px] font-semibold text-slate-600 max-[640px]:w-full max-[640px]:justify-between">
+          <span className="whitespace-nowrap">
+            Mostrando {startItem}-{endItem}
+          </span>
+          <span className="text-slate-300 max-[640px]:hidden">|</span>
+          <span className="whitespace-nowrap">
+            {totalItems} {label}
+          </span>
         </div>
       </div>
 
-      <div className="inline-flex items-center gap-1.5 flex-wrap" aria-label="Paginación de tabla">
+      <div className="inline-flex flex-wrap items-center gap-1.5 max-[640px]:w-full max-[640px]:justify-center" aria-label="Paginación de tabla">
         <button
-          className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 lg:inline-flex"
+          className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white text-slate-500 shadow-sm transition-[background,color,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 sm:inline-flex"
           type="button"
           onClick={() => handlePageChange(1)}
           disabled={safePage <= 1}
@@ -131,7 +135,7 @@ export default function TablePagination({
           <ChevronsLeft className="h-4 w-4" />
         </button>
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white text-slate-500 shadow-sm transition-[background,color,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45"
           type="button"
           onClick={() => handlePageChange(safePage - 1)}
           disabled={safePage <= 1}
@@ -151,7 +155,7 @@ export default function TablePagination({
             {pageItems.map((item, index) =>
               item === "dots" ? (
                 <span
-                  className="inline-flex h-9 w-9 items-center justify-center text-sm text-slate-400"
+                  className="inline-flex h-10 w-10 items-center justify-center text-sm text-slate-400"
                   key={`dots-${index}`}
                 >
                   ...
@@ -162,8 +166,8 @@ export default function TablePagination({
                   key={item}
                   className={
                     item === safePage
-                      ? "inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-white shadow-sm"
-                      : "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-600 transition-colors duration-150 hover:bg-slate-50"
+                      ? "inline-flex h-10 min-w-10 items-center justify-center rounded-xl bg-[var(--color-brand-500)] px-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(179,49,49,0.24)]"
+                      : "inline-flex h-10 min-w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white px-3 text-sm font-semibold text-slate-600 transition-[background,transform] duration-150 hover:bg-slate-50 active:scale-[0.98]"
                   }
                   onClick={() => handlePageChange(item)}
                   aria-current={item === safePage ? "page" : undefined}
@@ -176,7 +180,7 @@ export default function TablePagination({
         </AnimatePresence>
 
         <button
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white text-slate-500 shadow-sm transition-[background,color,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45"
           type="button"
           onClick={() => handlePageChange(safePage + 1)}
           disabled={safePage >= totalPages}
@@ -184,7 +188,7 @@ export default function TablePagination({
           <ChevronRight className="h-4 w-4" />
         </button>
         <button
-          className="hidden h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-colors duration-150 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-45 lg:inline-flex"
+          className="hidden h-10 w-10 items-center justify-center rounded-xl border border-[var(--color-border-default)] bg-white text-slate-500 shadow-sm transition-[background,color,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-45 sm:inline-flex"
           type="button"
           onClick={() => handlePageChange(totalPages)}
           disabled={safePage >= totalPages}
@@ -192,7 +196,7 @@ export default function TablePagination({
           <ChevronsRight className="h-4 w-4" />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

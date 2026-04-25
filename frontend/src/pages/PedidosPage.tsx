@@ -522,7 +522,11 @@ export default function PedidosPage() {
           )}
 
           {!loadingPedidos && pedidos.length > 0 && (
-            <PedidosGrid pedidos={pedidos} onIrARecepcion={irARecepcion} />
+            <PedidosGrid
+              pedidos={pedidos}
+              onIrARecepcion={irARecepcion}
+              onNuevoPedido={irANuevoPedido}
+            />
           )}
           </div>
         </StaggerItem>

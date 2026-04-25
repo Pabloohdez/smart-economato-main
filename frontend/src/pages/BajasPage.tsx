@@ -61,6 +61,31 @@ function badgeCaducidad(fechaCaducidad?: string | null) {
   return null;
 }
 
+function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; decimals?: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number.isFinite(value) ? value : 0;
+    const duration = 1200;
+    const start = performance.now();
+
+    let raf = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(target * eased);
+      if (progress < 1) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <>{display.toFixed(decimals)}{suffix}</>;
+}
+
 export default function BajasPage() {
   // datos base
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -531,8 +556,11 @@ export default function BajasPage() {
       <StaggerItem>
       <div className="flex justify-between items-center mb-[30px] pb-5 border-b-2 border-[var(--color-border-default)] max-[768px]:flex-col max-[768px]:items-start max-[768px]:gap-4">
         <div>
-          <h1 className="text-[#c53030] text-[28px] font-bold m-0 mb-2 flex items-center gap-3">
-            <AlertCircle className="h-7 w-7" /> GESTIÓN DE BAJAS
+          <h1 className="m-0 mb-2 flex items-center gap-3 text-[28px] font-bold text-primary">
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+              <AlertCircle className="h-5 w-5" />
+            </span>
+            GESTIÓN DE BAJAS
           </h1>
           <p className="text-[#50596D] text-[14px] m-0">Registra roturas, caducados, mermas y ajustes de inventario</p>
         </div>
@@ -560,50 +588,50 @@ export default function BajasPage() {
       {/* STATS */}
       <StaggerItem>
       <div className="grid [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] gap-5 mb-[30px] max-[768px]:grid-cols-1">
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#e53e3e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#e53e3e]">
             <Wrench className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Roturas del Mes</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statRoturas">
-              {stats.roturas}
+              <AnimatedMetric value={stats.roturas} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#dd6b20] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fffaf0] text-[#dd6b20]">
             <Clock3 className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Caducados Actuales</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statCaducados">
-              {stats.caducados}
+              <AnimatedMetric value={stats.caducados} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#d69e2e] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fefcbf] text-[#d69e2e]">
             <Scale className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Mermas Registradas</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statMermas">
-              {stats.mermas}
+              <AnimatedMetric value={stats.mermas} />
             </span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] shadow-[var(--shadow-sm)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-[var(--color-bg-surface)] p-5 rounded-xl flex items-center gap-[15px] border border-slate-200 shadow-[0_14px_34px_rgba(15,23,42,0.08)] border-l-4 border-l-[#c53030] transition-[transform,box-shadow] duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_26px_rgba(0,0,0,0.10)]">
           <div className="w-[50px] h-[50px] rounded-[10px] flex items-center justify-center text-[22px] bg-[#fff5f5] text-[#c53030]">
             <Wallet className="h-5 w-5" />
           </div>
           <div className="flex-1 flex flex-col">
             <span className="text-[13px] text-[#50596D] mb-1.5">Valor Perdido Total</span>
             <span className="text-[24px] font-bold text-[var(--color-text-strong)]" id="statValorPerdido">
-              {stats.valorPerdido.toFixed(2)} €
+              <AnimatedMetric value={stats.valorPerdido} decimals={2} suffix=" €" />
             </span>
           </div>
         </div>
@@ -612,13 +640,13 @@ export default function BajasPage() {
 
       {/* PANEL REGISTRO */}
       <StaggerItem>
-      <div className="mb-[25px] rounded-xl border border-gray-200 bg-white p-[25px] shadow-sm">
+      <div className="mb-[25px] rounded-xl border border-slate-300 bg-white p-[25px] shadow-[0_16px_36px_rgba(15,23,42,0.08)]">
         <h2 className="text-[18px] font-semibold text-[var(--color-text-strong)] m-0 mb-5 flex items-center gap-2.5">
           <ClipboardList className="h-5 w-5 text-[var(--color-brand-500)]" /> Registrar Nueva Baja
         </h2>
 
         <div className="flex flex-col gap-4">
-          <div className="flex gap-3 max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-3 min-[768px]:grid-cols-[1fr_auto] min-[768px]:items-center">
             <SearchInput
               value={q}
               onChange={(value) => {
@@ -628,10 +656,8 @@ export default function BajasPage() {
               }}
               placeholder="Buscar producto por nombre o código de barras..."
               ariaLabel="Buscar producto por nombre o código de barras"
-              className="flex-1"
+              className="w-full min-w-0"
             />
-
-
 
             <button
               id="btnEscanearBaja"
@@ -645,7 +671,7 @@ export default function BajasPage() {
             </button>
           </div>
 
-          <div className="flex gap-4 max-[768px]:flex-col">
+          <div className="grid grid-cols-1 gap-4 min-[768px]:grid-cols-[minmax(260px,1fr)_auto] min-[768px]:items-center">
             <UiSelect
               id="selectCategoriaBaja"
               value={catId}
@@ -655,13 +681,21 @@ export default function BajasPage() {
               }}
               disabled={loadingDatos}
               placeholder="Todas las categorías"
+              className="w-full min-w-0"
               options={[
                 { value: "", label: "Todas las categorías" },
                 ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
               ]}
             />
 
-            <Button id="btnProductosCaducados" type="button" onClick={mostrarProductosCaducados}>
+            <Button
+              id="btnProductosCaducados"
+              type="button"
+              variant="danger"
+              size="lg"
+              className="w-full min-[768px]:w-auto"
+              onClick={mostrarProductosCaducados}
+            >
               <Clock3 className="h-4 w-4" /> Ver Productos Próximos a Caducar
             </Button>
           </div>
@@ -710,7 +744,7 @@ export default function BajasPage() {
       </StaggerItem>
 
       {/* BAJA ACTIVA */}
-      <StaggerItem>
+      <StaggerItem className="mb-6">
       <BackofficeTablePanel
         header={
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -730,18 +764,91 @@ export default function BajasPage() {
           </div>
         }
       >
-        <div className="overflow-x-auto">
-          <Table id="tablaBajas" className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+        {/* Móvil/Tablet (incluye iPad): cards (evita cabeceras aplastadas) */}
+        <div className="hidden max-[1366px]:block">
+          {productosBaja.length === 0 ? (
+            <div className="py-10 text-center text-slate-400">
+              <div className="flex flex-col items-center gap-2">
+                <FileText className="h-8 w-8 opacity-50" />
+                <p className="m-0 text-[16px] font-semibold text-slate-500">No hay productos registrados en esta baja</p>
+                <small className="block text-[13px] text-slate-400">Busca y selecciona productos para comenzar</small>
+              </div>
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {productosBaja.map((p, index) => {
+                const stockFinal = Number(p.stock) - Number(p.cantidadBaja);
+                return (
+                  <div
+                    key={`baja-act-m-${String(p.id)}-${index}`}
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="truncate text-[14px] font-extrabold text-slate-900">{p.nombre}</div>
+                        <div className="mt-0.5 text-[12px] text-slate-500">{p.nombreCategoria}</div>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <Badge variant={variantTipoBaja(p.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                            {p.tipoBaja}
+                          </Badge>
+                          <span className="text-[12px] font-semibold text-slate-600">
+                            Stock {p.stock} → <span className="text-slate-900">{stockFinal}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="bo-table-action-btn text-slate-500"
+                        title="Eliminar producto"
+                        onClick={() => eliminarProductoBaja(index)}
+                        aria-label={`Eliminar ${p.nombre}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cant.</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{p.cantidadBaja}</div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Precio</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{Number(p.precio ?? 0).toFixed(2)} €</div>
+                      </div>
+                      <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+                        <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Pérdida</div>
+                        <div className="text-[13px] font-extrabold text-slate-900">{p.valorPerdido.toFixed(2)} €</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[12px] font-bold uppercase tracking-[0.12em] text-slate-400">Valor total</div>
+                  <div className="text-[16px] font-extrabold text-[#c53030]">{totalValorBajas.toFixed(2)} €</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop grande: tabla */}
+        <div className="overflow-x-auto max-[1366px]:hidden">
+          <Table id="tablaBajas" className="min-w-[1100px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
             <TableHeader>
               <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                <TableHead className="rounded-l-2xl">Producto</TableHead>
-                <TableHead>Tipo de Baja</TableHead>
-                <TableHead>Stock Actual</TableHead>
-                <TableHead>Cantidad Baja</TableHead>
-                <TableHead>Stock Final</TableHead>
-                <TableHead>Precio Unit.</TableHead>
-                <TableHead>Valor Perdido</TableHead>
-                <TableHead className="rounded-r-2xl">Acción</TableHead>
+                <TableHead className="rounded-l-2xl whitespace-nowrap min-w-[240px]">Producto</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Tipo de Baja</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Actual</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Cantidad Baja</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[120px]">Stock Final</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[130px]">Precio Unit.</TableHead>
+                <TableHead className="whitespace-nowrap min-w-[140px]">Valor Perdido</TableHead>
+                <TableHead className="rounded-r-2xl whitespace-nowrap w-[90px] text-center">Acción</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody id="tbodyBajas">
@@ -772,7 +879,7 @@ export default function BajasPage() {
                     <TableCell className="text-sm font-semibold text-primary">{Number(p.stock) - Number(p.cantidadBaja)}</TableCell>
                     <TableCell className="text-sm text-slate-600">{Number(p.precio ?? 0).toFixed(2)} €</TableCell>
                     <TableCell className="text-sm font-semibold text-primary">{p.valorPerdido.toFixed(2)} €</TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <button
                         className="bo-table-action-btn text-slate-500"
                         type="button"
@@ -917,50 +1024,107 @@ export default function BajasPage() {
               No hay bajas registradas este mes
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
-                <TableHeader>
-                  <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
-                    <TableHead className="rounded-l-2xl">Producto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Precio Ud.</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className="rounded-r-2xl">Motivo</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <>
+              {/* Móvil: lista/card (sin solapes) */}
+              <div className="hidden max-[640px]:block">
+                <div className="grid gap-3">
                   {historialFiltrado.map((baja, idx) => {
                     const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
                     const precio = Number(baja.producto_precio ?? 0) || 0;
                     const cant = Number(baja.cantidad ?? 0) || 0;
                     const total = precio * cant;
+                    const nombre = baja.producto_nombre || "Producto desconocido";
+                    const usuario = baja.usuario_nombre || "Desconocido";
+                    const motivo = baja.motivo || "Sin especificar";
 
                     return (
-                      <TableRow key={idx} className="bo-table-row">
-                        <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
-                        <TableCell>
-                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                      <div
+                        key={`hist-baja-m-${idx}`}
+                        className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_12px_32px_rgba(15,23,42,0.06)]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{nombre}</div>
+                            <div className="mt-1 text-[12px] text-slate-500">
+                              {fecha} · <span className="text-slate-400">{hora}</span>
+                            </div>
+                          </div>
+                          <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold shrink-0">
                             {baja.tipoBaja}
                           </Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-600">
-                          <div>{fecha}</div>
-                          <div className="text-xs text-slate-400">{hora}</div>
-                        </TableCell>
-                        <TableCell className="text-sm text-slate-700">{cant}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
-                        <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
-                        <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
-                        <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
-                      </TableRow>
+                        </div>
+
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Cant.</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{cant}</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Total</div>
+                            <div className="text-[13px] font-extrabold text-slate-900">{total.toFixed(2)} €</div>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-3 py-2">
+                            <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Usuario</div>
+                            <div className="text-[13px] font-extrabold text-slate-900 truncate">{usuario}</div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 text-[12px] text-slate-600">
+                          <span className="font-semibold text-slate-700">Motivo:</span>{" "}
+                          <span className="break-words">{motivo}</span>
+                        </div>
+                      </div>
                     );
                   })}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              </div>
+
+              {/* Desktop/Tablet: tabla */}
+              <div className="overflow-x-auto max-[640px]:hidden">
+                <Table className="min-w-[980px] overflow-hidden rounded-[24px] border border-slate-100 bg-white">
+                  <TableHeader>
+                    <TableRow className="border-b border-slate-100 bg-slate-50/80 hover:bg-slate-50/80">
+                      <TableHead className="rounded-l-2xl">Producto</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Precio Ud.</TableHead>
+                      <TableHead>Total</TableHead>
+                      <TableHead className="rounded-r-2xl">Motivo</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {historialFiltrado.map((baja, idx) => {
+                      const { fecha, hora } = formatFechaCortaES(baja.fechaBaja);
+                      const precio = Number.parseFloat(String(baja.producto_precio ?? 0)) || 0;
+                      const cant = Number.parseInt(String(baja.cantidad ?? 0), 10) || 0;
+                      const total = precio * cant;
+
+                      return (
+                        <TableRow key={idx} className="bo-table-row">
+                          <TableCell className="text-sm font-semibold text-slate-900">{baja.producto_nombre || "Producto desconocido"}</TableCell>
+                          <TableCell>
+                            <Badge variant={variantTipoBaja(baja.tipoBaja)} className="px-3 py-1 text-[11px] font-semibold">
+                              {baja.tipoBaja}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">
+                            <div>{fecha}</div>
+                            <div className="text-xs text-slate-400">{hora}</div>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-700">{cant}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{baja.usuario_nombre || "Desconocido"}</TableCell>
+                          <TableCell className="text-sm text-slate-700">{precio.toFixed(2)} €</TableCell>
+                          <TableCell className="text-sm font-semibold text-slate-900">{total.toFixed(2)} €</TableCell>
+                          <TableCell className="max-w-[280px] text-sm text-slate-600">{baja.motivo || "Sin especificar"}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </div>
       </BackofficeTablePanel>

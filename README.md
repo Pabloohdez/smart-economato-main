@@ -60,3 +60,18 @@ curl http://localhost:3000/api/health
 - `frontend/` — React + TypeScript (Vite). Se sirve con nginx en Docker.
 - `backend/` — NestJS. API REST, conexión a Supabase.
 - Base de datos solo en **Supabase** (PostgreSQL); no hay BD local, PHP ni XAMPP.
+
+---
+
+## Documentación (entrega / rúbrica)
+
+- `docs/ANALISIS_ARQUITECTURA.md` — análisis técnico y mejoras
+- `docs/API_DOCUMENTATION.md` — endpoints API
+- `docs/EMAIL_SETUP.md` — configuración de email / recuperación
+- `docs/TESTING_CI.md` — cómo ejecutar tests + qué valida CI
+- `docs/DEPLOYMENT_HTTPS.md` — guía de despliegue y HTTPS
+- `docs/MEMORIA_EVIDENCIAS.md` — memoria técnica (índice, evidencias, anexos)
+- `docs/PLAN_PROYECTO.md` — planificación/hitos/gestión
+- `docs/REFERENCIAS.md` — fuentes citadas
+- `docs/DIAGRAMAS.md` — diagramas (Mermaid)
+- `docs/adr/` — decisiones técnicas (ADRs)

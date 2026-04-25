@@ -23,8 +23,10 @@ export async function saveEscandallo(
   payload: SaveEscandalloPayload,
   id?: number | null,
 ): Promise<Escandallo> {
-  const safeCosteTotal =
-  payload.items.reduce((total, item) => total + Number(item.cantidad) * Number(item.precio), 0);
+  const safeCosteTotal = payload.items.reduce(
+    (total, item) => total + Number(item.cantidad) * Number(item.precio),
+    0,
+  );
 
   const response = await apiFetch<ApiDataResponse<Escandallo>>(
     id ? `/escandallos/${id}` : "/escandallos",
