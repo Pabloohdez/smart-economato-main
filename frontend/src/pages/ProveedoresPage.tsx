@@ -14,6 +14,7 @@ import { deleteProveedor, getProveedoresLista, saveProveedor } from "../services
 import { queryKeys } from "../lib/queryClient";
 import { broadcastQueryInvalidation } from "../lib/realtimeSync";
 import type { Proveedor } from "../types";
+import { useAuth } from "../contexts/AuthContext";
 import TablePagination from "../components/ui/TablePagination";
 import SearchInput from "../components/ui/SearchInput";
 import BackofficeTablePanel from "../components/ui/BackofficeTablePanel";
@@ -95,6 +96,9 @@ function hoyES() {
 
 export default function ProveedoresPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const currentRole = String(user?.role ?? user?.rol ?? "").trim().toLowerCase();
+  const isAlumno = currentRole === "alumno" || currentRole === "student";
 
   const [modalOpen, setModalOpen] = useState(false);
   const [q, setQ] = useState("");
@@ -310,7 +314,7 @@ export default function ProveedoresPage() {
       showNotification("Proveedor eliminado", "success");
     } catch (e) {
       console.error(e);
-      showNotification("Error eliminando proveedor", "error");
+      showNotification(e instanceof Error ? e.message : "Error eliminando proveedor", "error");
     }
   }
 
@@ -421,13 +425,15 @@ export default function ProveedoresPage() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <button
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] px-5 text-[13px] font-semibold text-white shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)]"
-              onClick={abrirModal}
-              type="button"
-            >
-              <Plus className="h-4 w-4" /> Nuevo Proveedor
-            </button>
+            {!isAlumno ? (
+              <button
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,var(--color-brand-500)_0%,var(--color-brand-600)_100%)] px-5 text-[13px] font-semibold text-white shadow-[0_4px_15px_rgba(179,49,49,0.3)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(179,49,49,0.4)]"
+                onClick={abrirModal}
+                type="button"
+              >
+                <Plus className="h-4 w-4" /> Nuevo Proveedor
+              </button>
+            ) : null}
           </div>
         </div>
       </StaggerItem>
@@ -484,27 +490,36 @@ export default function ProveedoresPage() {
                         <div className="inline-flex items-center gap-2">
                           <button
                             type="button"
-                            className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                            title="Editar"
-                            onClick={() => {
-                              setForm({
-                                id: String(p.id),
-                                nombre: p.nombre,
-                                contacto: p.contacto || "",
-                                telefono: p.telefono || "",
-                                email: p.email || "",
-                              });
-                              setModalOpen(true);
-                            }}
+                            className={`bo-table-action-btn text-blue-600 ${isAlumno ? "cursor-not-allowed opacity-45" : "hover:bg-blue-50 hover:text-blue-700"}`}
+                            title={isAlumno ? "Sin permisos para editar" : "Editar"}
+                            onClick={
+                              isAlumno
+                                ? undefined
+                                : () => {
+                                    setForm({
+                                      id: String(p.id),
+                                      nombre: p.nombre,
+                                      contacto: p.contacto || "",
+                                      telefono: p.telefono || "",
+                                      email: p.email || "",
+                                    });
+                                    setModalOpen(true);
+                                  }
+                            }
+                            disabled={isAlumno}
+                            aria-disabled={isAlumno}
                           >
                             <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                           </button>
 
                           <button
                             type="button"
-                            className="bo-table-action-btn text-slate-500 transition-colors hover:text-red-600"
+                            className={`bo-table-action-btn text-slate-500 ${isAlumno ? "cursor-not-allowed opacity-45" : "transition-colors hover:text-red-600"}`}
                             aria-label="Eliminar proveedor"
-                            onClick={() => eliminarProveedor(String(p.id))}
+                            title={isAlumno ? "Sin permisos para eliminar" : "Eliminar proveedor"}
+                            onClick={isAlumno ? undefined : () => eliminarProveedor(String(p.id))}
+                            disabled={isAlumno}
+                            aria-disabled={isAlumno}
                           >
                             <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
                           </button>
@@ -578,26 +593,35 @@ export default function ProveedoresPage() {
                           <div className="inline-flex items-center gap-2">
                             <button
                               type="button"
-                              className="bo-table-action-btn text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                              title="Editar"
-                              onClick={() => {
-                                setForm({
-                                  id: String(p.id),
-                                  nombre: p.nombre,
-                                  contacto: p.contacto || "",
-                                  telefono: p.telefono || "",
-                                  email: p.email || "",
-                                });
-                                setModalOpen(true);
-                              }}
+                              className={`bo-table-action-btn text-blue-600 ${isAlumno ? "cursor-not-allowed opacity-45" : "hover:bg-blue-50 hover:text-blue-700"}`}
+                              title={isAlumno ? "Sin permisos para editar" : "Editar"}
+                              onClick={
+                                isAlumno
+                                  ? undefined
+                                  : () => {
+                                      setForm({
+                                        id: String(p.id),
+                                        nombre: p.nombre,
+                                        contacto: p.contacto || "",
+                                        telefono: p.telefono || "",
+                                        email: p.email || "",
+                                      });
+                                      setModalOpen(true);
+                                    }
+                              }
+                              disabled={isAlumno}
+                              aria-disabled={isAlumno}
                             >
                               <Pencil className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
                             <button
                               type="button"
-                              className="bo-table-action-btn text-slate-500 transition-colors hover:text-red-600"
+                              className={`bo-table-action-btn text-slate-500 ${isAlumno ? "cursor-not-allowed opacity-45" : "transition-colors hover:text-red-600"}`}
                               aria-label="Eliminar proveedor"
-                              onClick={() => eliminarProveedor(String(p.id))}
+                              title={isAlumno ? "Sin permisos para eliminar" : "Eliminar proveedor"}
+                              onClick={isAlumno ? undefined : () => eliminarProveedor(String(p.id))}
+                              disabled={isAlumno}
+                              aria-disabled={isAlumno}
                             >
                               <Trash2 className="h-[18px] w-[18px]" strokeWidth={1.5} />
                             </button>
@@ -668,9 +692,14 @@ export default function ProveedoresPage() {
                 <label className="block mb-2 font-semibold text-[#50596D] text-[14px]">Teléfono</label>
                 <Input
                   className="h-12 rounded-xl"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]{9}"
+                  maxLength={9}
+                  placeholder="9 dígitos"
                   value={form.telefono}
                   onChange={(e) =>
-                    setForm({ ...form, telefono: e.target.value })
+                    setForm({ ...form, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })
                   }
                 />
               </div>

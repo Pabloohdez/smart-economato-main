@@ -171,7 +171,8 @@ export default function InventarioToolbar({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="origin-top-right rounded-xl border-slate-300 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+              style={{ width: "var(--radix-popper-anchor-width)" }}
+              className="min-w-0 origin-top-right rounded-xl border-slate-300 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
             >
               <DropdownMenuItem onClick={onExportCsv}>
                 <Download className="h-4 w-4" /> Exportar CSV

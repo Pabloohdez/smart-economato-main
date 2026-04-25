@@ -619,11 +619,11 @@ export default function PedidosPage() {
 
       <StaggerItem>
         <section className="grid grid-cols-3 gap-3 mb-4 max-[900px]:grid-cols-1" aria-label="Resumen de pedidos">
-          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[0_4px_20px_rgba(15,23,42,0.10)] flex flex-col gap-2 transition-shadow duration-200 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Pendientes</span>
             <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.pendientes}</strong>
           </article>
-          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[var(--shadow-sm)] flex flex-col gap-2">
+          <article className="border border-[var(--color-border-default)] rounded-[14px] bg-[linear-gradient(180deg,#fff_0%,#f9fbff_100%)] p-[14px_16px] shadow-[0_4px_20px_rgba(15,23,42,0.10)] flex flex-col gap-2 transition-shadow duration-200 hover:shadow-[0_8px_28px_rgba(15,23,42,0.14)]">
             <span className="text-[13px] font-semibold text-[var(--color-text-muted)]">Pedidos Incompletos</span>
             <strong className="text-[24px] leading-none text-[var(--color-text-strong)]">{pedidosResumen.incompletos}</strong>
           </article>

@@ -160,7 +160,7 @@ export class AccountSecurityService {
     const user = await this.findUserByEmail(normalizedEmail);
     if (!user) {
       return {
-        message: 'Si existe una cuenta asociada a ese correo, recibiras instrucciones para recuperar la contrasena.',
+        message: 'Si existe una cuenta asociada a ese correo, la solicitud de cambio de contraseña quedará pendiente de revisión.',
       };
     }
 
@@ -183,25 +183,8 @@ export class AccountSecurityService {
       );
     });
 
-    const resetUrl = `${this.getFrontendUrl()}/restablecer-password?token=${encodeURIComponent(token)}`;
-    const displayName = this.getDisplayName(user);
-
-    await this.mailService.sendMail({
-      to: user.email,
-      subject: 'Recupera tu contrasena de Smart Economato',
-      text:
-        `Hola ${displayName},\n\n` +
-        `Pulsa este enlace para restablecer tu contrasena:\n${resetUrl}\n\n` +
-        `El enlace caduca en ${this.getResetExpiryMinutes()} minutos.`,
-      html:
-        `<p>Hola <strong>${displayName}</strong>,</p>` +
-        `<p>Pulsa este enlace para restablecer tu contrasena:</p>` +
-        `<p><a href="${resetUrl}">${resetUrl}</a></p>` +
-        `<p>El enlace caduca en ${this.getResetExpiryMinutes()} minutos.</p>`,
-    });
-
     return {
-      message: 'Si existe una cuenta asociada a ese correo, recibiras instrucciones para recuperar la contrasena.',
+      message: 'Solicitud enviada. Un administrador o profesor revisará el cambio de contraseña.',
     };
   }
 

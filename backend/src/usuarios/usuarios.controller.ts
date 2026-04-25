@@ -21,7 +21,7 @@ export class UsuariosController {
     return this.usuariosService.findByIdOrUsername(id);
   }
 
-  @Roles('admin', 'administrador')
+  @Roles('admin', 'administrador', 'profesor')
   @Get('requests')
   async getPendingRequests() {
     return this.usuariosService.getPendingRequests();
@@ -42,16 +42,35 @@ export class UsuariosController {
     });
   }
 
-  @Roles('admin', 'administrador')
+  @Roles('admin', 'administrador', 'profesor')
   @Post(':id/approve')
-  async approveRequest(@Param('id') id: string) {
-    return this.usuariosService.approveRequest(id);
+  async approveRequest(
+    @Param('id') id: string,
+    @Body() body?: { rol?: string },
+  ) {
+    return this.usuariosService.approveRequest(id, body?.rol);
   }
 
-  @Roles('admin', 'administrador')
+  @Roles('admin', 'administrador', 'profesor')
   @Delete(':id/reject')
   async rejectRequest(@Param('id') id: string) {
     return this.usuariosService.rejectRequest(id);
+  }
+
+  @Roles('admin', 'administrador', 'profesor')
+  @Post('password-change/:tokenId/apply')
+  async applyPasswordChangeRequest(
+    @Param('tokenId') tokenId: string,
+    @Body() body: { password?: string },
+  ) {
+    const password = String(body?.password ?? '').trim();
+    return this.usuariosService.applyPasswordChangeRequest(tokenId, password);
+  }
+
+  @Roles('admin', 'administrador', 'profesor')
+  @Delete('password-change/:tokenId/reject')
+  async rejectPasswordChangeRequest(@Param('tokenId') tokenId: string) {
+    return this.usuariosService.rejectPasswordChangeRequest(tokenId);
   }
 
   @Public()

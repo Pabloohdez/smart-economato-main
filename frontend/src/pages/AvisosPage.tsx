@@ -436,7 +436,7 @@ export default function AvisosPage() {
   }, [lotesCaducados, stockBajo]);
 
   return (
-    <StaggerPage className="w-full p-[clamp(12px,2.4vw,24px)] max-[768px]:p-4">
+    <StaggerPage>
       <StaggerItem className="flex justify-between items-start mb-6 gap-4 flex-wrap">
         <div>
           <h1 className="m-0 mb-1 flex items-center gap-3 text-[28px] font-semibold text-primary">

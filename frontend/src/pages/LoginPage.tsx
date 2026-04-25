@@ -199,9 +199,6 @@ export default function LoginPage() {
               </form>
 
               <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-[13px] text-slate-500">
-                <Link className="inline-flex items-center gap-2 font-medium transition-colors hover:text-[#b33131]" to="/verificar-cuenta">
-                  Verificar cuenta o reenviar correo de activación
-                </Link>
                 <p className="m-0">
                   ¿Aún no tienes cuenta?{" "}
                   <Link className="font-semibold text-[#b33131] transition-colors hover:text-[#8e2626]" to="/registro">

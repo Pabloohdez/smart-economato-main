@@ -19,7 +19,7 @@ export class ProveedoresController {
     return this.proveedoresService.findAll();
   }
 
-  @Roles('admin')
+  @Roles('admin', 'administrador', 'profesor')
   @Post()
   async crear(@Body() body: CreateProveedorDto) {
     const result = await this.proveedoresService.crear(body as any);
@@ -27,7 +27,7 @@ export class ProveedoresController {
     return result;
   }
 
-  @Roles('admin')
+  @Roles('admin', 'administrador', 'profesor')
   @Put(':id')
   async actualizar(@Param('id') id: string, @Body() body: UpdateProveedorDto) {
     const numId = parseInt(id, 10);
@@ -37,7 +37,7 @@ export class ProveedoresController {
     return result;
   }
 
-  @Roles('admin')
+  @Roles('admin', 'administrador', 'profesor')
   @Delete(':id')
   async eliminar(@Param('id') id: string) {
     const numId = parseInt(id, 10);
