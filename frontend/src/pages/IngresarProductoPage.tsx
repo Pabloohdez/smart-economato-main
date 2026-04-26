@@ -53,6 +53,7 @@ export default function IngresarProductoPage() {
   const [loteCantidad, setLoteCantidad] = useState("");
   const [lotes, setLotes] = useState<LoteTemporal[]>([]);
   const [lotesModalOpen, setLotesModalOpen] = useState(false);
+  const [codigoBarras, setCodigoBarras] = useState("");
 
   const [listaTemporal, setListaTemporal] = useState<ProductoTemporal[]>([]);
   const [guardando, setGuardando] = useState(false);
@@ -318,6 +319,7 @@ export default function IngresarProductoPage() {
     setLoteFecha("");
     setLoteCantidad("");
     setLotes([]);
+    setCodigoBarras("");
   }
 
   function agregarLote() {
@@ -380,7 +382,7 @@ export default function IngresarProductoPage() {
       proveedorId,
       unidadMedida: unidadLabel,
       marca: "Sin marca",
-      codigoBarras: generarCodigoBarras(),
+      codigoBarras: codigoBarras.trim() || generarCodigoBarras(),
       lotes: lotesNormalizados,
       alergenos: [],
       descripcion: "",
@@ -536,150 +538,171 @@ export default function IngresarProductoPage() {
         </Button>
       </div>
 
-      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex flex-wrap gap-5 items-end border border-black/5">
-        <div className="flex flex-col gap-2 flex-grow min-w-[220px] flex-[2]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputNombre">
-            Nombre del Producto
-          </label>
-          <input
-            id="inputNombre"
-            type="text"
-            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-            placeholder="Ej: Leche Entera"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-        </div>
+      <div className="bg-[var(--color-bg-surface)] p-[25px] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-black/5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-6 items-end">
+          <div className="flex flex-col gap-2 xl:col-span-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputNombre">
+              Nombre del Producto
+            </label>
+            <input
+              id="inputNombre"
+              type="text"
+              className="h-11 w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+              placeholder="Ej: Leche Entera"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[160px] flex-[1.5]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectCategoria">
-            Categoría
-          </label>
-          <UiSelect
-            id="selectCategoria"
-            value={categoriaId}
-            onChange={setCategoriaId}
-            disabled={loadingSelects}
-            placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
-            options={[
-              { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
-              ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
-            ]}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputCodigoBarras">
+              Código de barras
+            </label>
+            <input
+              id="inputCodigoBarras"
+              type="text"
+              className="h-11 w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+              placeholder="Ej: 8410001000012"
+              value={codigoBarras}
+              onChange={(e) => setCodigoBarras(e.target.value)}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[120px] flex-[0.9]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectUnidadMedida">
-            Unidad
-          </label>
-          <UiSelect
-            id="selectUnidadMedida"
-            value={unidadMedida}
-            onChange={(v) => setUnidadMedida((v as any) || "ud")}
-            options={[
-              { value: "ud", label: "Unidades (ud)" },
-              { value: "kg", label: "Peso (kg)" },
-              { value: "l", label: "Volumen (l)" },
-            ]}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectCategoria">
+              Categoría
+            </label>
+            <UiSelect
+              id="selectCategoria"
+              value={categoriaId}
+              onChange={setCategoriaId}
+              disabled={loadingSelects}
+              placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
+              options={[
+                { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
+                ...categorias.map((c) => ({ value: String(c.id), label: c.nombre })),
+              ]}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[120px] flex-[0.9]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputPrecio">
-            Precio ({unidadMedida === "kg" ? "€/kg" : unidadMedida === "l" ? "€/l" : "€/ud"})
-          </label>
-          <input
-            id="inputPrecio"
-            type="number"
-            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-            placeholder="0.00"
-            step="0.01"
-            value={precio}
-            onChange={(e) => setPrecio(e.target.value)}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectUnidadMedida">
+              Unidad
+            </label>
+            <UiSelect
+              id="selectUnidadMedida"
+              value={unidadMedida}
+              onChange={(v) => setUnidadMedida((v as any) || "ud")}
+              options={[
+                { value: "ud", label: "Unidades (ud)" },
+                { value: "kg", label: "Peso (kg)" },
+                { value: "l", label: "Volumen (l)" },
+              ]}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[90px] flex-[0.8]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStock">
-            Stock
-          </label>
-          <input
-            id="inputStock"
-            type="number"
-            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-            placeholder="0"
-            step={unidadMedida === "ud" ? "1" : "0.001"}
-            value={stock}
-            onChange={(e) => setStock(e.target.value)}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputPrecio">
+              Precio ({unidadMedida === "kg" ? "€/kg" : unidadMedida === "l" ? "€/l" : "€/ud"})
+            </label>
+            <input
+              id="inputPrecio"
+              type="number"
+              className="h-11 w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+              placeholder="0.00"
+              step="0.01"
+              value={precio}
+              onChange={(e) => setPrecio(e.target.value)}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[90px] flex-[0.8]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStockMin">
-            Mínimo
-          </label>
-          <input
-            id="inputStockMin"
-            type="number"
-            className="w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
-            placeholder="5"
-            step={unidadMedida === "ud" ? "1" : "0.001"}
-            value={stockMin}
-            onChange={(e) => setStockMin(e.target.value)}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStock">
+              Stock
+            </label>
+            <input
+              id="inputStock"
+              type="number"
+              className="h-11 w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+              placeholder="0"
+              step={unidadMedida === "ud" ? "1" : "0.001"}
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[160px] flex-[1.5]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectProveedor">
-            Proveedor
-          </label>
-          <UiSelect
-            id="selectProveedor"
-            value={proveedorId}
-            onChange={setProveedorId}
-            disabled={loadingSelects}
-            placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
-            options={[
-              { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
-              ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
-            ]}
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="inputStockMin">
+              Mínimo
+            </label>
+            <input
+              id="inputStockMin"
+              type="number"
+              className="h-11 w-full px-3.5 py-2.5 border border-[var(--color-border-default)] rounded-lg text-[14px] bg-[var(--color-bg-soft)] box-border transition-[border-color,box-shadow,background] duration-150 focus:bg-white focus:border-[#3182ce] focus:shadow-[0_0_0_3px_rgba(49,130,206,0.1)] focus:outline-none"
+              placeholder="5"
+              step={unidadMedida === "ud" ? "1" : "0.001"}
+              value={stockMin}
+              onChange={(e) => setStockMin(e.target.value)}
+            />
+          </div>
 
-        <div className="flex flex-col gap-2 flex-grow min-w-[240px] flex-[1.2]">
-          <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide">
-            Caducidad por lotes
-          </label>
-          <button
-            type="button"
-            className="no-global-button h-11 w-full rounded-lg border border-[var(--color-control-border)] bg-white px-4 text-left text-[14px] font-semibold text-slate-800 shadow-[0_2px_10px_rgba(15,23,42,0.06)] transition hover:-translate-y-px hover:bg-slate-50 active:translate-y-0"
-            onClick={() => setLotesModalOpen(true)}
-            title="Gestionar lotes"
-          >
-            <span className="block">
-              <span className="block text-[14px] font-extrabold text-slate-900">Gestionar lotes</span>
-              <span className="block text-[12px] text-slate-600 mt-0.5">
-                {lotes.length === 0
-                  ? "Opcional · 0 lotes"
-                  : `${lotes.length} lote${lotes.length !== 1 ? "s" : ""} · Total: ${totalLotesCantidad}`}
-              </span>
-            </span>
-          </button>
-          <div className="text-[12px] text-slate-500">
-            Si añades lotes, el stock se calculará como la suma de cantidades.
+          <div className="flex flex-col gap-2 xl:col-span-2">
+            <label className="text-[12px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wide" htmlFor="selectProveedor">
+              Proveedor
+            </label>
+            <UiSelect
+              id="selectProveedor"
+              value={proveedorId}
+              onChange={setProveedorId}
+              disabled={loadingSelects}
+              placeholder={loadingSelects ? "Cargando..." : "Seleccionar..."}
+              options={[
+                { value: "", label: loadingSelects ? "Cargando..." : "Seleccionar..." },
+                ...proveedores.map((p) => ({ value: String(p.id), label: p.nombre })),
+              ]}
+            />
+          </div>
+
+          <div className="rounded-xl border border-[var(--color-border-default)] bg-white p-4 shadow-sm xl:col-span-2">
+            <div className="flex items-center justify-between gap-4">
+              <div className="min-w-0">
+                <p className="m-0 text-[12px] font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+                  Caducidad por lotes
+                </p>
+                <p className="m-0 mt-1 text-[14px] font-extrabold text-slate-900">
+                  {lotes.length === 0
+                    ? "Gestionar lotes"
+                    : `${lotes.length} lote${lotes.length !== 1 ? "s" : ""} · Total: ${totalLotesCantidad}`}
+                </p>
+                <p className="m-0 mt-1 text-[12px] leading-snug text-slate-500">
+                  Si añades lotes, el stock se calculará como la suma.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className="no-global-button h-11 min-w-[130px] rounded-lg border border-[var(--color-control-border)] bg-white px-4 text-[13px] font-semibold text-slate-800 shadow-[0_2px_10px_rgba(15,23,42,0.06)] transition hover:-translate-y-px hover:bg-slate-50 active:translate-y-0"
+                onClick={() => setLotesModalOpen(true)}
+                title="Gestionar lotes"
+              >
+                Gestionar
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center xl:col-span-6">
+            <Button
+              type="button"
+              variant="danger"
+              size="lg"
+              className="h-12 w-full max-w-[260px]"
+              icon="fa-solid fa-plus"
+              onClick={agregarALista}
+            >
+              Agregar
+            </Button>
           </div>
         </div>
-
-        <Button
-          type="button"
-          variant="danger"
-          size="lg"
-          className="min-w-[140px] px-7"
-          icon="fa-solid fa-plus"
-          onClick={agregarALista}
-        >
-          Agregar
-        </Button>
       </div>
 
       {lotesModalOpen ? (
@@ -832,13 +855,14 @@ export default function IngresarProductoPage() {
               <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Precio</TableHead>
               <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Stock</TableHead>
               <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Proveedor</TableHead>
+              <TableHead className="text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Código barras</TableHead>
               <TableHead className="text-center text-[13px] font-semibold normal-case tracking-normal text-[var(--color-text-muted)]">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {listaTemporal.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="p-5">
+                <TableCell colSpan={7} className="p-5">
                   <EmptyState
                     icon="fa-solid fa-box-open"
                     title="Lista vacía"
@@ -856,6 +880,9 @@ export default function IngresarProductoPage() {
                   </TableCell>
                   <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod.stock}</TableCell>
                   <TableCell className="text-[14px] text-[var(--color-text-strong)]">{prod._tempProveedorNombre}</TableCell>
+                  <TableCell className="text-[14px] text-[var(--color-text-strong)]">
+                    {prod.codigoBarras || "—"}
+                  </TableCell>
                   <TableCell className="text-center">
                     <button
                       type="button"
