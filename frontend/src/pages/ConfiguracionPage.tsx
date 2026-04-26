@@ -176,7 +176,9 @@ export default function ConfiguracionPage() {
   const [nuevosProductos, setNuevosProductos] = useState(false);
   const [filtradoBusqueda, setFiltradoBusqueda] = useState(false);
 
-  const [showPerfilGuardadoModal, setShowPerfilGuardadoModal] = useState(false);
+  const [modalGuardadoSeccion, setModalGuardadoSeccion] = useState<
+    "perfil" | "notificaciones" | null
+  >(null);
   const [mensajeEstado, setMensajeEstado] = useState("");
   const [mensajeTipo, setMensajeTipo] = useState<
 // placeholder break
@@ -289,7 +291,7 @@ export default function ConfiguracionPage() {
     updateUser(actualizado);
     setUsuarioActual(actualizado);
     setEmail(normalizedEmail || "");
-    setShowPerfilGuardadoModal(true);
+    setModalGuardadoSeccion("perfil");
   }
 
   function toggleAlergia(alergeno: string) {
@@ -359,6 +361,7 @@ export default function ConfiguracionPage() {
     );
 
     mostrarMensaje("✅ Preferencias de notificaciones guardadas", "green");
+    setModalGuardadoSeccion("notificaciones");
   }
 
   const resumenAlergias = useMemo(
@@ -801,14 +804,14 @@ export default function ConfiguracionPage() {
       </StaggerItem>
 
       <AnimatePresence>
-        {showPerfilGuardadoModal && (
+        {modalGuardadoSeccion && (
           <motion.div
             className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setShowPerfilGuardadoModal(false)}
+            onClick={() => setModalGuardadoSeccion(null)}
           >
             <motion.div
               className="w-full max-w-[400px] rounded-2xl bg-white shadow-[0_25px_60px_rgba(0,0,0,0.22)] border border-slate-100 overflow-hidden"
@@ -820,19 +823,23 @@ export default function ConfiguracionPage() {
             >
               <div className="bg-[linear-gradient(135deg,#276749,#38a169)] px-6 py-5 flex items-center gap-3">
                 <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20">
-                  <i className="fa-solid fa-circle-check text-white text-[20px]" />
+                  <i className={`text-white text-[20px] ${modalGuardadoSeccion === "perfil" ? "fa-solid fa-circle-check" : "fa-solid fa-bell"}`} />
                 </span>
-                <h3 className="m-0 text-white font-bold text-[18px]">Cambios guardados</h3>
+                <h3 className="m-0 text-white font-bold text-[18px]">
+                  {modalGuardadoSeccion === "perfil" ? "Cambios guardados" : "Preferencias guardadas"}
+                </h3>
               </div>
               <div className="p-6">
                 <p className="m-0 text-slate-600 text-[14px] leading-relaxed">
-                  Tu perfil ha sido actualizado correctamente.
+                  {modalGuardadoSeccion === "perfil"
+                    ? "Tu perfil ha sido actualizado correctamente."
+                    : "Tus preferencias de notificaciones han sido actualizadas correctamente."}
                 </p>
                 <div className="mt-5 flex justify-end">
                   <button
                     type="button"
                     className="px-5 py-2.5 rounded-[10px] bg-[#276749] text-white font-semibold text-sm cursor-pointer hover:bg-[#1f5238] transition-colors"
-                    onClick={() => setShowPerfilGuardadoModal(false)}
+                    onClick={() => setModalGuardadoSeccion(null)}
                   >
                     Aceptar
                   </button>
