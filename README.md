@@ -55,11 +55,40 @@ curl http://localhost:3000/api/health
 
 ---
 
+## Base de datos
+
+La base de datos está alojada en **Supabase** (PostgreSQL remoto). No es necesario instalar nada localmente.
+
+La conexión se configura en `backend/.env` con las variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` y `DB_PASS`.
+
+Para revisión/entrega, se adjunta el export completo de la base de datos en `proyecto_completo.sql` (raíz del proyecto). Incluye esquema, tablas, relaciones, índices y políticas RLS de Supabase.
+
+Para restaurar en una instancia PostgreSQL propia:
+
+```bash
+psql -h localhost -U postgres -d nombre_bd -f proyecto_completo.sql
+```
+
+---
+
+## Credenciales de demo
+
+| Rol           | Email                          | Contraseña   |
+|---------------|--------------------------------|--------------|
+| Administrador | admin@smarteconomato.local     | Admin1234!   |
+| Profesor      | profesor@smarteconomato.local  | Profesor1!   |
+| Alumno        | alumno@smarteconomato.local    | Alumno1234!  |
+
+> Estas credenciales solo son válidas en el entorno de demo. No usar en producción.
+
+---
+
 ## Estructura
 
 - `frontend/` — React + TypeScript (Vite). Se sirve con nginx en Docker.
 - `backend/` — NestJS. API REST, conexión a Supabase.
-- Base de datos solo en **Supabase** (PostgreSQL); no hay BD local, PHP ni XAMPP.
+- `database/` — Esquema SQL y datos de ejemplo para restauración.
+- Base de datos en **Supabase** (PostgreSQL remoto); no hay BD local, PHP ni XAMPP.
 
 ---
 
