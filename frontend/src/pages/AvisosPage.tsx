@@ -57,6 +57,31 @@ function hoyES() {
   });
 }
 
+function AnimatedMetric({ value, decimals = 0, suffix = "" }: { value: number; decimals?: number; suffix?: string }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const target = Number.isFinite(value) ? value : 0;
+    const duration = 1200;
+    const start = performance.now();
+
+    let raf = 0;
+    const tick = (now: number) => {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(target * eased);
+      if (progress < 1) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <>{display.toFixed(decimals)}{suffix}</>;
+}
+
 export default function AvisosPage() {
   const queryClient = useQueryClient();
 
@@ -276,7 +301,12 @@ export default function AvisosPage() {
     return total;
   }, [lotesCaducados, stockBajo]);
 
-  const totalAlertas = lotesCaducados.length + stockBajo.length;
+  const totalAlertas = useMemo(() => {
+    const productosEnAlerta = new Set<string>();
+    for (const l of lotesCaducados) productosEnAlerta.add(String(l.productoId));
+    for (const p of stockBajo) productosEnAlerta.add(String(p.id));
+    return productosEnAlerta.size;
+  }, [lotesCaducados, stockBajo]);
 
   function tiempoRelativo(dias: number) {
     if (dias === 0) return "Hoy";
@@ -458,32 +488,32 @@ export default function AvisosPage() {
       </StaggerItem>
 
       <StaggerItem className="grid [grid-template-columns:repeat(auto-fit,minmax(250px,1fr))] gap-4 mb-8">
-        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+        <div className="bg-[var(--color-bg-surface)] border border-[#d1d5db] rounded-[10px] p-5 flex items-center gap-4 shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition-[transform,box-shadow] duration-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.2)] hover:-translate-y-0.5">
           <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fef3c7] text-[#d97706]">
             <i className="fa-solid fa-triangle-exclamation"></i>
           </div>
           <div className="flex-1">
-            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : totalAlertas}</span>
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : <AnimatedMetric value={totalAlertas} />}</span>
             <span className="block text-[13px] text-[#6b7280] mt-0.5">Alertas Activas</span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+        <div className="bg-[var(--color-bg-surface)] border border-[#d1d5db] rounded-[10px] p-5 flex items-center gap-4 shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition-[transform,box-shadow] duration-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.2)] hover:-translate-y-0.5">
           <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#fee2e2] text-[#dc2626]">
             <i className="fa-solid fa-skull-crossbones"></i>
           </div>
           <div className="flex-1">
-            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : lotesCaducados.length}</span>
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : <AnimatedMetric value={lotesCaducados.length} />}</span>
             <span className="block text-[13px] text-[#6b7280] mt-0.5">Lotes Caducados</span>
           </div>
         </div>
 
-        <div className="bg-[var(--color-bg-surface)] border border-[#e5e7eb] rounded-[10px] p-5 flex items-center gap-4 transition-[transform,box-shadow] duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] hover:-translate-y-0.5">
+        <div className="bg-[var(--color-bg-surface)] border border-[#d1d5db] rounded-[10px] p-5 flex items-center gap-4 shadow-[0_14px_28px_rgba(15,23,42,0.14)] transition-[transform,box-shadow] duration-200 hover:shadow-[0_18px_34px_rgba(15,23,42,0.2)] hover:-translate-y-0.5">
           <div className="w-12 h-12 rounded-[10px] flex items-center justify-center text-[20px] bg-[#dbeafe] text-[#2563eb]">
             <i className="fa-solid fa-coins"></i>
           </div>
           <div className="flex-1">
-            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : `${valorRiesgo.toFixed(2)} €`}</span>
+            <span className="block text-[24px] font-bold text-[#111827] leading-tight">{loading ? "-" : <AnimatedMetric value={valorRiesgo} decimals={2} suffix=" €" />}</span>
             <span className="block text-[13px] text-[#6b7280] mt-0.5">Valor en Riesgo</span>
           </div>
         </div>

@@ -284,29 +284,43 @@ export class ProductosService {
   }
 
   async getAvisosAlertsCount(): Promise<{ count: number }> {
-    // Count different types of alerts
-    const stockBajoRes = await this.db.query(
-      `SELECT COUNT(*) as count FROM productos WHERE stock <= stockminimo AND activo = true`,
+    // Keep Inicio and Avisos aligned: one active alert per affected product.
+    const { rows } = await this.db.query(
+      `SELECT COUNT(DISTINCT producto_id) AS count
+       FROM (
+         SELECT p.id AS producto_id
+         FROM productos p
+         WHERE p.activo = true
+           AND p.stockminimo > 0
+           AND p.stock <= p.stockminimo
+
+         UNION
+
+         SELECT lp.producto_id AS producto_id
+         FROM lotes_producto lp
+         INNER JOIN productos p ON p.id = lp.producto_id
+         WHERE p.activo = true
+           AND lp.cantidad > 0
+           AND lp.fecha_caducidad IS NOT NULL
+           AND lp.fecha_caducidad < CURRENT_DATE
+
+         UNION
+
+         SELECT p.id AS producto_id
+         FROM productos p
+         WHERE p.activo = true
+           AND p.stock > 0
+           AND p.fechacaducidad IS NOT NULL
+           AND p.fechacaducidad < CURRENT_DATE
+           AND NOT EXISTS (
+             SELECT 1
+             FROM lotes_producto lp
+             WHERE lp.producto_id = p.id
+           )
+       ) AS alerts`,
     );
-    
-    const proximoCaducarRes = await this.db.query(
-      `SELECT COUNT(*) as count FROM productos 
-       WHERE fechacaducidad IS NOT NULL 
-       AND fechacaducidad <= CURRENT_DATE + INTERVAL '30 days'
-       AND fechacaducidad > CURRENT_DATE
-       AND activo = true`,
-    );
-    
-    const caducadosRes = await this.db.query(
-      `SELECT COUNT(*) as count FROM productos 
-       WHERE fechacaducidad < CURRENT_DATE AND activo = true`,
-    );
-    
-    const total = 
-      parseInt(String((stockBajoRes.rows[0] as any)?.count ?? 0), 10) +
-      parseInt(String((proximoCaducarRes.rows[0] as any)?.count ?? 0), 10) +
-      parseInt(String((caducadosRes.rows[0] as any)?.count ?? 0), 10);
-    
-    return { count: total };
+
+    const row = rows[0] as Record<string, unknown> | undefined;
+    return { count: parseInt(String(row?.count ?? 0), 10) };
   }
 }

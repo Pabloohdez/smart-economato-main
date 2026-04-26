@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { showConfirm, showNotification } from "../utils/notifications";
-import { scanBarcodeFromCamera } from "../utils/barcodeScanner";
 import { apiFetch } from "../services/apiClient";
 import Spinner from "../components/ui/Spinner";
 import Alert from "../components/ui/Alert";
@@ -11,7 +10,7 @@ import TablePagination from "../components/ui/TablePagination";
 import { Badge } from "../components/ui/badge";
 import SearchInput from "../components/ui/SearchInput";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "../components/ui/table";
-import { AlertCircle, CalendarDays, Camera, ClipboardList, Clock3, FileText, History, Mail, Scale, Search, Trash2, Wallet, Wrench } from "lucide-react";
+import { AlertCircle, CalendarDays, ClipboardList, Clock3, FileText, History, Mail, Scale, Search, Trash2, Wallet, Wrench } from "lucide-react";
 import type { Producto, Categoria, BajaHistorialItem } from "../types";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import UiSelect from "../components/ui/UiSelect";
@@ -374,18 +373,6 @@ export default function BajasPage() {
   }, [productos, debouncedQ, catId, modoCaducados, lotes]);
 
 
-  async function escanearCodigoBarras() {
-    const code = await scanBarcodeFromCamera();
-    if (!code) {
-      showNotification("No se pudo leer un codigo de barras. Intenta de nuevo.", "warning");
-      return;
-    }
-    setQ(code);
-    setModoCaducados(false);
-    setResultadosOpen(true);
-    showNotification(`Codigo leido: ${code}`, "success");
-  }
-
   function mostrarProductosCaducados() {
     setModoCaducados(true);
     setResultadosOpen(true);
@@ -703,7 +690,7 @@ export default function BajasPage() {
         </h2>
 
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-3 min-[768px]:grid-cols-[1fr_auto] min-[768px]:items-center">
+          <div className="grid grid-cols-1 gap-3">
             <SearchInput
               value={q}
               onChange={(value) => {
@@ -715,17 +702,6 @@ export default function BajasPage() {
               ariaLabel="Buscar producto por nombre o código de barras"
               className="w-full min-w-0"
             />
-
-            <button
-              id="btnEscanearBaja"
-              className="inline-flex h-12 w-12 min-w-12 items-center justify-center rounded-[18px] border border-gray-300 bg-white text-gray-400 shadow-sm cursor-pointer transition-colors duration-150 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-              type="button"
-              onClick={escanearCodigoBarras}
-              aria-label="Escanear codigo de barras"
-              title="Escanear codigo"
-            >
-              <Camera className="h-4 w-4" />
-            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-4 min-[768px]:grid-cols-[minmax(260px,1fr)_auto] min-[768px]:items-center">
