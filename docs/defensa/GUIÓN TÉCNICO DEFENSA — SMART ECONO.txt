@@ -1,0 +1,300 @@
+GUIÓN TÉCNICO DEFENSA — SMART ECONOMATO
+DIAPOSITIVA 1 — Portada
+
+Buenos días.
+
+Les presento mi versión de Smart Economato, una aplicación web full-stack orientada a mejorar la gestión interna de un economato escolar.
+
+Cuando hablamos de full-stack, significa que el proyecto incluye la parte visual que usa el usuario, la lógica interna del sistema y la base de datos.
+
+El objetivo principal ha sido centralizar en una sola herramienta procesos como inventario, pedidos, recepción de mercancía, control de stock, usuarios y trazabilidad.
+
+A nivel técnico, se ha desarrollado con React y TypeScript en frontend, NestJS en backend y PostgreSQL en Supabase como base de datos.
+
+DIAPOSITIVA 2 — De gestión manual a ecosistema digital
+
+El problema que hemos intentado solucionar es que, si las compras, recepciones, salidas y stock se llevan en sitios distintos, al final aparecen errores: datos duplicados, cantidades mal actualizadas o falta de control. Smart Economato busca unificar todo eso en una sola plataforma conectada a una base de datos común, no solo saber cuánto hay, sino saber quién lo cambió, cuándo y por qué.
+
+DIAPOSITIVA 3 — Arquitectura en tres capas
+
+La aplicación está estructurada en tres capas principales, que son la interfaz, la lógica y el almacenamiento de datos.
+
+La primera capa es el frontend, que es la parte visual que utiliza el usuario.
+
+Está desarrollado con React, TypeScript y Vite.
+
+React se utiliza porque permite construir la interfaz mediante componentes reutilizables, como tablas, formularios, buscadores o menús, lo que ayuda a organizar mejor la aplicación.
+
+TypeScript añade tipado al código JavaScript, lo que ayuda a prevenir errores y trabajar con estructuras de datos más controladas
+
+Vite se usa como entorno de desarrollo y compilación del frontend, permitiendo cargar la aplicación rápidamente durante el desarrollo y generar una versión final optimizada.
+
+La segunda capa es el backend, desarrollado con NestJS.
+
+Es la parte que recibe peticiones desde el frontend, valida los datos, aplica reglas de negocio y se comunica con la base de datos.
+
+NestJS se eligió porque permite organizar el backend de forma modular, separando controllers, services y DTOs, que explicaré brevemente más adelante.
+
+Esto hace que el proyecto sea más limpio, escalable y mantenible.
+
+La tercera capa es la base de datos, donde se guarda la información real del sistema.
+
+En este caso se utiliza PostgreSQL, una base de datos relacional muy adecuada para proyectos donde los datos están conectados entre sí, como productos, pedidos, usuarios o movimientos.
+
+Esta base de datos está alojada en Supabase, que permite disponer de PostgreSQL en la nube.
+
+
+DIAPOSITIVA 4 — Modelo relacional
+
+Antes de diseñar pantallas o formularios, primero hay que definir qué información necesita la aplicación y cómo se relaciona entre sí.
+
+En este proyecto aparecen entidades bastante claras: productos, categorías, proveedores...
+
+Cada una de esas entidades se representa en la base de datos como una tabla.
+
+Después se crean relaciones entre ellas para que la información esté conectada de forma coherente.
+
+Por ejemplo, un producto pertenece a una categoría, puede tener un proveedor asociado,...
+
+Este modelo evita duplicar datos innecesariamente.
+
+Por ejemplo, en vez de guardar el nombre completo del proveedor dentro de cada producto, se guarda un identificador, que referencia a la tabla de proveedores.
+
+Eso permite mantener la información más ordenada, consistente y fácil de actualizar.
+
+Además, al ser una base de datos relacional, luego es posible hacer consultas más potentes, como ver qué productos tiene cada proveedor,..
+
+
+DIAPOSITIVA 5 — Frontend inteligente y reactivo
+
+En esta parte explico cómo funciona la capa frontend, que es la interfaz que utiliza el usuario.
+
+Con React, la aplicación no se construye como una página única y enorme, sino como un conjunto de componentes reutilizables.
+
+Por ejemplo, una tabla, un formulario, un buscador o el menú lateral pueden desarrollarse como piezas independientes.
+
+Esto permite tener el código más ordenado, reutilizar elementos en varias pantallas y facilitar el mantenimiento.
+
+Además, React trabaja con estado.
+
+El estado es una memoria temporal donde se guardan datos que cambian mientras el usuario interactúa con la pantalla, como el texto de un buscador, filtros activos o un formulario abierto.
+
+Cuando ese estado cambia, React actualiza automáticamente solo la parte necesaria de la interfaz, sin recargar la página completa.
+
+Para gestionar este comportamiento se utilizan hooks.
+
+Por ejemplo:
+
+useState permite guardar valores dinámicos, como el texto escrito en un buscador.
+useEffect permite ejecutar acciones automáticas, como cargar productos al entrar en una página.
+useMemo ayuda a optimizar cálculos, por ejemplo reutilizando listas filtradas para no recalcularlas constantemente.
+
+También se utiliza React Query, que se encarga de gestionar los datos que vienen del backend.
+
+Controla estados de carga, errores, caché y refresco automático cuando se crea, edita o elimina información.
+
+Además, el frontend se comunica con el backend mediante peticiones HTTP, que básicamente son mensajes que se envían desde el navegador al servidor para pedir o modificar información.
+
+Por eso el frontend no guarda los datos definitivos: los solicita al backend, los muestra en pantalla y los actualiza cuando hay cambios.
+
+
+
+DIAPOSITIVA 6 — Ciclo de procesamiento en NestJS
+
+En backend se utiliza NestJS, que es un framework basado en Node.js y TypeScript.
+
+Node.js permite ejecutar JavaScript en el servidor, mientras que NestJS añade una estructura más organizada para desarrollar APIs.
+
+NestJS permite dividir el código en módulos independientes según la funcionalidad, por ejemplo productos, pedidos o usuarios.
+
+Cada módulo suele tener tres partes principales: controller, DTO y service.
+
+El controller recibe la petición HTTP. Por ejemplo, una solicitud para crear un producto, editarlo o listar productos.
+
+El DTO define la estructura que deben tener los datos que entran al sistema. Sirve para validar campos y evitar que llegue información incorrecta o incompleta.
+
+El service contiene la lógica real del negocio. Es donde se consulta la base de datos, se calcula stock, se registran movimientos o se crean pedidos.
+
+DIAPOSITIVA 7 — Ciclo de vida completo de un dato
+
+Después de explicar frontend y backend por separado, aquí se ve cómo trabajan juntos en una acción real, por ejemplo al crear un producto nuevo.
+
+El usuario rellena el formulario en la pantalla de inventario con datos como nombre, precio, stock, proveedor o categoría.
+
+Mientras escribe, React va guardando esos valores temporalmente en el estado de la pantalla.
+
+Cuando pulsa guardar, el frontend recoge toda esa información y construye un objeto con los datos del producto. Ese objeto suele llamarse payload, que es el cuerpo de información que se quiere enviar al servidor.
+
+Normalmente la pantalla no hace la petición directamente, sino que llama a un service del frontend, que es una función encargada de centralizar la comunicación con la API.
+
+Antes de enviarlo, ese payload se convierte a JSON, que es el formato estándar con el que frontend y backend intercambian información.
+
+Después se lanza una petición HTTP POST, porque se está creando un nuevo registro.
+
+En el backend, la petición entra primero por el controller correspondiente.
+
+Después, el DTO comprueba que los datos tengan el formato correcto. Por ejemplo, que el nombre exista o que el precio sea numérico.
+
+Si todo es válido, el service ejecuta la lógica de negocio y guarda el nuevo producto en PostgreSQL.
+
+Cuando termina, el backend responde al frontend en JSON indicando si hubo éxito y devolviendo la información necesaria.
+
+Por último, React Query refresca automáticamente la lista de productos y el nuevo registro aparece en pantalla sin necesidad de recargar la página.
+
+DIAPOSITIVA 8 — Inventario y búsqueda
+
+Ahora voy a explicar algunos módulos principales de la aplicación.
+
+Uno de los más importantes es Inventario, porque representa el estado actual del economato.
+
+Desde esta pantalla podemos consultar todos los productos registrados y ver información como nombre, precio, stock disponible, stock mínimo, proveedor, categoría o caducidad.
+
+También incorpora búsqueda y filtros para trabajar más rápido. Por ejemplo, se puede localizar un producto por nombre, proveedor, categoría o código de barras.
+
+A nivel técnico, esa información no está escrita en la pantalla, sino que el frontend la solicita al backend mediante la API.
+
+El backend consulta la base de datos PostgreSQL, devuelve los datos en formato JSON y React los muestra en una tabla dinámica.
+
+Esto permite tener siempre información actualizada y centralizada.
+
+DIAPOSITIVA 9 — Complejidad en recepciones
+
+Otro módulo importante es Recepción, y probablemente uno de los más complejos de la aplicación.
+
+Esto es así porque en una sola operación conecta varias partes del sistema: stock, pedidos, lotes y trazabilidad.
+
+Lo habitual sería recepcionar un pedido que ya fue creado previamente.
+
+El usuario entra en la pantalla de recepción, abre el pedido pendiente y va comprobando qué productos han llegado realmente.
+
+Puede marcar cantidades recibidas, indicar si falta mercancía o si llegó parcialmente, y también separar productos en distintos lotes si tienen fechas de caducidad diferentes.
+
+Por ejemplo, si llegan 10 yogures, podrían venir 6 con una fecha y 4 con otra distinta.
+
+A nivel técnico, cuando se confirma la recepción, el frontend envía toda esa información al backend mediante un payload.
+
+Entonces el backend procesa la operación:
+
+actualiza el stock
+registra movimientos históricos
+actualiza el estado del pedido
+guarda los lotes y sus caducidades
+
+Además, valida que las cantidades coincidan correctamente.
+
+Si algo no cuadra, no permite guardar.
+
+Esto evita errores entre lo que llegó físicamente y lo que queda registrado en el sistema.
+
+DIAPOSITIVA 10 — Escandallos
+
+Otro módulo importante de la aplicación es Escandallos, orientado al cálculo de costes y a la gestión de productos compuestos.
+
+Un escandallo permite definir un producto elaborado a partir de varios ingredientes.
+
+Por ejemplo, un bocadillo puede estar formado por pan, queso y jamón.
+
+En lugar de guardar eso como un simple texto, la aplicación lo estructura en base de datos de forma relacional.
+
+Se utiliza una tabla principal donde se guarda el producto elaborado y una tabla de detalle donde se registran sus ingredientes y cantidades.
+
+Esto representa una relación uno a muchos, ya que un escandallo puede tener varios ingredientes asociados.
+
+Gracias a este diseño, el sistema puede calcular automáticamente el coste total del producto según el precio actual de cada ingrediente y modificar recetas fácilmente.
+
+Esto permite pasar de un inventario simple a una gestión más avanzada, donde no solo se controlan productos sueltos, sino también elaboraciones completas.
+
+En resumen, los escandallos convierten el inventario en una herramienta de costes, producción y rentabilidad.
+
+
+
+DIAPOSITIVA 11 — Trazabilidad del stock
+
+El stock actual solo dice cuántas unidades hay en este momento.
+
+Pero en una aplicación de gestión no basta con saber el número actual. También interesa saber por qué cambió.
+
+Por eso existe el concepto de movimientos.
+
+Un movimiento puede registrar el producto afectado, el tipo de movimiento, la cantidad, el stock anterior, el stock nuevo, el usuario, la fecha y el motivo.
+
+Por ejemplo, si la leche pasa de 5 a 25 unidades, el stock actual solo diría 25. Pero el movimiento explica que hubo una entrada de 20 unidades por una recepción.
+
+Esto es importante para auditoría, control interno y para detectar errores.
+
+
+DIAPOSITIVA 12 — Seguridad, roles y despliegue
+
+La seguridad de la aplicación no depende de una sola medida, sino de varias capas que trabajan juntas.
+
+La primera capa es la arquitectura.
+
+El frontend nunca se conecta directamente a la base de datos.
+
+Todas las operaciones pasan por el backend, que actúa como punto de control.
+
+La segunda capa es CORS, que limita desde qué dominios se puede acceder al backend. Por ejemplo, en desarrollo localhost y en producción el dominio oficial.
+
+La siguiente capa es la autenticación.
+
+El usuario inicia sesión desde el login, el backend comprueba sus credenciales y, si son correctas, devuelve un token JWT.
+
+Ese token identifica al usuario en las siguientes peticiones sin necesidad de enviar la contraseña cada vez.
+
+Además, el sistema utiliza registro controlado.
+
+Las nuevas cuentas pueden quedar pendientes hasta que un administrador las revise y apruebe.
+
+Después están los roles y permisos.
+
+No todos los usuarios pueden hacer lo mismo.
+
+Aunque el frontend oculte botones según el rol, la validación real siempre se hace en backend.
+
+También existe validación de datos mediante DTOs, para evitar información incorrecta o peticiones mal formadas.
+
+Las configuraciones sensibles, como claves o tokens, se guardan en variables de entorno .env.
+
+Por último, Docker facilita el despliegue en distintos equipos manteniendo el mismo entorno.
+
+
+DIAPOSITIVA 13 — Evolución, viabilidad y escalabilidad
+
+Y por último, me gustaría comentar la capacidad de evolución del proyecto.
+
+Smart Economato está planteado como una base ampliable.
+
+Al estar separado en frontend, backend y base de datos, es posible seguir mejorando módulos concretos sin rehacer toda la aplicación.
+
+Eso hace que sea una solución viable a medio y largo plazo.
+
+Una mejora interesante sería integrar Open Food Facts, una base de datos pública asociada a códigos de barras.
+
+De esta forma, al escanear un producto, la aplicación podría completar automáticamente datos como nombre, marca, imagen, categoría o información nutricional.
+
+Esto agilizaría mucho el alta de nuevos productos.
+
+Otra línea de mejora sería automatizar la gestión de usuarios, incorporando verificación por correo electrónico y recuperación de contraseña automática mediante email.
+
+Técnicamente esto se apoyaría en un sistema SMTP, que permite el envío automático de correos desde la aplicación.
+
+También podrían seguir evolucionando los módulos analíticos con modelos predictivos de consumo y stock por ejemplo.
+
+Gracias a la arquitectura por capas, estas mejoras pueden añadirse sin rehacer el sistema completo.
+
+En conclusión, Smart Economato no es solo una demo cerrada, sino una base funcional preparada para seguir creciendo y adaptarse a necesidades reales de gestión.
+
+
+Y si les parece, puedo enseñar brevemente una demostración de la aplicación
+
+Entrar al login.
+
+Aquí vemos la pantalla de acceso. Desde aquí el backend valida credenciales y aplica roles según usuario.
+
+Menú principal 
+
+Tras iniciar sesión, accedemos al panel principal.
+A la izquierda tenemos el menú lateral con los distintos módulos del sistema.
+En la zona central aparecen accesos rápidos con información resumida.
+
+
